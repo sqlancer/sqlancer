@@ -142,54 +142,65 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
         switch (join.getJoinType()) {
         case INNER:
             sb.append(" INNER ");
-            potentiallyAddHint();
+            potentiallyAddHint(false);
             sb.append("JOIN ");
             visit(join.getRightTable());
             sb.append(" ON ");
             visit(join.getOnCondition());
             break;
-        case NATURAL:
-            sb.append(" NATURAL ");
-            // potentiallyAddHint();
+        case LEFT:
+            sb.append(" LEFT");
+            sb.append(" OUTER ");
+            potentiallyAddHint(true);
             sb.append("JOIN ");
             visit(join.getRightTable());
+            sb.append(" ON ");
+            visit(join.getOnCondition());
+            break;
+        case RIGHT:
+            sb.append(" RIGHT");
+            sb.append(" OUTER ");
+            potentiallyAddHint(true);
+            sb.append("JOIN ");
+            visit(join.getRightTable());
+            sb.append(" ON ");
+            visit(join.getOnCondition());
+            break;
+        case FULL:
+            sb.append(" FULL");
+            sb.append(" OUTER ");
+            potentiallyAddHint(true);
+            sb.append("JOIN ");
+            visit(join.getRightTable());
+            sb.append(" ON ");
+            visit(join.getOnCondition());
             break;
         case CROSS:
             sb.append(" CROSS ");
-            potentiallyAddHint();
+            potentiallyAddHint(false);
             sb.append("JOIN ");
             visit(join.getRightTable());
             break;
-        case OUTER:
-            sb.append(" ");
-            switch (join.getOuterType()) {
-            case FULL:
-                sb.append("FULL");
-                break;
-            case LEFT:
-                sb.append("LEFT");
-                break;
-            case RIGHT:
-                sb.append("RIGHT");
-                break;
-            default:
-                throw new AssertionError();
-            }
-            sb.append(" OUTER ");
-            potentiallyAddHint();
+        case NATURAL:
+            sb.append(" NATURAL ");
+            // potentiallyAddHint(false);
             sb.append("JOIN ");
             visit(join.getRightTable());
-            sb.append(" ON ");
-            visit(join.getOnCondition());
             break;
         default:
             throw new AssertionError();
         }
     }
 
-    private void potentiallyAddHint() {
+    private void potentiallyAddHint(boolean isOuter) {
         if (Randomly.getBoolean()) {
-            sb.append(Randomly.fromOptions("HASH", "MERGE", "LOOKUP"));
+            return;
+        } else {
+            if (isOuter) {
+                sb.append(Randomly.fromOptions("HASH", "MERGE", "LOOKUP"));
+            } else {
+                sb.append(Randomly.fromOptions("HASH", "MERGE"));
+            }
             sb.append(" ");
         }
     }

@@ -54,7 +54,7 @@ public class DatabendQueryPartitioningHavingTester extends DatabendQueryPartitio
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, !orderBy, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
-                state, DatabendQueryPartitioningBase::canonicalizeResultValue);
+                state, ComparatorHelper::canonicalizeResultValue);
     }
 
     @Override

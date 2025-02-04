@@ -19,7 +19,8 @@ public final class CockroachDBErrors {
         }
 
         errors.add("exceeds supported timestamp bounds");
-
+        errors.add("expected STORED COMPUTED COLUMN expression to have type bytes");
+        errors.add("volatile functions are not allowed in STORED COMPUTED COLUMN");
         errors.add("cannot cast negative integer to bit varying with unbounded width");
 
         errors.add("negative value for LIMIT");

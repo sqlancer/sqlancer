@@ -10,6 +10,7 @@ import sqlancer.Randomly.StringGenerationStrategy;
 @Parameters(separators = "=", commandDescription = "Options applicable to all DBMS")
 public class MainOptions {
     public static final int NO_SET_PORT = -1;
+    public static final int NO_REDUCE_LIMIT = -1;
     public static final MainOptions DEFAULT_OPTIONS = new MainOptions();
 
     @Parameter(names = { "--help", "-h" }, description = "Lists all supported options and commands", help = true)
@@ -124,6 +125,27 @@ public class MainOptions {
 
     @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
     private boolean useReducer = false; // NOPMD
+
+    @Parameter(names = "--reduce-ast", description = "EXPERIMENTAL perform AST reduction after statement reduction")
+    private boolean reduceAST = false; // NOPMD
+
+    @Parameter(names = "--statement-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the statement reducer will do")
+    private long maxStatementReduceSteps = NO_REDUCE_LIMIT; // NOPMD
+
+    @Parameter(names = "--statement-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the AST-based reducer will do")
+    private long maxASTReduceTime = NO_REDUCE_LIMIT; // NOPMD
+
+    @Parameter(names = "--ast-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the AST-based reducer will do")
+    private long maxASTReduceSteps = NO_REDUCE_LIMIT; // NOPMD
+
+    @Parameter(names = "--ast-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the statement reducer will do")
+    private long maxStatementReduceTime = NO_REDUCE_LIMIT; // NOPMD
+
+    @Parameter(names = "--validate-result-size-only", description = "Should validate result size only and skip comparing content of the result set ", arity = 1)
+    private boolean validateResultSizeOnly = false; // NOPMD
+
+    @Parameter(names = "--canonicalize-sql-strings", description = "Should canonicalize query string (add ';' at the end", arity = 1)
+    private boolean canonicalizeSqlString = true; // NOPMD
 
     public int getMaxExpressionDepth() {
         return maxExpressionDepth;
@@ -285,4 +307,33 @@ public class MainOptions {
     public boolean useReducer() {
         return useReducer;
     }
+
+    public boolean reduceAST() {
+        return reduceAST;
+    }
+
+    public long getMaxStatementReduceSteps() {
+        return maxStatementReduceSteps;
+    }
+
+    public long getMaxStatementReduceTime() {
+        return maxStatementReduceTime;
+    }
+
+    public long getMaxASTReduceSteps() {
+        return maxASTReduceSteps;
+    }
+
+    public long getMaxASTReduceTime() {
+        return maxASTReduceTime;
+    }
+
+    public boolean validateResultSizeOnly() {
+        return validateResultSizeOnly;
+    }
+
+    public boolean canonicalizeSqlString() {
+        return canonicalizeSqlString;
+    }
+
 }

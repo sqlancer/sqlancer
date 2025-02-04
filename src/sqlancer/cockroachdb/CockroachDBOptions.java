@@ -12,6 +12,7 @@ import sqlancer.DBMSSpecificOptions;
 import sqlancer.OracleFactory;
 import sqlancer.cockroachdb.CockroachDBOptions.CockroachDBOracleFactory;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
+import sqlancer.cockroachdb.oracle.CockroachDBCERTOracle;
 import sqlancer.cockroachdb.oracle.CockroachDBNoRECOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPAggregateOracle;
 import sqlancer.cockroachdb.oracle.tlp.CockroachDBTLPDistinctOracle;
@@ -87,6 +88,17 @@ public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracle
                 oracles.add(new CockroachDBTLPExtendedWhereOracle(globalState));
                 oracles.add(new CockroachDBTLPDistinctOracle(globalState));
                 return new CompositeTestOracle<CockroachDBGlobalState>(oracles, globalState);
+            }
+        },
+        CERT {
+            @Override
+            public TestOracle<CockroachDBGlobalState> create(CockroachDBGlobalState globalState) throws SQLException {
+                return new CockroachDBCERTOracle(globalState);
+            }
+
+            @Override
+            public boolean requiresAllTablesToContainRows() {
+                return true;
             }
         };
 

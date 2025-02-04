@@ -20,10 +20,8 @@ public class SQLite3Fuzzer implements TestOracle<SQLite3GlobalState> {
         String s = SQLite3Visitor
                 .asString(SQLite3RandomQuerySynthesizer.generate(globalState, Randomly.smallNumber() + 1)) + ";";
         try {
-            if (globalState.getDbmsSpecificOptions().executeQuery) {
-                globalState.executeStatement(new SQLQueryAdapter(s));
-                globalState.getManager().incrementSelectQueryCount();
-            }
+            globalState.executeStatement(new SQLQueryAdapter(s));
+            globalState.getManager().incrementSelectQueryCount();
         } catch (Error e) {
 
         }

@@ -24,11 +24,24 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     }
 
     public SQLQueryAdapter(String query, ExpectedErrors expectedErrors) {
-        this(query, expectedErrors, false);
+        this(query, expectedErrors, guessAffectSchemaFromQuery(query));
+    }
+
+    private static boolean guessAffectSchemaFromQuery(String query) {
+        return query.contains("CREATE TABLE") && !query.startsWith("EXPLAIN");
     }
 
     public SQLQueryAdapter(String query, ExpectedErrors expectedErrors, boolean couldAffectSchema) {
-        this.query = canonicalizeString(query);
+        this(query, expectedErrors, couldAffectSchema, true);
+    }
+
+    public SQLQueryAdapter(String query, ExpectedErrors expectedErrors, boolean couldAffectSchema,
+            boolean canonicalizeString) {
+        if (canonicalizeString) {
+            this.query = canonicalizeString(query);
+        } else {
+            this.query = query;
+        }
         this.expectedErrors = expectedErrors;
         this.couldAffectSchema = couldAffectSchema;
         checkQueryString();
@@ -46,7 +59,7 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     }
 
     private void checkQueryString() {
-        if (query.contains("CREATE TABLE") && !query.startsWith("EXPLAIN") && !couldAffectSchema) {
+        if (!couldAffectSchema && guessAffectSchemaFromQuery(query)) {
             throw new AssertionError("CREATE TABLE statements should set couldAffectSchema to true");
         }
     }

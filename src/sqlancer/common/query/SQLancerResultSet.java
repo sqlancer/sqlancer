@@ -46,6 +46,10 @@ public class SQLancerResultSet implements Closeable {
         return rs.getLong(i);
     }
 
+    public String getType(int i) throws SQLException {
+        return rs.getMetaData().getColumnTypeName(i);
+    }
+
     public void registerEpilogue(Runnable runnableEpilogue) {
         this.runnableEpilogue = runnableEpilogue;
     }

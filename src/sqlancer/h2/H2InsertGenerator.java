@@ -56,7 +56,7 @@ public class H2InsertGenerator extends AbstractInsertGenerator<H2Column> {
     }
 
     @Override
-    protected void insertValue(H2Column tiDBColumn) {
+    protected void insertValue(H2Column columnH2) {
         sb.append(H2ToStringVisitor.asString(gen.generateConstant()));
     }
 }

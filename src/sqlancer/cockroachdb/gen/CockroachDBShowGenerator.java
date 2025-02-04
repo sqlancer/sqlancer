@@ -23,7 +23,7 @@ public final class CockroachDBShowGenerator {
         case EXPERIMENTAL_FINGERPRINTS:
             sb.append("SHOW EXPERIMENTAL_FINGERPRINTS FROM TABLE ");
             sb.append(globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
-            errors.add("as type bytes: bytea encoded value ends with incomplete escape sequence");
+            errors.add("bytea encoded value ends with incomplete escape sequence");
             errors.add("invalid bytea escape sequence");
             break;
         case DATABASES:

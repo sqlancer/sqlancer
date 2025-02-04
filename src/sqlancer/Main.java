@@ -23,9 +23,34 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.JCommander.Builder;
 
+import sqlancer.arangodb.ArangoDBProvider;
+import sqlancer.citus.CitusProvider;
+import sqlancer.clickhouse.ClickHouseProvider;
+import sqlancer.cnosdb.CnosDBProvider;
+import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.cosmos.CosmosProvider;
+import sqlancer.databend.DatabendProvider;
+import sqlancer.doris.DorisProvider;
+import sqlancer.duckdb.DuckDBProvider;
+import sqlancer.h2.H2Provider;
+import sqlancer.hsqldb.HSQLDBProvider;
+import sqlancer.mariadb.MariaDBProvider;
+import sqlancer.materialize.MaterializeProvider;
+import sqlancer.mongodb.MongoDBProvider;
+import sqlancer.mysql.MySQLProvider;
+import sqlancer.oceanbase.OceanBaseProvider;
+import sqlancer.postgres.PostgresProvider;
+import sqlancer.presto.PrestoProvider;
+import sqlancer.questdb.QuestDBProvider;
+import sqlancer.sqlite3.SQLite3Provider;
+import sqlancer.stonedb.StoneDBProvider;
+import sqlancer.tidb.TiDBProvider;
+import sqlancer.timescaledb.TimescaleDBProvider;
+import sqlancer.yugabyte.ycql.YCQLProvider;
+import sqlancer.yugabyte.ysql.YSQLProvider;
 
 public final class Main {
 
@@ -52,12 +77,17 @@ public final class Main {
         private final File loggerFile;
         private File curFile;
         private File queryPlanFile;
+        private File reduceFile;
         private FileWriter logFileWriter;
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
+        private FileWriter reduceFileWriter;
+
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
         private final boolean logQueryPlan;
+
+        private final boolean useReducer;
         private final DatabaseProvider<?, ?, ?> databaseProvider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
@@ -93,6 +123,15 @@ public final class Main {
             logQueryPlan = options.logQueryPlan();
             if (logQueryPlan) {
                 queryPlanFile = new File(dir, databaseName + "-plan.log");
+            }
+            this.useReducer = options.useReducer();
+            if (useReducer) {
+                File reduceFileDir = new File(dir, "reduce");
+                if (!reduceFileDir.exists()) {
+                    reduceFileDir.mkdir();
+                }
+                this.reduceFile = new File(reduceFileDir, databaseName + "-reduce.log");
+
             }
             this.databaseProvider = provider;
         }
@@ -159,6 +198,20 @@ public final class Main {
             return queryPlanFileWriter;
         }
 
+        public FileWriter getReduceFileWriter() {
+            if (!useReducer) {
+                throw new UnsupportedOperationException();
+            }
+            if (reduceFileWriter == null) {
+                try {
+                    reduceFileWriter = new FileWriter(reduceFile, false);
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
+            }
+            return reduceFileWriter;
+        }
+
         public void writeCurrent(StateToReproduce state) {
             if (!logEachSelect) {
                 throw new UnsupportedOperationException();
@@ -205,6 +258,49 @@ public final class Main {
             }
         }
 
+        public void logReducer(String reducerLog) {
+            FileWriter reduceFileWriter = getReduceFileWriter();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("[reducer log] ");
+            sb.append(reducerLog);
+            try {
+                reduceFileWriter.write(sb.toString());
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            } finally {
+                try {
+                    reduceFileWriter.flush();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void logReduced(StateToReproduce state) {
+            FileWriter reduceFileWriter = getReduceFileWriter();
+
+            StringBuilder sb = new StringBuilder();
+            for (Query<?> s : state.getStatements()) {
+                sb.append(databaseProvider.getLoggableFactory().createLoggable(s.getLogString()).getLogString());
+            }
+            try {
+                reduceFileWriter.write(sb.toString());
+
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            } finally {
+                try {
+                    reduceFileWriter.flush();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
         public void logException(Throwable reduce, StateToReproduce state) {
             Loggable stackTrace = getStackTrace(reduce);
             FileWriter logFileWriter2 = getLogFileWriter();
@@ -217,7 +313,6 @@ public final class Main {
                 try {
                     logFileWriter2.flush();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -369,9 +464,15 @@ public final class Main {
                 } catch (IOException e) {
                     throw new AssertionError(e);
                 }
-                if (reproducer != null && options.useReducer()) {
-                    System.out.println("EXPERIMENTAL: Trying to reduce queries using a simple reducer.");
-                    System.out.println("Reduced query will be output to stdout but not logs.");
+
+                if (options.reduceAST() && !options.useReducer()) {
+                    throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
+                }
+                if (options.useReducer()) {
+                    if (reproducer == null) {
+                        logger.getReduceFileWriter().write("current oracle does not support experimental reducer.");
+                        throw new IgnoreMeException();
+                    }
                     G newGlobalState = createGlobalState();
                     newGlobalState.setState(stateToRepro);
                     newGlobalState.setRandomly(r);
@@ -384,7 +485,20 @@ public final class Main {
 
                     Reducer<G> reducer = new StatementReducer<>(provider);
                     reducer.reduce(state, reproducer, newGlobalState);
-                    throw new AssertionError("Found a potential bug");
+
+                    if (options.reduceAST()) {
+                        Reducer<G> astBasedReducer = new ASTBasedReducer<>(provider);
+                        astBasedReducer.reduce(state, reproducer, newGlobalState);
+                    }
+
+                    try {
+                        logger.getReduceFileWriter().close();
+                        logger.reduceFileWriter = null;
+                    } catch (IOException e) {
+                        throw new AssertionError(e);
+                    }
+
+                    throw new AssertionError("Found a potential bug, please check reducer log for detail.");
                 }
             }
         }
@@ -609,7 +723,41 @@ public final class Main {
         for (DatabaseProvider<?, ?, ?> provider : loader) {
             providers.add(provider);
         }
+        checkForIssue799(providers);
         return providers;
+    }
+
+    // see https://github.com/sqlancer/sqlancer/issues/799
+    private static void checkForIssue799(List<DatabaseProvider<?, ?, ?>> providers) {
+        if (providers.isEmpty()) {
+            System.err.println(
+                    "No DBMS implementations (i.e., instantiations of the DatabaseProvider class) were found. You likely ran into an issue described in https://github.com/sqlancer/sqlancer/issues/799. As a workaround, I now statically load all supported providers as of June 7, 2023.");
+            providers.add(new ArangoDBProvider());
+            providers.add(new CitusProvider());
+            providers.add(new ClickHouseProvider());
+            providers.add(new CnosDBProvider());
+            providers.add(new CockroachDBProvider());
+            providers.add(new CosmosProvider());
+            providers.add(new DatabendProvider());
+            providers.add(new DorisProvider());
+            providers.add(new DuckDBProvider());
+            providers.add(new H2Provider());
+            providers.add(new HSQLDBProvider());
+            providers.add(new MariaDBProvider());
+            providers.add(new MaterializeProvider());
+            providers.add(new MongoDBProvider());
+            providers.add(new MySQLProvider());
+            providers.add(new OceanBaseProvider());
+            providers.add(new PrestoProvider());
+            providers.add(new PostgresProvider());
+            providers.add(new QuestDBProvider());
+            providers.add(new SQLite3Provider());
+            providers.add(new StoneDBProvider());
+            providers.add(new TiDBProvider());
+            providers.add(new TimescaleDBProvider());
+            providers.add(new YCQLProvider());
+            providers.add(new YSQLProvider());
+        }
     }
 
     private static synchronized void startProgressMonitor() {

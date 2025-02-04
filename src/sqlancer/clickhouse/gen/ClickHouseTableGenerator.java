@@ -98,6 +98,8 @@ public class ClickHouseTableGenerator {
                         columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
                 sb.append(ClickHouseToStringVisitor.asString(expr));
             }
+            // Suppress index sanity checks https://github.com/sqlancer/sqlancer/issues/788
+            sb.append(" SETTINGS allow_suspicious_indices=1");
             // TODO: PRIMARY KEY
         }
 

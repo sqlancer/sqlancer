@@ -1,6 +1,7 @@
 package sqlancer;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -134,6 +135,12 @@ public final class Randomly {
         return extractNrRandomColumns(columns, nr);
     }
 
+    public static <T> List<T> nonEmptySubsetLeast(List<T> columns, int min) {
+        int nr = getNextInt(min, columns.size() + 1);
+        assert nr <= columns.size();
+        return extractNrRandomColumns(columns, nr);
+    }
+
     public static <T> List<T> nonEmptySubsetPotentialDuplicates(List<T> columns) {
         List<T> arr = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -215,7 +222,6 @@ public final class Randomly {
 
         },
         ALPHANUMERIC {
-
             @Override
             public String getString(Randomly r) {
                 return getStringOfAlphabet(r, ALPHANUMERIC_ALPHABET);
@@ -224,7 +230,6 @@ public final class Randomly {
 
         },
         ALPHANUMERIC_SPECIALCHAR {
-
             @Override
             public String getString(Randomly r) {
                 return getStringOfAlphabet(r, ALPHANUMERIC_SPECIALCHAR_ALPHABET);
@@ -450,6 +455,17 @@ public final class Randomly {
             return left;
         }
         return getNextLong(left, right);
+    }
+
+    public BigInteger getBigInteger(BigInteger left, BigInteger right) {
+        if (left.equals(right)) {
+            return left;
+        }
+        BigInteger result = new BigInteger(String.valueOf(getInteger(left.intValue(), right.intValue())));
+        if (result.compareTo(left) < 0 && result.compareTo(right) > 0) {
+            throw new IgnoreMeException();
+        }
+        return result;
     }
 
     public BigDecimal getRandomBigDecimal() {

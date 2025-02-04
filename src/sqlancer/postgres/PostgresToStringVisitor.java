@@ -11,6 +11,7 @@ import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresCastOperation;
 import sqlancer.postgres.ast.PostgresCollate;
+import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
@@ -28,6 +29,7 @@ import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
+import sqlancer.postgres.ast.PostgresTableReference;
 
 public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 
@@ -44,6 +46,11 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     @Override
     public String get() {
         return sb.toString();
+    }
+
+    @Override
+    public void visit(PostgresColumnReference column) {
+        sb.append(column.getColumn().getFullQualifiedName());
     }
 
     @Override
@@ -85,6 +92,11 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         visit(subquery.getSelect());
         sb.append(") AS ");
         sb.append(subquery.getName());
+    }
+
+    @Override
+    public void visit(PostgresTableReference ref) {
+        sb.append(ref.getTable().getName());
     }
 
     @Override

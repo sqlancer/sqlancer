@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.auto.service.AutoService;
 
@@ -17,10 +19,13 @@ import sqlancer.SQLConnection;
 import sqlancer.SQLGlobalState;
 import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.tidb.TiDBOptions.TiDBOracleFactory;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
+import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.gen.TiDBAlterTableGenerator;
 import sqlancer.tidb.gen.TiDBAnalyzeTableGenerator;
 import sqlancer.tidb.gen.TiDBDeleteGenerator;
@@ -84,6 +89,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
         case CREATE_INDEX:
             return r.getInteger(0, 2);
         case INSERT:
+            return r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
         case TRUNCATE:
         case DELETE:
         case ADMIN_CHECKSUM_TABLE:
@@ -130,6 +136,22 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
                 throw new IgnoreMeException(); // TODO: drop view instead
             } else {
                 throw new AssertionError(e);
+            }
+        }
+
+        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch((o) -> o == TiDBOracleFactory.CERT)) {
+            // Disable strict Group By constraints for ROW oracle
+            globalState.executeStatement(new SQLQueryAdapter(
+                    "SET @@sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';"));
+
+            // Enfore statistic collected for all tables
+            ExpectedErrors errors = new ExpectedErrors();
+            TiDBErrors.addExpressionErrors(errors);
+            for (TiDBTable table : globalState.getSchema().getDatabaseTables()) {
+                if (!table.isView()) {
+                    globalState.executeStatement(new SQLQueryAdapter("ANALYZE TABLE " + table.getName() + ";", errors));
+                }
             }
         }
     }
@@ -186,7 +208,7 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
             }
         }
 
-        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN " + selectStr);
+        SQLQueryAdapter q = new SQLQueryAdapter("EXPLAIN FORMAT=brief " + selectStr);
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs != null) {
                 while (rs.next()) {
@@ -211,6 +233,17 @@ public class TiDBProvider extends SQLProviderAdapter<TiDBGlobalState, TiDBOption
     protected void executeMutator(int index, TiDBGlobalState globalState) throws Exception {
         SQLQueryAdapter queryMutateTable = Action.values()[index].getQuery(globalState);
         globalState.executeStatement(queryMutateTable);
+    }
+
+    @Override
+    public boolean addRowsToAllTables(TiDBGlobalState globalState) throws Exception {
+        List<TiDBTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (TiDBTable table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = TiDBInsertGenerator.getQuery(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+        return true;
     }
 
 }

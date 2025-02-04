@@ -9,8 +9,8 @@ SQLancer (Synthesized Query Lancer) is a tool to automatically test Database Man
 
 SQLancer operates in the following two phases:
 
-1. Database generation: The goal of this phase is to create a populated database, and stress the DBMS to increase the probability of causing an inconsistent database state that could be detected subsequently. First, random tables are created. Then, randomly SQL statements are chosen to generate, modify, and delete data. Also other statements, such as those to create indexes as well as views and to set DBMS-specific options are sent to the DBMS. **New: we support query plan guided generation now. See Generation Approaches below.**
-2. Testing: The goal of this phase is to detect the logic bugs based on the generated database. See Testing Approaches below.
+1. Database generation: The goal of this phase is to create a populated database, and stress the DBMS to increase the probability of causing an inconsistent database state that could be detected subsequently. First, random tables are created. Then, randomly SQL statements are chosen to generate, modify, and delete data. Also other statements, such as those to create indexes as well as views and to set DBMS-specific options are sent to the DBMS. **News: we support Query Plan Guidance (QPG) now. See Generation Approaches below.**
+2. Testing: The goal of this phase is to detect the logic bugs based on the generated database. See Testing Approaches below. **News: we support Cardinality Estimation Restriction Testing (CERT) oracle now. See Testing Approaches below.**
 
 # Getting Started
 
@@ -40,6 +40,8 @@ If you launch SQLancer without parameters, available options and commands are di
 | Pivoted Query Synthesis (PQS)                        | PQS is the first technique that we designed and implemented. It randomly selects a row, called a pivot row, for which a query is generated that is guaranteed to fetch the row. If the row is not contained in the result set, a bug has been detected. It is fully described [here](https://arxiv.org/abs/2001.04174). PQS is the most powerful technique, but also requires more implementation effort than the other two techniques. It is currently unmaintained. |
 | Non-optimizing Reference Engine Construction (NoREC) | NoREC aims to find optimization bugs. It is described [here](https://www.manuelrigger.at/preprints/NoREC.pdf). It translates a query that is potentially optimized by the DBMS to one for which hardly any optimizations are applicable, and compares the two result sets. A mismatch between the result sets indicates a bug in the DBMS.                                                                                                                                                                                                        |
 | Ternary Logic Partitioning (TLP)                     | TLP partitions a query into three partitioning queries, whose results are composed and compare to the original query's result set. A mismatch in the result sets indicates a bug in the DBMS. In contrast to NoREC and PQS, it can detect bugs in advanced features such as aggregate functions.                                                                                                                                                                                                                                                  |
+| Cardinality Estimation Restriction Testing (CERT)    | CERT aims to find performance issues through unexpected estimated cardinalities, which represent the estimated number of returned rows. It is described [here](https://arxiv.org/abs/2306.00355). It derives a query to a more restrict query, whose estimated cardinality should be no more than that for the original query. An violation indicates a potential performance issue. CERT supports TiDB, CockroachDB, and MySQL. |
+
 # Generation Approaches
 | Approach | Description |
 |----------|-------------|
@@ -66,11 +68,13 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | TDEngine                     | Removed     | Untyped                      | We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them.                                                          |
 | OceanBase                    | Working     | Untyped                      |                                                                                                                                                                                                 |
 | YugabyteDB                   | Working     | Typed (YSQL), Untyped (YCQL) | YSQL implementation based on Postgres code. YCQL implementation is primitive for now and uses Cassandra JDBC driver as a proxy interface.                                                       |
-| Databend                    | Working     | Typed                      |  |
-| QuestDB                    | Working     | Untyped, Generic                      | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords. |
+| Databend                     | Working     | Typed                      |  |
+| QuestDB                      | Working     | Untyped, Generic                      | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords. |
 | CnosDB                       |Working      | Typed                        | The implementation of CnosDB currently uses Restful API.                                                                                                                                        |
 | Materialize                  |Working      | Typed                        |
-| Apache Doris                      | Preliminary | Typed                   | This is a preliminary implementation, which only contains the common logic of Doris. We have found some errors through it, and hope to improve it in the future.
+| Apache Doris                 | Preliminary | Typed                   | This is a preliminary implementation, which only contains the common logic of Doris. We have found some errors through it, and hope to improve it in the future.
+| Presto                       | Preliminary | Typed                   | This is a preliminary implementation, only basic types supported. 
+
 
 
 # Using SQLancer

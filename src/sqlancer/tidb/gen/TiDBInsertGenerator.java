@@ -26,11 +26,15 @@ public class TiDBInsertGenerator {
     }
 
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
-        return new TiDBInsertGenerator(globalState).get();
+        TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
+        return new TiDBInsertGenerator(globalState).get(table);
     }
 
-    private SQLQueryAdapter get() {
-        TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState, TiDBTable table) {
+        return new TiDBInsertGenerator(globalState).get(table);
+    }
+
+    private SQLQueryAdapter get(TiDBTable table) {
         gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
         StringBuilder sb = new StringBuilder();
         boolean isInsert = Randomly.getBoolean();
@@ -75,18 +79,14 @@ public class TiDBInsertGenerator {
                 sb.append(", ");
             }
             sb.append("(");
-            for (int nrColumn = 0; nrColumn < columns.size(); nrColumn++) {
-                if (nrColumn != 0) {
+            int i = 0;
+            for (TiDBColumn c : columns) {
+                if (i++ != 0) {
                     sb.append(", ");
                 }
-                insertValue(sb);
+                sb.append(TiDBVisitor.asString(gen.generateConstant(c.getType().getPrimitiveDataType())));
             }
             sb.append(")");
         }
     }
-
-    private void insertValue(StringBuilder sb) {
-        sb.append(gen.generateConstant()); // TODO: try to insert valid data
-    }
-
 }
