@@ -28,5 +28,5 @@ jobs:
             -Dsonar.projectKey=CS3213-T6-1_sqlancer \
             -Dsonar.organization=cs3213-t6-1 \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
