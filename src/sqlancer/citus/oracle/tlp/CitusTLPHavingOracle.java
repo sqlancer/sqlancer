@@ -14,8 +14,7 @@ public class CitusTLPHavingOracle extends PostgresTLPHavingOracle {
 
     public CitusTLPHavingOracle(CitusGlobalState state) {
         super(state);
-        CitusCommon.addCitusErrors(errors);
-        citusTLPBase = new CitusTLPBase(state);
+        citusTLPBase = CitusTLPBase.createWithState(state, errors);
     }
 
     @Override

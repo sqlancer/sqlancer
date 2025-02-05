@@ -14,8 +14,7 @@ public class CitusTLPAggregateOracle extends PostgresTLPAggregateOracle {
 
     public CitusTLPAggregateOracle(CitusGlobalState state) {
         super(state);
-        CitusCommon.addCitusErrors(errors);
-        citusTLPBase = new CitusTLPBase(state);
+        citusTLPBase = CitusTLPBase.createWithState(state, errors);
     }
 
     @Override

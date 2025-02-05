@@ -12,6 +12,7 @@ import sqlancer.Randomly;
 import sqlancer.citus.CitusGlobalState;
 import sqlancer.citus.CitusSchema.CitusTable;
 import sqlancer.citus.gen.CitusCommon;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -75,6 +76,11 @@ public class CitusTLPBase extends PostgresTLPBase {
         List<PostgresTable> tables = new ArrayList<>();
         List<PostgresJoin> joins = generateJoins(tables);
         generateSelectBase(tables, joins);
+    }
+
+    public static CitusTLPBase createWithState(CitusGlobalState state, ExpectedErrors errors) {
+        CitusCommon.addCitusErrors(errors);
+        return new CitusTLPBase(state);
     }
 
     public void initializeState(PostgresGlobalState state) throws SQLException {
