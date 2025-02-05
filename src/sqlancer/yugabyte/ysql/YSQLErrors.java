@@ -36,9 +36,8 @@ public final class YSQLErrors {
         errors.add("INDEX on column of type 'INET' not yet supported");
         errors.add("INDEX on column of type 'VARBIT' not yet supported");
         errors.add("INDEX on column of type 'INT4RANGE' not yet supported");
-        errors.add("is not commutative"); // exclude
         errors.add("cannot be changed");
-        errors.add("operator requires run-time type coercion"); // exclude
+        errors.add("cannot split table that does not have primary key");
     }
 
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
@@ -54,11 +53,11 @@ public final class YSQLErrors {
 
         errors.add("Invalid column number");
         errors.add("specified more than once");
+        errors.add("character number must be positive");
         errors.add("You might need to add explicit type casts");
         errors.add("invalid regular expression");
         errors.add("could not determine which collation to use");
         errors.add("invalid input syntax for integer");
-        errors.add("invalid regular expression");
         errors.add("operator does not exist");
         errors.add("quantifier operand invalid");
         errors.add("collation mismatch");

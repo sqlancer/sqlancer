@@ -308,8 +308,9 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
                 sb.append("' ");
             }
 
-            if (Randomly.getBoolean()) {
-                sb.append("COLOCATED = true ");
+            // create non colocated database with low priority to avoid cluster resource issues
+            if (Randomly.getPercentage() > 0.05) {
+                sb.append("COLOCATION = true ");
             }
 
             for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
