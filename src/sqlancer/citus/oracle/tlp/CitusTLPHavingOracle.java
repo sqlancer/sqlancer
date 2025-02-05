@@ -20,15 +20,7 @@ public class CitusTLPHavingOracle extends PostgresTLPHavingOracle {
 
     @Override
     public void check() throws SQLException {
-        state.setAllowedFunctionTypes(Arrays.asList(PostgresGlobalState.IMMUTABLE));
-        citusTLPBase.check();
-        s = citusTLPBase.getSchema();
-        targetTables = citusTLPBase.getTargetTables();
-        gen = citusTLPBase.getGenerator();
-        select = citusTLPBase.getSelect();
-        predicate = citusTLPBase.getPredicate();
-        negatedPredicate = citusTLPBase.getNegatedPredicate();
-        isNullPredicate = citusTLPBase.getIsNullPredicate();
+        citusTLPBase.initializeState(state);
         havingCheck();
         state.setDefaultAllowedFunctionTypes();
     }
