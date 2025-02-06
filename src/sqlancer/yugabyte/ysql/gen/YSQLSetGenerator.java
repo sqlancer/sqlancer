@@ -79,11 +79,11 @@ public final class YSQLSetGenerator {
         YB_FETCH_ROW_LIMIT("yb_fetch_row_limit", (r) -> Randomly.fromOptions(0, 1, 5, 10)),
         YB_USE_HASH_SPLITTING_BY_DEFAULT("yb_use_hash_splitting_by_default", (r) -> Randomly.fromOptions("false", "true")),
         YB_TEST_PLANNER_CUSTOM_PLAN_THRESHOLD("yb_test_planner_custom_plan_threshold",
-                (r) -> Randomly.getNotCachedInteger(1, Integer.MAX_VALUE)),
+                (r) -> Randomly.getNotCachedInteger(1, 10000)),
         // YSQL values
         YSQL_UPGRADE_MODE("ysql_upgrade_mode", (r) -> Randomly.fromOptions("false", "true")),
         YSQL_SESSION_MAX_BATCH_SIZE("ysql_session_max_batch_size",
-                (r) -> Randomly.getNotCachedInteger(1, Integer.MAX_VALUE)),
+                (r) -> Randomly.getNotCachedInteger(1, 10000)),
         YSQL_MAX_IN_FLIGHT_OPS("ysql_max_in_flight_ops", (r) -> Randomly.getNotCachedInteger(1, Integer.MAX_VALUE)),
         // https://www.postgresql.org/docs/11/runtime-config-wal.html
         // This parameter can only be set at server start.
@@ -95,7 +95,7 @@ public final class YSQLSetGenerator {
         // wal_buffer: server start
         // wal_writer_delay: server start
         // wal_writer_flush_after
-        COMMIT_DELAY("commit_delay", (r) -> r.getInteger(0, 100000)),
+        COMMIT_DELAY("commit_delay", (r) -> r.getInteger(0, 10000)),
         COMMIT_SIBLINGS("commit_siblings", (r) -> r.getInteger(0, 1000)),
         // 19.5.2. Checkpoints
         // checkpoint_timeout
