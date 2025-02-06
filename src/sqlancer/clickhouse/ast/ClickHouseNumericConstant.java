@@ -7,7 +7,7 @@ import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 import java.math.BigInteger;
 
 public abstract class ClickHouseNumericConstant<T extends Number> extends ClickHouseConstant {
-    private final T value;
+    protected final T value;
 
     public ClickHouseNumericConstant(T value) {
         this.value = value;
@@ -51,6 +51,43 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
                 return ClickHouseCreateConstant.createFloat32Constant(value.floatValue());
             case Float64:
                 return ClickHouseCreateConstant.createFloat64Constant(value.doubleValue());
+            case IntervalYear:
+            case IntervalQuarter:
+            case IntervalMonth:
+            case IntervalWeek:
+            case IntervalDay:
+            case IntervalHour:
+            case IntervalMinute:
+            case IntervalSecond:
+            case Date:
+            case Date32:
+            case DateTime:
+            case DateTime32:
+            case DateTime64:
+            case Decimal:
+            case Decimal32:
+            case Decimal64:
+            case Decimal128:
+            case Decimal256:
+            case UUID:
+            case Enum:
+            case Enum8:
+            case Enum16:
+            case IPv4:
+            case IPv6:
+            case FixedString:
+            case AggregateFunction:
+            case SimpleAggregateFunction:
+            case Array:
+            case Map:
+            case Nested:
+            case Tuple:
+            case Point:
+            case Polygon:
+            case MultiPolygon:
+            case Ring:
+            default:
+                throw new AssertionError(type);
         }
     }
 
@@ -87,6 +124,43 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
                 return ClickHouseCreateConstant.createFloat32Constant(bigInt.floatValue());
             case Float64:
                 return ClickHouseCreateConstant.createFloat64Constant(bigInt.doubleValue());
+            case IntervalYear:
+            case IntervalQuarter:
+            case IntervalMonth:
+            case IntervalWeek:
+            case IntervalDay:
+            case IntervalHour:
+            case IntervalMinute:
+            case IntervalSecond:
+            case Date:
+            case Date32:
+            case DateTime:
+            case DateTime32:
+            case DateTime64:
+            case Decimal:
+            case Decimal32:
+            case Decimal64:
+            case Decimal128:
+            case Decimal256:
+            case UUID:
+            case Enum:
+            case Enum8:
+            case Enum16:
+            case IPv4:
+            case IPv6:
+            case FixedString:
+            case AggregateFunction:
+            case SimpleAggregateFunction:
+            case Array:
+            case Map:
+            case Nested:
+            case Tuple:
+            case Point:
+            case Polygon:
+            case MultiPolygon:
+            case Ring:
+            default:
+                throw new AssertionError(type);
         }
     }
 }
