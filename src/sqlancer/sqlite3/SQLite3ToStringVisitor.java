@@ -1,11 +1,13 @@
 package sqlancer.sqlite3;
 
 import java.util.Arrays;
+import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
+import sqlancer.sqlite3.ast.SQLite3Case;
 import sqlancer.sqlite3.ast.SQLite3Case.CasePair;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
@@ -349,25 +351,21 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 
     @Override
     public void visit(SQLite3CaseWithoutBaseExpression casExpr) {
-        sb.append("CASE");
-        for (CasePair pair : casExpr.getPairs()) {
-            sb.append(" WHEN ");
-            visit(pair.getCond());
-            sb.append(" THEN ");
-            visit(pair.getThen());
-        }
-        if (casExpr.getElseExpr() != null) {
-            sb.append(" ELSE ");
-            visit(casExpr.getElseExpr());
-        }
-        sb.append(" END");
+        appendCaseExpression(false, casExpr);
     }
 
     @Override
     public void visit(SQLite3CaseWithBaseExpression casExpr) {
-        sb.append("CASE ");
-        visit(casExpr.getBaseExpr());
-        sb.append(" ");
+        appendCaseExpression(true, casExpr);
+    }
+
+    public void appendCaseExpression(boolean withBaseExpr, SQLite3Case casExpr) {
+        sb.append("CASE");
+        if (withBaseExpr && casExpr instanceof SQLite3CaseWithBaseExpression) {
+            SQLite3Expression baseExpr = ((SQLite3CaseWithBaseExpression) casExpr).getBaseExpr();
+            visit(baseExpr);
+            sb.append(" ");
+        }
         for (CasePair pair : casExpr.getPairs()) {
             sb.append(" WHEN ");
             visit(pair.getCond());
