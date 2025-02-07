@@ -1,6 +1,5 @@
 package sqlancer.clickhouse.ast.constant;
 
-
 import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.IgnoreMeException;

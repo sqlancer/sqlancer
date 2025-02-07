@@ -10,7 +10,6 @@ import sqlancer.clickhouse.ast.ClickHouseNumericConstant;
 
 public class ClickHouseInt64Constant extends ClickHouseNumericConstant<BigInteger> {
 
-
     public ClickHouseInt64Constant(BigInteger value) {
         super(value);
     }
