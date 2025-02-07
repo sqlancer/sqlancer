@@ -1,10 +1,10 @@
 package sqlancer.clickhouse.ast;
 
+import java.math.BigInteger;
+
 import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
-
-import java.math.BigInteger;
 
 public abstract class ClickHouseNumericConstant<T extends Number> extends ClickHouseConstant {
     protected final T value;
