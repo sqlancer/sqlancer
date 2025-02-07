@@ -16,6 +16,11 @@ public class ClickHouseStringConstant extends ClickHouseConstant {
     }
 
     @Override
+    public boolean isNull() {
+        return false;
+    }
+
+    @Override
     public Object getValue() {
         return value;
     }
