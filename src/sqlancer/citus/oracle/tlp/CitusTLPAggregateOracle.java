@@ -1,11 +1,8 @@
 package sqlancer.citus.oracle.tlp;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 
 import sqlancer.citus.CitusGlobalState;
-import sqlancer.citus.gen.CitusCommon;
-import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.oracle.tlp.PostgresTLPAggregateOracle;
 
 public class CitusTLPAggregateOracle extends PostgresTLPAggregateOracle {
