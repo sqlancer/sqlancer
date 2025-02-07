@@ -36,13 +36,13 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
             case Int8:
                 return ClickHouseCreateConstant.createInt8Constant(value.byteValue());
             case UInt16:
-                return ClickHouseCreateConstant.createUInt16Constant(value.shortValue());
+                return ClickHouseCreateConstant.createUInt16Constant(value.longValue());
             case Int16:
-                return ClickHouseCreateConstant.createInt16Constant(value.shortValue());
+                return ClickHouseCreateConstant.createInt16Constant(value.longValue());
             case UInt32:
-                return ClickHouseCreateConstant.createUInt32Constant(value.intValue());
+                return ClickHouseCreateConstant.createUInt32Constant(value.longValue());
             case Int32:
-                return ClickHouseCreateConstant.createInt32Constant(value.intValue());
+                return ClickHouseCreateConstant.createInt32Constant(value.longValue());
             case UInt64:
                 return ClickHouseCreateConstant.createUInt64Constant(BigInteger.valueOf(value.longValue()));
             case Int64:
@@ -51,6 +51,8 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
                 return ClickHouseCreateConstant.createFloat32Constant(value.floatValue());
             case Float64:
                 return ClickHouseCreateConstant.createFloat64Constant(value.doubleValue());
+            case Bool:
+                return ClickHouseCreateConstant.createBooleanConstant(value.longValue() != 0);
             case IntervalYear:
             case IntervalQuarter:
             case IntervalMonth:
@@ -124,11 +126,17 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
             case Float32:
                 return ClickHouseCreateConstant.createFloat32Constant(value.floatValue());
             case Float64:
+<<<<<<< .merge_file_UE8L6g
                 return ClickHouseCreateConstant.createFloat64Constant(value.doubleValue());
             case Nothing:
                 return ClickHouseCreateConstant.createNullConstant();
             case Bool:
                 return ClickHouseCreateConstant.createBooleanConstant(val != 0);
+=======
+                return ClickHouseCreateConstant.createFloat64Constant(bigInt.doubleValue());
+            case Bool:
+                return ClickHouseCreateConstant.createBooleanConstant(!bigInt.equals(BigInteger.ZERO);
+>>>>>>> .merge_file_SFwkAZ
             case IntervalYear:
             case IntervalQuarter:
             case IntervalMonth:

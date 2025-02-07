@@ -6,13 +6,12 @@ import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
+import sqlancer.clickhouse.ast.ClickHouseNumericConstant;
 
-public class ClickHouseInt16Constant extends ClickHouseConstant {
-
-    private final long value;
+public class ClickHouseInt16Constant extends ClickHouseNumericConstant<Long> {
 
     public ClickHouseInt16Constant(long value) {
-        this.value = value;
+        super(value);
     }
 
     @Override
