@@ -15,11 +15,6 @@ public class ClickHouseInt64Constant extends ClickHouseNumericConstant<BigIntege
     }
 
     @Override
-    public String toString() {
-        return String.valueOf(value);
-    }
-
-    @Override
     public boolean isNull() {
         return false;
     }
