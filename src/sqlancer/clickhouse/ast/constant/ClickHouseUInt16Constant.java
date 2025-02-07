@@ -1,7 +1,5 @@
 package sqlancer.clickhouse.ast.constant;
 
-import java.math.BigInteger;
-
 import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.IgnoreMeException;
