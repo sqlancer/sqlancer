@@ -7,9 +7,7 @@ import com.clickhouse.client.ClickHouseDataType;
 import sqlancer.IgnoreMeException;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
 
-public class ClickHouseUInt128Constant extends ClickHouseConstant {
-
-    private final BigInteger value;
+public class ClickHouseUInt128Constant extends ClickHouseNumericConstant<BigInteger> {
 
     public ClickHouseUInt128Constant(BigInteger value) {
         this.value = value;
