@@ -13,11 +13,6 @@ public class ClickHouseUInt8Constant extends ClickHouseNumericConstant<Integer> 
     }
 
     @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
     public boolean asBooleanNotNull() {
         return value != 0;
     }

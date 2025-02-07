@@ -15,11 +15,6 @@ public class ClickHouseUInt128Constant extends ClickHouseNumericConstant<BigInte
     }
 
     @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
     public boolean asBooleanNotNull() {
         return value != BigInteger.ZERO;
     }

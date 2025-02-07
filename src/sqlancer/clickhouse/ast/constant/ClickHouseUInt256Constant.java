@@ -13,12 +13,7 @@ public class ClickHouseUInt256Constant extends ClickHouseNumericConstant<BigInte
     public ClickHouseUInt256Constant(BigInteger value) {
         super(value);
     }
-
-    @Override
-    public boolean isNull() {
-        return false;
-    }
-
+    
     @Override
     public boolean asBooleanNotNull() {
         return value != BigInteger.ZERO;
