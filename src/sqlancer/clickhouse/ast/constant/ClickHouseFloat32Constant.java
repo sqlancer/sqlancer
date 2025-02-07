@@ -20,6 +20,7 @@ public class ClickHouseFloat32Constant extends ClickHouseNumericConstant<Float> 
     public boolean isNull() {
         return false;
     }
+
     @Override
     public String toString() {
         if (value == Double.POSITIVE_INFINITY) {
