@@ -12,15 +12,18 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
     public ClickHouseNumericConstant(T value) {
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
     @Override
     public ClickHouseConstant cast(ClickHouseDataType type) {
         if (type == ClickHouseDataType.Nothing) {
             return ClickHouseCreateConstant.createNullConstant();
         }
 
-        if (type == ClickHouseDataType.Bool) {
-            return ClickHouseCreateConstant.createBooleanConstant(value.longValue() != 0);
-        }
         if (value instanceof BigInteger) {
             return castBigInteger(type);
         }
@@ -112,31 +115,25 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
             case Int32:
                 return ClickHouseCreateConstant.createInt32Constant(val);
             case UInt64:
-                return ClickHouseCreateConstant.createUInt64Constant(value);
+                return ClickHouseCreateConstant.createUInt64Constant(bigInt);
             case Int64:
-                return ClickHouseCreateConstant.createInt64Constant(value);
+                return ClickHouseCreateConstant.createInt64Constant(bigInt);
             case UInt128:
-                return ClickHouseCreateConstant.createUInt128Constant(value);
+                return ClickHouseCreateConstant.createUInt128Constant(bigInt);
             case Int128:
-                return ClickHouseCreateConstant.createInt128Constant(value);
+                return ClickHouseCreateConstant.createInt128Constant(bigInt);
             case UInt256:
-                return ClickHouseCreateConstant.createUInt256Constant(value);
+                return ClickHouseCreateConstant.createUInt256Constant(bigInt);
             case Int256:
-                return ClickHouseCreateConstant.createInt256Constant(value);
+                return ClickHouseCreateConstant.createInt256Constant(bigInt);
             case Float32:
-                return ClickHouseCreateConstant.createFloat32Constant(value.floatValue());
+                return ClickHouseCreateConstant.createFloat32Constant(bigInt.floatValue());
             case Float64:
-<<<<<<< .merge_file_UE8L6g
-                return ClickHouseCreateConstant.createFloat64Constant(value.doubleValue());
+                return ClickHouseCreateConstant.createFloat64Constant(bigInt.doubleValue());
             case Nothing:
                 return ClickHouseCreateConstant.createNullConstant();
             case Bool:
                 return ClickHouseCreateConstant.createBooleanConstant(val != 0);
-=======
-                return ClickHouseCreateConstant.createFloat64Constant(bigInt.doubleValue());
-            case Bool:
-                return ClickHouseCreateConstant.createBooleanConstant(!bigInt.equals(BigInteger.ZERO);
->>>>>>> .merge_file_SFwkAZ
             case IntervalYear:
             case IntervalQuarter:
             case IntervalMonth:

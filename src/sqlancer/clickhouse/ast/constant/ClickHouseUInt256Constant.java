@@ -6,18 +6,13 @@ import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
+import sqlancer.clickhouse.ast.ClickHouseNumericConstant;
 
-public class ClickHouseUInt256Constant extends ClickHouseConstant {
+public class ClickHouseUInt256Constant extends ClickHouseNumericConstant<BigInteger> {
 
-    private final BigInteger value;
 
     public ClickHouseUInt256Constant(BigInteger value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return String.valueOf(value);
+        super(value);
     }
 
     @Override
@@ -57,83 +52,5 @@ public class ClickHouseUInt256Constant extends ClickHouseConstant {
     @Override
     public Object getValue() {
         return value;
-    }
-
-    @Override
-    public ClickHouseConstant cast(ClickHouseDataType type) {
-        long val = value.longValueExact();
-        switch (type) {
-        case String:
-            return ClickHouseCreateConstant.createStringConstant(this.toString());
-        case UInt8:
-            return ClickHouseCreateConstant.createUInt8Constant(val);
-        case Int8:
-            return ClickHouseCreateConstant.createInt8Constant(val);
-        case UInt16:
-            return ClickHouseCreateConstant.createUInt16Constant(val);
-        case Int16:
-            return ClickHouseCreateConstant.createInt16Constant(val);
-        case UInt32:
-            return ClickHouseCreateConstant.createUInt32Constant(val);
-        case Int32:
-            return ClickHouseCreateConstant.createInt32Constant(val);
-        case UInt64:
-            return ClickHouseCreateConstant.createUInt64Constant(value);
-        case Int64:
-            return ClickHouseCreateConstant.createInt64Constant(value);
-        case UInt128:
-            return ClickHouseCreateConstant.createUInt128Constant(value);
-        case Int128:
-            return ClickHouseCreateConstant.createInt128Constant(value);
-        case UInt256:
-            return ClickHouseCreateConstant.createUInt256Constant(value);
-        case Int256:
-            return ClickHouseCreateConstant.createInt256Constant(value);
-        case Float32:
-            return ClickHouseCreateConstant.createFloat32Constant(value.floatValue());
-        case Float64:
-            return ClickHouseCreateConstant.createFloat64Constant(value.doubleValue());
-        case Nothing:
-            return ClickHouseCreateConstant.createNullConstant();
-        case Bool:
-            return ClickHouseCreateConstant.createBooleanConstant(val != 0);
-        case IntervalYear:
-        case IntervalQuarter:
-        case IntervalMonth:
-        case IntervalWeek:
-        case IntervalDay:
-        case IntervalHour:
-        case IntervalMinute:
-        case IntervalSecond:
-        case Date:
-        case Date32:
-        case DateTime:
-        case DateTime32:
-        case DateTime64:
-        case Decimal:
-        case Decimal32:
-        case Decimal64:
-        case Decimal128:
-        case Decimal256:
-        case UUID:
-        case Enum:
-        case Enum8:
-        case Enum16:
-        case IPv4:
-        case IPv6:
-        case FixedString:
-        case AggregateFunction:
-        case SimpleAggregateFunction:
-        case Array:
-        case Map:
-        case Nested:
-        case Tuple:
-        case Point:
-        case Polygon:
-        case MultiPolygon:
-        case Ring:
-        default:
-            throw new AssertionError(type);
-        }
     }
 }
