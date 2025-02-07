@@ -6,9 +6,7 @@ import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
 public abstract class ClickHouseConstant extends ClickHouseExpression {
 
-    public boolean isNull() {
-        return false;
-    };
+    public abstract boolean isNull();
 
     public abstract ClickHouseConstant cast(ClickHouseDataType type);
 

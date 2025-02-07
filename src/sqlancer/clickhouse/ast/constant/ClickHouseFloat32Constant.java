@@ -1,7 +1,5 @@
 package sqlancer.clickhouse.ast.constant;
 
-import java.math.BigInteger;
-
 import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.clickhouse.ast.ClickHouseConstant;
@@ -18,6 +16,10 @@ public class ClickHouseFloat32Constant extends ClickHouseNumericConstant<Float> 
         return value;
     }
 
+    @Override
+    public boolean isNull() {
+        return false;
+    }
     @Override
     public String toString() {
         if (value == Double.POSITIVE_INFINITY) {
