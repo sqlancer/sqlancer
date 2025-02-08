@@ -3,27 +3,17 @@ package sqlancer.cnosdb.ast;
 import java.util.Collections;
 import java.util.List;
 
-import sqlancer.Randomly;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
-import sqlancer.common.ast.SelectBase;
 
 public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDBExpression {
 
-    private SelectType selectOption = SelectType.ALL;
     private List<CnosDBJoin> joinClauses = Collections.emptyList();
     private CnosDBExpression distinctOnClause;
 
     public void setSelectType(SelectType fromOptions) {
         this.setSelectOption(fromOptions);
-    }
-
-    public SelectType getSelectOption() {
-        return selectOption;
-    }
-
-    public void setSelectOption(SelectType fromOptions) {
-        this.selectOption = fromOptions;
     }
 
     @Override
@@ -49,14 +39,6 @@ public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDB
             throw new IllegalArgumentException();
         }
         this.distinctOnClause = distinctOnClause;
-    }
-
-    public enum SelectType {
-        DISTINCT, ALL;
-
-        public static SelectType getRandom() {
-            return Randomly.fromOptions(values());
-        }
     }
 
     public static class CnosDBFromTable implements CnosDBExpression {

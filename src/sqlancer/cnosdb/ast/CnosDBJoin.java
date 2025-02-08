@@ -1,12 +1,15 @@
 package sqlancer.cnosdb.ast;
 
 import sqlancer.Randomly;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBColumn;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
+import sqlancer.common.ast.newast.Join;
 
-public class CnosDBJoin implements CnosDBExpression {
+public class CnosDBJoin implements CnosDBExpression, Join<CnosDBExpression, CnosDBTable, CnosDBColumn> {
 
     private final CnosDBExpression tableReference;
-    private final CnosDBExpression onClause;
+    private CnosDBExpression onClause;
     private final CnosDBJoinType type;
 
     public CnosDBJoin(CnosDBExpression tableReference, CnosDBExpression onClause, CnosDBJoinType type) {
@@ -41,6 +44,11 @@ public class CnosDBJoin implements CnosDBExpression {
             return Randomly.fromOptions(values());
         }
 
+    }
+
+    @Override
+    public void setOnClause(CnosDBExpression onClause) {
+        this.onClause = onClause;
     }
 
 }
