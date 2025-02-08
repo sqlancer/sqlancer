@@ -13,7 +13,7 @@ import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
-import sqlancer.postgres.ast.PostgresSelect.SelectType;
+import sqlancer.common.ast.SelectBase.SelectType;
 
 public final class PostgresRandomQueryGenerator {
 
