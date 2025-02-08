@@ -56,7 +56,7 @@ import sqlancer.materialize.ast.MaterializePrefixOperation.PrefixOperator;
 import sqlancer.materialize.ast.MaterializeSelect;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
-import sqlancer.materialize.ast.MaterializeSelect.SelectType;
+import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.materialize.oracle.tlp.MaterializeTLPBase;
 
 public class MaterializeExpressionGenerator implements ExpressionGenerator<MaterializeExpression>,

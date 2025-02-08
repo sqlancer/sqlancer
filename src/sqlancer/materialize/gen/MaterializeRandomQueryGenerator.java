@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.materialize.MaterializeGlobalState;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
@@ -30,7 +29,7 @@ public final class MaterializeRandomQueryGenerator {
             columns.add(gen.generateExpression(0));
         }
         MaterializeSelect select = new MaterializeSelect();
-        select.setSelectType(SelectBase.SelectType.getRandom());
+        select.setSelectType(SelectType.getRandom());
         if (select.getSelectOption() == SelectType.DISTINCT && Randomly.getBoolean()) {
             select.setDistinctOnClause(gen.generateExpression(0));
         }
