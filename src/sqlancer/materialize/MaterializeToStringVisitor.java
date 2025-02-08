@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.BinaryOperation;
-import sqlancer.common.visitor.ToStringVisitor;
+import sqlancer.common.visitor.SelectToStringVisitor;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.ast.MaterializeAggregate;
 import sqlancer.materialize.ast.MaterializeBetweenOperation;
@@ -28,8 +28,57 @@ import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
 import sqlancer.materialize.ast.MaterializeSimilarTo;
 
-public final class MaterializeToStringVisitor extends ToStringVisitor<MaterializeExpression>
+public final class MaterializeToStringVisitor extends SelectToStringVisitor<MaterializeExpression, MaterializeSelect, MaterializeJoin>
         implements MaterializeVisitor {
+
+
+    @Override
+    protected MaterializeExpression getDistinctOnClause(MaterializeSelect select) {
+        return select.getDistinctOnClause();
+    }
+
+    @Override
+    protected void visitJoinClauses(MaterializeSelect select) {
+        for (MaterializeJoin join : select.getJoinClauses()) {
+            visitJoinClause(join);
+        }
+    }
+
+    @Override
+    protected void visitJoinType(MaterializeJoin join) {
+        switch (join.getType()) {
+        case INNER:
+            if (Randomly.getBoolean()) {
+                sb.append("INNER ");
+            }
+            sb.append("JOIN");
+            break;
+        case LEFT:
+            sb.append("LEFT OUTER JOIN");
+            break;
+        case RIGHT:
+            sb.append("RIGHT OUTER JOIN");
+            break;
+        case FULL:
+            sb.append("FULL OUTER JOIN");
+            break;
+        case CROSS:
+            sb.append("CROSS JOIN");
+            break;
+        default:
+            throw new AssertionError(join.getType());
+        }
+    }
+
+    @Override
+    protected boolean shouldVisitOnClause(MaterializeJoin join) {
+        return join.getType() != MaterializeJoinType.CROSS;
+    }
+
+    @Override
+    protected boolean hasDistinctOnSupport() {
+        return true;
+    }
 
     @Override
     public void visitSpecific(MaterializeExpression expr) {
@@ -83,84 +132,17 @@ public final class MaterializeToStringVisitor extends ToStringVisitor<Materializ
 
     @Override
     public void visit(MaterializeSelect s) {
-        sb.append("SELECT ");
-        switch (s.getSelectOption()) {
-        case DISTINCT:
-            sb.append("DISTINCT ");
-            if (s.getDistinctOnClause() != null) {
-                sb.append("ON (");
-                visit(s.getDistinctOnClause());
-                sb.append(") ");
-            }
-            break;
-        case ALL:
-            sb.append(Randomly.fromOptions("ALL ", ""));
-            break;
-        default:
-            throw new AssertionError();
-        }
-        visit(s.getFetchColumns());
-        sb.append(" FROM ");
-        visit(s.getFromList());
+        visitSelect(s);
+    }
 
-        for (MaterializeJoin j : s.getJoinClauses()) {
-            sb.append(" ");
-            switch (j.getType()) {
-            case INNER:
-                if (Randomly.getBoolean()) {
-                    sb.append("INNER ");
-                }
-                sb.append("JOIN");
-                break;
-            case LEFT:
-                sb.append("LEFT OUTER JOIN");
-                break;
-            case RIGHT:
-                sb.append("RIGHT OUTER JOIN");
-                break;
-            case FULL:
-                sb.append("FULL OUTER JOIN");
-                break;
-            case CROSS:
-                sb.append("CROSS JOIN");
-                break;
-            default:
-                throw new AssertionError(j.getType());
-            }
-            sb.append(" ");
-            visit(j.getTableReference());
-            if (j.getType() != MaterializeJoinType.CROSS) {
-                sb.append(" ON ");
-                visit(j.getOnClause());
-            }
-        }
+    @Override
+    protected MaterializeExpression getJoinOnClause(MaterializeJoin join) {
+        return join.getOnClause();
+    }
 
-        if (s.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(s.getWhereClause());
-        }
-        if (s.getGroupByExpressions().size() > 0) {
-            sb.append(" GROUP BY ");
-            visit(s.getGroupByExpressions());
-        }
-        if (s.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(s.getHavingClause());
-
-        }
-        if (!s.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(s.getOrderByClauses());
-        }
-        if (s.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(s.getLimitClause());
-        }
-
-        if (s.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(s.getOffsetClause());
-        }
+    @Override
+    protected MaterializeExpression getJoinTableReference(MaterializeJoin join) {
+        return join.getTableReference();
     }
 
     @Override
