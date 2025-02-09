@@ -361,6 +361,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     public void appendCaseExpression(boolean withBaseExpr, SQLite3Case casExpr) {
         sb.append("CASE");
         if (withBaseExpr && casExpr instanceof SQLite3CaseWithBaseExpression) {
+            sb.append(" ");
             SQLite3Expression baseExpr = ((SQLite3CaseWithBaseExpression) casExpr).getBaseExpr();
             visit(baseExpr);
             sb.append(" ");
