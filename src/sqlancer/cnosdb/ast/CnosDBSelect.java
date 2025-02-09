@@ -4,11 +4,12 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.cnosdb.CnosDBSchema;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
 import sqlancer.cnosdb.CnosDBVisitor;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
-import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
-import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
+
 
 public class CnosDBSelect extends SelectBase<CnosDBExpression>
         implements CnosDBExpression, Select<CnosDBJoin, CnosDBExpression, CnosDBTable, CnosDBSchema.CnosDBColumn> {
