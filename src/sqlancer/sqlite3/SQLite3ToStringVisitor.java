@@ -1,7 +1,6 @@
 package sqlancer.sqlite3;
 
 import java.util.Arrays;
-import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
