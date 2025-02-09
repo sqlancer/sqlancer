@@ -10,7 +10,6 @@ import sqlancer.cnosdb.CnosDBVisitor;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 
-
 public class CnosDBSelect extends SelectBase<CnosDBExpression>
         implements CnosDBExpression, Select<CnosDBJoin, CnosDBExpression, CnosDBTable, CnosDBSchema.CnosDBColumn> {
 
