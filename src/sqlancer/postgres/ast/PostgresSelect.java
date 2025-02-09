@@ -82,7 +82,6 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
         }
     }
 
-
     public void setSelectType(SelectType fromOptions) {
         this.setSelectOption(fromOptions);
     }

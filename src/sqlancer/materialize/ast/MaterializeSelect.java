@@ -82,7 +82,6 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
         }
     }
 
-
     public void setSelectType(SelectType fromOptions) {
         this.setSelectOption(fromOptions);
     }

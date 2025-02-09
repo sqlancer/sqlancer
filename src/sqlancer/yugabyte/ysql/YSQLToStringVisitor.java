@@ -25,7 +25,8 @@ import sqlancer.yugabyte.ysql.ast.YSQLSelect.YSQLFromTable;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect.YSQLSubquery;
 import sqlancer.yugabyte.ysql.ast.YSQLSimilarTo;
 
-public final class YSQLToStringVisitor extends SelectToStringVisitor<YSQLExpression, YSQLSelect, YSQLJoin> implements YSQLVisitor {
+public final class YSQLToStringVisitor extends SelectToStringVisitor<YSQLExpression, YSQLSelect, YSQLJoin>
+        implements YSQLVisitor {
 
     @Override
     protected YSQLExpression getDistinctOnClause(YSQLSelect select) {

@@ -31,8 +31,8 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
 
-public final class PostgresToStringVisitor extends SelectToStringVisitor<PostgresExpression, PostgresSelect, PostgresJoin>
-        implements PostgresVisitor {
+public final class PostgresToStringVisitor
+        extends SelectToStringVisitor<PostgresExpression, PostgresSelect, PostgresJoin> implements PostgresVisitor {
 
     @Override
     protected PostgresExpression getDistinctOnClause(PostgresSelect select) {

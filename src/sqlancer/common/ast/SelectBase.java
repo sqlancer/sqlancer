@@ -137,7 +137,7 @@ public class SelectBase<T> {
         }
     }
 
-    public SelectType selectOption = SelectType.ALL;  // default value
+    public SelectType selectOption = SelectType.ALL; // default value
 
     public SelectType getSelectOption() {
         return selectOption;

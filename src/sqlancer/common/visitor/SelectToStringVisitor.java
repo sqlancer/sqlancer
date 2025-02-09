@@ -5,11 +5,8 @@ import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
 
-public abstract class SelectToStringVisitor<
-        T extends Expression<?>,
-        S extends SelectBase<T>,
-        J extends Join<T, ?, ?>
-        > extends ToStringVisitor<T> {
+public abstract class SelectToStringVisitor<T extends Expression<?>, S extends SelectBase<T>, J extends Join<T, ?, ?>>
+        extends ToStringVisitor<T> {
 
     protected void visitSelect(S select) {
         sb.append("SELECT ");

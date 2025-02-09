@@ -10,8 +10,8 @@ import sqlancer.common.ast.newast.Select;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
 
-public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDBExpression,
-Select<CnosDBJoin, CnosDBExpression, CnosDBTable, CnosDBSchema.CnosDBColumn>{
+public class CnosDBSelect extends SelectBase<CnosDBExpression>
+        implements CnosDBExpression, Select<CnosDBJoin, CnosDBExpression, CnosDBTable, CnosDBSchema.CnosDBColumn> {
 
     private List<CnosDBJoin> joinClauses = Collections.emptyList();
     private CnosDBExpression distinctOnClause;

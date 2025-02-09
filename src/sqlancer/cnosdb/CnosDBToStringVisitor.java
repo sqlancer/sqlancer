@@ -23,8 +23,8 @@ import sqlancer.cnosdb.ast.CnosDBSimilarTo;
 import sqlancer.common.visitor.BinaryOperation;
 import sqlancer.common.visitor.SelectToStringVisitor;
 
-public final class CnosDBToStringVisitor extends SelectToStringVisitor<CnosDBExpression, CnosDBSelect, CnosDBJoin> implements CnosDBVisitor {
-
+public final class CnosDBToStringVisitor extends SelectToStringVisitor<CnosDBExpression, CnosDBSelect, CnosDBJoin>
+        implements CnosDBVisitor {
 
     @Override
     protected CnosDBExpression getDistinctOnClause(CnosDBSelect select) {
@@ -66,7 +66,7 @@ public final class CnosDBToStringVisitor extends SelectToStringVisitor<CnosDBExp
 
     @Override
     protected boolean shouldVisitOnClause(CnosDBJoin join) {
-//        return join.getType() != CnosDBJoinType.CROSS;
+        // return join.getType() != CnosDBJoinType.CROSS;
         return true;
     }
 
