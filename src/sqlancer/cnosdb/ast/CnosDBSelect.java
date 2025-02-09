@@ -25,10 +25,12 @@ public class CnosDBSelect extends SelectBase<CnosDBExpression>
         return null;
     }
 
+    @Override
     public List<CnosDBJoin> getJoinClauses() {
         return joinClauses;
     }
 
+    @Override
     public void setJoinClauses(List<CnosDBJoin> joinStatements) {
         this.joinClauses = joinStatements;
 
