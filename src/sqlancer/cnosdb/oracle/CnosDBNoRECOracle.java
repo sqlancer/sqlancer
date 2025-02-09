@@ -31,7 +31,6 @@ import sqlancer.cnosdb.query.CnosDBSelectQuery;
 import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.common.oracle.TestOracle;
 
-
 public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<CnosDBGlobalState> {
 
     private final CnosDBSchema s;
