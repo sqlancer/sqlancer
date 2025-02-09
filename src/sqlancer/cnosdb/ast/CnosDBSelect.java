@@ -16,7 +16,7 @@ Select<CnosDBJoin, CnosDBExpression, CnosDBTable, CnosDBSchema.CnosDBColumn>{
     private List<CnosDBJoin> joinClauses = Collections.emptyList();
     private CnosDBExpression distinctOnClause;
 
-    public void setSelectType(SelectType fromOptions) {
+    public void setSelectType(SelectBase.SelectType fromOptions) {
         this.setSelectOption(fromOptions);
     }
 
@@ -39,7 +39,7 @@ Select<CnosDBJoin, CnosDBExpression, CnosDBTable, CnosDBSchema.CnosDBColumn>{
     }
 
     public void setDistinctOnClause(CnosDBExpression distinctOnClause) {
-        if (selectOption != SelectType.DISTINCT) {
+        if (getSelectOption() != SelectBase.SelectType.DISTINCT) {
             throw new IllegalArgumentException();
         }
         this.distinctOnClause = distinctOnClause;
