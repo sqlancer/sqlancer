@@ -56,41 +56,6 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
             return ClickHouseCreateConstant.createFloat64Constant(value.doubleValue());
         case Bool:
             return ClickHouseCreateConstant.createBooleanConstant(value.longValue() != 0);
-        case IntervalYear:
-        case IntervalQuarter:
-        case IntervalMonth:
-        case IntervalWeek:
-        case IntervalDay:
-        case IntervalHour:
-        case IntervalMinute:
-        case IntervalSecond:
-        case Date:
-        case Date32:
-        case DateTime:
-        case DateTime32:
-        case DateTime64:
-        case Decimal:
-        case Decimal32:
-        case Decimal64:
-        case Decimal128:
-        case Decimal256:
-        case UUID:
-        case Enum:
-        case Enum8:
-        case Enum16:
-        case IPv4:
-        case IPv6:
-        case FixedString:
-        case AggregateFunction:
-        case SimpleAggregateFunction:
-        case Array:
-        case Map:
-        case Nested:
-        case Tuple:
-        case Point:
-        case Polygon:
-        case MultiPolygon:
-        case Ring:
         default:
             throw new AssertionError(type);
         }
@@ -134,41 +99,6 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
             return ClickHouseCreateConstant.createNullConstant();
         case Bool:
             return ClickHouseCreateConstant.createBooleanConstant(val != 0);
-        case IntervalYear:
-        case IntervalQuarter:
-        case IntervalMonth:
-        case IntervalWeek:
-        case IntervalDay:
-        case IntervalHour:
-        case IntervalMinute:
-        case IntervalSecond:
-        case Date:
-        case Date32:
-        case DateTime:
-        case DateTime32:
-        case DateTime64:
-        case Decimal:
-        case Decimal32:
-        case Decimal64:
-        case Decimal128:
-        case Decimal256:
-        case UUID:
-        case Enum:
-        case Enum8:
-        case Enum16:
-        case IPv4:
-        case IPv6:
-        case FixedString:
-        case AggregateFunction:
-        case SimpleAggregateFunction:
-        case Array:
-        case Map:
-        case Nested:
-        case Tuple:
-        case Point:
-        case Polygon:
-        case MultiPolygon:
-        case Ring:
         default:
             throw new AssertionError(type);
         }
