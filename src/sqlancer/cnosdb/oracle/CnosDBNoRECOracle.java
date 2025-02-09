@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.cnosdb.CnosDBCompoundDataType;
 import sqlancer.cnosdb.CnosDBExpectedError;
 import sqlancer.cnosdb.CnosDBGlobalState;
@@ -29,7 +28,9 @@ import sqlancer.cnosdb.client.CnosDBResultSet;
 import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
 import sqlancer.cnosdb.oracle.tlp.CnosDBTLPBase;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
+import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.common.oracle.TestOracle;
+
 
 public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<CnosDBGlobalState> {
 

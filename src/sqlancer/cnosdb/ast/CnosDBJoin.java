@@ -1,9 +1,9 @@
 package sqlancer.cnosdb.ast;
 
 import sqlancer.Randomly;
-import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBColumn;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
+import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
 import sqlancer.common.ast.newast.Join;
 
 public class CnosDBJoin implements CnosDBExpression, Join<CnosDBExpression, CnosDBTable, CnosDBColumn> {

@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
@@ -56,7 +57,6 @@ import sqlancer.materialize.ast.MaterializePrefixOperation.PrefixOperator;
 import sqlancer.materialize.ast.MaterializeSelect;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
-import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.materialize.oracle.tlp.MaterializeTLPBase;
 
 public class MaterializeExpressionGenerator implements ExpressionGenerator<MaterializeExpression>,
