@@ -3,11 +3,15 @@ package sqlancer.cnosdb.ast;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.cnosdb.CnosDBSchema;
+import sqlancer.cnosdb.CnosDBVisitor;
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
 
-public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDBExpression {
+public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDBExpression,
+Select<CnosDBJoin, CnosDBExpression, CnosDBTable, CnosDBSchema.CnosDBColumn>{
 
     private List<CnosDBJoin> joinClauses = Collections.emptyList();
     private CnosDBExpression distinctOnClause;
@@ -79,6 +83,11 @@ public class CnosDBSelect extends SelectBase<CnosDBExpression> implements CnosDB
         public CnosDBDataType getExpressionType() {
             return null;
         }
+    }
+
+    @Override
+    public String asString() {
+        return CnosDBVisitor.asString(this);
     }
 
 }
