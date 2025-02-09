@@ -16,6 +16,7 @@ public class SelectBase<T> {
     T havingClause;
     T limitClause;
     T offsetClause;
+    public SelectType selectOption = SelectType.ALL; // default value
 
     public void setFetchColumns(List<T> fetchColumns) {
         if (fetchColumns == null || fetchColumns.isEmpty()) {
@@ -136,8 +137,6 @@ public class SelectBase<T> {
             return Randomly.fromOptions(values());
         }
     }
-
-    public SelectType selectOption = SelectType.ALL; // default value
 
     public SelectType getSelectOption() {
         return selectOption;
