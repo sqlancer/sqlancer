@@ -44,53 +44,54 @@ jobs:
       - name: Naming Convention Tests
         run: python src/check_names.py
 
-  citus:
-    name: DBMS Tests (Citus)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'maven'
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Set up Citus
-        run: |
-          echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list
-          curl https://install.citusdata.com/community/deb.sh | sudo bash
-          sudo apt-get -y install  postgresql-15-citus-11.1
-          sudo chown -R $USER:$USER /var/run/postgresql
-          export PATH=/usr/lib/postgresql/15/bin:$PATH
-          cd ~
-          mkdir -p citus/coordinator citus/worker1 citus/worker2
-          initdb -D citus/coordinator
-          initdb -D citus/worker1
-          initdb -D citus/worker2
-          echo "shared_preload_libraries = 'citus'" >> citus/coordinator/postgresql.conf
-          echo "shared_preload_libraries = 'citus'" >> citus/worker1/postgresql.conf
-          echo "shared_preload_libraries = 'citus'" >> citus/worker2/postgresql.conf
-          pg_ctl -D citus/coordinator -o "-p 9700" -l coordinator_logfile start || cat coordinator_logfile || cat citus/coordinator/coordinator_logfile
-          pg_ctl -D citus/worker1 -o "-p 9701" -l worker1_logfile start
-          ls citus/worker1
-          pg_ctl -D citus/worker2 -o "-p 9702" -l worker2_logfile start
-          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9700 -d postgres -U $USER
-          createdb test -p 9700 -U $USER
-          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9701 -d postgres -U $USER
-          createdb test -p 9701 -U $USER
-          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9702 -d postgres -U $USER
-          createdb test -p 9702 -U $USER
-          psql -c "CREATE EXTENSION citus;" -p 9700 -U $USER -d test
-          psql -c "CREATE EXTENSION citus;" -p 9701 -U $USER -d test
-          psql -c "CREATE EXTENSION citus;" -p 9702 -U $USER -d test
-          psql -c "SELECT * from citus_add_node('localhost', 9701);" -p 9700 -U $USER -d test
-          psql -c "SELECT * from citus_add_node('localhost', 9702);" -p 9700 -U $USER -d test
-      - name: Run Tests
-        run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
+#  Disabled since job does not work in public repo
+#  citus:
+#    name: DBMS Tests (Citus)
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'temurin'
+#          java-version: '11'
+#          cache: 'maven'
+#      - name: Build SQLancer
+#        run: mvn -B package -DskipTests=true
+#      - name: Set up Citus
+#        run: |
+#          echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list
+#          curl https://install.citusdata.com/community/deb.sh | sudo bash
+#          sudo apt-get -y install  postgresql-15-citus-11.1
+#          sudo chown -R $USER:$USER /var/run/postgresql
+#          export PATH=/usr/lib/postgresql/15/bin:$PATH
+#          cd ~
+#          mkdir -p citus/coordinator citus/worker1 citus/worker2
+#          initdb -D citus/coordinator
+#          initdb -D citus/worker1
+#          initdb -D citus/worker2
+#          echo "shared_preload_libraries = 'citus'" >> citus/coordinator/postgresql.conf
+#          echo "shared_preload_libraries = 'citus'" >> citus/worker1/postgresql.conf
+#          echo "shared_preload_libraries = 'citus'" >> citus/worker2/postgresql.conf
+#          pg_ctl -D citus/coordinator -o "-p 9700" -l coordinator_logfile start || cat coordinator_logfile || cat citus/coordinator/coordinator_logfile
+#          pg_ctl -D citus/worker1 -o "-p 9701" -l worker1_logfile start
+#          ls citus/worker1
+#          pg_ctl -D citus/worker2 -o "-p 9702" -l worker2_logfile start
+#          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9700 -d postgres -U $USER
+#          createdb test -p 9700 -U $USER
+#          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9701 -d postgres -U $USER
+#          createdb test -p 9701 -U $USER
+#          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9702 -d postgres -U $USER
+#          createdb test -p 9702 -U $USER
+#          psql -c "CREATE EXTENSION citus;" -p 9700 -U $USER -d test
+#          psql -c "CREATE EXTENSION citus;" -p 9701 -U $USER -d test
+#          psql -c "CREATE EXTENSION citus;" -p 9702 -U $USER -d test
+#          psql -c "SELECT * from citus_add_node('localhost', 9701);" -p 9700 -U $USER -d test
+#          psql -c "SELECT * from citus_add_node('localhost', 9702);" -p 9700 -U $USER -d test
+#      - name: Run Tests
+#        run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
 
   cnosdb:
     name: DBMS Tests (CnosDB)
@@ -346,60 +347,62 @@ jobs:
       - name: Run Tests
         run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
 
-  materialize:
-    name: DBMS Tests (Materialize)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up Materialize
-        run: |
-          docker pull materialize/materialized:latest
-          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
-          sleep 5
-          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
-          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'maven'
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Run Tests
-        run: |
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeNoREC
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeTLP
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
-
-  materialize-qpg:
-    name: QPG Tests (Materialize)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up Materialize
-        run: |
-          docker pull materialize/materialized:latest
-          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
-          sleep 5
-          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
-          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'maven'
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
-      - name: Run Tests
-        run: |
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQPG
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQueryPlan
+#  Disabled since job does not work in public repo
+#  materialize:
+#    name: DBMS Tests (Materialize)
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#      - name: Set up Materialize
+#        run: |
+#          docker pull materialize/materialized:latest
+#          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
+#          sleep 5
+#          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
+#          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'temurin'
+#          java-version: '11'
+#          cache: 'maven'
+#      - name: Build SQLancer
+#        run: mvn -B package -DskipTests=true
+#      - name: Run Tests
+#        run: |
+#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeNoREC
+#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeTLP
+#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
+#
+#  Disabled since job does not work in public repo
+#  materialize-qpg:
+#    name: QPG Tests (Materialize)
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#      - name: Set up Materialize
+#        run: |
+#          docker pull materialize/materialized:latest
+#          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
+#          sleep 5
+#          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
+#          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'temurin'
+#          java-version: '11'
+#          cache: 'maven'
+#      - name: Build SQLancer
+#        run: mvn -B package -DskipTests=true
+#      - name: Run Tests
+#        run: |
+#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQPG
+#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQueryPlan
 
   mysql:
     name: DBMS Tests (MySQL)
