@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.common.gen.CERTGenerator;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
@@ -64,7 +65,6 @@ import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
-import sqlancer.postgres.ast.PostgresSelect.SelectType;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
 

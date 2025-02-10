@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTables;
@@ -12,7 +13,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLConstant;
 import sqlancer.yugabyte.ysql.ast.YSQLExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect.ForClause;
-import sqlancer.yugabyte.ysql.ast.YSQLSelect.SelectType;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect.YSQLFromTable;
 
 public final class YSQLRandomQueryGenerator {
