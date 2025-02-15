@@ -3,6 +3,7 @@ package sqlancer;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -131,7 +132,8 @@ public final class ComparatorHelper {
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
             String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state,
             UnaryOperator<String> canonicalizationRule) {
-        // Overloaded version of assumeResultSetsAreEqual that takes a canonicalization function which is applied to
+        // Overloaded version of assumeResultSetsAreEqual that takes a canonicalization
+        // function which is applied to
         // both result sets before their comparison.
         List<String> canonicalizedResultSet = resultSet.stream().map(canonicalizationRule).collect(Collectors.toList());
         List<String> canonicalizedSecondResultSet = secondResultSet.stream().map(canonicalizationRule)
@@ -143,7 +145,9 @@ public final class ComparatorHelper {
     public static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString,
             String thirdQueryString, List<String> combinedString, boolean asUnion, SQLGlobalState<?, ?> state,
             ExpectedErrors errors) throws SQLException {
+
         List<String> secondResultSet;
+
         if (asUnion) {
             String unionString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL "
                     + thirdQueryString;
@@ -151,12 +155,11 @@ public final class ComparatorHelper {
             secondResultSet = getResultSetFirstColumnAsString(unionString, errors, state);
         } else {
             secondResultSet = new ArrayList<>();
-            secondResultSet.addAll(getResultSetFirstColumnAsString(firstQueryString, errors, state));
-            secondResultSet.addAll(getResultSetFirstColumnAsString(secondQueryString, errors, state));
-            secondResultSet.addAll(getResultSetFirstColumnAsString(thirdQueryString, errors, state));
-            combinedString.add(firstQueryString);
-            combinedString.add(secondQueryString);
-            combinedString.add(thirdQueryString);
+            combinedString.addAll(Arrays.asList(firstQueryString, secondQueryString, thirdQueryString));
+
+            for (String queryString : combinedString) {
+                secondResultSet.addAll(getResultSetFirstColumnAsString(queryString, errors, state));
+            }
         }
         return secondResultSet;
     }
@@ -183,11 +186,11 @@ public final class ComparatorHelper {
         }
 
         switch (value) {
-        case "-0.0":
-            return "0.0";
-        case "-0":
-            return "0";
-        default:
+            case "-0.0":
+                return "0.0";
+            case "-0":
+                return "0";
+            default:
         }
 
         return value;
