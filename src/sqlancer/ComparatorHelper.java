@@ -128,8 +128,7 @@ public final class ComparatorHelper {
 
     private static String logCardinalityMismatch(List<String> resultSet, List<String> secondResultSet,
             String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state) {
-        String queryFormatString = "-- %s;" + System.lineSeparator() + "-- cardinality: %d"
-                + System.lineSeparator();
+        String queryFormatString = "-- %s;" + System.lineSeparator() + "-- cardinality: %d" + System.lineSeparator();
         String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
         String combinedQueryString = String.join(";", combinedString);
         String secondQueryString = String.format(queryFormatString, combinedQueryString, secondResultSet.size());
@@ -139,8 +138,8 @@ public final class ComparatorHelper {
                 "The size of the result sets mismatch (%d and %d)!" + System.lineSeparator()
                         + "First query: \"%s\", whose cardinality is: %d" + System.lineSeparator()
                         + "Second query:\"%s\", whose cardinality is: %d",
-                resultSet.size(), secondResultSet.size(), originalQueryString, resultSet.size(),
-                combinedQueryString, secondResultSet.size());
+                resultSet.size(), secondResultSet.size(), originalQueryString, resultSet.size(), combinedQueryString,
+                secondResultSet.size());
         return assertionMessage;
     }
 
@@ -201,11 +200,11 @@ public final class ComparatorHelper {
         }
 
         switch (value) {
-            case "-0.0":
-                return "0.0";
-            case "-0":
-                return "0";
-            default:
+        case "-0.0":
+            return "0.0";
+        case "-0":
+            return "0";
+        default:
         }
 
         return value;
