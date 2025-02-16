@@ -18,6 +18,7 @@ public class HSQLDBSelect extends SelectBase<HSQLDBExpression>
         this.isDistinct = isDistinct;
     }
 
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }
