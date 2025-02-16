@@ -53,7 +53,7 @@ public abstract class ExpandedGlobalState<O extends DBMSSpecificOptions<?>, S ex
         return collNames;
     }
 
-    private List<String> getOpclasses(SQLConnection con) throws SQLException {
+    protected List<String> getOpclasses(SQLConnection con) throws SQLException {
         List<String> opClasses = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("select opcname FROM pg_opclass;")) {
