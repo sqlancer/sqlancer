@@ -93,15 +93,12 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
         String thirdQueryString = ClickHouseVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = allowDuplicates
-                ? ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString,
-                true, state, errors)
-                : ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
-                secondQueryString,
-                thirdQueryString,
-                combinedString,
-                false, state, errors);
-        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString, state);
+                ? ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString, thirdQueryString,
+                        combinedString, true, state, errors)
+                : ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
+                        thirdQueryString, combinedString, false, state, errors);
+        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
 }
