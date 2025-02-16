@@ -19,13 +19,13 @@ public abstract class ExpandedGlobalState<O extends DBMSSpecificOptions<?>, S ex
     public static final char STABLE = 's';
     public static final char VOLATILE = 'v';
 
-    private List<String> operators = Collections.emptyList();
-    private List<String> collates = Collections.emptyList();
-    private List<String> opClasses = Collections.emptyList();
-    private List<String> tableAccessMethods = Collections.emptyList();
+    protected List<String> operators = Collections.emptyList();
+    protected List<String> collates = Collections.emptyList();
+    protected List<String> opClasses = Collections.emptyList();
+    protected List<String> tableAccessMethods = Collections.emptyList();
     // store and allow filtering by function volatility classifications
-    private final Map<String, Character> functionsAndTypes = new HashMap<>();
-    private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
+    protected final Map<String, Character> functionsAndTypes = new HashMap<>();
+    protected List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
 
     @Override
     public void setConnection(SQLConnection con) {
@@ -40,7 +40,7 @@ public abstract class ExpandedGlobalState<O extends DBMSSpecificOptions<?>, S ex
         }
     }
 
-    private List<String> getCollnames(SQLConnection con) throws SQLException {
+    protected List<String> getCollnames(SQLConnection con) throws SQLException {
         List<String> collNames = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s
@@ -65,7 +65,7 @@ public abstract class ExpandedGlobalState<O extends DBMSSpecificOptions<?>, S ex
         return opClasses;
     }
 
-    private List<String> getOperators(SQLConnection con) throws SQLException {
+    protected List<String> getOperators(SQLConnection con) throws SQLException {
         List<String> operators = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT oprname FROM pg_operator;")) {
