@@ -120,10 +120,9 @@ public final class ComparatorHelper {
         // update the SELECT queries to be logged at the bottom of the error log file
         state.getState().getLocalState()
                 .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
-        String assertionMessage = String.format("The content of the result sets mismatch!" + System.lineSeparator()
+        return String.format("The content of the result sets mismatch!" + System.lineSeparator()
                 + "First query : \"%s\"" + System.lineSeparator() + "Second query: \"%s\"", originalQueryString,
                 secondQueryString);
-        return assertionMessage;
     }
 
     private static String logCardinalityMismatch(List<String> resultSet, List<String> secondResultSet,
@@ -134,13 +133,12 @@ public final class ComparatorHelper {
         String secondQueryString = String.format(queryFormatString, combinedQueryString, secondResultSet.size());
         state.getState().getLocalState()
                 .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
-        String assertionMessage = String.format(
+        return String.format(
                 "The size of the result sets mismatch (%d and %d)!" + System.lineSeparator()
                         + "First query: \"%s\", whose cardinality is: %d" + System.lineSeparator()
                         + "Second query:\"%s\", whose cardinality is: %d",
                 resultSet.size(), secondResultSet.size(), originalQueryString, resultSet.size(), combinedQueryString,
                 secondResultSet.size());
-        return assertionMessage;
     }
 
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
