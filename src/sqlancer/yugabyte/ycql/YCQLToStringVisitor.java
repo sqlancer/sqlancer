@@ -2,7 +2,6 @@ package sqlancer.yugabyte.ycql;
 
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.questdb.ast.QuestDBExpression;
 import sqlancer.yugabyte.ycql.ast.YCQLConstant;
 import sqlancer.yugabyte.ycql.ast.YCQLExpression;
 import sqlancer.yugabyte.ycql.ast.YCQLSelect;
