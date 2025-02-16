@@ -1,6 +1,8 @@
 package sqlancer.yugabyte.ycql;
 
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.NewToStringVisitor;
+import sqlancer.questdb.ast.QuestDBExpression;
 import sqlancer.yugabyte.ycql.ast.YCQLConstant;
 import sqlancer.yugabyte.ycql.ast.YCQLExpression;
 import sqlancer.yugabyte.ycql.ast.YCQLSelect;
@@ -23,35 +25,17 @@ public class YCQLToStringVisitor extends NewToStringVisitor<YCQLExpression> {
     }
 
     private void visit(YCQLSelect select) {
-        sb.append("SELECT ");
-        if (select.isDistinct()) {
-            sb.append("DISTINCT ");
-        }
-        visit(select.getFetchColumns());
-        sb.append(" FROM ");
-        visit(select.getFromList());
-        if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
-            sb.append(", ");
-        }
-        if (!select.getJoinList().isEmpty()) {
-            visit(select.getJoinList());
-        }
-        if (select.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(select.getWhereClause());
-        }
-        if (!select.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(select.getOrderByClauses());
-        }
-        if (select.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(select.getLimitClause());
-        }
-        if (select.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(select.getOffsetClause());
-        }
+        visitSelect(select);
+    }
+
+    @Override
+    protected void visitGroupByClause(SelectBase<YCQLExpression> select) {
+        // Do nothing as YCQL doesn't support GROUP BY
+    }
+
+    @Override
+    protected void visitHavingClause(SelectBase<YCQLExpression> select) {
+        // Do nothing as YCQL doesn't support HAVING
     }
 
     public static String asString(YCQLExpression expr) {
