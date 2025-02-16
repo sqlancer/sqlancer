@@ -194,6 +194,7 @@ public abstract class NewToStringVisitor<E> {
         visitLimitClause(select);
         visitOffsetClause(select);
     }
+
     protected void visitWhereClause(SelectBase<E> select) {
         if (select.getWhereClause() != null) {
             sb.append(" WHERE ");
