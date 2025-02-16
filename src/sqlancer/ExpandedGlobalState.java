@@ -81,8 +81,7 @@ public abstract class ExpandedGlobalState<O extends DBMSSpecificOptions<?>, S ex
         List<String> tableAccessMethods = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             /*
-             * pg_am includes both index and table access methods so we need to filter with
-             * amtype = 't'
+             * pg_am includes both index and table access methods so we need to filter with amtype = 't'
              */
             try (ResultSet rs = s.executeQuery("SELECT amname FROM pg_am WHERE amtype = 't';")) {
                 while (rs.next()) {
