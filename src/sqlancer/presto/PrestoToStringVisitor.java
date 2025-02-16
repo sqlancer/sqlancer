@@ -73,43 +73,7 @@ public class PrestoToStringVisitor extends NewToStringVisitor<PrestoExpression> 
     }
 
     private void visit(PrestoSelect select) {
-        sb.append("SELECT ");
-        if (select.isDistinct()) {
-            sb.append("DISTINCT ");
-        }
-        visit(select.getFetchColumns());
-        sb.append(" FROM ");
-        visit(select.getFromList());
-        if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
-            sb.append(", ");
-        }
-        if (!select.getJoinList().isEmpty()) {
-            visit(select.getJoinList());
-        }
-        if (select.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(select.getWhereClause());
-        }
-        if (!select.getGroupByExpressions().isEmpty()) {
-            sb.append(" GROUP BY ");
-            visit(select.getGroupByExpressions());
-        }
-        if (select.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(select.getHavingClause());
-        }
-        if (!select.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(select.getOrderByClauses());
-        }
-        if (select.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(select.getLimitClause());
-        }
-        if (select.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(select.getOffsetClause());
-        }
+        visitSelect(select);
     }
 
     public void visit(PrestoCastFunction cast) {
