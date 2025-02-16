@@ -266,7 +266,7 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
 
     private String getCreateDatabaseCommand(MaterializeGlobalState state) {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DATABASE " + databaseName + " ");
+        sb.append("CREATE DATABASE ").append(databaseName).append(" ");
         if (Randomly.getBoolean() && ((MaterializeOptions) state.getDbmsSpecificOptions()).testCollations) {
             for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
                 if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {

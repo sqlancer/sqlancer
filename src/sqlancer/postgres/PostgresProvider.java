@@ -323,7 +323,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
 
     private String getCreateDatabaseCommand(PostgresGlobalState state) {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DATABASE " + databaseName + " ");
+        sb.append("CREATE DATABASE ").append(databaseName).append(" ");
         if (((PostgresOptions) state.getDbmsSpecificOptions()).testCollations) {
             if (Randomly.getBoolean()) {
                 if (Randomly.getBoolean()) {
