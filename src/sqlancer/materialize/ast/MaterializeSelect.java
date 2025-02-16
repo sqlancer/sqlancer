@@ -14,7 +14,6 @@ import sqlancer.materialize.MaterializeVisitor;
 public class MaterializeSelect extends SelectBase<MaterializeExpression> implements MaterializeExpression,
         Select<MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn> {
 
-    private SelectType selectOption = SelectType.ALL;
     private List<MaterializeJoin> joinClauses = Collections.emptyList();
     private MaterializeExpression distinctOnClause;
     private ForClause forClause;
@@ -83,14 +82,6 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
         }
     }
 
-    public enum SelectType {
-        DISTINCT, ALL;
-
-        public static SelectType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
-
     public void setSelectType(SelectType fromOptions) {
         this.setSelectOption(fromOptions);
     }
@@ -100,14 +91,6 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
             throw new IllegalArgumentException();
         }
         this.distinctOnClause = distinctOnClause;
-    }
-
-    public SelectType getSelectOption() {
-        return selectOption;
-    }
-
-    public void setSelectOption(SelectType fromOptions) {
-        this.selectOption = fromOptions;
     }
 
     @Override

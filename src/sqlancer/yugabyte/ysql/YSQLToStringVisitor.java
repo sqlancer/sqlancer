@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.BinaryOperation;
-import sqlancer.common.visitor.ToStringVisitor;
+import sqlancer.common.visitor.SelectToStringVisitor;
 import sqlancer.yugabyte.ysql.ast.YSQLAggregate;
 import sqlancer.yugabyte.ysql.ast.YSQLBetweenOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryLogicalOperation;
@@ -15,7 +15,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLFunction;
 import sqlancer.yugabyte.ysql.ast.YSQLInOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLJoin;
-import sqlancer.yugabyte.ysql.ast.YSQLJoin.YSQLJoinType;
 import sqlancer.yugabyte.ysql.ast.YSQLOrderByTerm;
 import sqlancer.yugabyte.ysql.ast.YSQLPOSIXRegularExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLPostfixOperation;
@@ -26,7 +25,56 @@ import sqlancer.yugabyte.ysql.ast.YSQLSelect.YSQLFromTable;
 import sqlancer.yugabyte.ysql.ast.YSQLSelect.YSQLSubquery;
 import sqlancer.yugabyte.ysql.ast.YSQLSimilarTo;
 
-public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> implements YSQLVisitor {
+public final class YSQLToStringVisitor extends SelectToStringVisitor<YSQLExpression, YSQLSelect, YSQLJoin>
+        implements YSQLVisitor {
+
+    @Override
+    protected YSQLExpression getDistinctOnClause(YSQLSelect select) {
+        return select.getDistinctOnClause();
+    }
+
+    @Override
+    protected void visitJoinClauses(YSQLSelect select) {
+        for (YSQLJoin join : select.getJoinClauses()) {
+            visitJoinClause(join);
+        }
+    }
+
+    @Override
+    protected void visitJoinType(YSQLJoin join) {
+        switch (join.getType()) {
+        case INNER:
+            if (Randomly.getBoolean()) {
+                sb.append("INNER ");
+            }
+            sb.append("JOIN");
+            break;
+        case LEFT:
+            sb.append("LEFT OUTER JOIN");
+            break;
+        case RIGHT:
+            sb.append("RIGHT OUTER JOIN");
+            break;
+        case FULL:
+            sb.append("FULL OUTER JOIN");
+            break;
+        case CROSS:
+            sb.append("CROSS JOIN");
+            break;
+        default:
+            throw new AssertionError(join.getType());
+        }
+    }
+
+    @Override
+    protected boolean shouldVisitOnClause(YSQLJoin join) {
+        return join.getType() != YSQLJoin.YSQLJoinType.CROSS;
+    }
+
+    @Override
+    protected boolean hasDistinctOnSupport() {
+        return true;
+    }
 
     @Override
     public void visitSpecific(YSQLExpression expr) {
@@ -67,88 +115,17 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
 
     @Override
     public void visit(YSQLSelect s) {
-        sb.append("SELECT ");
-        switch (s.getSelectOption()) {
-        case DISTINCT:
-            sb.append("DISTINCT ");
-            if (s.getDistinctOnClause() != null) {
-                sb.append("ON (");
-                visit(s.getDistinctOnClause());
-                sb.append(") ");
-            }
-            break;
-        case ALL:
-            sb.append(Randomly.fromOptions("ALL ", ""));
-            break;
-        default:
-            throw new AssertionError();
-        }
-        if (s.getFetchColumns() == null) {
-            sb.append("*");
-        } else {
-            visit(s.getFetchColumns());
-        }
-        sb.append(" FROM ");
-        visit(s.getFromList());
+        visitSelect(s);
+    }
 
-        for (YSQLJoin j : s.getJoinClauses()) {
-            sb.append(" ");
-            switch (j.getType()) {
-            case INNER:
-                if (Randomly.getBoolean()) {
-                    sb.append("INNER ");
-                }
-                sb.append("JOIN");
-                break;
-            case LEFT:
-                sb.append("LEFT OUTER JOIN");
-                break;
-            case RIGHT:
-                sb.append("RIGHT OUTER JOIN");
-                break;
-            case FULL:
-                sb.append("FULL OUTER JOIN");
-                break;
-            case CROSS:
-                sb.append("CROSS JOIN");
-                break;
-            default:
-                throw new AssertionError(j.getType());
-            }
-            sb.append(" ");
-            visit(j.getTableReference());
-            if (j.getType() != YSQLJoinType.CROSS) {
-                sb.append(" ON ");
-                visit(j.getOnClause());
-            }
-        }
+    @Override
+    protected YSQLExpression getJoinOnClause(YSQLJoin join) {
+        return join.getOnClause();
+    }
 
-        if (s.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(s.getWhereClause());
-        }
-        if (s.getGroupByExpressions().size() > 0) {
-            sb.append(" GROUP BY ");
-            visit(s.getGroupByExpressions());
-        }
-        if (s.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(s.getHavingClause());
-
-        }
-        if (!s.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(s.getOrderByClauses());
-        }
-        if (s.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(s.getLimitClause());
-        }
-
-        if (s.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(s.getOffsetClause());
-        }
+    @Override
+    protected YSQLExpression getJoinTableReference(YSQLJoin join) {
+        return join.getTableReference();
     }
 
     @Override

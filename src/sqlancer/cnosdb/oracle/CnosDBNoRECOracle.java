@@ -24,11 +24,11 @@ import sqlancer.cnosdb.ast.CnosDBPostfixText;
 import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
-import sqlancer.cnosdb.ast.CnosDBSelect.SelectType;
 import sqlancer.cnosdb.client.CnosDBResultSet;
 import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
 import sqlancer.cnosdb.oracle.tlp.CnosDBTLPBase;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
+import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.common.oracle.TestOracle;
 
 public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<CnosDBGlobalState> {

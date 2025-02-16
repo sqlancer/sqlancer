@@ -14,7 +14,6 @@ import sqlancer.postgres.PostgresVisitor;
 public class PostgresSelect extends SelectBase<PostgresExpression>
         implements PostgresExpression, Select<PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
 
-    private SelectType selectOption = SelectType.ALL;
     private List<PostgresJoin> joinClauses = Collections.emptyList();
     private PostgresExpression distinctOnClause;
     private ForClause forClause;
@@ -83,14 +82,6 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
         }
     }
 
-    public enum SelectType {
-        DISTINCT, ALL;
-
-        public static SelectType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
-
     public void setSelectType(SelectType fromOptions) {
         this.setSelectOption(fromOptions);
     }
@@ -100,14 +91,6 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
             throw new IllegalArgumentException();
         }
         this.distinctOnClause = distinctOnClause;
-    }
-
-    public SelectType getSelectOption() {
-        return selectOption;
-    }
-
-    public void setSelectOption(SelectType fromOptions) {
-        this.selectOption = fromOptions;
     }
 
     @Override

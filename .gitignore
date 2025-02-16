@@ -16,3 +16,4 @@ database*.log
 database*.properties
 database*.script
 databases/
+.scannerwork/

@@ -14,21 +14,12 @@ import sqlancer.yugabyte.ysql.YSQLVisitor;
 public class YSQLSelect extends SelectBase<YSQLExpression>
         implements YSQLExpression, Select<YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn> {
 
-    private SelectType selectOption = SelectType.ALL;
     private List<YSQLJoin> joinClauses = Collections.emptyList();
     private YSQLExpression distinctOnClause;
     private ForClause forClause;
 
     public void setSelectType(SelectType fromOptions) {
         this.setSelectOption(fromOptions);
-    }
-
-    public SelectType getSelectOption() {
-        return selectOption;
-    }
-
-    public void setSelectOption(SelectType fromOptions) {
-        this.selectOption = fromOptions;
     }
 
     @Override
@@ -81,14 +72,6 @@ public class YSQLSelect extends SelectBase<YSQLExpression>
 
         public String getTextRepresentation() {
             return textRepresentation;
-        }
-    }
-
-    public enum SelectType {
-        DISTINCT, ALL;
-
-        public static SelectType getRandom() {
-            return Randomly.fromOptions(values());
         }
     }
 
