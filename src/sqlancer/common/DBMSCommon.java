@@ -1,5 +1,6 @@
 package sqlancer.common;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,6 +65,22 @@ public final class DBMSCommon {
 
     private static int costOfSubstitution(String string, String string2) {
         return string.equals(string2) ? 0 : 1;
+    }
+
+    public static List<String> getCommonFetchErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
+        errors.add("but it cannot be referenced from this part of the query");
+        errors.add("missing FROM-clause entry for table");
+
+        errors.add("non-integer constant in GROUP BY");
+        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        errors.add("GROUP BY position");
+
+        errors.add("canceling statement due to statement timeout");
+
+        return errors;
     }
 
 }

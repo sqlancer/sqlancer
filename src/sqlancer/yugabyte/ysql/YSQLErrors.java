@@ -3,6 +3,7 @@ package sqlancer.yugabyte.ysql;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 
 public final class YSQLErrors {
@@ -11,18 +12,12 @@ public final class YSQLErrors {
     }
 
     public static List<String> getCommonFetchErrors() {
-        ArrayList<String> errors = new ArrayList<>();
+        List<String> errors = DBMSCommon.getCommonFetchErrors();
 
         errors.add("An I/O error occurred while sending to the backend");
         errors.add("Conflicts with committed transaction");
         errors.add("cannot be changed");
         errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
-
-        errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
-        errors.add("but it cannot be referenced from this part of the query");
-        errors.add("missing FROM-clause entry for table");
-
-        errors.add("canceling statement due to statement timeout");
 
         errors.add("non-integer constant in");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");

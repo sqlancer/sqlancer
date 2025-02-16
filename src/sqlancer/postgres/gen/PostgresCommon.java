@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresProvider;
@@ -24,19 +25,7 @@ public final class PostgresCommon {
     }
 
     public static List<String> getCommonFetchErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
-        errors.add("but it cannot be referenced from this part of the query");
-        errors.add("missing FROM-clause entry for table");
-
-        errors.add("canceling statement due to statement timeout");
-
-        errors.add("non-integer constant in GROUP BY");
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("GROUP BY position");
-
-        return errors;
+        return DBMSCommon.getCommonFetchErrors();
     }
 
     public static void addCommonFetchErrors(ExpectedErrors errors) {
@@ -155,13 +144,15 @@ public final class PostgresCommon {
     private static List<Pattern> getFunctionRegexErrors() {
         ArrayList<Pattern> errors = new ArrayList<>();
         /*
-         * PostgreSQL support only a few conversion variants to ASCII: LATIN1, LATIN2, LATIN9 and WINDOWS1250. So, it is
+         * PostgreSQL support only a few conversion variants to ASCII: LATIN1, LATIN2,
+         * LATIN9 and WINDOWS1250. So, it is
          * better to skip this error at all.
          */
         errors.add(Pattern.compile("encoding conversion from \\w+ to ASCII not supported"));
 
         /*
-         * In accordance with PostgreSQL code, commit 0ab1a2e, conversions to or from SQL_ASCII is meaningless. So
+         * In accordance with PostgreSQL code, commit 0ab1a2e, conversions to or from
+         * SQL_ASCII is meaningless. So
          * disable errors on such an attempt.
          */
         errors.add(Pattern.compile("encoding conversion from SQL_ASCII to \\w+ not supported"));
@@ -227,68 +218,68 @@ public final class PostgresCommon {
             boolean generateOnlyKnown, List<String> opClasses) throws AssertionError {
         boolean serial = false;
         switch (type) {
-        case BOOLEAN:
-            sb.append("boolean");
-            break;
-        case INT:
-            if (Randomly.getBoolean() && allowSerial) {
-                serial = true;
-                sb.append(Randomly.fromOptions("serial", "bigserial"));
-            } else {
-                sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
-            }
-            break;
-        case TEXT:
-            if (Randomly.getBoolean()) {
-                sb.append("TEXT");
-            } else if (Randomly.getBoolean()) {
-                // TODO: support CHAR (without VAR)
-                if (PostgresProvider.generateOnlyKnown || Randomly.getBoolean()) {
-                    sb.append("VAR");
+            case BOOLEAN:
+                sb.append("boolean");
+                break;
+            case INT:
+                if (Randomly.getBoolean() && allowSerial) {
+                    serial = true;
+                    sb.append(Randomly.fromOptions("serial", "bigserial"));
+                } else {
+                    sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
                 }
-                sb.append("CHAR");
+                break;
+            case TEXT:
+                if (Randomly.getBoolean()) {
+                    sb.append("TEXT");
+                } else if (Randomly.getBoolean()) {
+                    // TODO: support CHAR (without VAR)
+                    if (PostgresProvider.generateOnlyKnown || Randomly.getBoolean()) {
+                        sb.append("VAR");
+                    }
+                    sb.append("CHAR");
+                    sb.append("(");
+                    sb.append(ThreadLocalRandom.current().nextInt(1, 500));
+                    sb.append(")");
+                } else {
+                    sb.append("name");
+                }
+                if (Randomly.getBoolean() && !PostgresProvider.generateOnlyKnown) {
+                    sb.append(" COLLATE ");
+                    sb.append('"');
+                    sb.append(Randomly.fromList(opClasses));
+                    sb.append('"');
+                }
+                break;
+            case DECIMAL:
+                sb.append("DECIMAL");
+                break;
+            case FLOAT:
+                sb.append("REAL");
+                break;
+            case REAL:
+                sb.append("FLOAT");
+                break;
+            case RANGE:
+                sb.append(Randomly.fromOptions("int4range", "int4range")); // , "int8range", "numrange"
+                break;
+            case MONEY:
+                sb.append("money");
+                break;
+            case BIT:
+                sb.append("BIT");
+                // if (Randomly.getBoolean()) {
+                sb.append(" VARYING");
+                // }
                 sb.append("(");
-                sb.append(ThreadLocalRandom.current().nextInt(1, 500));
+                sb.append(Randomly.getNotCachedInteger(1, 500));
                 sb.append(")");
-            } else {
-                sb.append("name");
-            }
-            if (Randomly.getBoolean() && !PostgresProvider.generateOnlyKnown) {
-                sb.append(" COLLATE ");
-                sb.append('"');
-                sb.append(Randomly.fromList(opClasses));
-                sb.append('"');
-            }
-            break;
-        case DECIMAL:
-            sb.append("DECIMAL");
-            break;
-        case FLOAT:
-            sb.append("REAL");
-            break;
-        case REAL:
-            sb.append("FLOAT");
-            break;
-        case RANGE:
-            sb.append(Randomly.fromOptions("int4range", "int4range")); // , "int8range", "numrange"
-            break;
-        case MONEY:
-            sb.append("money");
-            break;
-        case BIT:
-            sb.append("BIT");
-            // if (Randomly.getBoolean()) {
-            sb.append(" VARYING");
-            // }
-            sb.append("(");
-            sb.append(Randomly.getNotCachedInteger(1, 500));
-            sb.append(")");
-            break;
-        case INET:
-            sb.append("inet");
-            break;
-        default:
-            throw new AssertionError(type);
+                break;
+            case INET:
+                sb.append("inet");
+                break;
+            default:
+                throw new AssertionError(type);
         }
         return serial;
     }
@@ -374,97 +365,99 @@ public final class PostgresCommon {
         List<PostgresColumn> otherColumns;
         PostgresCommon.addCommonExpressionErrors(errors);
         switch (t) {
-        case CHECK:
-            sb.append("CHECK(");
-            sb.append(PostgresVisitor.getExpressionAsString(globalState, PostgresDataType.BOOLEAN, table.getColumns()));
-            sb.append(")");
-            errors.add("constraint must be added to child tables too");
-            errors.add("missing FROM-clause entry for table");
-            break;
-        case UNIQUE:
-            sb.append("UNIQUE(");
-            sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(")");
-            appendIndexParameters(sb, globalState, errors);
-            break;
-        case PRIMARY_KEY:
-            sb.append("PRIMARY KEY(");
-            sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(")");
-            appendIndexParameters(sb, globalState, errors);
-            break;
-        case FOREIGN_KEY:
-            sb.append("FOREIGN KEY (");
-            sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(") REFERENCES ");
-            PostgresTable randomOtherTable = globalState.getSchema().getRandomTable(tab -> !tab.isView());
-            sb.append(randomOtherTable.getName());
-            if (randomOtherTable.getColumns().size() < randomNonEmptyColumnSubset.size()) {
-                throw new IgnoreMeException();
-            }
-            otherColumns = randomOtherTable.getRandomNonEmptyColumnSubset(randomNonEmptyColumnSubset.size());
-            sb.append("(");
-            sb.append(otherColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(")");
-            if (Randomly.getBoolean()) {
-                sb.append(" ");
-                sb.append(Randomly.fromOptions("MATCH FULL", "MATCH SIMPLE"));
-            }
-            if (Randomly.getBoolean()) {
-                sb.append(" ON DELETE ");
-                errors.add("ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
-                deleteOrUpdateAction(sb);
-            }
-            if (Randomly.getBoolean()) {
-                sb.append(" ON UPDATE ");
-                errors.add("invalid ON UPDATE action for foreign key constraint containing generated column");
-                deleteOrUpdateAction(sb);
-            }
-            if (Randomly.getBoolean()) {
-                sb.append(" ");
-                if (Randomly.getBoolean()) {
-                    sb.append("DEFERRABLE");
-                    if (Randomly.getBoolean()) {
-                        sb.append(" ");
-                        sb.append(Randomly.fromOptions("INITIALLY DEFERRED", "INITIALLY IMMEDIATE"));
-                    }
-                } else {
-                    sb.append("NOT DEFERRABLE");
-                }
-            }
-            break;
-        case EXCLUDE:
-            sb.append("EXCLUDE ");
-            sb.append("(");
-            // TODO [USING index_method ]
-            for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                appendExcludeElement(sb, globalState, table.getColumns());
-                sb.append(" WITH ");
-                appendOperator(sb, globalState.getOperators());
-            }
-            sb.append(")");
-            appendIndexParameters(sb, globalState, errors);
-            errors.add("is not valid");
-            errors.add("no operator matches");
-            errors.add("operator does not exist");
-            errors.add("unknown has no default operator class");
-            errors.add("exclusion constraints are not supported on partitioned tables");
-            errors.add("The exclusion operator must be related to the index operator class for the constraint");
-            errors.add("could not create exclusion constraint");
-            // TODO: index parameters
-            if (Randomly.getBoolean()) {
-                sb.append(" WHERE ");
-                sb.append("(");
-                sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState,
-                        table.getColumns(), PostgresDataType.BOOLEAN)));
+            case CHECK:
+                sb.append("CHECK(");
+                sb.append(PostgresVisitor.getExpressionAsString(globalState, PostgresDataType.BOOLEAN,
+                        table.getColumns()));
                 sb.append(")");
-            }
-            break;
-        default:
-            throw new AssertionError(t);
+                errors.add("constraint must be added to child tables too");
+                errors.add("missing FROM-clause entry for table");
+                break;
+            case UNIQUE:
+                sb.append("UNIQUE(");
+                sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+                sb.append(")");
+                appendIndexParameters(sb, globalState, errors);
+                break;
+            case PRIMARY_KEY:
+                sb.append("PRIMARY KEY(");
+                sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+                sb.append(")");
+                appendIndexParameters(sb, globalState, errors);
+                break;
+            case FOREIGN_KEY:
+                sb.append("FOREIGN KEY (");
+                sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+                sb.append(") REFERENCES ");
+                PostgresTable randomOtherTable = globalState.getSchema().getRandomTable(tab -> !tab.isView());
+                sb.append(randomOtherTable.getName());
+                if (randomOtherTable.getColumns().size() < randomNonEmptyColumnSubset.size()) {
+                    throw new IgnoreMeException();
+                }
+                otherColumns = randomOtherTable.getRandomNonEmptyColumnSubset(randomNonEmptyColumnSubset.size());
+                sb.append("(");
+                sb.append(otherColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+                sb.append(")");
+                if (Randomly.getBoolean()) {
+                    sb.append(" ");
+                    sb.append(Randomly.fromOptions("MATCH FULL", "MATCH SIMPLE"));
+                }
+                if (Randomly.getBoolean()) {
+                    sb.append(" ON DELETE ");
+                    errors.add(
+                            "ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
+                    deleteOrUpdateAction(sb);
+                }
+                if (Randomly.getBoolean()) {
+                    sb.append(" ON UPDATE ");
+                    errors.add("invalid ON UPDATE action for foreign key constraint containing generated column");
+                    deleteOrUpdateAction(sb);
+                }
+                if (Randomly.getBoolean()) {
+                    sb.append(" ");
+                    if (Randomly.getBoolean()) {
+                        sb.append("DEFERRABLE");
+                        if (Randomly.getBoolean()) {
+                            sb.append(" ");
+                            sb.append(Randomly.fromOptions("INITIALLY DEFERRED", "INITIALLY IMMEDIATE"));
+                        }
+                    } else {
+                        sb.append("NOT DEFERRABLE");
+                    }
+                }
+                break;
+            case EXCLUDE:
+                sb.append("EXCLUDE ");
+                sb.append("(");
+                // TODO [USING index_method ]
+                for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+                    if (i != 0) {
+                        sb.append(", ");
+                    }
+                    appendExcludeElement(sb, globalState, table.getColumns());
+                    sb.append(" WITH ");
+                    appendOperator(sb, globalState.getOperators());
+                }
+                sb.append(")");
+                appendIndexParameters(sb, globalState, errors);
+                errors.add("is not valid");
+                errors.add("no operator matches");
+                errors.add("operator does not exist");
+                errors.add("unknown has no default operator class");
+                errors.add("exclusion constraints are not supported on partitioned tables");
+                errors.add("The exclusion operator must be related to the index operator class for the constraint");
+                errors.add("could not create exclusion constraint");
+                // TODO: index parameters
+                if (Randomly.getBoolean()) {
+                    sb.append(" WHERE ");
+                    sb.append("(");
+                    sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState,
+                            table.getColumns(), PostgresDataType.BOOLEAN)));
+                    sb.append(")");
+                }
+                break;
+            default:
+                throw new AssertionError(t);
         }
     }
 
