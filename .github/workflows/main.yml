@@ -34,9 +34,9 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Verify
-        run: mvn -B verify -DskipTests=true
+        run: mvn -B verify -DskipTests=true -P all
       - name: Misc Tests
-        run: mvn -B '-Dtest=!sqlancer.dbms.**,!sqlancer.qpg.**,!sqlancer.reducer.**' test
+        run: mvn -B '-Dtest=!sqlancer.dbms.**,!sqlancer.qpg.**,!sqlancer.reducer.**' test -P all
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -107,7 +107,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Set up ClickHouse
         run: |
           docker pull cnosdb/cnosdb:community-latest
@@ -115,9 +115,9 @@ jobs:
           sleep 5
       - name: Run Tests
         run: |
-          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBNoREC test
+          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBNoREC test -P all
           sleep 20
-          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBTLP test
+          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBTLP test -P all
 
   clickhouse:
     name: DBMS Tests (ClickHouse)
@@ -133,14 +133,14 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Set up ClickHouse
         run: |
           docker pull clickhouse/clickhouse-server:24.3.1.2672
           docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:24.3.1.2672
           sleep 5
       - name: Run Tests
-        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
+        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test -P all
       - name: Show fatal errors
         run: docker exec clickhouse-server grep Fatal /var/log/clickhouse-server/clickhouse-server.log || echo No Fatal Errors found
       - name: Teardown ClickHouse server
@@ -162,7 +162,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Set up CockroachDB
         run: |
           wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
@@ -172,9 +172,9 @@ jobs:
         run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
         run: |
-          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBNoREC test
-          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBTLP test
-          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBCERT test
+          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBNoREC test -P all
+          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBTLP test -P all
+          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBCERT test -P all
 
   cockroachdb-qpg:
     name: QPG Tests (CockroachDB)
@@ -190,7 +190,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Set up CockroachDB
         run: |
           wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
@@ -199,7 +199,7 @@ jobs:
       - name: Create SQLancer user
         run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
-        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBQPG test
+        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBQPG test -P all
 
   databend:
     name: DBMS Tests (Databend)
@@ -224,12 +224,12 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Run Tests
         run: |
-          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendTLP test
-          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendNoREC test
-          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendPQS test
+          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendTLP test -P all
+          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendNoREC test -P all
+          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendPQS test -P all
 
   datafusion:
     name: DBMS Tests (DataFusion)
@@ -254,10 +254,10 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Run Tests
         run: |
-          DATAFUSION_AVAILABLE=true mvn test -Pdatafusion-tests
+          DATAFUSION_AVAILABLE=true mvn test -Pdatafusion-tests -P all
 
   duckdb:
     name: DBMS Tests (DuckDB)
@@ -274,11 +274,11 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: DuckDB Tests
         run: |
-          mvn -Dtest=TestDuckDBTLP test
-          mvn -Dtest=TestDuckDBNoREC test
+          mvn -Dtest=TestDuckDBTLP test -P all
+          mvn -Dtest=TestDuckDBNoREC test -P all
 
   h2:
     name: DBMS Tests (H2)
@@ -294,9 +294,9 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Run Tests
-        run: mvn -Dtest=TestH2 test
+        run: mvn -Dtest=TestH2 test -P all
 
   hsqldb:
     name: DBMS Tests (HSQLB)
@@ -312,11 +312,11 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Run Tests
         run: |
-          mvn -Dtest=TestHSQLDBNoREC test
-          mvn -Dtest=TestHSQLDBTLP test
+          mvn -Dtest=TestHSQLDBNoREC test -P all
+          mvn -Dtest=TestHSQLDBTLP test -P all
 
   mariadb:
     name: DBMS Tests (MariaDB)
@@ -341,11 +341,11 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Create SQLancer User
         run: sudo mysql -h 127.0.0.1 -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
       - name: Run Tests
-        run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
+        run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test -P all
 
   # Disabled since job does not work in public repo
   # materialize:
@@ -426,14 +426,14 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Create SQLancer user
         run: mysql -h 127.0.0.1  -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
       - name: Run Tests
         run: |
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLCERT
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS -P all
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP -P all
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLCERT -P all
 
   oceanbase:
     name: DBMS Tests (OceanBase)
@@ -449,7 +449,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Set up OceanBase
         run: |
           docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce:4.2.1-lts
@@ -457,9 +457,9 @@ jobs:
           mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
       - name: Run Tests
         run: |
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseNoREC
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBasePQS
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseTLP
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseNoREC -P all
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBasePQS -P all
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseTLP -P all
   postgres:
     name: DBMS Tests (PostgreSQL)
     runs-on: ubuntu-latest
@@ -481,13 +481,13 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Run Tests
         run: |
-          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresPQS test
-          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresTLP test
-          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresNoREC test
-          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresCERT test
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresPQS test -P all
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresTLP test -P all
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresNoREC test -P all
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresCERT test -P all
 
   presto:
     name: DBMS Tests (Presto)
@@ -509,12 +509,12 @@ jobs:
           docker run -p 8080:8080 -d -v ./memory.properties:/opt/presto-server/etc/catalog/memory.properties --name presto prestodb/presto:latest
           sleep 30
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Run Tests
         run: |
-          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoNoREC test
+          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoNoREC test -P all
           docker restart presto && sleep 30
-          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoTLP test
+          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoTLP test -P all
   sqlite:
     name: DBMS Tests (SQLite)
     runs-on: ubuntu-latest
@@ -530,12 +530,12 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: SQLite Tests
         run: |
-          mvn -Dtest=TestSQLitePQS test
-          mvn -Dtest=TestSQLiteTLP test
-          mvn -Dtest=TestSQLiteNoREC test
+          mvn -Dtest=TestSQLitePQS test -P all
+          mvn -Dtest=TestSQLiteTLP test -P all
+          mvn -Dtest=TestSQLiteNoREC test -P all
 
   sqlite-qpg:
     name: QPG Tests (SQLite)
@@ -552,10 +552,10 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: SQLite Tests for QPG
         run: |
-          mvn -Dtest=TestSQLiteQPG test
+          mvn -Dtest=TestSQLiteQPG test -P all
 
   tidb:
     name: DBMS Tests (TiDB)
@@ -571,7 +571,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Set up TiDB
         run: |
           docker pull pingcap/tidb:latest
@@ -581,8 +581,8 @@ jobs:
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
         run: |
-          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test
-          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBCERT test
+          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test -P all
+          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBCERT test -P all
 
   tidb-qpg:
     name: QPG Tests (TiDB)
@@ -598,7 +598,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Set up TiDB
         run: |
           docker pull pingcap/tidb:latest
@@ -607,7 +607,7 @@ jobs:
       - name: Create SQLancer user
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
-        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDBQPG test
+        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDBQPG test -P all
 
   yugabyte:
     name: DBMS Tests (YugabyteDB)
@@ -623,7 +623,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Set up Yugabyte
         run: |
           docker pull yugabytedb/yugabyte:latest
@@ -631,10 +631,10 @@ jobs:
           sleep 5
       - name: Run Tests
         run: |
-          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLNoREC test
-          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLTLP test
-          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLPQS test
-          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYCQL test
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLNoREC test -P all
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLTLP test -P all
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLPQS test -P all
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYCQL test -P all
 
   doris:
     name: DBMS Tests (Apache Doris)
@@ -670,12 +670,12 @@ jobs:
           mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
           mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
       - name: Build SQLancer
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Run Tests
         run: |
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test -P all
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test -P all
+          DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test -P all
 
   reducer:
     name: Reducer Tests
@@ -692,7 +692,7 @@ jobs:
           java-version: '11'
           cache: 'maven'
       - name: Build
-        run: mvn -B package -DskipTests=true
+        run: mvn -B package -DskipTests=true -P all
       - name: Run Tests
         run: |
-          mvn -Dtest=TestStatementReducer test
+          mvn -Dtest=TestStatementReducer test -P all
