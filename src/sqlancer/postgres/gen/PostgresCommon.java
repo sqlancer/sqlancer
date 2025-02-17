@@ -103,13 +103,8 @@ public final class PostgresCommon {
     }
 
     public static List<String> getGroupingErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("non-integer constant in GROUP BY"); // TODO
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("is not in select list");
+        List<String> errors = DBMSCommon.getGroupingErrors();
         errors.add("aggregate functions are not allowed in GROUP BY");
-
         return errors;
     }
 

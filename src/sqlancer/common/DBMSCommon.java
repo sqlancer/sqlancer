@@ -202,4 +202,14 @@ public final class DBMSCommon {
         return errors;
     }
 
+    public static List<String> getGroupingErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("non-integer constant in GROUP BY"); // TODO
+        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        errors.add("is not in select list");
+
+        return errors;
+    }
+
 }

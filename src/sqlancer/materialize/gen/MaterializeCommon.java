@@ -1,6 +1,5 @@
 package sqlancer.materialize.gen;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -88,14 +87,9 @@ public final class MaterializeCommon {
     }
 
     public static List<String> getGroupingErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("non-integer constant in GROUP BY"); // TODO
+        List<String> errors = DBMSCommon.getGroupingErrors();
         errors.add("unable to parse column reference in GROUP BY clause"); // TODO
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("is not in select list");
         errors.add("aggregate functions are not allowed in");
-
         return errors;
     }
 
