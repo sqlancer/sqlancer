@@ -101,39 +101,39 @@ public final class MaterializeCommon {
             boolean generateOnlyKnown, List<String> opClasses) throws AssertionError {
         boolean serial = false;
         switch (type) {
-            case BOOLEAN:
-                sb.append("boolean");
-                break;
-            case INT:
-                sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
-                break;
-            case TEXT:
-                if (Randomly.getBoolean()) {
-                    sb.append("TEXT");
-                } else {
-                    if (MaterializeProvider.generateOnlyKnown || Randomly.getBoolean()) {
-                        sb.append("VAR");
-                    }
-                    sb.append("CHAR");
-                    sb.append("(");
-                    sb.append(ThreadLocalRandom.current().nextInt(1, 500));
-                    sb.append(")");
+        case BOOLEAN:
+            sb.append("boolean");
+            break;
+        case INT:
+            sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
+            break;
+        case TEXT:
+            if (Randomly.getBoolean()) {
+                sb.append("TEXT");
+            } else {
+                if (MaterializeProvider.generateOnlyKnown || Randomly.getBoolean()) {
+                    sb.append("VAR");
                 }
-                break;
-            case DECIMAL:
-                sb.append("DECIMAL");
-                break;
-            case FLOAT:
-                sb.append("REAL");
-                break;
-            case REAL:
-                sb.append("FLOAT");
-                break;
-            case BIT:
-                sb.append("INT");
-                break;
-            default:
-                throw new AssertionError(type);
+                sb.append("CHAR");
+                sb.append("(");
+                sb.append(ThreadLocalRandom.current().nextInt(1, 500));
+                sb.append(")");
+            }
+            break;
+        case DECIMAL:
+            sb.append("DECIMAL");
+            break;
+        case FLOAT:
+            sb.append("REAL");
+            break;
+        case REAL:
+            sb.append("FLOAT");
+            break;
+        case BIT:
+            sb.append("INT");
+            break;
+        default:
+            throw new AssertionError(type);
         }
         return serial;
     }
@@ -170,91 +170,90 @@ public final class MaterializeCommon {
         List<MaterializeColumn> otherColumns;
         MaterializeCommon.addCommonExpressionErrors(errors);
         switch (t) {
-            case CHECK:
-                sb.append("CHECK(");
-                sb.append(MaterializeVisitor.getExpressionAsString(globalState, MaterializeDataType.BOOLEAN,
-                        table.getColumns()));
-                sb.append(")");
-                errors.add("constraint must be added to child tables too");
-                errors.add("missing FROM-clause entry for table");
-                break;
-            case PRIMARY_KEY:
-                sb.append("PRIMARY KEY(");
-                sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-                sb.append(")");
-                break;
-            case FOREIGN_KEY:
-                sb.append("FOREIGN KEY (");
-                sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-                sb.append(") REFERENCES ");
-                MaterializeTable randomOtherTable = globalState.getSchema().getRandomTable(tab -> !tab.isView());
-                sb.append(randomOtherTable.getName());
-                if (randomOtherTable.getColumns().size() < randomNonEmptyColumnSubset.size()) {
-                    throw new IgnoreMeException();
-                }
-                otherColumns = randomOtherTable.getRandomNonEmptyColumnSubset(randomNonEmptyColumnSubset.size());
-                sb.append("(");
-                sb.append(otherColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-                sb.append(")");
+        case CHECK:
+            sb.append("CHECK(");
+            sb.append(MaterializeVisitor.getExpressionAsString(globalState, MaterializeDataType.BOOLEAN,
+                    table.getColumns()));
+            sb.append(")");
+            errors.add("constraint must be added to child tables too");
+            errors.add("missing FROM-clause entry for table");
+            break;
+        case PRIMARY_KEY:
+            sb.append("PRIMARY KEY(");
+            sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+            sb.append(")");
+            break;
+        case FOREIGN_KEY:
+            sb.append("FOREIGN KEY (");
+            sb.append(randomNonEmptyColumnSubset.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+            sb.append(") REFERENCES ");
+            MaterializeTable randomOtherTable = globalState.getSchema().getRandomTable(tab -> !tab.isView());
+            sb.append(randomOtherTable.getName());
+            if (randomOtherTable.getColumns().size() < randomNonEmptyColumnSubset.size()) {
+                throw new IgnoreMeException();
+            }
+            otherColumns = randomOtherTable.getRandomNonEmptyColumnSubset(randomNonEmptyColumnSubset.size());
+            sb.append("(");
+            sb.append(otherColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+            sb.append(")");
+            if (Randomly.getBoolean()) {
+                sb.append(" ");
+                sb.append(Randomly.fromOptions("MATCH FULL", "MATCH SIMPLE"));
+            }
+            if (Randomly.getBoolean()) {
+                sb.append(" ON DELETE ");
+                errors.add("ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
+                deleteOrUpdateAction(sb);
+            }
+            if (Randomly.getBoolean()) {
+                sb.append(" ON UPDATE ");
+                errors.add("invalid ON UPDATE action for foreign key constraint containing generated column");
+                deleteOrUpdateAction(sb);
+            }
+            if (Randomly.getBoolean()) {
+                sb.append(" ");
                 if (Randomly.getBoolean()) {
-                    sb.append(" ");
-                    sb.append(Randomly.fromOptions("MATCH FULL", "MATCH SIMPLE"));
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" ON DELETE ");
-                    errors.add(
-                            "ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
-                    deleteOrUpdateAction(sb);
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" ON UPDATE ");
-                    errors.add("invalid ON UPDATE action for foreign key constraint containing generated column");
-                    deleteOrUpdateAction(sb);
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" ");
+                    sb.append("DEFERRABLE");
                     if (Randomly.getBoolean()) {
-                        sb.append("DEFERRABLE");
-                        if (Randomly.getBoolean()) {
-                            sb.append(" ");
-                            sb.append(Randomly.fromOptions("INITIALLY DEFERRED", "INITIALLY IMMEDIATE"));
-                        }
-                    } else {
-                        sb.append("NOT DEFERRABLE");
+                        sb.append(" ");
+                        sb.append(Randomly.fromOptions("INITIALLY DEFERRED", "INITIALLY IMMEDIATE"));
                     }
+                } else {
+                    sb.append("NOT DEFERRABLE");
                 }
-                break;
-            case EXCLUDE:
-                sb.append("EXCLUDE ");
+            }
+            break;
+        case EXCLUDE:
+            sb.append("EXCLUDE ");
+            sb.append("(");
+            // TODO [USING index_method ]
+            for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+                if (i != 0) {
+                    sb.append(", ");
+                }
+                appendExcludeElement(sb, globalState, table.getColumns());
+                sb.append(" WITH ");
+                appendOperator(sb, globalState.getOperators());
+            }
+            sb.append(")");
+            errors.add("is not valid");
+            errors.add("no operator matches");
+            errors.add("operator does not exist");
+            errors.add("unknown has no default operator class");
+            errors.add("exclusion constraints are not supported on partitioned tables");
+            errors.add("The exclusion operator must be related to the index operator class for the constraint");
+            errors.add("could not create exclusion constraint");
+            // TODO: index parameters
+            if (Randomly.getBoolean()) {
+                sb.append(" WHERE ");
                 sb.append("(");
-                // TODO [USING index_method ]
-                for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-                    if (i != 0) {
-                        sb.append(", ");
-                    }
-                    appendExcludeElement(sb, globalState, table.getColumns());
-                    sb.append(" WITH ");
-                    appendOperator(sb, globalState.getOperators());
-                }
+                sb.append(MaterializeVisitor.asString(MaterializeExpressionGenerator.generateExpression(globalState,
+                        table.getColumns(), MaterializeDataType.BOOLEAN)));
                 sb.append(")");
-                errors.add("is not valid");
-                errors.add("no operator matches");
-                errors.add("operator does not exist");
-                errors.add("unknown has no default operator class");
-                errors.add("exclusion constraints are not supported on partitioned tables");
-                errors.add("The exclusion operator must be related to the index operator class for the constraint");
-                errors.add("could not create exclusion constraint");
-                // TODO: index parameters
-                if (Randomly.getBoolean()) {
-                    sb.append(" WHERE ");
-                    sb.append("(");
-                    sb.append(MaterializeVisitor.asString(MaterializeExpressionGenerator.generateExpression(globalState,
-                            table.getColumns(), MaterializeDataType.BOOLEAN)));
-                    sb.append(")");
-                }
-                break;
-            default:
-                throw new AssertionError(t);
+            }
+            break;
+        default:
+            throw new AssertionError(t);
         }
     }
 
