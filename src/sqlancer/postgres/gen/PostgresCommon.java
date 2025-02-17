@@ -50,7 +50,6 @@ public final class PostgresCommon {
 
         errors.addAll(getFunctionErrors());
 
-        errors.addAll(getCommonRangeExpressionErrors());
         errors.addAll(getCommonRegexExpressionErrors());
 
         return errors;
@@ -102,20 +101,8 @@ public final class PostgresCommon {
         return errors;
     }
 
-    public static List<String> getCommonRangeExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("range lower bound must be less than or equal to range upper bound");
-        errors.add("result of range difference would not be contiguous");
-        errors.add("out of range");
-        errors.add("malformed range literal");
-        errors.add("result of range union would not be contiguous");
-
-        return errors;
-    }
-
     public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
-        errors.addAll(getCommonRangeExpressionErrors());
+        errors.addAll(DBMSCommon.getCommonRangeExpressionErrors());
     }
 
     public static List<String> getCommonInsertUpdateErrors() {

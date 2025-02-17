@@ -112,6 +112,7 @@ public final class DBMSCommon {
 
         errors.addAll(getToCharFunctionErrors());
         errors.addAll(getBitStringOperationErrors());
+        errors.addAll(getCommonRangeExpressionErrors());
 
         return errors;
     }
@@ -161,4 +162,17 @@ public final class DBMSCommon {
 
         return errors;
     }
+
+    public static List<String> getCommonRangeExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("range lower bound must be less than or equal to range upper bound");
+        errors.add("result of range difference would not be contiguous");
+        errors.add("out of range");
+        errors.add("malformed range literal");
+        errors.add("result of range union would not be contiguous");
+
+        return errors;
+    }
+
 }

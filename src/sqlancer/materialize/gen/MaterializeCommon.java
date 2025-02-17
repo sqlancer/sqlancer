@@ -66,7 +66,6 @@ public final class MaterializeCommon {
 
         errors.addAll(getFunctionErrors());
 
-        errors.addAll(getCommonRangeExpressionErrors());
         errors.addAll(getCommonRegexExpressionErrors());
 
         return errors;
@@ -86,18 +85,6 @@ public final class MaterializeCommon {
         ArrayList<String> errors = new ArrayList<>();
 
         errors.add("is not a valid hexadecimal digit");
-
-        return errors;
-    }
-
-    public static List<String> getCommonRangeExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("range lower bound must be less than or equal to range upper bound");
-        errors.add("result of range difference would not be contiguous");
-        errors.add("out of range");
-        errors.add("malformed range literal");
-        errors.add("result of range union would not be contiguous");
 
         return errors;
     }
