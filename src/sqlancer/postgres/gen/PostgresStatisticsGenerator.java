@@ -5,11 +5,11 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.StatisticsObject;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
-import sqlancer.postgres.PostgresSchema.PostgresStatisticsObject;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public final class PostgresStatisticsGenerator {
@@ -50,7 +50,7 @@ public final class PostgresStatisticsGenerator {
     public static SQLQueryAdapter remove(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder("DROP STATISTICS ");
         PostgresTable randomTable = globalState.getSchema().getRandomTable();
-        List<PostgresStatisticsObject> statistics = randomTable.getStatistics();
+        List<StatisticsObject> statistics = randomTable.getStatistics();
         if (statistics.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -59,7 +59,7 @@ public final class PostgresStatisticsGenerator {
     }
 
     private static String getNewStatisticsName(PostgresTable randomTable) {
-        List<PostgresStatisticsObject> statistics = randomTable.getStatistics();
+        List<StatisticsObject> statistics = randomTable.getStatistics();
         int i = 0;
         while (true) {
             String candidateName = "s" + i;
