@@ -130,6 +130,10 @@ public class SelectBase<T> {
         setGroupByExpressions(groupByExpressions);
     }
 
+    public boolean isDistinct() {
+        return selectOption == SelectType.DISTINCT;
+    }
+
     public enum SelectType {
         DISTINCT, ALL;
 

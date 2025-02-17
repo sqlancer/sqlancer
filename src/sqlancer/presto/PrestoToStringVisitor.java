@@ -1,5 +1,7 @@
 package sqlancer.presto;
 
+import java.util.List;
+
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.presto.ast.PrestoAtTimeZoneOperator;
 import sqlancer.presto.ast.PrestoCastFunction;
@@ -8,6 +10,7 @@ import sqlancer.presto.ast.PrestoExpression;
 import sqlancer.presto.ast.PrestoFunctionWithoutParenthesis;
 import sqlancer.presto.ast.PrestoJoin;
 import sqlancer.presto.ast.PrestoMultiValuedComparison;
+import sqlancer.presto.ast.PrestoMultiValuedComparisonType;
 import sqlancer.presto.ast.PrestoQuantifiedComparison;
 import sqlancer.presto.ast.PrestoSelect;
 
@@ -73,43 +76,7 @@ public class PrestoToStringVisitor extends NewToStringVisitor<PrestoExpression> 
     }
 
     private void visit(PrestoSelect select) {
-        sb.append("SELECT ");
-        if (select.isDistinct()) {
-            sb.append("DISTINCT ");
-        }
-        visit(select.getFetchColumns());
-        sb.append(" FROM ");
-        visit(select.getFromList());
-        if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
-            sb.append(", ");
-        }
-        if (!select.getJoinList().isEmpty()) {
-            visit(select.getJoinList());
-        }
-        if (select.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(select.getWhereClause());
-        }
-        if (!select.getGroupByExpressions().isEmpty()) {
-            sb.append(" GROUP BY ");
-            visit(select.getGroupByExpressions());
-        }
-        if (select.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(select.getHavingClause());
-        }
-        if (!select.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(select.getOrderByClauses());
-        }
-        if (select.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(select.getLimitClause());
-        }
-        if (select.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(select.getOffsetClause());
-        }
+        visitSelect(select);
     }
 
     public void visit(PrestoCastFunction cast) {
@@ -121,28 +88,32 @@ public class PrestoToStringVisitor extends NewToStringVisitor<PrestoExpression> 
     }
 
     public void visit(PrestoMultiValuedComparison comp) {
-        sb.append("(");
-        visit(comp.getLeft());
-        sb.append(" ");
-        sb.append(comp.getOp().getStringRepresentation());
-        sb.append(" ");
-        sb.append(comp.getType());
-        sb.append(" (VALUES ");
-        visit(comp.getRight());
-        sb.append(")");
-        sb.append(")");
+        visitComparison(comp.getLeft(), comp.getOp().getStringRepresentation(), comp.getType(), null, comp.getRight(),
+                " (VALUES |)");
     }
 
     public void visit(PrestoQuantifiedComparison comp) {
+        visitComparison(comp.getLeft(), comp.getOp().getStringRepresentation(), comp.getType(), comp.getRight(), null,
+                " ( | ) ");
+    }
+
+    private void visitComparison(PrestoExpression left, String operator, PrestoMultiValuedComparisonType type,
+            PrestoExpression singleRight, List<PrestoExpression> listRight, String rightWrapper) {
         sb.append("(");
-        visit(comp.getLeft());
+        visit(left);
         sb.append(" ");
-        sb.append(comp.getOp().getStringRepresentation());
+        sb.append(operator);
         sb.append(" ");
-        sb.append(comp.getType());
-        sb.append(" ( ");
-        visit(comp.getRight());
-        sb.append(" ) ");
+        sb.append(type);
+        sb.append(rightWrapper.split("\\|")[0]);
+
+        if (listRight != null) {
+            visit(listRight);
+        } else {
+            visit(singleRight);
+        }
+
+        sb.append(rightWrapper.split("\\|")[1]);
         sb.append(")");
     }
 }

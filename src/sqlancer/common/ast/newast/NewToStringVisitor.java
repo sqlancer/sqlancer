@@ -2,6 +2,8 @@ package sqlancer.common.ast.newast;
 
 import java.util.List;
 
+import sqlancer.common.ast.SelectBase;
+
 public abstract class NewToStringVisitor<E> {
 
     protected final StringBuilder sb = new StringBuilder();
@@ -166,5 +168,78 @@ public abstract class NewToStringVisitor<E> {
     }
 
     public abstract void visitSpecific(E expr);
+
+    protected void visitSelect(SelectBase<E> select) {
+        sb.append("SELECT ");
+        if (select.isDistinct()) {
+            sb.append("DISTINCT ");
+        }
+
+        visitSelectColumns(select);
+
+        sb.append(" FROM ");
+        visit(select.getFromList());
+
+        if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
+            sb.append(", ");
+        }
+
+        if (!select.getJoinList().isEmpty()) {
+            visit(select.getJoinList());
+        }
+
+        visitWhereClause(select);
+        visitGroupByClause(select);
+        visitHavingClause(select);
+        visitOrderByClause(select);
+        visitLimitClause(select);
+        visitOffsetClause(select);
+    }
+
+    protected void visitWhereClause(SelectBase<E> select) {
+        if (select.getWhereClause() != null) {
+            sb.append(" WHERE ");
+            visit(select.getWhereClause());
+        }
+    }
+
+    protected void visitGroupByClause(SelectBase<E> select) {
+        if (!select.getGroupByExpressions().isEmpty()) {
+            sb.append(" GROUP BY ");
+            visit(select.getGroupByExpressions());
+        }
+    }
+
+    protected void visitHavingClause(SelectBase<E> select) {
+        if (select.getHavingClause() != null) {
+            sb.append(" HAVING ");
+            visit(select.getHavingClause());
+        }
+    }
+
+    protected void visitOrderByClause(SelectBase<E> select) {
+        if (!select.getOrderByClauses().isEmpty()) {
+            sb.append(" ORDER BY ");
+            visit(select.getOrderByClauses());
+        }
+    }
+
+    protected void visitLimitClause(SelectBase<E> select) {
+        if (select.getLimitClause() != null) {
+            sb.append(" LIMIT ");
+            visit(select.getLimitClause());
+        }
+    }
+
+    protected void visitOffsetClause(SelectBase<E> select) {
+        if (select.getOffsetClause() != null) {
+            sb.append(" OFFSET ");
+            visit(select.getOffsetClause());
+        }
+    }
+
+    protected void visitSelectColumns(SelectBase<E> select) {
+        visit(select.getFetchColumns());
+    }
 
 }

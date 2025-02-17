@@ -40,6 +40,7 @@ public class DorisSelect extends SelectBase<DorisExpression>
         this.selectDistinctType = type;
     }
 
+    @Override
     public boolean isDistinct() {
         return this.selectDistinctType == DorisSelectDistinctType.DISTINCT
                 || this.selectDistinctType == DorisSelectDistinctType.DISTINCTROW;

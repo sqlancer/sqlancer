@@ -140,7 +140,7 @@ public class OceanBasePivotedQuerySynthesisOracle
             if (pivotRow.getValues().get(c) instanceof OceanBaseConstant.OceanBaseTextConstant) {
                 sb.append("concat(");
             }
-            sb.append("result." + c.getTable().getName() + c.getName());
+            sb.append("result.").append(c.getTable().getName()).append(c.getName());
             if (pivotRow.getValues().get(c) instanceof OceanBaseConstant.OceanBaseTextConstant) {
                 sb.append(",'')");
             }

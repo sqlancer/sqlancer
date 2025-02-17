@@ -2,6 +2,7 @@ package sqlancer.datafusion;
 
 import java.util.List;
 
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.datafusion.ast.DataFusionConstant;
 import sqlancer.datafusion.ast.DataFusionExpression;
@@ -54,45 +55,16 @@ public class DataFusionToStringVisitor extends NewToStringVisitor<DataFusionExpr
     }
 
     private void visit(DataFusionSelect select) {
-        sb.append("SELECT ");
-        if (select.fetchColumnsString.isPresent()) {
-            sb.append(select.fetchColumnsString.get());
+        visitSelect(select);
+    }
+
+    @Override
+    protected void visitSelectColumns(SelectBase<DataFusionExpression> select) {
+        DataFusionSelect dfSelect = (DataFusionSelect) select;
+        if (dfSelect.fetchColumnsString.isPresent()) {
+            sb.append(dfSelect.fetchColumnsString.get());
         } else {
             visit(select.getFetchColumns());
         }
-
-        sb.append(" FROM ");
-        visit(select.getFromList());
-        if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
-            sb.append(", ");
-        }
-        if (!select.getJoinList().isEmpty()) {
-            visit(select.getJoinList());
-        }
-        if (select.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(select.getWhereClause());
-        }
-        if (!select.getGroupByExpressions().isEmpty()) {
-            sb.append(" GROUP BY ");
-            visit(select.getGroupByExpressions());
-        }
-        if (select.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(select.getHavingClause());
-        }
-        if (!select.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(select.getOrderByClauses());
-        }
-        if (select.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(select.getLimitClause());
-        }
-        if (select.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(select.getOffsetClause());
-        }
     }
-
 }
