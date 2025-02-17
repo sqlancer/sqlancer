@@ -4,6 +4,7 @@ import static java.lang.Math.min;
 import static java.util.stream.IntStream.range;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,6 +77,28 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
     @Override
     protected ExpressionGenerator<ClickHouseExpression> getGen() {
         return gen;
+    }
+
+    protected void executeAndCompare(ClickHouseSelect select, boolean allowDuplicates) throws SQLException {
+        select.setWhereClause(null);
+        String originalQueryString = ClickHouseVisitor.asString(select);
+
+        List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
+
+        select.setWhereClause(predicate);
+        String firstQueryString = ClickHouseVisitor.asString(select);
+        select.setWhereClause(negatedPredicate);
+        String secondQueryString = ClickHouseVisitor.asString(select);
+        select.setWhereClause(isNullPredicate);
+        String thirdQueryString = ClickHouseVisitor.asString(select);
+        List<String> combinedString = new ArrayList<>();
+        List<String> secondResultSet = allowDuplicates
+                ? ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString, thirdQueryString,
+                        combinedString, true, state, errors)
+                : ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString, secondQueryString,
+                        thirdQueryString, combinedString, false, state, errors);
+        ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
 }
