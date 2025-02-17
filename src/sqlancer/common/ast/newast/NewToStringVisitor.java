@@ -175,7 +175,8 @@ public abstract class NewToStringVisitor<E> {
             sb.append("DISTINCT ");
         }
 
-        visit(select.getFetchColumns());
+        visitSelectColumns(select);
+
         sb.append(" FROM ");
         visit(select.getFromList());
 
@@ -235,6 +236,10 @@ public abstract class NewToStringVisitor<E> {
             sb.append(" OFFSET ");
             visit(select.getOffsetClause());
         }
+    }
+
+    protected void visitSelectColumns(SelectBase<E> select) {
+        visit(select.getFetchColumns());
     }
 
 }
