@@ -49,6 +49,7 @@ public final class PostgresCommon {
         List<String> errors = DBMSCommon.getCommonExpressionErrors();
 
         errors.addAll(getFunctionErrors());
+
         errors.addAll(getCommonRangeExpressionErrors());
         errors.addAll(getCommonRegexExpressionErrors());
 
@@ -70,21 +71,7 @@ public final class PostgresCommon {
     }
 
     private static List<String> getFunctionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("out of valid range"); // get_bit/get_byte
-        errors.add("cannot take logarithm of a negative number");
-        errors.add("cannot take logarithm of zero");
-        errors.add("requested character too large for encoding"); // chr
-        errors.add("null character not permitted"); // chr
-        errors.add("requested character not valid for encoding"); // chr
-        errors.add("requested length too large"); // repeat
-        errors.add("invalid memory alloc request size"); // repeat
-
-        errors.add("negative substring length not allowed"); // substr
-        errors.add("invalid mask length"); // set_masklen
-
-        return errors;
+        return DBMSCommon.getFunctionErrors();
     }
 
     private static List<Pattern> getFunctionRegexErrors() {
