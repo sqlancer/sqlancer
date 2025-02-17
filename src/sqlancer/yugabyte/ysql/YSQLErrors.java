@@ -58,33 +58,10 @@ public final class YSQLErrors {
         errors.add("is not unique");
         errors.add("cannot be changed");
         errors.add("invalid reference to FROM-clause entry for table");
-
         errors.add("Invalid column number");
         errors.add("specified more than once");
-        errors.add("You might need to add explicit type casts");
-        errors.add("invalid regular expression");
-        errors.add("could not determine which collation to use");
         errors.add("invalid input syntax for integer");
-        errors.add("invalid regular expression");
-        errors.add("operator does not exist");
-        errors.add("quantifier operand invalid");
-        errors.add("collation mismatch");
-        errors.add("collations are not supported");
-        errors.add("operator is not unique");
-        errors.add("is not a valid binary digit");
-        errors.add("invalid hexadecimal digit");
-        errors.add("invalid hexadecimal data: odd number of digits");
-        errors.add("zero raised to a negative power is undefined");
         errors.add("cannot convert infinity to numeric");
-        errors.add("division by zero");
-        errors.add("invalid input syntax for type money");
-        errors.add("invalid input syntax for type");
-        errors.add("cannot cast type");
-        errors.add("value overflows numeric format");
-        errors.add("is of type boolean but expression is of type text");
-        errors.add("a negative number raised to a non-integer power yields a complex result");
-        errors.add("could not determine polymorphic type because input has type unknown");
-
         errors.addAll(getToCharFunctionErrors());
         errors.addAll(getBitStringOperationErrors());
         errors.addAll(getFunctionErrors());
