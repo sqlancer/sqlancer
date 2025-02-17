@@ -62,7 +62,6 @@ public final class YSQLErrors {
         errors.add("specified more than once");
         errors.add("invalid input syntax for integer");
         errors.add("cannot convert infinity to numeric");
-        errors.addAll(getBitStringOperationErrors());
         errors.addAll(getFunctionErrors());
         errors.addAll(getCommonRangeExpressionErrors());
         errors.addAll(getCommonRegexExpressionErrors());
@@ -78,19 +77,8 @@ public final class YSQLErrors {
         errors.addAll(DBMSCommon.getToCharFunctionErrors());
     }
 
-    public static List<String> getBitStringOperationErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("cannot XOR bit strings of different sizes");
-        errors.add("cannot AND bit strings of different sizes");
-        errors.add("cannot OR bit strings of different sizes");
-        errors.add("must be type boolean, not type text");
-
-        return errors;
-    }
-
     public static void addBitStringOperationErrors(ExpectedErrors errors) {
-        errors.addAll(getBitStringOperationErrors());
+        errors.addAll(DBMSCommon.getBitStringOperationErrors());
     }
 
     public static List<String> getFunctionErrors() {

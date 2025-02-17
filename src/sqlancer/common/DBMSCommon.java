@@ -111,6 +111,7 @@ public final class DBMSCommon {
         errors.add("character number must be positive");
 
         errors.addAll(getToCharFunctionErrors());
+        errors.addAll(getBitStringOperationErrors());
 
         return errors;
     }
@@ -129,6 +130,17 @@ public final class DBMSCommon {
         errors.add("cannot use \"S\" and \"PL\" together");
         errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
         errors.add("is not a number");
+
+        return errors;
+    }
+
+    public static List<String> getBitStringOperationErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("cannot XOR bit strings of different sizes");
+        errors.add("cannot AND bit strings of different sizes");
+        errors.add("cannot OR bit strings of different sizes");
+        errors.add("must be type boolean, not type text");
 
         return errors;
     }

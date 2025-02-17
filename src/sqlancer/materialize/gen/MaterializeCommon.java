@@ -63,7 +63,7 @@ public final class MaterializeCommon {
         errors.add("aggregate functions are not allowed in");
         errors.add("only defined for finite arguments");
         errors.add("unable to parse column reference in GROUP BY clause"); // TODO
-        errors.addAll(getBitStringOperationErrors());
+
         errors.addAll(getFunctionErrors());
         errors.addAll(getCommonRangeExpressionErrors());
         errors.addAll(getCommonRegexExpressionErrors());
@@ -73,17 +73,6 @@ public final class MaterializeCommon {
 
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
         errors.addAll(getCommonExpressionErrors());
-    }
-
-    private static List<String> getBitStringOperationErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("cannot XOR bit strings of different sizes");
-        errors.add("cannot AND bit strings of different sizes");
-        errors.add("cannot OR bit strings of different sizes");
-        errors.add("must be type boolean, not type text");
-
-        return errors;
     }
 
     private static List<String> getFunctionErrors() {
