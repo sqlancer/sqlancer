@@ -46,10 +46,11 @@ public final class PostgresCommentGenerator {
     }
 
     private static void appendIndexComment(StringBuilder sb, PostgresTable table) {
+        sb.append("INDEX ");
         if (table.getIndexes().isEmpty()) {
             throw new IgnoreMeException();
         }
-        sb.append("INDEX ").append(table.getRandomIndex().getIndexName());
+        sb.append(table.getRandomIndex().getIndexName());
     }
 
     private static void appendColumnComment(StringBuilder sb, PostgresTable table) {
@@ -57,17 +58,19 @@ public final class PostgresCommentGenerator {
     }
 
     private static void appendStatisticsComment(StringBuilder sb, PostgresTable table) {
+        sb.append("STATISTICS ");
         if (table.getStatistics().isEmpty()) {
             throw new IgnoreMeException();
         }
-        sb.append("STATISTICS ").append(table.getStatistics().get(0).getName());
+        sb.append(table.getStatistics().get(0).getName());
     }
 
     private static void appendTableComment(StringBuilder sb, PostgresTable table) {
+        sb.append("TABLE ");
         if (table.isView()) {
             throw new IgnoreMeException();
         }
-        sb.append("TABLE ").append(table.getName());
+        sb.append(table.getName());
     }
 
     private static String getCommentValue(PostgresGlobalState globalState) {
