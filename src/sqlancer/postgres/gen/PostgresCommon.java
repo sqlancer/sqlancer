@@ -33,12 +33,7 @@ public final class PostgresCommon {
     }
 
     public static List<String> getCommonTableErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("is not commutative"); // exclude
-        errors.add("operator requires run-time type coercion"); // exclude
-
-        return errors;
+        return DBMSCommon.getCommonTableErrors();
     }
 
     public static void addCommonTableErrors(ExpectedErrors errors) {

@@ -183,4 +183,14 @@ public final class DBMSCommon {
 
         return errors;
     }
+
+    public static List<String> getCommonTableErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("is not commutative"); // exclude
+        errors.add("operator requires run-time type coercion"); // exclude
+
+        return errors;
+    }
+
 }

@@ -31,7 +31,7 @@ public final class YSQLErrors {
     }
 
     public static List<String> getCommonTableErrors() {
-        ArrayList<String> errors = new ArrayList<>();
+        List<String> errors = DBMSCommon.getCommonTableErrors();
 
         errors.add("PRIMARY KEY containing column of type 'INET' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'VARBIT' not yet supported");
@@ -39,9 +39,7 @@ public final class YSQLErrors {
         errors.add("INDEX on column of type 'INET' not yet supported");
         errors.add("INDEX on column of type 'VARBIT' not yet supported");
         errors.add("INDEX on column of type 'INT4RANGE' not yet supported");
-        errors.add("is not commutative"); // exclude
         errors.add("cannot be changed");
-        errors.add("operator requires run-time type coercion"); // exclude
 
         return errors;
     }
