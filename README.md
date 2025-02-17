@@ -85,7 +85,25 @@ SQLancer has pioneered and includes multiple approaches for DBMS testing, as out
 | Differential Query Plans (DQP)                                  | SIGMOD 2024   | [Paper](https://dl.acm.org/doi/pdf/10.1145/3654991) [Video](https://www.youtube.com/watch?v=9Qp7quJfGEk) [Code](https://github.com/sqlancer/sqlancer/issues/918)   | DQP aims to find logic bugs by controlling the execution of different query plans for a given query and validating that they produce a consistent result. DQP supports MySQL, MariaDB, and TiDB.                                                                                                                                                                                                                                                                                                                                                                                                |
 | Constant Optimization Driven Database System Testing (CODDTest) | SIGMOD 2025   | [Code](https://github.com/sqlancer/sqlancer/pull/1054)                                                                                                             | CODDTest finds logic bugs in DBMSs, including in advanced features such as subqueries. It is based on the insight that we can assume the database state to be constant for a database session, which then enables us to substitute parts of a query with their results, essentially corresponding to constant folding and constant propagation, which are two traditional compiler optimizations.                                                                                                                                                                                               |
 
-Please find the `.bib` entries [here](docs/PAPERS.md).                                                                               |
+Please find the `.bib` entries [here](docs/PAPERS.md).    
+
+# Calculating metrics
+To calculate LCOM, Ca and Ce, a shell script `metrics.sh` has been written in the home directory. To run it, enter the following commends:
+
+Mac / Linux:
+
+```
+chmod a+x metrics.sh
+./metrics.sh
+```
+
+Windows:
+
+```
+git bash ./metrics.sh
+```
+
+This would generate two files that you can find in the same directory level as the `sqlancer` project.
 
 # FAQ
 
