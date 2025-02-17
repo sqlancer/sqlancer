@@ -90,12 +90,16 @@ public final class YSQLErrors {
         errors.addAll(getFunctionErrors());
     }
 
+    public static List<String> getCommonRangeExpressionErrors() {
+        return DBMSCommon.getCommonRangeExpressionErrors();
+    }
+
     public static void addCommonRegexExpressionErrors(ExpectedErrors errors) {
-        errors.addAll(DBMSCommon.getCommonRangeExpressionErrors());
+        errors.addAll(getCommonRangeExpressionErrors());
     }
 
     public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
-        errors.addAll(DBMSCommon.getCommonRangeExpressionErrors());
+        errors.addAll(getCommonRangeExpressionErrors());
     }
 
     public static void addCommonInsertUpdateErrors(ExpectedErrors errors) {

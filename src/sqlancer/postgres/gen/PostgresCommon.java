@@ -89,8 +89,12 @@ public final class PostgresCommon {
         return errors;
     }
 
+    public static List<String> getCommonRangeExpressionErrors() {
+        return DBMSCommon.getCommonRangeExpressionErrors();
+    }
+
     public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {
-        errors.addAll(DBMSCommon.getCommonRangeExpressionErrors());
+        errors.addAll(getCommonRangeExpressionErrors());
     }
 
     public static List<String> getCommonInsertUpdateErrors() {
