@@ -2,6 +2,7 @@ package sqlancer.citus.oracle.tlp;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import sqlancer.Randomly;
 import sqlancer.citus.CitusGlobalState;
 import sqlancer.citus.CitusSchema.CitusTable;
 import sqlancer.citus.gen.CitusCommon;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -74,6 +76,23 @@ public class CitusTLPBase extends PostgresTLPBase {
         List<PostgresTable> tables = new ArrayList<>();
         List<PostgresJoin> joins = generateJoins(tables);
         generateSelectBase(tables, joins);
+    }
+
+    public static CitusTLPBase createWithState(CitusGlobalState state, ExpectedErrors errors) {
+        CitusCommon.addCitusErrors(errors);
+        return new CitusTLPBase(state);
+    }
+
+    public void initializeState(PostgresGlobalState state) throws SQLException {
+        state.setAllowedFunctionTypes(Arrays.asList(PostgresGlobalState.IMMUTABLE));
+        check();
+        s = getSchema();
+        targetTables = getTargetTables();
+        gen = getGenerator();
+        select = getSelect();
+        predicate = getPredicate();
+        negatedPredicate = getNegatedPredicate();
+        isNullPredicate = getIsNullPredicate();
     }
 
     private List<PostgresJoin> generateJoins(List<PostgresTable> tables) {
