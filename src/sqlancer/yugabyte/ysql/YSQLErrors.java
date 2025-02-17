@@ -51,7 +51,7 @@ public final class YSQLErrors {
     }
 
     public static List<String> getCommonExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
+        List<String> errors = DBMSCommon.getCommonExpressionErrors();
 
         errors.add("syntax error at or near \"(\"");
         errors.add("does not exist");
