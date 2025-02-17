@@ -193,4 +193,13 @@ public final class DBMSCommon {
         return errors;
     }
 
+    public static List<String> getCommonInsertUpdateErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("value too long for type character");
+        errors.add("not found in view targetlist");
+
+        return errors;
+    }
+
 }

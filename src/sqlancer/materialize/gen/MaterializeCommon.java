@@ -78,12 +78,8 @@ public final class MaterializeCommon {
     }
 
     public static List<String> getCommonInsertUpdateErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("value too long for type character");
-        errors.add("not found in view targetlist");
+        List<String> errors = DBMSCommon.getCommonInsertUpdateErrors();
         errors.add("CAST does not support casting from");
-
         return errors;
     }
 

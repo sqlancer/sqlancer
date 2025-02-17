@@ -93,12 +93,8 @@ public final class PostgresCommon {
     }
 
     public static List<String> getCommonInsertUpdateErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("value too long for type character");
+        List<String> errors = DBMSCommon.getCommonInsertUpdateErrors();
         errors.add("cannot insert a non-DEFAULT value into column");
-        errors.add("not found in view targetlist");
-
         return errors;
     }
 
