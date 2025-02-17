@@ -110,7 +110,26 @@ public final class DBMSCommon {
         errors.add("could not determine polymorphic type because input has type unknown");
         errors.add("character number must be positive");
 
+        errors.addAll(getToCharFunctionErrors());
+
         return errors;
     }
 
+    public static List<String> getToCharFunctionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("multiple decimal points");
+        errors.add("and decimal point together");
+        errors.add("multiple decimal points");
+        errors.add("cannot use \"S\" twice");
+        errors.add("must be ahead of \"PR\"");
+        errors.add("cannot use \"S\" and \"PL\"/\"MI\"/\"SG\"/\"PR\" together");
+        errors.add("cannot use \"S\" and \"SG\" together");
+        errors.add("cannot use \"S\" and \"MI\" together");
+        errors.add("cannot use \"S\" and \"PL\" together");
+        errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
+        errors.add("is not a number");
+
+        return errors;
+    }
 }

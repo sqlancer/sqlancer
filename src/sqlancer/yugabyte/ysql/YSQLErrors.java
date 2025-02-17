@@ -62,7 +62,6 @@ public final class YSQLErrors {
         errors.add("specified more than once");
         errors.add("invalid input syntax for integer");
         errors.add("cannot convert infinity to numeric");
-        errors.addAll(getToCharFunctionErrors());
         errors.addAll(getBitStringOperationErrors());
         errors.addAll(getFunctionErrors());
         errors.addAll(getCommonRangeExpressionErrors());
@@ -75,26 +74,8 @@ public final class YSQLErrors {
         errors.addAll(getCommonExpressionErrors());
     }
 
-    public static List<String> getToCharFunctionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("multiple decimal points");
-        errors.add("and decimal point together");
-        errors.add("multiple decimal points");
-        errors.add("cannot use \"S\" twice");
-        errors.add("must be ahead of \"PR\"");
-        errors.add("cannot use \"S\" and \"PL\"/\"MI\"/\"SG\"/\"PR\" together");
-        errors.add("cannot use \"S\" and \"SG\" together");
-        errors.add("cannot use \"S\" and \"MI\" together");
-        errors.add("cannot use \"S\" and \"PL\" together");
-        errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
-        errors.add("is not a number");
-
-        return errors;
-    }
-
     public static void addToCharFunctionErrors(ExpectedErrors errors) {
-        errors.addAll(getToCharFunctionErrors());
+        errors.addAll(DBMSCommon.getToCharFunctionErrors());
     }
 
     public static List<String> getBitStringOperationErrors() {
