@@ -15,6 +15,7 @@ import org.postgresql.util.PSQLException;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
+import sqlancer.StatisticsObject;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
@@ -87,17 +88,18 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
                         constant = PostgresConstant.createNullConstant();
                     } else {
                         switch (column.getType()) {
-                        case INT:
-                            constant = PostgresConstant.createIntConstant(randomRowValues.getLong(columnIndex));
-                            break;
-                        case BOOLEAN:
-                            constant = PostgresConstant.createBooleanConstant(randomRowValues.getBoolean(columnIndex));
-                            break;
-                        case TEXT:
-                            constant = PostgresConstant.createTextConstant(randomRowValues.getString(columnIndex));
-                            break;
-                        default:
-                            throw new IgnoreMeException();
+                            case INT:
+                                constant = PostgresConstant.createIntConstant(randomRowValues.getLong(columnIndex));
+                                break;
+                            case BOOLEAN:
+                                constant = PostgresConstant
+                                        .createBooleanConstant(randomRowValues.getBoolean(columnIndex));
+                                break;
+                            case TEXT:
+                                constant = PostgresConstant.createTextConstant(randomRowValues.getString(columnIndex));
+                                break;
+                            default:
+                                throw new IgnoreMeException();
                         }
                     }
                     values.put(column, constant);
@@ -114,35 +116,35 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
 
     public static PostgresDataType getColumnType(String typeString) {
         switch (typeString) {
-        case "smallint":
-        case "integer":
-        case "bigint":
-            return PostgresDataType.INT;
-        case "boolean":
-            return PostgresDataType.BOOLEAN;
-        case "text":
-        case "character":
-        case "character varying":
-        case "name":
-        case "regclass":
-            return PostgresDataType.TEXT;
-        case "numeric":
-            return PostgresDataType.DECIMAL;
-        case "double precision":
-            return PostgresDataType.FLOAT;
-        case "real":
-            return PostgresDataType.REAL;
-        case "int4range":
-            return PostgresDataType.RANGE;
-        case "money":
-            return PostgresDataType.MONEY;
-        case "bit":
-        case "bit varying":
-            return PostgresDataType.BIT;
-        case "inet":
-            return PostgresDataType.INET;
-        default:
-            throw new AssertionError(typeString);
+            case "smallint":
+            case "integer":
+            case "bigint":
+                return PostgresDataType.INT;
+            case "boolean":
+                return PostgresDataType.BOOLEAN;
+            case "text":
+            case "character":
+            case "character varying":
+            case "name":
+            case "regclass":
+                return PostgresDataType.TEXT;
+            case "numeric":
+                return PostgresDataType.DECIMAL;
+            case "double precision":
+                return PostgresDataType.FLOAT;
+            case "real":
+                return PostgresDataType.REAL;
+            case "int4range":
+                return PostgresDataType.RANGE;
+            case "money":
+                return PostgresDataType.MONEY;
+            case "bit":
+            case "bit varying":
+                return PostgresDataType.BIT;
+            case "inet":
+                return PostgresDataType.INET;
+            default:
+                throw new AssertionError(typeString);
         }
     }
 
@@ -187,16 +189,12 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
 
     }
 
-    public static final class PostgresStatisticsObject {
-        private final String name;
+    public static final class PostgresStatisticsObject extends StatisticsObject {
 
         public PostgresStatisticsObject(String name) {
-            this.name = name;
+            super(name);
         }
 
-        public String getName() {
-            return name;
-        }
     }
 
     public static final class PostgresIndex extends TableIndex {
