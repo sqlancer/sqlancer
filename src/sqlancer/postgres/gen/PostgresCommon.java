@@ -47,11 +47,7 @@ public final class PostgresCommon {
 
     public static List<String> getCommonExpressionErrors() {
         List<String> errors = DBMSCommon.getCommonExpressionErrors();
-
         errors.addAll(getFunctionErrors());
-
-        errors.addAll(getCommonRegexExpressionErrors());
-
         return errors;
     }
 
@@ -89,14 +85,6 @@ public final class PostgresCommon {
          */
         errors.add(Pattern.compile("encoding conversion from SQL_ASCII to \\w+ not supported"));
         errors.add(Pattern.compile("encoding conversion from \\w+ to SQL_ASCII not supported"));
-
-        return errors;
-    }
-
-    private static List<String> getCommonRegexExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("is not a valid hexadecimal digit");
 
         return errors;
     }

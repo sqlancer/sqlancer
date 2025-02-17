@@ -65,9 +65,6 @@ public final class MaterializeCommon {
         errors.add("unable to parse column reference in GROUP BY clause"); // TODO
 
         errors.addAll(getFunctionErrors());
-
-        errors.addAll(getCommonRegexExpressionErrors());
-
         return errors;
     }
 
@@ -78,14 +75,6 @@ public final class MaterializeCommon {
     private static List<String> getFunctionErrors() {
         List<String> errors = DBMSCommon.getFunctionErrors();
         errors.add("encoding conversion from UTF8 to ASCII not supported"); // to_ascii
-        return errors;
-    }
-
-    private static List<String> getCommonRegexExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("is not a valid hexadecimal digit");
-
         return errors;
     }
 

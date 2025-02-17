@@ -65,8 +65,6 @@ public final class YSQLErrors {
 
         errors.addAll(getFunctionErrors());
 
-        errors.addAll(getCommonRegexExpressionErrors());
-
         return errors;
     }
 
@@ -90,14 +88,6 @@ public final class YSQLErrors {
 
     public static void addFunctionErrors(ExpectedErrors errors) {
         errors.addAll(getFunctionErrors());
-    }
-
-    public static List<String> getCommonRegexExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("is not a valid hexadecimal digit");
-
-        return errors;
     }
 
     public static void addCommonRegexExpressionErrors(ExpectedErrors errors) {

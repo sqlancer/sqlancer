@@ -113,6 +113,7 @@ public final class DBMSCommon {
         errors.addAll(getToCharFunctionErrors());
         errors.addAll(getBitStringOperationErrors());
         errors.addAll(getCommonRangeExpressionErrors());
+        errors.addAll(getCommonRegexExpressionErrors());
 
         return errors;
     }
@@ -175,4 +176,11 @@ public final class DBMSCommon {
         return errors;
     }
 
+    private static List<String> getCommonRegexExpressionErrors() {
+        ArrayList<String> errors = new ArrayList<>();
+
+        errors.add("is not a valid hexadecimal digit");
+
+        return errors;
+    }
 }
