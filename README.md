@@ -103,7 +103,8 @@ Windows:
 git bash ./metrics.sh
 ```
 
-This would generate two files that you can find in the same directory level as the `sqlancer` project.
+This would generate two files `outputclass.csv` and `outputmethod.csv` that you can find in the same directory level as the `sqlancer` project. These
+files would contain the metrics LCOM, Ca and Ce that we want to find.
 
 # FAQ
 

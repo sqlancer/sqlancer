@@ -9,7 +9,7 @@ echo "Ck cloned!"
 #2. Enter that repo and compile it
 echo "Compiling ck..."
 cd ck || exit
-#mvn clean compile package
+mvn clean compile package
 echo "Ck compiled!"
 
 #3. Run metrics test
