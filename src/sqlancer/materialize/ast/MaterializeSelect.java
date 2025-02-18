@@ -6,10 +6,13 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Select;
+import sqlancer.materialize.MaterializeSchema;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
+import sqlancer.materialize.MaterializeVisitor;
 
-public class MaterializeSelect extends SelectBase<MaterializeExpression> implements MaterializeExpression {
+public class MaterializeSelect extends SelectBase<MaterializeExpression> implements MaterializeExpression, Select<MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeSchema.MaterializeColumn> {
 
     private List<JoinBase<MaterializeExpression>> joinClauses = Collections.emptyList();
     private MaterializeExpression distinctOnClause;
@@ -95,9 +98,9 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
         return null;
     }
 
-    public void setJoinClauses(List<? extends JoinBase<MaterializeExpression>> joinStatements) {
-        this.joinClauses = (List<JoinBase<MaterializeExpression>>) joinStatements;
-
+    @Override
+    public void setJoinClauses(List<JoinBase<MaterializeExpression>> joinStatements) {
+        this.joinClauses =  joinStatements;
     }
 
     @Override
@@ -115,6 +118,11 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
 
     public ForClause getForClause() {
         return forClause;
+    }
+
+    @Override
+    public String asString() {
+        return MaterializeVisitor.asString(this);
     }
 
 }
