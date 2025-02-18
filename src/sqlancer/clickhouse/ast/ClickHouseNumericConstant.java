@@ -62,7 +62,6 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
         return castNumeric(type);
     }
 
-
     private ClickHouseConstant castNumeric(ClickHouseDataType type) {
         switch (type) {
         case String:
