@@ -8,6 +8,10 @@ public final class YSQLErrors {
     }
 
     public static void addCommonFetchErrors(ExpectedErrors errors) {
+        errors.add("pg_type array OID value not set when in binary upgrade mode");
+        errors.add("Failed DDL operation as requested");
+        errors.add("Table with identifier"); // TODO
+
         errors.add("Operation failed. Try again");
         errors.add("could not serialize access due to concurrent update");
         errors.add("Value write after transaction start");
