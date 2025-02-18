@@ -20,18 +20,6 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
     }
 
     @Override
-    public ClickHouseConstant cast(ClickHouseDataType type) {
-        if (type == ClickHouseDataType.Nothing) {
-            return ClickHouseCreateConstant.createNullConstant();
-        }
-
-        if (this.value instanceof BigInteger) {
-            return castBigInteger(type);
-        }
-        return castNumeric(type);
-    }
-
-    @Override
     public ClickHouseConstant applyLess(ClickHouseConstant right) {
         if (this.value instanceof Float || this.value instanceof Double) {
             return applyLessFloat(right);
@@ -54,13 +42,26 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
                 : ClickHouseCreateConstant.createFalse();
     }
 
-    public ClickHouseConstant applyLessInt(ClickHouseConstant right) {
+    private ClickHouseConstant applyLessInt(ClickHouseConstant right) {
         if (this.getDataType() == right.getDataType()) {
             return this.asInt() < right.asInt() ? ClickHouseCreateConstant.createTrue()
                     : ClickHouseCreateConstant.createFalse();
         }
         throw new IgnoreMeException();
     }
+
+    @Override
+    public ClickHouseConstant cast(ClickHouseDataType type) {
+        if (type == ClickHouseDataType.Nothing) {
+            return ClickHouseCreateConstant.createNullConstant();
+        }
+
+        if (this.value instanceof BigInteger) {
+            return castBigInteger(type);
+        }
+        return castNumeric(type);
+    }
+
 
     private ClickHouseConstant castNumeric(ClickHouseDataType type) {
         switch (type) {
