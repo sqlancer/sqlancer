@@ -11,11 +11,6 @@ public class ClickHouseUInt16Constant extends ClickHouseNumericConstant<Long> {
     }
 
     @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
     public boolean asBooleanNotNull() {
         return value != 0;
     }
