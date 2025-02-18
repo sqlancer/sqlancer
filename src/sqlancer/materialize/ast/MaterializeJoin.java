@@ -1,6 +1,5 @@
 package sqlancer.materialize.ast;
 
-import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.materialize.MaterializeSchema.MaterializeColumn;

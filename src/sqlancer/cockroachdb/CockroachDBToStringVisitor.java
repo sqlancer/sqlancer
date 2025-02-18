@@ -15,6 +15,8 @@ import sqlancer.cockroachdb.ast.CockroachDBJoin;
 import sqlancer.cockroachdb.ast.CockroachDBMultiValuedComparison;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.ToStringVisitor;
 
 public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpression> implements CockroachDBVisitor {
@@ -75,45 +77,52 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 
     @Override
     public void visit(CockroachDBSelect select) {
-        sb.append("SELECT ");
+        visitSelect(select);
+    }
+
+    @Override
+    public void visitSelectOption(SelectBase<CockroachDBExpression> select) {
         if (select.isDistinct()) {
             sb.append("DISTINCT ");
         } else if (Randomly.getBoolean()) {
             sb.append("ALL ");
         }
+    }
+
+    @Override
+    protected CockroachDBExpression getDistinctOnClause(SelectBase<CockroachDBExpression> select) {
+        return null;
+    }
+
+    @Override
+    public void visitColumns(SelectBase<CockroachDBExpression> select) {
         visit(select.getFetchColumns());
         sb.append(" FROM ");
+    }
+
+    @Override
+    protected void visitFromClause(SelectBase<CockroachDBExpression> select) {
         if (!select.getFromList().isEmpty()) {
             visit(select.getFromList().stream().map(t -> t).collect(Collectors.toList()));
         }
+    }
+
+    @Override
+    protected void visitJoinClauses(SelectBase<CockroachDBExpression> select){
         if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
             sb.append(", ");
         }
         visit(select.getJoinList().stream().map(j -> j).collect(Collectors.toList()));
-        if (select.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(select.getWhereClause());
-        }
-        if (select.getGroupByExpressions() != null && !select.getGroupByExpressions().isEmpty()) {
-            sb.append(" GROUP BY ");
-            visit(select.getGroupByExpressions());
-        }
-        if (select.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(select.getHavingClause());
-        }
-        if (!select.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(select.getOrderByClauses());
-        }
-        if (select.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(select.getLimitClause());
-        }
-        if (select.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(select.getOffsetClause());
-        }
+    }
+
+    @Override
+    protected CockroachDBExpression getJoinOnClause(JoinBase<CockroachDBExpression> join) {
+        return null;
+    }
+
+    @Override
+    protected CockroachDBExpression getJoinTableReference(JoinBase<CockroachDBExpression> join) {
+        return null;
     }
 
     @Override
@@ -146,7 +155,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
             sb.append("JOIN ");
             visit(join.getRightTable());
             sb.append(" ON ");
-            visit(join.getOnCondition());
+            visit(join.getOnClause());
             break;
         case LEFT:
             sb.append(" LEFT");
@@ -155,7 +164,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
             sb.append("JOIN ");
             visit(join.getRightTable());
             sb.append(" ON ");
-            visit(join.getOnCondition());
+            visit(join.getOnClause());
             break;
         case RIGHT:
             sb.append(" RIGHT");
@@ -164,7 +173,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
             sb.append("JOIN ");
             visit(join.getRightTable());
             sb.append(" ON ");
-            visit(join.getOnCondition());
+            visit(join.getOnClause());
             break;
         case FULL:
             sb.append(" FULL");
@@ -173,7 +182,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
             sb.append("JOIN ");
             visit(join.getRightTable());
             sb.append(" ON ");
-            visit(join.getOnCondition());
+            visit(join.getOnClause());
             break;
         case CROSS:
             sb.append(" CROSS ");

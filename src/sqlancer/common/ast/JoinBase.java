@@ -1,8 +1,6 @@
 package sqlancer.common.ast;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Expression;
@@ -10,12 +8,25 @@ import sqlancer.common.ast.newast.Expression;
 public abstract class JoinBase<T extends Expression<?>> {
     public final T tableReference;
     public T onClause;
-    public final JoinType type;
+    public JoinType type;
+
+    public T leftTable;
+    public T rightTable;
 
     protected JoinBase(T tableReference, T onClause, JoinType type) {
         this.tableReference = tableReference;
         this.onClause = onClause;
         this.type = type;
+        this.leftTable = null;
+        this.rightTable = null;
+    }
+
+    protected JoinBase(T leftTable, T rightTable, T onClause, JoinType type) {
+        this.leftTable = leftTable;
+        this.rightTable = rightTable;
+        this.onClause = onClause;
+        this.type = type;
+        this.tableReference = null;
     }
 
     public T getTableReference() {
@@ -35,16 +46,16 @@ public abstract class JoinBase<T extends Expression<?>> {
     }
 
     public enum JoinType {
-        INNER, LEFT, RIGHT, FULL, CROSS, JoinType;
+        INNER, LEFT, RIGHT, FULL, CROSS, JoinType, NATURAL;
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
         }
 
         public static JoinType getRandomExcept(JoinType... exclude) {
-            List<JoinType> available = Arrays.stream(values()).filter(type -> !Arrays.asList(exclude).contains(type))
-                    .collect(Collectors.toList());
-            return Randomly.fromList(available);
+            JoinType[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
+                    .toArray(JoinType[]::new);
+            return Randomly.fromOptions(values);
         }
 
     }
