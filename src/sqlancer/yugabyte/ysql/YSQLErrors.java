@@ -20,6 +20,7 @@ public final class YSQLErrors {
         errors.add("RPC");
         errors.add("Conflicts with committed transaction");
         errors.add("cannot be changed");
+        errors.add("cannot insert a non-DEFAULT value into column");
         errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
 
         errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
