@@ -3,8 +3,10 @@ package sqlancer.materialize;
 import java.util.Optional;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.BinaryOperation;
-import sqlancer.common.visitor.SelectToStringVisitor;
+import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.ast.MaterializeAggregate;
 import sqlancer.materialize.ast.MaterializeBetweenOperation;
@@ -15,8 +17,6 @@ import sqlancer.materialize.ast.MaterializeConstant;
 import sqlancer.materialize.ast.MaterializeExpression;
 import sqlancer.materialize.ast.MaterializeFunction;
 import sqlancer.materialize.ast.MaterializeInOperation;
-import sqlancer.materialize.ast.MaterializeJoin;
-import sqlancer.materialize.ast.MaterializeJoin.MaterializeJoinType;
 import sqlancer.materialize.ast.MaterializeLikeOperation;
 import sqlancer.materialize.ast.MaterializeOrderByTerm;
 import sqlancer.materialize.ast.MaterializePOSIXRegularExpression;
@@ -29,49 +29,11 @@ import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
 import sqlancer.materialize.ast.MaterializeSimilarTo;
 
 public final class MaterializeToStringVisitor extends
-        SelectToStringVisitor<MaterializeExpression, MaterializeSelect, MaterializeJoin> implements MaterializeVisitor {
+        ToStringVisitor<MaterializeExpression> implements MaterializeVisitor {
 
     @Override
-    protected MaterializeExpression getDistinctOnClause(MaterializeSelect select) {
+    protected MaterializeExpression getDistinctOnClause(SelectBase<MaterializeExpression> select) {
         return select.getDistinctOnClause();
-    }
-
-    @Override
-    protected void visitJoinClauses(MaterializeSelect select) {
-        for (MaterializeJoin join : select.getJoinClauses()) {
-            visitJoinClause(join);
-        }
-    }
-
-    @Override
-    protected void visitJoinType(MaterializeJoin join) {
-        switch (join.getType()) {
-        case INNER:
-            if (Randomly.getBoolean()) {
-                sb.append("INNER ");
-            }
-            sb.append("JOIN");
-            break;
-        case LEFT:
-            sb.append("LEFT OUTER JOIN");
-            break;
-        case RIGHT:
-            sb.append("RIGHT OUTER JOIN");
-            break;
-        case FULL:
-            sb.append("FULL OUTER JOIN");
-            break;
-        case CROSS:
-            sb.append("CROSS JOIN");
-            break;
-        default:
-            throw new AssertionError(join.getType());
-        }
-    }
-
-    @Override
-    protected boolean shouldVisitOnClause(MaterializeJoin join) {
-        return join.getType() != MaterializeJoinType.CROSS;
     }
 
     @Override
@@ -135,12 +97,12 @@ public final class MaterializeToStringVisitor extends
     }
 
     @Override
-    protected MaterializeExpression getJoinOnClause(MaterializeJoin join) {
+    protected MaterializeExpression getJoinOnClause(JoinBase<MaterializeExpression> join) {
         return join.getOnClause();
     }
 
     @Override
-    protected MaterializeExpression getJoinTableReference(MaterializeJoin join) {
+    protected MaterializeExpression getJoinTableReference(JoinBase<MaterializeExpression> join) {
         return join.getTableReference();
     }
 
@@ -184,15 +146,13 @@ public final class MaterializeToStringVisitor extends
                 sb.append("CAST(CAST(");
                 visit(cast.getExpression());
                 sb.append(" AS INT) AS ");
-                appendType(cast);
-                sb.append(")");
             } else {
                 sb.append("CAST(");
                 visit(cast.getExpression());
                 sb.append(" AS ");
-                appendType(cast);
-                sb.append(")");
             }
+            appendType(cast);
+            sb.append(")");
         } else {
             if (cast.getCompoundType().getDataType() == MaterializeDataType.REAL
                     || cast.getCompoundType().getDataType() == MaterializeDataType.FLOAT) {

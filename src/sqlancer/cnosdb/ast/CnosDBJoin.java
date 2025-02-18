@@ -10,7 +10,7 @@ public class CnosDBJoin extends JoinBase<CnosDBExpression>
 implements CnosDBExpression, Join<CnosDBExpression, CnosDBTable, CnosDBColumn> {
 
     public CnosDBJoin(CnosDBExpression tableReference, CnosDBExpression onClause, JoinType type) {
-        super(tableReference, onClause, type);  // Pass to parent constructor
+        super(tableReference, onClause, type);
 
     }
 
