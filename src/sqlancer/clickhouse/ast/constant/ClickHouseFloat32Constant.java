@@ -37,17 +37,6 @@ public class ClickHouseFloat32Constant extends ClickHouseNumericConstant<Float> 
     }
 
     @Override
-    public ClickHouseConstant applyLess(ClickHouseConstant right) {
-        if (this.getDataType() == right.getDataType()) {
-            return this.asDouble() < right.asDouble() ? ClickHouseCreateConstant.createTrue()
-                    : ClickHouseCreateConstant.createFalse();
-        }
-        ClickHouseConstant converted = right.cast(ClickHouseDataType.Float32);
-        return this.asDouble() < converted.asDouble() ? ClickHouseCreateConstant.createTrue()
-                : ClickHouseCreateConstant.createFalse();
-    }
-
-    @Override
     public boolean asBooleanNotNull() {
         return Float.compare(value, (float) 0) == 0;
     }
