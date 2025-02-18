@@ -2,7 +2,6 @@ package sqlancer.clickhouse.ast.constant;
 
 import com.clickhouse.client.ClickHouseDataType;
 
-import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseNumericConstant;
 
 public class ClickHouseFloat32Constant extends ClickHouseNumericConstant<Float> {

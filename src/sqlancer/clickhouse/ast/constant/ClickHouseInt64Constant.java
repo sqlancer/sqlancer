@@ -4,8 +4,6 @@ import java.math.BigInteger;
 
 import com.clickhouse.client.ClickHouseDataType;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseNumericConstant;
 
 public class ClickHouseInt64Constant extends ClickHouseNumericConstant<BigInteger> {

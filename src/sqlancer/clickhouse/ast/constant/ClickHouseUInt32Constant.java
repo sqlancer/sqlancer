@@ -2,8 +2,6 @@ package sqlancer.clickhouse.ast.constant;
 
 import com.clickhouse.client.ClickHouseDataType;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseNumericConstant;
 
 public class ClickHouseUInt32Constant extends ClickHouseNumericConstant<Long> {
