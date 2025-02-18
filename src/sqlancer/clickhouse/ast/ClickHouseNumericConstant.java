@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import com.clickhouse.client.ClickHouseDataType;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
 public abstract class ClickHouseNumericConstant<T extends Number> extends ClickHouseConstant {
@@ -29,6 +30,16 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
         }
         return castNumeric(type);
     }
+
+    @Override
+    public ClickHouseConstant applyLess(ClickHouseConstant right) {
+        if (this.getDataType() == right.getDataType()) {
+            return this.asInt() < right.asInt() ? ClickHouseCreateConstant.createTrue()
+                    : ClickHouseCreateConstant.createFalse();
+        }
+        throw new IgnoreMeException();
+    }
+
 
     private ClickHouseConstant castNumeric(ClickHouseDataType type) {
         switch (type) {
