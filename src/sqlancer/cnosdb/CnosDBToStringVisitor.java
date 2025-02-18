@@ -10,7 +10,6 @@ import sqlancer.cnosdb.ast.CnosDBConstant;
 import sqlancer.cnosdb.ast.CnosDBExpression;
 import sqlancer.cnosdb.ast.CnosDBFunction;
 import sqlancer.cnosdb.ast.CnosDBInOperation;
-import sqlancer.cnosdb.ast.CnosDBJoin;
 import sqlancer.cnosdb.ast.CnosDBLikeOperation;
 import sqlancer.cnosdb.ast.CnosDBOrderByTerm;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
@@ -20,53 +19,25 @@ import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
 import sqlancer.cnosdb.ast.CnosDBSimilarTo;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.BinaryOperation;
-import sqlancer.common.visitor.SelectToStringVisitor;
+import sqlancer.common.visitor.ToStringVisitor;
 
-public final class CnosDBToStringVisitor extends SelectToStringVisitor<CnosDBExpression, CnosDBSelect, CnosDBJoin>
+public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpression>
         implements CnosDBVisitor {
 
-    @Override
-    protected CnosDBExpression getDistinctOnClause(CnosDBSelect select) {
-        return select.getDistinctOnClause();
-    }
 
     @Override
-    protected void visitJoinClauses(CnosDBSelect select) {
-        for (CnosDBJoin join : select.getJoinClauses()) {
-            visitJoinClause(join);
-        }
-    }
-
-    @Override
-    protected void visitJoinType(CnosDBJoin join) {
-        switch (join.getType()) {
-        case INNER:
-            if (Randomly.getBoolean()) {
-                sb.append("INNER ");
-            }
-            sb.append("JOIN");
-            break;
-        case LEFT:
-            sb.append("LEFT OUTER JOIN");
-            break;
-        case RIGHT:
-            sb.append("RIGHT OUTER JOIN");
-            break;
-        case FULL:
-            sb.append("FULL OUTER JOIN");
-            break;
-        // case CROSS:
-        // sb.append("CROSS JOIN");
-        // break;
-        default:
+    protected void visitJoinType(JoinBase<CnosDBExpression> join) {
+        if (join.getType() == JoinBase.JoinType.CROSS) {
             throw new AssertionError(join.getType());
         }
+        super.visitJoinType(join);
     }
 
     @Override
-    protected boolean shouldVisitOnClause(CnosDBJoin join) {
-        // return join.getType() != CnosDBJoinType.CROSS;
+    protected boolean shouldVisitOnClause(JoinBase<CnosDBExpression> join) {
         return true;
     }
 
@@ -83,6 +54,11 @@ public final class CnosDBToStringVisitor extends SelectToStringVisitor<CnosDBExp
     @Override
     public String get() {
         return sb.toString();
+    }
+
+    @Override
+    protected CnosDBExpression getDistinctOnClause(SelectBase<CnosDBExpression> select) {
+        return select.getDistinctOnClause();
     }
 
     @Override
@@ -126,12 +102,12 @@ public final class CnosDBToStringVisitor extends SelectToStringVisitor<CnosDBExp
     }
 
     @Override
-    protected CnosDBExpression getJoinOnClause(CnosDBJoin join) {
+    protected CnosDBExpression getJoinOnClause(JoinBase<CnosDBExpression> join) {
         return join.getOnClause();
     }
 
     @Override
-    protected CnosDBExpression getJoinTableReference(CnosDBJoin join) {
+    protected CnosDBExpression getJoinTableReference(JoinBase<CnosDBExpression> join) {
         return join.getTableReference();
     }
 

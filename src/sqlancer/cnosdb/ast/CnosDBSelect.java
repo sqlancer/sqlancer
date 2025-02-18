@@ -3,17 +3,15 @@ package sqlancer.cnosdb.ast;
 import java.util.Collections;
 import java.util.List;
 
-import sqlancer.cnosdb.CnosDBSchema;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBDataType;
 import sqlancer.cnosdb.CnosDBSchema.CnosDBTable;
-import sqlancer.cnosdb.CnosDBVisitor;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
-import sqlancer.common.ast.newast.Select;
 
 public class CnosDBSelect extends SelectBase<CnosDBExpression>
-        implements CnosDBExpression, Select<CnosDBJoin, CnosDBExpression, CnosDBTable, CnosDBSchema.CnosDBColumn> {
+        implements CnosDBExpression {
 
-    private List<CnosDBJoin> joinClauses = Collections.emptyList();
+    private List<JoinBase<CnosDBExpression>> joinClauses = Collections.emptyList();
     private CnosDBExpression distinctOnClause;
 
     public void setSelectType(SelectBase.SelectType fromOptions) {
@@ -25,15 +23,14 @@ public class CnosDBSelect extends SelectBase<CnosDBExpression>
         return null;
     }
 
+
     @Override
-    public List<CnosDBJoin> getJoinClauses() {
+    public List<JoinBase<CnosDBExpression>> getJoinClauses() {
         return joinClauses;
     }
 
-    @Override
-    public void setJoinClauses(List<CnosDBJoin> joinStatements) {
-        this.joinClauses = joinStatements;
-
+    public void setJoinClauses(List<? extends JoinBase<CnosDBExpression>> joinStatements) {
+        this.joinClauses = (List<JoinBase<CnosDBExpression>>) joinStatements;
     }
 
     public CnosDBExpression getDistinctOnClause() {
@@ -87,9 +84,6 @@ public class CnosDBSelect extends SelectBase<CnosDBExpression>
         }
     }
 
-    @Override
-    public String asString() {
-        return CnosDBVisitor.asString(this);
-    }
+
 
 }
