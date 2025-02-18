@@ -1,37 +1,20 @@
 package sqlancer.tidb.ast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
-public class TiDBJoin implements TiDBExpression, Join<TiDBExpression, TiDBTable, TiDBColumn> {
+public class TiDBJoin extends JoinBase<TiDBExpression> implements TiDBExpression, Join<TiDBExpression, TiDBTable, TiDBColumn> {
 
-    private final TiDBExpression leftTable;
-    private final TiDBExpression rightTable;
-    private JoinType joinType;
-    private TiDBExpression onCondition;
     private NaturalJoinType outerType;
 
-    public enum JoinType {
-        NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
-        public static JoinType getRandomExcept(JoinType... exclude) {
-            JoinType[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
-                    .toArray(JoinType[]::new);
-            return Randomly.fromOptions(values);
-        }
-    }
 
     public enum NaturalJoinType {
         INNER, LEFT, RIGHT;
@@ -43,10 +26,7 @@ public class TiDBJoin implements TiDBExpression, Join<TiDBExpression, TiDBTable,
 
     public TiDBJoin(TiDBExpression leftTable, TiDBExpression rightTable, JoinType joinType,
             TiDBExpression whereCondition) {
-        this.leftTable = leftTable;
-        this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
+        super(leftTable, rightTable, whereCondition, joinType);
     }
 
     public TiDBExpression getLeftTable() {
@@ -58,15 +38,15 @@ public class TiDBJoin implements TiDBExpression, Join<TiDBExpression, TiDBTable,
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     public void setJoinType(JoinType joinType) {
-        this.joinType = joinType;
+        this.type = joinType;
     }
 
     public TiDBExpression getOnCondition() {
-        return onCondition;
+        return onClause;
     }
 
     public static TiDBJoin createCrossJoin(TiDBExpression left, TiDBExpression right, TiDBExpression onClause) {
@@ -171,11 +151,6 @@ public class TiDBJoin implements TiDBExpression, Join<TiDBExpression, TiDBTable,
     }
 
     public void setOnCondition(TiDBExpression generateExpression) {
-        this.onCondition = generateExpression;
-    }
-
-    @Override
-    public void setOnClause(TiDBExpression onClause) {
-        onCondition = onClause;
+        this.onClause = generateExpression;
     }
 }
