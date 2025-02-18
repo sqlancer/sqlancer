@@ -33,15 +33,6 @@ public class ClickHouseUInt32Constant extends ClickHouseNumericConstant<Long> {
     }
 
     @Override
-    public ClickHouseConstant applyLess(ClickHouseConstant right) {
-        if (this.getDataType() == right.getDataType()) {
-            return this.asInt() < right.asInt() ? ClickHouseCreateConstant.createTrue()
-                    : ClickHouseCreateConstant.createFalse();
-        }
-        throw new IgnoreMeException();
-    }
-
-    @Override
     public long asInt() {
         return value;
     }

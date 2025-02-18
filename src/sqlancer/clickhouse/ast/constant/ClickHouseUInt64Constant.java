@@ -35,15 +35,6 @@ public class ClickHouseUInt64Constant extends ClickHouseNumericConstant<BigInteg
     }
 
     @Override
-    public ClickHouseConstant applyLess(ClickHouseConstant right) {
-        if (this.getDataType() == right.getDataType()) {
-            return this.asInt() < right.asInt() ? ClickHouseCreateConstant.createTrue()
-                    : ClickHouseCreateConstant.createFalse();
-        }
-        throw new IgnoreMeException();
-    }
-
-    @Override
     public long asInt() {
         return value.longValueExact();
     }
