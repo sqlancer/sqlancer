@@ -3,8 +3,10 @@ package sqlancer.postgres;
 import java.util.Optional;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.BinaryOperation;
-import sqlancer.common.visitor.SelectToStringVisitor;
+import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
@@ -17,8 +19,6 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
-import sqlancer.postgres.ast.PostgresJoin;
-import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
@@ -32,49 +32,11 @@ import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
 
 public final class PostgresToStringVisitor
-        extends SelectToStringVisitor<PostgresExpression, PostgresSelect, PostgresJoin> implements PostgresVisitor {
+        extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 
     @Override
-    protected PostgresExpression getDistinctOnClause(PostgresSelect select) {
+    protected PostgresExpression getDistinctOnClause(SelectBase<PostgresExpression> select) {
         return select.getDistinctOnClause();
-    }
-
-    @Override
-    protected void visitJoinClauses(PostgresSelect select) {
-        for (PostgresJoin join : select.getJoinClauses()) {
-            visitJoinClause(join);
-        }
-    }
-
-    @Override
-    protected void visitJoinType(PostgresJoin join) {
-        switch (join.getType()) {
-        case INNER:
-            if (Randomly.getBoolean()) {
-                sb.append("INNER ");
-            }
-            sb.append("JOIN");
-            break;
-        case LEFT:
-            sb.append("LEFT OUTER JOIN");
-            break;
-        case RIGHT:
-            sb.append("RIGHT OUTER JOIN");
-            break;
-        case FULL:
-            sb.append("FULL OUTER JOIN");
-            break;
-        case CROSS:
-            sb.append("CROSS JOIN");
-            break;
-        default:
-            throw new AssertionError(join.getType());
-        }
-    }
-
-    @Override
-    protected boolean shouldVisitOnClause(PostgresJoin join) {
-        return join.getType() != PostgresJoinType.CROSS;
     }
 
     @Override
@@ -154,12 +116,12 @@ public final class PostgresToStringVisitor
     }
 
     @Override
-    protected PostgresExpression getJoinOnClause(PostgresJoin join) {
+    protected PostgresExpression getJoinOnClause(JoinBase<PostgresExpression> join) {
         return join.getOnClause();
     }
 
     @Override
-    protected PostgresExpression getJoinTableReference(PostgresJoin join) {
+    protected PostgresExpression getJoinTableReference(JoinBase<PostgresExpression>  join) {
         return join.getTableReference();
     }
 
