@@ -5,8 +5,8 @@ import static sqlancer.sqlite3.ast.SQLite3AffinityHelper.applyAffinities;
 import java.util.List;
 import java.util.Optional;
 
-import sqlancer.sqlite3.schema.SQLite3Schema;
 import sqlancer.sqlite3.ast.SQLite3AffinityHelper.ConstantTuple;
+import sqlancer.sqlite3.schema.SQLite3Schema;
 
 public class SQLite3InOperation implements SQLite3Expression {
 

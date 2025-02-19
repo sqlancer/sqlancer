@@ -13,12 +13,11 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
+import sqlancer.sqlite3.ast.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Join;
-import sqlancer.sqlite3.ast.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-
 import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3Select.SelectType;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;

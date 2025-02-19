@@ -1,8 +1,8 @@
 package sqlancer.sqlite3;
 
-import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Cast;
 import sqlancer.sqlite3.ast.SQLite3ColumnName;
+import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 
