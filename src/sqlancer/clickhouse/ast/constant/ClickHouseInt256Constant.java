@@ -13,11 +13,6 @@ public class ClickHouseInt256Constant extends ClickHouseNumericConstant<BigInteg
     }
 
     @Override
-    public boolean asBooleanNotNull() {
-        return value != BigInteger.ZERO;
-    }
-
-    @Override
     public ClickHouseDataType getDataType() {
         return ClickHouseDataType.Int256;
     }

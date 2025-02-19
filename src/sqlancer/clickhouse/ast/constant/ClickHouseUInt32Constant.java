@@ -11,11 +11,6 @@ public class ClickHouseUInt32Constant extends ClickHouseNumericConstant<Long> {
     }
 
     @Override
-    public boolean asBooleanNotNull() {
-        return value != 0;
-    }
-
-    @Override
     public ClickHouseDataType getDataType() {
         return ClickHouseDataType.UInt32;
     }

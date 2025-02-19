@@ -25,6 +25,22 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
     }
 
     @Override
+    public boolean asBooleanNotNull() {
+        if (this.value instanceof BigInteger) {
+            return asBooleanNotNullBigInteger();
+        }
+        return asBooleanNotNullNumeric();
+    }
+
+    private boolean asBooleanNotNullBigInteger() {
+        return this.value != BigInteger.ZERO;
+    }
+
+    private boolean asBooleanNotNullNumeric() {
+        return this.value.doubleValue() != 0;
+    }
+
+    @Override
     public ClickHouseConstant applyLess(ClickHouseConstant right) {
         if (this.value instanceof Float || this.value instanceof Double) {
             return applyLessFloat(right);

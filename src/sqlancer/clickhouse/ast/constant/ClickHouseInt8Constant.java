@@ -11,11 +11,6 @@ public class ClickHouseInt8Constant extends ClickHouseNumericConstant<Integer> {
     }
 
     @Override
-    public boolean asBooleanNotNull() {
-        return value != 0;
-    }
-
-    @Override
     public ClickHouseDataType getDataType() {
         return ClickHouseDataType.Int8;
     }
