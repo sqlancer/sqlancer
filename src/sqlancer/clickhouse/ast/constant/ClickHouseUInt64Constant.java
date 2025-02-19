@@ -4,24 +4,12 @@ import java.math.BigInteger;
 
 import com.clickhouse.client.ClickHouseDataType;
 
-import sqlancer.IgnoreMeException;
-import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseNumericConstant;
 
 public class ClickHouseUInt64Constant extends ClickHouseNumericConstant<BigInteger> {
 
     public ClickHouseUInt64Constant(BigInteger value) {
         super(value);
-    }
-
-    @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
-    public boolean asBooleanNotNull() {
-        return value != BigInteger.ZERO;
     }
 
     @Override
@@ -35,21 +23,8 @@ public class ClickHouseUInt64Constant extends ClickHouseNumericConstant<BigInteg
     }
 
     @Override
-    public ClickHouseConstant applyLess(ClickHouseConstant right) {
-        if (this.getDataType() == right.getDataType()) {
-            return this.asInt() < right.asInt() ? ClickHouseCreateConstant.createTrue()
-                    : ClickHouseCreateConstant.createFalse();
-        }
-        throw new IgnoreMeException();
-    }
-
-    @Override
     public long asInt() {
         return value.longValueExact();
     }
 
-    @Override
-    public Object getValue() {
-        return value;
-    }
 }
