@@ -20,6 +20,11 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
     }
 
     @Override
+    public Object getValue() {
+        return value;
+    }
+
+    @Override
     public ClickHouseConstant applyLess(ClickHouseConstant right) {
         if (this.value instanceof Float || this.value instanceof Double) {
             return applyLessFloat(right);
