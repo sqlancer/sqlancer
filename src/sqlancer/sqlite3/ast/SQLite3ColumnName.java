@@ -26,18 +26,18 @@ public class SQLite3ColumnName implements SQLite3Expression {
      * has the same affinity as the table column.
      */
     @Override
-    public TypeAffinity getAffinity() {
+    public SQLite3TypeAffinity getAffinity() {
         switch (column.getType()) {
         case BINARY:
-            return TypeAffinity.BLOB;
+            return SQLite3TypeAffinity.BLOB;
         case INT:
-            return TypeAffinity.INTEGER;
+            return SQLite3TypeAffinity.INTEGER;
         case NONE:
-            return TypeAffinity.NONE;
+            return SQLite3TypeAffinity.NONE;
         case REAL:
-            return TypeAffinity.REAL;
+            return SQLite3TypeAffinity.REAL;
         case TEXT:
-            return TypeAffinity.TEXT;
+            return SQLite3TypeAffinity.TEXT;
         default:
             throw new AssertionError(column);
         }

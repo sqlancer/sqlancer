@@ -2,7 +2,7 @@ package sqlancer.sqlite3.ast;
 
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3CollateOperation extends SQLite3Expression {
+public class SQLite3CollateOperation implements SQLite3Expression {
 
     private final SQLite3Expression expression;
     private final SQLite3CollateSequence collate;
@@ -34,7 +34,7 @@ public class SQLite3CollateOperation extends SQLite3Expression {
     }
 
     @Override
-    public TypeAffinity getAffinity() {
+    public SQLite3TypeAffinity getAffinity() {
         return expression.getAffinity();
     }
 

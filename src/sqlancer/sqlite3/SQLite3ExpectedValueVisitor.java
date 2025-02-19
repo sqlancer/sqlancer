@@ -6,25 +6,25 @@ import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
-import sqlancer.sqlite3.ast.SQLite3Expression.BetweenOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Cast;
-import sqlancer.sqlite3.ast.SQLite3Expression.CollateOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Function;
-import sqlancer.sqlite3.ast.SQLite3Expression.InOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Join;
-import sqlancer.sqlite3.ast.SQLite3Expression.MatchOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
-import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
-import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import sqlancer.sqlite3.ast.SQLite3BetweenOperation;
+import sqlancer.sqlite3.ast.SQLite3BinaryComparisonOperation;
+import sqlancer.sqlite3.ast.SQLite3ExpressionCast;
+import sqlancer.sqlite3.ast.SQLite3CollateOperation;
+import sqlancer.sqlite3.ast.SQLite3ExpressionFunction;
+import sqlancer.sqlite3.ast.SQLite3InOperation;
+import sqlancer.sqlite3.ast.SQLite3Join;
+import sqlancer.sqlite3.ast.SQLite3MatchOperation;
+import sqlancer.sqlite3.ast.SQLite3ColumnName;
+import sqlancer.sqlite3.ast.SQLite3Distinct;
+import sqlancer.sqlite3.ast.SQLite3Exist;
+import sqlancer.sqlite3.ast.SQLite3OrderingTerm;
+import sqlancer.sqlite3.ast.SQLite3PostfixText;
+import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation;
+import sqlancer.sqlite3.ast.SQLite3TableReference;
+import sqlancer.sqlite3.ast.SQLite3Text;
+import sqlancer.sqlite3.ast.SQLite3BinaryOperation;
+import sqlancer.sqlite3.ast.SQLite3Subquery;
+import sqlancer.sqlite3.ast.SQLite3TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
 import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3Select;
@@ -64,14 +64,14 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
     }
 
     @Override
-    public void visit(Sqlite3BinaryOperation op) {
+    public void visit(SQLite3BinaryOperation op) {
         print(op);
         visit(op.getLeft());
         visit(op.getRight());
     }
 
     @Override
-    public void visit(BetweenOperation op) {
+    public void visit(SQLite3BetweenOperation op) {
         print(op);
         visit(op.getTopNode());
     }
@@ -87,7 +87,7 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
     }
 
     @Override
-    public void visit(Function f) {
+    public void visit(SQLite3ExpressionFunction f) {
         print(f);
         for (SQLite3Expression expr : f.getArguments()) {
             visit(expr);
@@ -131,23 +131,23 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
     }
 
     @Override
-    public void visit(CollateOperation op) {
+    public void visit(SQLite3CollateOperation op) {
         print(op);
         visit(op.getExpression());
     }
 
     @Override
-    public void visit(Cast cast) {
+    public void visit(SQLite3ExpressionCast cast) {
         print(cast);
         visit(cast.getExpression());
     }
 
     @Override
-    public void visit(TypeLiteral literal) {
+    public void visit(SQLite3TypeLiteral literal) {
     }
 
     @Override
-    public void visit(InOperation op) {
+    public void visit(SQLite3InOperation op) {
         print(op);
         visit(op.getLeft());
         if (op.getRightExpressionList() != null) {
@@ -160,7 +160,7 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
     }
 
     @Override
-    public void visit(Subquery query) {
+    public void visit(SQLite3Subquery query) {
         print(query);
         if (query.getExpectedValue() != null) {
             visit(query.getExpectedValue());
@@ -174,13 +174,13 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
     }
 
     @Override
-    public void visit(Join join) {
+    public void visit(SQLite3Join join) {
         print(join);
         visit(join.getOnClause());
     }
 
     @Override
-    public void visit(BinaryComparisonOperation op) {
+    public void visit(SQLite3BinaryComparisonOperation op) {
         print(op);
         visit(op.getLeft());
         visit(op.getRight());
@@ -257,7 +257,7 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
     }
 
     @Override
-    public void visit(MatchOperation match) {
+    public void visit(SQLite3MatchOperation match) {
         print(match);
         visit(match.getLeft());
         visit(match.getRight());

@@ -5,10 +5,10 @@ import sqlancer.sqlite3.schema.SQLite3Schema;
 
 public class SQLite3ExpressionCast implements SQLite3Expression {
 
-    private final TypeLiteral type;
+    private final SQLite3TypeLiteral type;
     private final SQLite3Expression expression;
 
-    public SQLite3ExpressionCast(TypeLiteral typeofExpr, SQLite3Expression expression) {
+    public SQLite3ExpressionCast(SQLite3TypeLiteral typeofExpr, SQLite3Expression expression) {
         this.type = typeofExpr;
         this.expression = expression;
     }
@@ -17,7 +17,7 @@ public class SQLite3ExpressionCast implements SQLite3Expression {
         return expression;
     }
 
-    public TypeLiteral getType() {
+    public SQLite3TypeLiteral getType() {
         return type;
     }
 
@@ -35,18 +35,18 @@ public class SQLite3ExpressionCast implements SQLite3Expression {
      * of "type".
      */
     @Override
-    public TypeAffinity getAffinity() {
+    public SQLite3TypeAffinity getAffinity() {
         switch (type.type) {
         case BLOB:
-            return TypeAffinity.BLOB;
+            return SQLite3TypeAffinity.BLOB;
         case INTEGER:
-            return TypeAffinity.INTEGER;
+            return SQLite3TypeAffinity.INTEGER;
         case NUMERIC:
-            return TypeAffinity.NUMERIC;
+            return SQLite3TypeAffinity.NUMERIC;
         case REAL:
-            return TypeAffinity.REAL;
+            return SQLite3TypeAffinity.REAL;
         case TEXT:
-            return TypeAffinity.TEXT;
+            return SQLite3TypeAffinity.TEXT;
         default:
             throw new AssertionError();
         }
@@ -66,52 +66,4 @@ public class SQLite3ExpressionCast implements SQLite3Expression {
         }
     }
 
-}
-
-class TypeLiteral {
-
-    public final Type type;
-
-    public enum Type {
-        TEXT {
-            @Override
-            public SQLite3Constant apply(SQLite3Constant cons) {
-                return SQLite3Cast.castToText(cons);
-            }
-        },
-        REAL {
-            @Override
-            public SQLite3Constant apply(SQLite3Constant cons) {
-                return SQLite3Cast.castToReal(cons);
-            }
-        },
-        INTEGER {
-            @Override
-            public SQLite3Constant apply(SQLite3Constant cons) {
-                return SQLite3Cast.castToInt(cons);
-            }
-        },
-        NUMERIC {
-            @Override
-            public SQLite3Constant apply(SQLite3Constant cons) {
-                return SQLite3Cast.castToNumeric(cons);
-            }
-        },
-        BLOB {
-            @Override
-            public SQLite3Constant apply(SQLite3Constant cons) {
-                return SQLite3Cast.castToBlob(cons);
-            }
-        };
-
-        public abstract SQLite3Constant apply(SQLite3Constant cons);
-    }
-
-    public TypeLiteral(Type type) {
-        this.type = type;
-    }
-
-    public Type getType() {
-        return type;
-    }
 }

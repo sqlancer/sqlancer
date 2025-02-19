@@ -11,23 +11,23 @@ import sqlancer.sqlite3.ast.SQLite3Case.CasePair;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Cast;
+import sqlancer.sqlite3.ast.SQLite3ExpressionCast;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
-import sqlancer.sqlite3.ast.SQLite3Expression.BetweenOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Cast;
-import sqlancer.sqlite3.ast.SQLite3Expression.CollateOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Function;
-import sqlancer.sqlite3.ast.SQLite3Expression.InOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Join;
-import sqlancer.sqlite3.ast.SQLite3Expression.MatchOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
-import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
-import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import sqlancer.sqlite3.ast.SQLite3BetweenOperation;
+import sqlancer.sqlite3.ast.SQLite3CollateOperation;
+import sqlancer.sqlite3.ast.SQLite3ExpressionFunction;
+import sqlancer.sqlite3.ast.SQLite3InOperation;
+import sqlancer.sqlite3.ast.SQLite3Join;
+import sqlancer.sqlite3.ast.SQLite3MatchOperation;
+import sqlancer.sqlite3.ast.SQLite3ColumnName;
+import sqlancer.sqlite3.ast.SQLite3Distinct;
+import sqlancer.sqlite3.ast.SQLite3Exist;
+import sqlancer.sqlite3.ast.SQLite3OrderingTerm;
+import sqlancer.sqlite3.ast.SQLite3TableReference;
+import sqlancer.sqlite3.ast.SQLite3Text;
+import sqlancer.sqlite3.ast.SQLite3Subquery;
+import sqlancer.sqlite3.ast.SQLite3TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
 import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3Select;
@@ -59,7 +59,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     }
 
     @Override
-    public void visit(BetweenOperation op) {
+    public void visit(SQLite3BetweenOperation op) {
         sb.append("(");
         sb.append("(");
         visit(op.getExpression());
@@ -88,7 +88,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     }
 
     @Override
-    public void visit(Function f) {
+    public void visit(SQLite3ExpressionFunction f) {
         sb.append(f.getName());
         sb.append("(");
         visit(f.getArguments());
@@ -130,7 +130,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
                 visit(s.getFromList().get(i));
             }
         }
-        for (Join j : s.getJoinClauses()) {
+        for (SQLite3Join j : s.getJoinClauses()) {
             visit(j);
         }
 
@@ -223,7 +223,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     }
 
     @Override
-    public void visit(Join join) {
+    public void visit(SQLite3Join join) {
         sb.append(" ");
         switch (join.getType()) {
         case CROSS:
@@ -264,14 +264,14 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     }
 
     @Override
-    public void visit(CollateOperation op) {
+    public void visit(SQLite3CollateOperation op) {
         visit(op.getExpression());
         sb.append(" COLLATE ");
         sb.append(op.getCollate());
     }
 
     @Override
-    public void visit(Cast cast) {
+    public void visit(SQLite3ExpressionCast cast) {
         sb.append("CAST(");
         visit(cast.getExpression());
         sb.append(" AS ");
@@ -280,12 +280,12 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     }
 
     @Override
-    public void visit(TypeLiteral literal) {
+    public void visit(SQLite3TypeLiteral literal) {
         sb.append(literal.getType());
     }
 
     @Override
-    public void visit(InOperation op) {
+    public void visit(SQLite3InOperation op) {
         sb.append("(");
         visit(op.getLeft());
         sb.append(" IN ");
@@ -300,7 +300,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     }
 
     @Override
-    public void visit(Subquery query) {
+    public void visit(SQLite3Subquery query) {
         sb.append(query.getQuery());
     }
 
@@ -388,7 +388,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     }
 
     @Override
-    public void visit(MatchOperation match) {
+    public void visit(SQLite3MatchOperation match) {
         visit(match.getLeft());
         sb.append(" MATCH ");
         visit(match.getRight());

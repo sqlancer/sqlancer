@@ -14,34 +14,36 @@ import sqlancer.common.schema.AbstractTables;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
+import sqlancer.sqlite3.ast.SQLite3BetweenOperation;
+import sqlancer.sqlite3.ast.SQLite3BinaryComparisonOperation;
+import sqlancer.sqlite3.ast.SQLite3BinaryComparisonOperation.BinaryComparisonOperator;
+import sqlancer.sqlite3.ast.SQLite3BinaryOperation;
+import sqlancer.sqlite3.ast.SQLite3BinaryOperation.BinaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Case.CasePair;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
+import sqlancer.sqlite3.ast.SQLite3CollateOperation;
+import sqlancer.sqlite3.ast.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
+import sqlancer.sqlite3.ast.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression;
-import sqlancer.sqlite3.ast.SQLite3Expression.BetweenOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation.BinaryComparisonOperator;
-import sqlancer.sqlite3.ast.SQLite3Expression.CollateOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Join;
-import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
-import sqlancer.sqlite3.ast.SQLite3Expression.MatchOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
-import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
-import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import sqlancer.sqlite3.ast.SQLite3ExpressionCast;
+import sqlancer.sqlite3.ast.SQLite3ExpressionFunction;
 import sqlancer.sqlite3.ast.SQLite3Function;
 import sqlancer.sqlite3.ast.SQLite3Function.ComputableFunction;
+import sqlancer.sqlite3.ast.SQLite3InOperation;
+import sqlancer.sqlite3.ast.SQLite3Join;
+import sqlancer.sqlite3.ast.SQLite3MatchOperation;
+import sqlancer.sqlite3.ast.SQLite3OrderingTerm;
+import sqlancer.sqlite3.ast.SQLite3OrderingTerm.Ordering;
+import sqlancer.sqlite3.ast.SQLite3PostfixText;
+import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation;
+import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3Select;
+import sqlancer.sqlite3.ast.SQLite3TableReference;
+import sqlancer.sqlite3.ast.SQLite3TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
 import sqlancer.sqlite3.oracle.SQLite3RandomQuerySynthesizer;
@@ -51,8 +53,8 @@ import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3RowValue;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Expression>,
-        NoRECGenerator<SQLite3Select, Join, SQLite3Expression, SQLite3Table, SQLite3Column>,
-        TLPWhereGenerator<SQLite3Select, Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
+        NoRECGenerator<SQLite3Select, SQLite3Join, SQLite3Expression, SQLite3Table, SQLite3Column>,
+        TLPWhereGenerator<SQLite3Select, SQLite3Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
 
     private SQLite3RowValue rw;
     private final SQLite3GlobalState globalState;
@@ -144,30 +146,30 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         return expressions;
     }
 
-    public List<Join> getRandomJoinClauses(List<SQLite3Table> tables) {
-        List<Join> joinStatements = new ArrayList<>();
+    public List<SQLite3Join> getRandomJoinClauses(List<SQLite3Table> tables) {
+        List<SQLite3Join> joinStatements = new ArrayList<>();
         if (!globalState.getDbmsSpecificOptions().testJoins) {
             return joinStatements;
         }
-        List<JoinType> options = new ArrayList<>(Arrays.asList(JoinType.values()));
+        List<SQLite3Join.JoinType> options = new ArrayList<>(Arrays.asList(SQLite3Join.JoinType.values()));
         if (Randomly.getBoolean() && tables.size() > 1) {
-            int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
+            int nrSQLite3JoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
             // Natural join is incompatible with other joins
             // because it needs unique column names
             // while other joins will produce duplicate column names
-            if (nrJoinClauses > 1) {
-                options.remove(JoinType.NATURAL);
+            if (nrSQLite3JoinClauses > 1) {
+                options.remove(SQLite3Join.JoinType.NATURAL);
             }
-            for (int i = 0; i < nrJoinClauses; i++) {
+            for (int i = 0; i < nrSQLite3JoinClauses; i++) {
                 SQLite3Expression joinClause = generateExpression();
                 SQLite3Table table = Randomly.fromList(tables);
                 tables.remove(table);
-                JoinType selectedOption = Randomly.fromList(options);
-                if (selectedOption == JoinType.NATURAL) {
+                SQLite3Join.JoinType selectedOption = Randomly.fromList(options);
+                if (selectedOption == SQLite3Join.JoinType.NATURAL) {
                     // NATURAL joins do not have an ON clause
                     joinClause = null;
                 }
-                Join j = new SQLite3Expression.Join(table, joinClause, selectedOption);
+                SQLite3Join j = new SQLite3Join(table, joinClause, selectedOption);
                 joinStatements.add(j);
             }
 
@@ -303,7 +305,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         case IN_OPERATOR:
             return getInOperator(depth + 1);
         case COLLATE:
-            return new CollateOperation(getRandomExpression(depth + 1), SQLite3CollateSequence.random());
+            return new SQLite3CollateOperation(getRandomExpression(depth + 1), SQLite3CollateSequence.random());
         case CASE_OPERATOR:
             return getCaseOperator(depth + 1);
         case MATCH:
@@ -326,7 +328,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         SQLite3Expression expr = getRandomExpression(depth + 1);
         for (int i = 0; i < num; i++) {
             BinaryOperator operator = Randomly.fromOptions(BinaryOperator.AND, BinaryOperator.OR);
-            expr = new Sqlite3BinaryOperation(expr, getRandomExpression(depth + 1), operator);
+            expr = new SQLite3BinaryOperation(expr, getRandomExpression(depth + 1), operator);
         }
         return expr;
     }
@@ -380,13 +382,13 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         switch (randomOption) {
         // TODO case
         case STANDARD_COMPARISON:
-            return new BinaryComparisonOperation(new SQLite3RowValueExpression(left),
+            return new SQLite3BinaryComparisonOperation(new SQLite3RowValueExpression(left),
                     new SQLite3RowValueExpression(right), BinaryComparisonOperator.getRandomRowValueOperator());
         case BETWEEN:
-            return new BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(),
+            return new SQLite3BetweenOperation(getRandomRowValue(depth + 1, size), Randomly.getBoolean(),
                     new SQLite3RowValueExpression(left), new SQLite3RowValueExpression(right));
         // case IN:
-        // return new SQLite3Expression.InOperation(new SQLite3RowValue(left),
+        // return new InOperation(new SQLite3RowValue(left),
         // SQLite3RandomQuerySynthesizer.generate(globalState, size));
         default:
             throw new AssertionError(randomOption);
@@ -405,7 +407,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         } else {
             right = SQLite3Constant.createTextConstant(SQLite3MatchStringGenerator.generateMatchString(r));
         }
-        return new MatchOperation(left, right);
+        return new SQLite3MatchOperation(left, right);
     }
 
     private SQLite3Expression getRandomColumn() {
@@ -569,7 +571,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
                 expressions.remove(expressions.size() - 1);
                 expressions.add(lastArg);
             }
-            return new SQLite3Expression.Function(randomFunction.toString(),
+            return new SQLite3ExpressionFunction(randomFunction.toString(),
                     expressions.toArray(new SQLite3Expression[0]));
         }
 
@@ -608,9 +610,8 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
 
     private SQLite3Expression getCastOperator(int depth) {
         SQLite3Expression expr = getRandomExpression(depth + 1);
-        TypeLiteral type = new SQLite3Expression.TypeLiteral(
-                Randomly.fromOptions(SQLite3Expression.TypeLiteral.Type.values()));
-        return new SQLite3Expression.Cast(type, expr);
+        SQLite3TypeLiteral type = new SQLite3TypeLiteral(Randomly.fromOptions(SQLite3TypeLiteral.Type.values()));
+        return new SQLite3ExpressionCast(type, expr);
     }
 
     private SQLite3Expression getComputableFunction(int depth) {
@@ -639,7 +640,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         SQLite3Expression expr = getRandomExpression(depth + 1);
         SQLite3Expression left = getRandomExpression(depth + 1);
         SQLite3Expression right = getRandomExpression(depth + 1);
-        return new SQLite3Expression.BetweenOperation(expr, tr, left, right);
+        return new SQLite3BetweenOperation(expr, tr, left, right);
     }
 
     // TODO: incomplete
@@ -651,7 +652,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         // operator = BinaryOperator.getRandomOperator();
         // }
         SQLite3Expression rightExpression = getRandomExpression(depth + 1);
-        return new SQLite3Expression.Sqlite3BinaryOperation(leftExpression, rightExpression, operator);
+        return new SQLite3BinaryOperation(leftExpression, rightExpression, operator);
     }
 
     private SQLite3Expression getInOperator(int depth) {
@@ -660,21 +661,21 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         for (int i = 0; i < Randomly.smallNumber(); i++) {
             right.add(getRandomExpression(depth + 1));
         }
-        return new SQLite3Expression.InOperation(leftExpression, right);
+        return new SQLite3InOperation(leftExpression, right);
     }
 
     private SQLite3Expression getBinaryComparisonOperator(int depth) {
         SQLite3Expression leftExpression = getRandomExpression(depth + 1);
         BinaryComparisonOperator operator = BinaryComparisonOperator.getRandomOperator();
         SQLite3Expression rightExpression = getRandomExpression(depth + 1);
-        return new SQLite3Expression.BinaryComparisonOperation(leftExpression, rightExpression, operator);
+        return new SQLite3BinaryComparisonOperation(leftExpression, rightExpression, operator);
     }
 
     // complete
     private SQLite3Expression getRandomPostfixUnaryOperator(int depth) {
         SQLite3Expression subExpression = getRandomExpression(depth + 1);
         PostfixUnaryOperator operator = PostfixUnaryOperator.getRandomOperator();
-        return new SQLite3Expression.SQLite3PostfixUnaryOperation(operator, subExpression);
+        return new SQLite3PostfixUnaryOperation(operator, subExpression);
     }
 
     // complete
@@ -731,7 +732,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
     }
 
     @Override
-    public List<Join> getRandomJoinClauses() {
+    public List<SQLite3Join> getRandomJoinClauses() {
         return getRandomJoinClauses(targetTables);
     }
 

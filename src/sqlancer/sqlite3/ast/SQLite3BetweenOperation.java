@@ -54,8 +54,8 @@ public class SQLite3BetweenOperation implements SQLite3Expression {
                 SQLite3BinaryComparisonOperation.BinaryComparisonOperator.GREATER_EQUALS);
         SQLite3BinaryComparisonOperation rightOp = new SQLite3BinaryComparisonOperation(expr, right,
                 SQLite3BinaryComparisonOperation.BinaryComparisonOperator.SMALLER_EQUALS);
-        Sqlite3BinaryOperation and = new Sqlite3BinaryOperation(leftOp, rightOp,
-                Sqlite3BinaryOperation.BinaryOperator.AND);
+        SQLite3BinaryOperation and = new SQLite3BinaryOperation(leftOp, rightOp,
+                SQLite3BinaryOperation.BinaryOperator.AND);
         if (negated) {
             return new SQLite3UnaryOperation(SQLite3UnaryOperation.UnaryOperator.NOT, and);
         } else {

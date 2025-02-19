@@ -1,10 +1,12 @@
 package sqlancer.sqlite3.ast;
 
+import static sqlancer.sqlite3.ast.SQLite3AffinityHelper.applyAffinities;
+
 import java.util.Optional;
 
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public abstract class SQLite3Case extends SQLite3Expression {
+public abstract class SQLite3Case implements SQLite3Expression {
 
     protected final CasePair[] pairs;
     protected final SQLite3Expression elseExpr;
@@ -133,8 +135,8 @@ public abstract class SQLite3Case extends SQLite3Expression {
                 } else {
                     seq = SQLite3CollateSequence.BINARY;
                 }
-                ConstantTuple newVals = applyAffinities(baseExpr.getAffinity(), c.getCond().getAffinity(),
-                        baseExpr.getExpectedValue(), c.getCond().getExpectedValue());
+                SQLite3AffinityHelper.ConstantTuple newVals = applyAffinities(baseExpr.getAffinity(),
+                        c.getCond().getAffinity(), baseExpr.getExpectedValue(), c.getCond().getExpectedValue());
                 SQLite3Constant equals = newVals.left.applyEquals(newVals.right, seq);
                 if (!equals.isNull() && equals.asInt() == 1) {
                     return c.getThen().getExpectedValue();

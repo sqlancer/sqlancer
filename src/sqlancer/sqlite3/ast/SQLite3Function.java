@@ -6,7 +6,7 @@ import sqlancer.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3Function extends SQLite3Expression {
+public class SQLite3Function implements SQLite3Expression {
 
     private final ComputableFunction func;
     private final SQLite3Expression[] args;
@@ -301,8 +301,8 @@ public class SQLite3Function extends SQLite3Expression {
             return false;
         }
 
-        public TypeAffinity getAffinity(SQLite3Expression... args) {
-            return TypeAffinity.NONE;
+        public SQLite3TypeAffinity getAffinity(SQLite3Expression... args) {
+            return SQLite3TypeAffinity.NONE;
         }
 
     }
@@ -348,7 +348,7 @@ public class SQLite3Function extends SQLite3Expression {
     };
 
     @Override
-    public TypeAffinity getAffinity() {
+    public SQLite3TypeAffinity getAffinity() {
         return func.getAffinity(args);
     }
 

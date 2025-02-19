@@ -5,26 +5,26 @@ import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
-import sqlancer.sqlite3.ast.SQLite3Expression.BetweenOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.BinaryComparisonOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Cast;
-import sqlancer.sqlite3.ast.SQLite3Expression.CollateOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Function;
-import sqlancer.sqlite3.ast.SQLite3Expression.InOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Join;
-import sqlancer.sqlite3.ast.SQLite3Expression.MatchOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
-import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
-import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
+import sqlancer.sqlite3.ast.SQLite3BetweenOperation;
+import sqlancer.sqlite3.ast.SQLite3BinaryComparisonOperation;
+import sqlancer.sqlite3.ast.SQLite3ExpressionCast;
+import sqlancer.sqlite3.ast.SQLite3CollateOperation;
+import sqlancer.sqlite3.ast.SQLite3ExpressionFunction;
 import sqlancer.sqlite3.ast.SQLite3Function;
+import sqlancer.sqlite3.ast.SQLite3InOperation;
+import sqlancer.sqlite3.ast.SQLite3Join;
+import sqlancer.sqlite3.ast.SQLite3MatchOperation;
+import sqlancer.sqlite3.ast.SQLite3ColumnName;
+import sqlancer.sqlite3.ast.SQLite3Distinct;
+import sqlancer.sqlite3.ast.SQLite3Exist;
+import sqlancer.sqlite3.ast.SQLite3OrderingTerm;
+import sqlancer.sqlite3.ast.SQLite3PostfixText;
+import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation;
+import sqlancer.sqlite3.ast.SQLite3TableReference;
+import sqlancer.sqlite3.ast.SQLite3Text;
+import sqlancer.sqlite3.ast.SQLite3BinaryOperation;
+import sqlancer.sqlite3.ast.SQLite3Subquery;
+import sqlancer.sqlite3.ast.SQLite3TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3RowValueExpression;
 import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3SetClause;
@@ -56,11 +56,11 @@ public interface SQLite3Visitor {
 
     // TODO remove these default methods
 
-    default void visit(BinaryComparisonOperation op) {
+    default void visit(SQLite3BinaryComparisonOperation op) {
 
     }
 
-    default void visit(Sqlite3BinaryOperation op) {
+    default void visit(SQLite3BinaryOperation op) {
 
     }
 
@@ -76,13 +76,13 @@ public interface SQLite3Visitor {
 
     }
 
-    void visit(BetweenOperation op);
+    void visit(SQLite3BetweenOperation op);
 
     void visit(SQLite3ColumnName c);
 
     void visit(SQLite3Constant c);
 
-    void visit(Function f);
+    void visit(SQLite3ExpressionFunction f);
 
     void visit(SQLite3Select s, boolean inner);
 
@@ -92,21 +92,21 @@ public interface SQLite3Visitor {
 
     void visit(SQLite3SetClause set);
 
-    void visit(CollateOperation op);
+    void visit(SQLite3CollateOperation op);
 
-    void visit(Cast cast);
+    void visit(SQLite3ExpressionCast cast);
 
-    void visit(TypeLiteral literal);
+    void visit(SQLite3TypeLiteral literal);
 
-    void visit(InOperation op);
+    void visit(SQLite3InOperation op);
 
-    void visit(Subquery query);
+    void visit(SQLite3Subquery query);
 
     void visit(SQLite3Exist exist);
 
-    void visit(Join join);
+    void visit(SQLite3Join join);
 
-    void visit(MatchOperation match);
+    void visit(SQLite3MatchOperation match);
 
     void visit(SQLite3Function func);
 
@@ -131,8 +131,8 @@ public interface SQLite3Visitor {
     void visit(SQLite3WindowFunctionFrameSpecBetween between);
 
     default void visit(SQLite3Expression expr) {
-        if (expr instanceof Sqlite3BinaryOperation) {
-            visit((Sqlite3BinaryOperation) expr);
+        if (expr instanceof SQLite3BinaryOperation) {
+            visit((SQLite3BinaryOperation) expr);
         } else if (expr instanceof SQLite3ColumnName) {
             visit((SQLite3ColumnName) expr);
         } else if (expr instanceof SQLite3Constant) {
@@ -141,28 +141,28 @@ public interface SQLite3Visitor {
             visit((SQLite3UnaryOperation) expr);
         } else if (expr instanceof SQLite3PostfixUnaryOperation) {
             visit((SQLite3PostfixUnaryOperation) expr);
-        } else if (expr instanceof Function) {
-            visit((Function) expr);
-        } else if (expr instanceof BetweenOperation) {
-            visit((BetweenOperation) expr);
-        } else if (expr instanceof CollateOperation) {
-            visit((CollateOperation) expr);
+        } else if (expr instanceof SQLite3ExpressionFunction) {
+            visit((SQLite3ExpressionFunction) expr);
+        } else if (expr instanceof SQLite3BetweenOperation) {
+            visit((SQLite3BetweenOperation) expr);
+        } else if (expr instanceof SQLite3CollateOperation) {
+            visit((SQLite3CollateOperation) expr);
         } else if (expr instanceof SQLite3OrderingTerm) {
             visit((SQLite3OrderingTerm) expr);
-        } else if (expr instanceof SQLite3Expression.InOperation) {
-            visit((InOperation) expr);
-        } else if (expr instanceof Cast) {
-            visit((Cast) expr);
-        } else if (expr instanceof Subquery) {
-            visit((Subquery) expr);
-        } else if (expr instanceof Join) {
-            visit((Join) expr);
+        } else if (expr instanceof SQLite3InOperation) {
+            visit((SQLite3InOperation) expr);
+        } else if (expr instanceof SQLite3ExpressionCast) {
+            visit((SQLite3ExpressionCast) expr);
+        } else if (expr instanceof SQLite3Subquery) {
+            visit((SQLite3Subquery) expr);
+        } else if (expr instanceof SQLite3Join) {
+            visit((SQLite3Join) expr);
         } else if (expr instanceof SQLite3Select) {
             visit((SQLite3Select) expr, true);
         } else if (expr instanceof SQLite3Exist) {
             visit((SQLite3Exist) expr);
-        } else if (expr instanceof BinaryComparisonOperation) {
-            visit((BinaryComparisonOperation) expr);
+        } else if (expr instanceof SQLite3BinaryComparisonOperation) {
+            visit((SQLite3BinaryComparisonOperation) expr);
         } else if (expr instanceof SQLite3Function) {
             visit((SQLite3Function) expr);
         } else if (expr instanceof SQLite3Distinct) {
@@ -177,8 +177,8 @@ public interface SQLite3Visitor {
             visit((SQLite3PostfixText) expr);
         } else if (expr instanceof SQLite3WindowFunction) {
             visit((SQLite3WindowFunction) expr);
-        } else if (expr instanceof MatchOperation) {
-            visit((MatchOperation) expr);
+        } else if (expr instanceof SQLite3MatchOperation) {
+            visit((SQLite3MatchOperation) expr);
         } else if (expr instanceof SQLite3RowValueExpression) {
             visit((SQLite3RowValueExpression) expr);
         } else if (expr instanceof SQLite3Text) {
