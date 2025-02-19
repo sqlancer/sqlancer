@@ -15,6 +15,7 @@ import org.postgresql.util.PSQLException;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
+import sqlancer.StatisticsObject;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
@@ -162,18 +163,18 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
         }
 
         private final TableType tableType;
-        private final List<PostgresStatisticsObject> statistics;
+        private final List<StatisticsObject> statistics;
         private final boolean isInsertable;
 
         public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
-                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
+                TableType tableType, List<StatisticsObject> statistics, boolean isView, boolean isInsertable) {
             super(tableName, columns, indexes, isView);
             this.statistics = statistics;
             this.isInsertable = isInsertable;
             this.tableType = tableType;
         }
 
-        public List<PostgresStatisticsObject> getStatistics() {
+        public List<StatisticsObject> getStatistics() {
             return statistics;
         }
 
@@ -187,16 +188,12 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
 
     }
 
-    public static final class PostgresStatisticsObject {
-        private final String name;
+    public static final class PostgresStatisticsObject extends StatisticsObject {
 
         public PostgresStatisticsObject(String name) {
-            this.name = name;
+            super(name);
         }
 
-        public String getName() {
-            return name;
-        }
     }
 
     public static final class PostgresIndex extends TableIndex {
@@ -238,7 +235,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
                         PostgresTable.TableType tableType = getTableType(tableTypeSchema);
                         List<PostgresColumn> databaseColumns = getTableColumns(con, tableName);
                         List<PostgresIndex> indexes = getIndexes(con, tableName);
-                        List<PostgresStatisticsObject> statistics = getStatistics(con);
+                        List<StatisticsObject> statistics = getStatistics(con);
                         PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics,
                                 isView, isInsertable);
                         for (PostgresColumn c : databaseColumns) {
@@ -254,12 +251,12 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
         }
     }
 
-    protected static List<PostgresStatisticsObject> getStatistics(SQLConnection con) throws SQLException {
-        List<PostgresStatisticsObject> statistics = new ArrayList<>();
+    protected static List<StatisticsObject> getStatistics(SQLConnection con) throws SQLException {
+        List<StatisticsObject> statistics = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
                 while (rs.next()) {
-                    statistics.add(new PostgresStatisticsObject(rs.getString("stxname")));
+                    statistics.add(new StatisticsObject(rs.getString("stxname")));
                 }
             }
         }

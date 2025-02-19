@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.SQLConnection;
+import sqlancer.StatisticsObject;
 import sqlancer.postgres.PostgresSchema;
 
 public class CitusSchema extends PostgresSchema {
@@ -24,7 +25,7 @@ public class CitusSchema extends PostgresSchema {
         private Integer colocationId;
 
         public CitusTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
-                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable,
+                TableType tableType, List<StatisticsObject> statistics, boolean isView, boolean isInsertable,
                 PostgresColumn distributionColumn, Integer colocationId) {
             super(tableName, columns, indexes, tableType, statistics, isView, isInsertable);
             this.distributionColumn = distributionColumn;
@@ -63,7 +64,9 @@ public class CitusSchema extends PostgresSchema {
                 "SELECT table_name, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
             while (rs.next()) {
                 String tableName = rs.getString("table_name");
-                /* citus_tables is a helper view, we don't need to test with it so we let's ignore it */
+                /*
+                 * citus_tables is a helper view, we don't need to test with it so we let's ignore it
+                 */
                 if (tableName.equals("citus_tables")) {
                     continue;
                 }
