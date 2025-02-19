@@ -60,12 +60,14 @@ public class CitusSchema extends PostgresSchema {
     public static CitusSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         PostgresSchema schema = PostgresSchema.fromConnection(con, databaseName);
         List<CitusTable> databaseTables = new ArrayList<>();
-        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery(
-                "SELECT table_name, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
+        try (Statement s = con.createStatement();
+                ResultSet rs = s.executeQuery(
+                        "SELECT table_name, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
             while (rs.next()) {
                 String tableName = rs.getString("table_name");
                 /*
-                 * citus_tables is a helper view, we don't need to test with it so we let's ignore it
+                 * citus_tables is a helper view, we don't need to test with it so we let's
+                 * ignore it
                  */
                 if (tableName.equals("citus_tables")) {
                     continue;

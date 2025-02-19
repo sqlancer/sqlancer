@@ -7,7 +7,8 @@ import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 /**
- * @see <a href= "https://www.postgresql.org/docs/devel/sql-comment.html">COMMENT</a>
+ * @see <a href=
+ *      "https://www.postgresql.org/docs/devel/sql-comment.html">COMMENT</a>
  */
 public final class PostgresCommentGenerator {
 
@@ -24,20 +25,20 @@ public final class PostgresCommentGenerator {
         PostgresTable randomTable = globalState.getSchema().getRandomTable();
 
         switch (type) {
-        case INDEX:
-            appendIndexComment(sb, randomTable);
-            break;
-        case COLUMN:
-            appendColumnComment(sb, randomTable);
-            break;
-        case STATISTICS:
-            appendStatisticsComment(sb, randomTable);
-            break;
-        case TABLE:
-            appendTableComment(sb, randomTable);
-            break;
-        default:
-            throw new AssertionError(type);
+            case INDEX:
+                appendIndexComment(sb, randomTable);
+                break;
+            case COLUMN:
+                appendColumnComment(sb, randomTable);
+                break;
+            case STATISTICS:
+                appendStatisticsComment(sb, randomTable);
+                break;
+            case TABLE:
+                appendTableComment(sb, randomTable);
+                break;
+            default:
+                throw new AssertionError(type);
         }
 
         sb.append(" IS ").append(getCommentValue(globalState));
