@@ -88,18 +88,17 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
                         constant = PostgresConstant.createNullConstant();
                     } else {
                         switch (column.getType()) {
-                            case INT:
-                                constant = PostgresConstant.createIntConstant(randomRowValues.getLong(columnIndex));
-                                break;
-                            case BOOLEAN:
-                                constant = PostgresConstant
-                                        .createBooleanConstant(randomRowValues.getBoolean(columnIndex));
-                                break;
-                            case TEXT:
-                                constant = PostgresConstant.createTextConstant(randomRowValues.getString(columnIndex));
-                                break;
-                            default:
-                                throw new IgnoreMeException();
+                        case INT:
+                            constant = PostgresConstant.createIntConstant(randomRowValues.getLong(columnIndex));
+                            break;
+                        case BOOLEAN:
+                            constant = PostgresConstant.createBooleanConstant(randomRowValues.getBoolean(columnIndex));
+                            break;
+                        case TEXT:
+                            constant = PostgresConstant.createTextConstant(randomRowValues.getString(columnIndex));
+                            break;
+                        default:
+                            throw new IgnoreMeException();
                         }
                     }
                     values.put(column, constant);
@@ -116,35 +115,35 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
 
     public static PostgresDataType getColumnType(String typeString) {
         switch (typeString) {
-            case "smallint":
-            case "integer":
-            case "bigint":
-                return PostgresDataType.INT;
-            case "boolean":
-                return PostgresDataType.BOOLEAN;
-            case "text":
-            case "character":
-            case "character varying":
-            case "name":
-            case "regclass":
-                return PostgresDataType.TEXT;
-            case "numeric":
-                return PostgresDataType.DECIMAL;
-            case "double precision":
-                return PostgresDataType.FLOAT;
-            case "real":
-                return PostgresDataType.REAL;
-            case "int4range":
-                return PostgresDataType.RANGE;
-            case "money":
-                return PostgresDataType.MONEY;
-            case "bit":
-            case "bit varying":
-                return PostgresDataType.BIT;
-            case "inet":
-                return PostgresDataType.INET;
-            default:
-                throw new AssertionError(typeString);
+        case "smallint":
+        case "integer":
+        case "bigint":
+            return PostgresDataType.INT;
+        case "boolean":
+            return PostgresDataType.BOOLEAN;
+        case "text":
+        case "character":
+        case "character varying":
+        case "name":
+        case "regclass":
+            return PostgresDataType.TEXT;
+        case "numeric":
+            return PostgresDataType.DECIMAL;
+        case "double precision":
+            return PostgresDataType.FLOAT;
+        case "real":
+            return PostgresDataType.REAL;
+        case "int4range":
+            return PostgresDataType.RANGE;
+        case "money":
+            return PostgresDataType.MONEY;
+        case "bit":
+        case "bit varying":
+            return PostgresDataType.BIT;
+        case "inet":
+            return PostgresDataType.INET;
+        default:
+            throw new AssertionError(typeString);
         }
     }
 
