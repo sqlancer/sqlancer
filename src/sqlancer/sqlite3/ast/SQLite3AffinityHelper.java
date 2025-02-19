@@ -2,7 +2,7 @@ package sqlancer.sqlite3.ast;
 
 import sqlancer.IgnoreMeException;
 
-public class SQLite3AffinityHelper {
+public final class SQLite3AffinityHelper {
 
     private SQLite3AffinityHelper() {
         // Utility class

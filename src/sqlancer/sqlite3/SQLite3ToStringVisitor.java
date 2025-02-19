@@ -5,10 +5,13 @@ import java.util.Arrays;
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
+import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import sqlancer.sqlite3.ast.SQLite3BetweenOperation;
+import sqlancer.sqlite3.ast.SQLite3Case;
 import sqlancer.sqlite3.ast.SQLite3Case.CasePair;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithBaseExpression;
 import sqlancer.sqlite3.ast.SQLite3Case.SQLite3CaseWithoutBaseExpression;
+import sqlancer.sqlite3.ast.SQLite3Cast;
 import sqlancer.sqlite3.ast.SQLite3CollateOperation;
 import sqlancer.sqlite3.ast.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Constant;
@@ -33,10 +36,6 @@ import sqlancer.sqlite3.ast.SQLite3WindowFunction;
 import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression;
 import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecBetween;
 import sqlancer.sqlite3.ast.SQLite3WindowFunctionExpression.SQLite3WindowFunctionFrameSpecTerm;
-import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
-import sqlancer.sqlite3.ast.SQLite3Case;
-
-import sqlancer.sqlite3.ast.SQLite3Cast;
 
 public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> implements SQLite3Visitor {
 

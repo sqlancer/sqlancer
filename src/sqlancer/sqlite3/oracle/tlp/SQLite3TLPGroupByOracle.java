@@ -9,8 +9,8 @@ import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.SQLite3Visitor;
-import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3ColumnName;
+import sqlancer.sqlite3.ast.SQLite3Expression;
 
 public class SQLite3TLPGroupByOracle extends SQLite3TLPBase {
 
