@@ -30,8 +30,4 @@ public class ClickHouseInt8Constant extends ClickHouseNumericConstant<Integer> {
         return value;
     }
 
-    @Override
-    public Object getValue() {
-        return value;
-    }
 }

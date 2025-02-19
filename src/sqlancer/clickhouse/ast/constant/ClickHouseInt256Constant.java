@@ -32,9 +32,4 @@ public class ClickHouseInt256Constant extends ClickHouseNumericConstant<BigInteg
         return value.longValueExact();
     }
 
-    @Override
-    public Object getValue() {
-        return value;
-    }
-
 }

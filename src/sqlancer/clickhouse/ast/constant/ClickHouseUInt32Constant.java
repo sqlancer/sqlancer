@@ -30,8 +30,4 @@ public class ClickHouseUInt32Constant extends ClickHouseNumericConstant<Long> {
         return value;
     }
 
-    @Override
-    public Object getValue() {
-        return value;
-    }
 }
