@@ -235,7 +235,7 @@ public final class HSQLDBExpressionGenerator extends
             HSQLDBExpressionGenerator joinGen = new HSQLDBExpressionGenerator(hsqldbGlobalState).setColumns(columns);
             HSQLDBTableReference leftTableRef = new HSQLDBTableReference(leftTable);
             HSQLDBTableReference rightTableRef = new HSQLDBTableReference(rightTable);
-            switch (HSQLDBJoin.JoinType.getRandom()) {
+            switch (HSQLDBJoin.JoinType.getRandomForDatabase("HSQLDB")) {
             case INNER:
                 joinExpressions.add(HSQLDBJoin.createInnerJoin(leftTableRef, rightTableRef,
                         joinGen.generateExpression(HSQLDBSchema.HSQLDBCompositeDataType.getRandomWithoutNull())));

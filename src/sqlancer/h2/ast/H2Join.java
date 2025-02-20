@@ -4,33 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.h2.H2ExpressionGenerator;
 import sqlancer.h2.H2Provider.H2GlobalState;
 import sqlancer.h2.H2Schema.H2Column;
 import sqlancer.h2.H2Schema.H2Table;
 
-public class H2Join implements H2Expression, Join<H2Expression, H2Table, H2Column> {
+public class H2Join extends JoinBase<H2Expression> implements H2Expression, Join<H2Expression, H2Table, H2Column> {
 
     private final H2TableReference leftTable;
     private final H2TableReference rightTable;
-    private final JoinType joinType;
-    private H2Expression onCondition;
-
-    public enum JoinType {
-        INNER, CROSS, NATURAL, LEFT, RIGHT;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
 
     public H2Join(H2TableReference leftTable, H2TableReference rightTable, JoinType joinType,
             H2Expression whereCondition) {
+        super(joinType, whereCondition);
         this.leftTable = leftTable;
         this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
     }
 
     public H2TableReference getLeftTable() {
@@ -42,11 +32,11 @@ public class H2Join implements H2Expression, Join<H2Expression, H2Table, H2Colum
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     public H2Expression getOnCondition() {
-        return onCondition;
+        return onClause;
     }
 
     public static List<H2Join> getJoins(List<H2TableReference> tableList, H2GlobalState globalState) {
@@ -57,7 +47,7 @@ public class H2Join implements H2Expression, Join<H2Expression, H2Table, H2Colum
             List<H2Column> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
             H2ExpressionGenerator joinGen = new H2ExpressionGenerator(globalState).setColumns(columns);
-            JoinType random = H2Join.JoinType.getRandom();
+            JoinType random = H2Join.JoinType.getRandomForDatabase("H2");
             switch (random) {
             case INNER:
                 joinExpressions.add(H2Join.createInnerJoin(leftTable, rightTable, joinGen.generateExpression()));
@@ -99,7 +89,7 @@ public class H2Join implements H2Expression, Join<H2Expression, H2Table, H2Colum
 
     @Override
     public void setOnClause(H2Expression onClause) {
-        onCondition = onClause;
+        super.onClause = onClause;
     }
 
 }
