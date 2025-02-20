@@ -5,7 +5,11 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.ToStringVisitor;
+import sqlancer.oceanbase.ast.OceanBaseExpression;
+import sqlancer.oceanbase.ast.OceanBaseExpression;
+import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
 import sqlancer.oceanbase.ast.OceanBaseAggregate;
 import sqlancer.oceanbase.ast.OceanBaseBinaryComparisonOperation;
@@ -45,8 +49,25 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             visit(s.getHint(), 0);
             sb.append(" */ ");
         }
+        visitSelectOption(s);
+        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
+        if (s.getModifiers().size() > 0) {
+            sb.append(" ");
+        }
+        visitColumns(s);
+        visitFromClause(s);
+        visitJoinClauses(s);
+        visitWhereClause(s);
+        visitGroupByClause(s);
+        visitHavingClause(s);
+        visitOrderByClause(s);
+        visitLimitClause(s);
+        visitOffsetClause(s);
+    }
 
-        switch (s.getFromOptions()) {
+    @Override
+    public void visitSelectOption(SelectBase<OceanBaseExpression> s) {
+        switch (((OceanBaseSelect)s).getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");
             break;
@@ -56,10 +77,10 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
         default:
             throw new AssertionError();
         }
-        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
-        if (s.getModifiers().size() > 0) {
-            sb.append(" ");
-        }
+    }
+
+    @Override
+    public void visitColumns(SelectBase<OceanBaseExpression> s) {
         if (s.getFetchColumns() == null) {
             sb.append("*");
         } else {
@@ -70,6 +91,10 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
                 visit(s.getFetchColumns().get(i));
             }
         }
+    }
+
+    @Override
+    public void visitFromClause(SelectBase<OceanBaseExpression> s) {
         sb.append(" FROM ");
         for (int i = 0; i < s.getFromList().size(); i++) {
             if (i != 0) {
@@ -77,15 +102,26 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             }
             visit(s.getFromList().get(i));
         }
+    }
+
+    @Override
+    public void visitJoinClauses(SelectBase<OceanBaseExpression> s) {
         for (OceanBaseExpression j : s.getJoinList()) {
             visit(j);
         }
+    }
 
+    @Override
+    public void visitWhereClause(SelectBase<OceanBaseExpression> s) {
         if (s.getWhereClause() != null) {
             OceanBaseExpression whereClause = s.getWhereClause();
             sb.append(" WHERE ");
             visit(whereClause);
         }
+    }
+
+    @Override
+    public void visitGroupByClause(SelectBase<OceanBaseExpression> s) {
         if (s.getGroupByExpressions() != null && s.getGroupByExpressions().size() > 0) {
             sb.append(" ");
             sb.append("GROUP BY ");
@@ -97,10 +133,10 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
                 visit(groupBys.get(i));
             }
         }
-        if (s.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(s.getHavingClause());
-        }
+    }
+
+    @Override
+    public void visitOrderByClause(SelectBase<OceanBaseExpression> s) {
         if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
             List<OceanBaseExpression> orderBys = s.getOrderByClauses();
@@ -110,15 +146,6 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
                 }
                 visit(s.getOrderByClauses().get(i));
             }
-        }
-        if (s.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(s.getLimitClause());
-        }
-
-        if (s.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(s.getOffsetClause());
         }
     }
 

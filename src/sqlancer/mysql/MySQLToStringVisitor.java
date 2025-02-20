@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
@@ -45,7 +47,24 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
             visit(s.getHint());
             sb.append("*/ ");
         }
-        switch (s.getFromOptions()) {
+        visitSelectOption(s);
+        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
+        if (s.getModifiers().size() > 0) {
+            sb.append(" ");
+        }
+        visitColumns(s);
+        visitFromClause(s);
+        visitJoinClauses(s);
+        visitWhereClause(s);
+        visitGroupByClause(s);
+        visitOrderByClause(s);
+        visitLimitClause(s);
+        visitOffsetClause(s);
+    }
+
+    @Override
+    public void visitSelectOption(SelectBase<MySQLExpression> s) {
+        switch (((MySQLSelect)s).getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");
             break;
@@ -58,10 +77,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         default:
             throw new AssertionError();
         }
-        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
-        if (s.getModifiers().size() > 0) {
-            sb.append(" ");
-        }
+    }
+
+    @Override
+    public void visitColumns(SelectBase<MySQLExpression> s) {
         if (s.getFetchColumns() == null) {
             sb.append("*");
         } else {
@@ -76,6 +95,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 sb.append(ref++);
             }
         }
+    }
+
+    @Override
+    public void visitFromClause(SelectBase<MySQLExpression> s) {
         sb.append(" FROM ");
         for (int i = 0; i < s.getFromList().size(); i++) {
             if (i != 0) {
@@ -83,15 +106,17 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
             }
             visit(s.getFromList().get(i));
         }
+    }
+
+    @Override
+    public void visitJoinClauses(SelectBase<MySQLExpression> s) {
         for (MySQLExpression j : s.getJoinList()) {
             visit(j);
         }
+    }
 
-        if (s.getWhereClause() != null) {
-            MySQLExpression whereClause = s.getWhereClause();
-            sb.append(" WHERE ");
-            visit(whereClause);
-        }
+    @Override
+    public void visitGroupByClause(SelectBase<MySQLExpression> s) {
         if (s.getGroupByExpressions() != null && s.getGroupByExpressions().size() > 0) {
             sb.append(" ");
             sb.append("GROUP BY ");
@@ -103,6 +128,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 visit(groupBys.get(i));
             }
         }
+    }
+
+    @Override
+    public void visitOrderByClause(SelectBase<MySQLExpression> s) {
         if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
             List<MySQLExpression> orderBys = s.getOrderByClauses();
@@ -112,15 +141,6 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 }
                 visit(s.getOrderByClauses().get(i));
             }
-        }
-        if (s.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(s.getLimitClause());
-        }
-
-        if (s.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(s.getOffsetClause());
         }
     }
 
@@ -132,6 +152,16 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     @Override
     public String get() {
         return sb.toString();
+    }
+
+    @Override
+    protected MySQLExpression getJoinOnClause(JoinBase<MySQLExpression> join) {
+        return null;
+    }
+
+    @Override
+    protected MySQLExpression getJoinTableReference(JoinBase<MySQLExpression> join) {
+        return null;
     }
 
     @Override

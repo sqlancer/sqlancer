@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
-import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.BinaryOperation;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -33,11 +32,6 @@ import sqlancer.postgres.ast.PostgresTableReference;
 
 public final class PostgresToStringVisitor
         extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
-
-    @Override
-    protected PostgresExpression getDistinctOnClause(SelectBase<PostgresExpression> select) {
-        return select.getDistinctOnClause();
-    }
 
     @Override
     protected boolean hasDistinctOnSupport() {
