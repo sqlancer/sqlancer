@@ -27,7 +27,6 @@ import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.ast.JoinBase.JoinType;
-
 import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;

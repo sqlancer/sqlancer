@@ -3,8 +3,8 @@ package sqlancer.sqlite3.ast;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.sqlite3.schema.SQLite3Schema;
-import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
+import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
 public class SQLite3Join extends JoinBase<SQLite3Expression>
         implements SQLite3Expression, Join<SQLite3Expression, SQLite3Schema.SQLite3Table, SQLite3Schema.SQLite3Column> {

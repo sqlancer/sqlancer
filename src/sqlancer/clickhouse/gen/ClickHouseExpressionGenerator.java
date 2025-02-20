@@ -22,7 +22,6 @@ import sqlancer.clickhouse.ast.ClickHouseBinaryFunctionOperation;
 import sqlancer.clickhouse.ast.ClickHouseBinaryLogicalOperation;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
-
 import sqlancer.clickhouse.ast.ClickHouseJoin;
 import sqlancer.clickhouse.ast.ClickHouseJoinOnClause;
 import sqlancer.clickhouse.ast.ClickHouseSelect;
