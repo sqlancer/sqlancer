@@ -8,7 +8,6 @@ public final class YSQLErrors {
     }
 
     public static void addCommonFetchErrors(ExpectedErrors errors) {
-        errors.add("pg_type array OID value not set when in binary upgrade mode");
         errors.add("Failed DDL operation as requested");
         errors.add("Table with identifier"); // TODO
 
@@ -35,6 +34,7 @@ public final class YSQLErrors {
     }
 
     public static void addCommonTableErrors(ExpectedErrors errors) {
+        errors.add("specified value cannot be cast to type real for column");
         errors.add("PRIMARY KEY containing column of type 'INET' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'VARBIT' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'INT4RANGE' not yet supported");
@@ -47,6 +47,8 @@ public final class YSQLErrors {
 
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
         errors.add("Catalog Version Mismatch");
+        errors.add("specified value cannot be cast to type");
+        errors.add("array OID value not set when in binary upgrade mode");
 
         errors.add("syntax error at or near \"(\"");
         errors.add("encoding conversion from");

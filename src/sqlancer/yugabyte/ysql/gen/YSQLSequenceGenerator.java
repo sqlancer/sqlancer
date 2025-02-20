@@ -3,6 +3,7 @@ package sqlancer.yugabyte.ysql.gen;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 
 public final class YSQLSequenceGenerator {
@@ -84,6 +85,8 @@ public final class YSQLSequenceGenerator {
             // sb.append(s.getRandomTable().getRandomColumn().getFullQualifiedName());
             // }
         }
+        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonFetchErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
