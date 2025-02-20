@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
@@ -12,21 +13,10 @@ import sqlancer.databend.DatabendSchema.DatabendColumn;
 import sqlancer.databend.DatabendSchema.DatabendTable;
 import sqlancer.databend.gen.DatabendNewExpressionGenerator;
 
-public class DatabendJoin implements DatabendExpression, Join<DatabendExpression, DatabendTable, DatabendColumn> {
+public class DatabendJoin extends JoinBase<DatabendExpression>
+        implements DatabendExpression, Join<DatabendExpression, DatabendTable, DatabendColumn> {
 
-    private final DatabendTableReference leftTable;
-    private final DatabendTableReference rightTable;
-    private final JoinType joinType;
-    private DatabendExpression onCondition;
     private OuterType outerType;
-
-    public enum JoinType {
-        INNER, NATURAL, LEFT, RIGHT;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
 
     public enum OuterType {
         LEFT, RIGHT;
@@ -38,26 +28,26 @@ public class DatabendJoin implements DatabendExpression, Join<DatabendExpression
 
     public DatabendJoin(DatabendTableReference leftTable, DatabendTableReference rightTable, JoinType joinType,
             DatabendExpression whereCondition) {
-        this.leftTable = leftTable;
-        this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
+        super(leftTable, rightTable, whereCondition, joinType);
+
     }
 
+    @SuppressWarnings("unchecked")
     public TableReferenceNode<DatabendExpression, DatabendTable> getLeftTable() {
-        return leftTable;
+        return (TableReferenceNode<DatabendExpression, DatabendTable>) leftTable;
     }
 
+    @SuppressWarnings("unchecked")
     public TableReferenceNode<DatabendExpression, DatabendTable> getRightTable() {
-        return rightTable;
+        return (TableReferenceNode<DatabendExpression, DatabendTable>) rightTable;
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     public DatabendExpression getOnCondition() {
-        return onCondition;
+        return onClause;
     }
 
     private void setOuterType(OuterType outerType) {
@@ -125,6 +115,6 @@ public class DatabendJoin implements DatabendExpression, Join<DatabendExpression
 
     @Override
     public void setOnClause(DatabendExpression onClause) {
-        onCondition = onClause;
+        super.onClause = onClause;
     }
 }
