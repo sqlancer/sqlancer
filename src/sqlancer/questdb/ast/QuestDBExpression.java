@@ -1,4 +1,7 @@
 package sqlancer.questdb.ast;
 
-public interface QuestDBExpression {
+import sqlancer.common.ast.newast.Expression;
+import sqlancer.common.schema.AbstractTableColumn;
+
+public interface QuestDBExpression extends Expression<AbstractTableColumn<?,?>> {
 }

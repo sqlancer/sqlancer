@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.gen.CERTGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
@@ -33,7 +34,6 @@ import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.ast.TiDBFunctionCall;
 import sqlancer.tidb.ast.TiDBFunctionCall.TiDBFunction;
 import sqlancer.tidb.ast.TiDBJoin;
-import sqlancer.tidb.ast.TiDBJoin.JoinType;
 import sqlancer.tidb.ast.TiDBOrderingTerm;
 import sqlancer.tidb.ast.TiDBRegexOperation;
 import sqlancer.tidb.ast.TiDBRegexOperation.TiDBRegexOperator;
