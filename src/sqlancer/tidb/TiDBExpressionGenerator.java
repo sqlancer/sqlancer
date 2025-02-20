@@ -294,9 +294,9 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invarient relation
                                                                                            // between LEFT and RIGHT
                                                                                            // join
-            newJoinType = JoinType.getRandomExcept(JoinType.NATURAL, JoinType.LEFT, JoinType.RIGHT);
+            newJoinType = JoinType.getRandomExcept("TIDB", JoinType.NATURAL, JoinType.LEFT, JoinType.RIGHT);
         } else {
-            newJoinType = JoinType.getRandomExcept(JoinType.NATURAL, join.getJoinType());
+            newJoinType = JoinType.getRandomExcept("TIDB", JoinType.NATURAL, join.getJoinType());
         }
         assert newJoinType != JoinType.NATURAL; // Natural Join is not supported for CERT
         boolean increase = join.getJoinType().ordinal() < newJoinType.ordinal();
