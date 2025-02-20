@@ -91,7 +91,7 @@ public class TiDBJoin extends JoinBase<TiDBExpression>
             List<TiDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
             TiDBExpressionGenerator joinGen = new TiDBExpressionGenerator(globalState).setColumns(columns);
-            switch (TiDBJoin.JoinType.getRandom()) {
+            switch (TiDBJoin.JoinType.getRandomForDatabase("TIDB")) {
             case INNER:
                 joinExpressions.add(TiDBJoin.createInnerJoin(leftTable, rightTable, joinGen.generateExpression()));
                 break;
@@ -126,7 +126,7 @@ public class TiDBJoin extends JoinBase<TiDBExpression>
             List<TiDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
             TiDBExpressionGenerator joinGen = new TiDBExpressionGenerator(globalState).setColumns(columns);
-            switch (TiDBJoin.JoinType.getRandom()) {
+            switch (TiDBJoin.JoinType.getRandomForDatabase("TIDB")) {
             case INNER:
                 joinExpressions.add(TiDBJoin.createInnerJoin(leftTable, rightTable, joinGen.generateExpression()));
                 break;
