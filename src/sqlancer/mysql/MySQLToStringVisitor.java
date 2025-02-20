@@ -319,35 +319,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLJoin join) {
-        sb.append(" ");
-        switch (join.getType()) {
-        case NATURAL:
-            sb.append("NATURAL ");
-            break;
-        case INNER:
-            sb.append("INNER ");
-            break;
-        case STRAIGHT:
-            sb.append("STRAIGHT_");
-            break;
-        case LEFT:
-            sb.append("LEFT ");
-            break;
-        case RIGHT:
-            sb.append("RIGHT ");
-            break;
-        case CROSS:
-            sb.append("CROSS ");
-            break;
-        default:
-            throw new AssertionError(join.getType());
-        }
+        visitBasicJoinType(join);
         sb.append("JOIN ");
         sb.append(join.getTable().getName());
-        if (join.getOnClause() != null) {
-            sb.append(" ON ");
-            visit(join.getOnClause());
-        }
+        visitOnClauses(join);
     }
 
     @Override

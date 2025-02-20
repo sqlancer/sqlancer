@@ -2,7 +2,10 @@ package sqlancer.mariadb.ast;
 
 import java.util.List;
 
-public class MariaDBStringVisitor extends MariaDBVisitor {
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.visitor.ToStringVisitor;
+
+public class MariaDBStringVisitor extends ToStringVisitor<MariaDBExpression> implements MariaDBVisitor {
 
     private final StringBuilder sb = new StringBuilder();
 
@@ -47,8 +50,8 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
             }
             visit(s.getFromList().get(j));
         }
-        for (MariaDBExpression j : s.getJoinClauses()) {
-            visit(j);
+        for (JoinBase<MariaDBExpression> j : s.getJoinClauses()) {
+            visit((MariaDBJoin) j);
         }
         if (s.getWhereCondition() != null) {
             sb.append(" WHERE ");
@@ -141,39 +144,28 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
 
     @Override
     public void visit(MariaDBJoin join) {
-        sb.append(" ");
-        switch (join.getType()) {
-        case NATURAL:
-            sb.append("NATURAL ");
-            break;
-        case INNER:
-            sb.append("INNER ");
-            break;
-        case STRAIGHT:
-            sb.append("STRAIGHT_");
-            break;
-        case LEFT:
-            sb.append("LEFT ");
-            break;
-        case RIGHT:
-            sb.append("RIGHT ");
-            break;
-        case CROSS:
-            sb.append("CROSS ");
-            break;
-        default:
-            throw new AssertionError(join.getType());
-        }
+        visitBasicJoinType(join);
         sb.append("JOIN ");
         sb.append(join.getTable().getName());
-        if (join.getOnClause() != null) {
-            sb.append(" ON ");
-            visit(join.getOnClause());
-        }
+        visitOnClauses(join);
     }
 
     @Override
     public void visit(MariaDBTableReference ref) {
         sb.append(ref.getTable().getName());
+    }
+
+    @Override
+    public void visitSpecific(MariaDBExpression expr) {
+    }
+
+    @Override
+    protected MariaDBExpression getJoinOnClause(JoinBase<MariaDBExpression> join) {
+        return null;
+    }
+
+    @Override
+    protected MariaDBExpression getJoinTableReference(JoinBase<MariaDBExpression> join) {
+        return null;
     }
 }

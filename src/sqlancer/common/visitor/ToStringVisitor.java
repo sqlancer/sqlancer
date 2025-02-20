@@ -178,6 +178,41 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         }
     }
 
+    protected void visitBasicJoinType(JoinBase<T> join) {
+        sb.append(" ");
+        switch (join.getType()) {
+        case NATURAL:
+            sb.append("NATURAL ");
+            break;
+        case INNER:
+            sb.append("INNER ");
+            break;
+        case STRAIGHT:
+            sb.append("STRAIGHT_");
+            break;
+        case LEFT:
+            sb.append("LEFT ");
+            break;
+        case RIGHT:
+            sb.append("RIGHT ");
+            break;
+        case CROSS:
+            sb.append("CROSS ");
+            break;
+        default:
+            throw new AssertionError(join.getType());
+        }
+
+
+    }
+    public void visitOnClauses(JoinBase<T> join) {
+        if (join.getOnClause() != null) {
+            sb.append(" ON ");
+            visit(join.getOnClause());
+        }
+
+    }
+
     protected boolean shouldVisitOnClause(JoinBase<T> join) {
         return join.getType() != JoinBase.JoinType.CROSS;
     }

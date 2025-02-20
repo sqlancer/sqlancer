@@ -5,31 +5,24 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 
-public class MariaDBJoin implements MariaDBExpression, Join<MariaDBExpression, MariaDBTable, MariaDBColumn> {
-
-    public enum JoinType {
-        NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS;
-    }
+public class MariaDBJoin extends JoinBase<MariaDBExpression> implements MariaDBExpression, Join<MariaDBExpression, MariaDBTable, MariaDBColumn> {
 
     private final MariaDBTable table;
-    private MariaDBExpression onClause;
-    private JoinType type;
 
     public MariaDBJoin(MariaDBJoin other) {
+        super(null, other.onClause, other.type);
         this.table = other.table;
-        this.onClause = other.onClause;
-        this.type = other.type;
     }
 
     public MariaDBJoin(MariaDBTable table, MariaDBExpression onClause, JoinType type) {
+        super(null, onClause, type);
         this.table = table;
-        this.onClause = onClause;
-        this.type = type;
     }
 
     public MariaDBTable getTable() {

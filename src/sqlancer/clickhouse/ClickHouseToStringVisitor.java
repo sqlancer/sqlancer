@@ -14,6 +14,7 @@ import sqlancer.clickhouse.ast.ClickHouseSelect;
 import sqlancer.clickhouse.ast.ClickHouseTableReference;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.visitor.ToStringVisitor;
 
 public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpression> implements ClickHouseVisitor {
@@ -21,6 +22,16 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
     @Override
     public void visitSpecific(ClickHouseExpression expr) {
         ClickHouseVisitor.super.visit(expr);
+    }
+
+    @Override
+    protected ClickHouseExpression getJoinOnClause(JoinBase<ClickHouseExpression> join) {
+        return null;
+    }
+
+    @Override
+    protected ClickHouseExpression getJoinTableReference(JoinBase<ClickHouseExpression> join) {
+        return null;
     }
 
     @Override
