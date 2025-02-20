@@ -37,6 +37,14 @@ public abstract class JoinBase<T extends Expression<?>> {
         this.rightTable = rightTable;
     }
 
+    protected JoinBase(JoinType type, T onClause) {
+        this.tableReference = null;
+        this.onClause = onClause;
+        this.type = type;
+        this.leftTable = null;
+        this.rightTable = null;
+    }
+
     public T getTableReference() {
         return tableReference;
     }
