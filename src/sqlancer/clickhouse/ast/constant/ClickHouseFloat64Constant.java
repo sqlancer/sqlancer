@@ -2,23 +2,12 @@ package sqlancer.clickhouse.ast.constant;
 
 import com.clickhouse.client.ClickHouseDataType;
 
-import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseNumericConstant;
 
 public class ClickHouseFloat64Constant extends ClickHouseNumericConstant<Double> {
 
     public ClickHouseFloat64Constant(double value) {
         super(value);
-    }
-
-    @Override
-    public Object getValue() {
-        return value;
-    }
-
-    @Override
-    public boolean isNull() {
-        return false;
     }
 
     @Override
@@ -34,17 +23,6 @@ public class ClickHouseFloat64Constant extends ClickHouseNumericConstant<Double>
     @Override
     public boolean compareInternal(Object val) {
         return Double.compare(value, (double) val) == 0;
-    }
-
-    @Override
-    public ClickHouseConstant applyLess(ClickHouseConstant right) {
-        if (this.getDataType() == right.getDataType()) {
-            return this.asDouble() < right.asDouble() ? ClickHouseCreateConstant.createTrue()
-                    : ClickHouseCreateConstant.createFalse();
-        }
-        ClickHouseConstant converted = right.cast(ClickHouseDataType.Float64);
-        return this.asDouble() < converted.asDouble() ? ClickHouseCreateConstant.createTrue()
-                : ClickHouseCreateConstant.createFalse();
     }
 
     @Override
