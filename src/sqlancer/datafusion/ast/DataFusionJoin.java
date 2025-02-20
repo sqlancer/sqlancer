@@ -76,6 +76,6 @@ public class DataFusionJoin extends JoinBase<DataFusionExpression>
 
     @Override
     public void setOnClause(DataFusionExpression onClause) {
-        onClause = onClause;
+        super.onClause = onClause;
     }
 }
