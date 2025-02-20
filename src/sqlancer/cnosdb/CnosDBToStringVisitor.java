@@ -21,9 +21,54 @@ import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
 import sqlancer.cnosdb.ast.CnosDBSimilarTo;
 import sqlancer.common.visitor.BinaryOperation;
-import sqlancer.common.visitor.ToStringVisitor;
+import sqlancer.common.visitor.SelectToStringVisitor;
 
-public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpression> implements CnosDBVisitor {
+public final class CnosDBToStringVisitor extends SelectToStringVisitor<CnosDBExpression, CnosDBSelect, CnosDBJoin>
+        implements CnosDBVisitor {
+
+    @Override
+    protected CnosDBExpression getDistinctOnClause(CnosDBSelect select) {
+        return select.getDistinctOnClause();
+    }
+
+    @Override
+    protected void visitJoinClauses(CnosDBSelect select) {
+        for (CnosDBJoin join : select.getJoinClauses()) {
+            visitJoinClause(join);
+        }
+    }
+
+    @Override
+    protected void visitJoinType(CnosDBJoin join) {
+        switch (join.getType()) {
+        case INNER:
+            if (Randomly.getBoolean()) {
+                sb.append("INNER ");
+            }
+            sb.append("JOIN");
+            break;
+        case LEFT:
+            sb.append("LEFT OUTER JOIN");
+            break;
+        case RIGHT:
+            sb.append("RIGHT OUTER JOIN");
+            break;
+        case FULL:
+            sb.append("FULL OUTER JOIN");
+            break;
+        // case CROSS:
+        // sb.append("CROSS JOIN");
+        // break;
+        default:
+            throw new AssertionError(join.getType());
+        }
+    }
+
+    @Override
+    protected boolean shouldVisitOnClause(CnosDBJoin join) {
+        // return join.getType() != CnosDBJoinType.CROSS;
+        return true;
+    }
 
     @Override
     public void visitSpecific(CnosDBExpression expr) {
@@ -77,88 +122,17 @@ public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpressio
 
     @Override
     public void visit(CnosDBSelect s) {
-        sb.append("SELECT ");
-        switch (s.getSelectOption()) {
-        case DISTINCT:
-            sb.append("DISTINCT ");
-            if (s.getDistinctOnClause() != null) {
-                sb.append("ON (");
-                visit(s.getDistinctOnClause());
-                sb.append(") ");
-            }
-            break;
-        case ALL:
-            sb.append(Randomly.fromOptions("ALL ", ""));
-            break;
-        default:
-            throw new AssertionError();
-        }
-        if (s.getFetchColumns() == null) {
-            sb.append("*");
-        } else {
-            visit(s.getFetchColumns());
-        }
-        sb.append(" FROM ");
-        visit(s.getFromList());
+        visitSelect(s);
+    }
 
-        for (CnosDBJoin j : s.getJoinClauses()) {
-            sb.append(" ");
-            switch (j.getType()) {
-            case INNER:
-                if (Randomly.getBoolean()) {
-                    sb.append("INNER ");
-                }
-                sb.append("JOIN");
-                break;
-            case LEFT:
-                sb.append("LEFT OUTER JOIN");
-                break;
-            case RIGHT:
-                sb.append("RIGHT OUTER JOIN");
-                break;
-            case FULL:
-                sb.append("FULL OUTER JOIN");
-                break;
-            // case CROSS:
-            // sb.append("CROSS JOIN");
-            // break;
-            default:
-                throw new AssertionError(j.getType());
-            }
-            sb.append(" ");
-            visit(j.getTableReference());
-            // if (j.getType() != CnosDBJoinType.CROSS) {
-            sb.append(" ON ");
-            visit(j.getOnClause());
-            // }
-        }
+    @Override
+    protected CnosDBExpression getJoinOnClause(CnosDBJoin join) {
+        return join.getOnClause();
+    }
 
-        if (s.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(s.getWhereClause());
-        }
-        if (s.getGroupByExpressions().size() > 0) {
-            sb.append(" GROUP BY ");
-            visit(s.getGroupByExpressions());
-        }
-        if (s.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(s.getHavingClause());
-
-        }
-        if (!s.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(s.getOrderByClauses());
-        }
-        if (s.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(s.getLimitClause());
-        }
-
-        if (s.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(s.getOffsetClause());
-        }
+    @Override
+    protected CnosDBExpression getJoinTableReference(CnosDBJoin join) {
+        return join.getTableReference();
     }
 
     @Override

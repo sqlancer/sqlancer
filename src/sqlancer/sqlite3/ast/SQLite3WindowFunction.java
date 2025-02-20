@@ -10,7 +10,7 @@ import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3WindowFunction extends SQLite3Expression {
+public class SQLite3WindowFunction implements SQLite3Expression {
 
     private WindowFunction func;
     private SQLite3Expression[] args;

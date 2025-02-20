@@ -1,6 +1,5 @@
 package sqlancer.materialize.gen;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -23,19 +22,9 @@ public final class MaterializeCommon {
     }
 
     public static List<String> getCommonFetchErrors() {
-        ArrayList<String> errors = new ArrayList<>();
+        List<String> errors = DBMSCommon.getCommonFetchErrors();
 
-        errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
-        errors.add("but it cannot be referenced from this part of the query");
-        errors.add("missing FROM-clause entry for table");
-
-        errors.add("canceling statement due to statement timeout");
-
-        errors.add("non-integer constant in GROUP BY");
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("GROUP BY position");
         errors.add("result exceeds max size of");
-
         errors.add("does not exist");
         errors.add("aggregate functions are not allowed in");
         errors.add("is only defined for finite arguments");
@@ -48,12 +37,7 @@ public final class MaterializeCommon {
     }
 
     public static List<String> getCommonTableErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("is not commutative"); // exclude
-        errors.add("operator requires run-time type coercion"); // exclude
-
-        return errors;
+        return DBMSCommon.getCommonTableErrors();
     }
 
     public static void addCommonTableErrors(ExpectedErrors errors) {
@@ -61,33 +45,10 @@ public final class MaterializeCommon {
     }
 
     public static List<String> getCommonExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
+        List<String> errors = DBMSCommon.getCommonExpressionErrors();
 
-        errors.add("You might need to add explicit type casts");
-        errors.add("invalid regular expression");
-        errors.add("could not determine which collation to use");
-        errors.add("invalid regular expression");
-        errors.add("operator does not exist");
-        errors.add("quantifier operand invalid");
-        errors.add("collation mismatch");
-        errors.add("collations are not supported");
-        errors.add("operator is not unique");
-        errors.add("is not a valid binary digit");
-        errors.add("invalid hexadecimal digit");
-        errors.add("invalid hexadecimal data: odd number of digits");
-        errors.add("zero raised to a negative power is undefined");
         errors.add("cannot convert infinity to numeric");
-        errors.add("division by zero");
-        errors.add("invalid input syntax for type money");
-        errors.add("invalid input syntax for type");
-        errors.add("cannot cast type");
-        errors.add("value overflows numeric format");
         errors.add("numeric field overflow");
-        errors.add("LIKE pattern must not end with escape character");
-        errors.add("is of type boolean but expression is of type text");
-        errors.add("a negative number raised to a non-integer power yields a complex result");
-        errors.add("could not determine polymorphic type because input has type unknown");
-        errors.add("character number must be positive");
         errors.add("unterminated escape sequence");
         errors.add("cannot be matched");
         errors.add("clause must have type"); // "not" in having doesn't work
@@ -96,12 +57,8 @@ public final class MaterializeCommon {
         errors.add("aggregate functions are not allowed in");
         errors.add("only defined for finite arguments");
         errors.add("unable to parse column reference in GROUP BY clause"); // TODO
-        errors.addAll(getToCharFunctionErrors());
-        errors.addAll(getBitStringOperationErrors());
-        errors.addAll(getFunctionErrors());
-        errors.addAll(getCommonRangeExpressionErrors());
-        errors.addAll(getCommonRegexExpressionErrors());
 
+        errors.addAll(getFunctionErrors());
         return errors;
     }
 
@@ -109,70 +66,9 @@ public final class MaterializeCommon {
         errors.addAll(getCommonExpressionErrors());
     }
 
-    private static List<String> getToCharFunctionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("multiple decimal points");
-        errors.add("and decimal point together");
-        errors.add("multiple decimal points");
-        errors.add("cannot use \"S\" twice");
-        errors.add("must be ahead of \"PR\"");
-        errors.add("cannot use \"S\" and \"PL\"/\"MI\"/\"SG\"/\"PR\" together");
-        errors.add("cannot use \"S\" and \"SG\" together");
-        errors.add("cannot use \"S\" and \"MI\" together");
-        errors.add("cannot use \"S\" and \"PL\" together");
-        errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
-        errors.add("is not a number");
-
-        return errors;
-    }
-
-    private static List<String> getBitStringOperationErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("cannot XOR bit strings of different sizes");
-        errors.add("cannot AND bit strings of different sizes");
-        errors.add("cannot OR bit strings of different sizes");
-        errors.add("must be type boolean, not type text");
-
-        return errors;
-    }
-
     private static List<String> getFunctionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("out of valid range"); // get_bit/get_byte
-        errors.add("cannot take logarithm of a negative number");
-        errors.add("cannot take logarithm of zero");
-        errors.add("requested character too large for encoding"); // chr
-        errors.add("null character not permitted"); // chr
-        errors.add("requested character not valid for encoding"); // chr
-        errors.add("requested length too large"); // repeat
-        errors.add("invalid memory alloc request size"); // repeat
+        List<String> errors = DBMSCommon.getFunctionErrors();
         errors.add("encoding conversion from UTF8 to ASCII not supported"); // to_ascii
-        errors.add("negative substring length not allowed"); // substr
-        errors.add("invalid mask length"); // set_masklen
-
-        return errors;
-    }
-
-    private static List<String> getCommonRegexExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("is not a valid hexadecimal digit");
-
-        return errors;
-    }
-
-    public static List<String> getCommonRangeExpressionErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("range lower bound must be less than or equal to range upper bound");
-        errors.add("result of range difference would not be contiguous");
-        errors.add("out of range");
-        errors.add("malformed range literal");
-        errors.add("result of range union would not be contiguous");
-
         return errors;
     }
 
@@ -181,12 +77,8 @@ public final class MaterializeCommon {
     }
 
     public static List<String> getCommonInsertUpdateErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("value too long for type character");
-        errors.add("not found in view targetlist");
+        List<String> errors = DBMSCommon.getCommonInsertUpdateErrors();
         errors.add("CAST does not support casting from");
-
         return errors;
     }
 
@@ -195,14 +87,9 @@ public final class MaterializeCommon {
     }
 
     public static List<String> getGroupingErrors() {
-        ArrayList<String> errors = new ArrayList<>();
-
-        errors.add("non-integer constant in GROUP BY"); // TODO
+        List<String> errors = DBMSCommon.getGroupingErrors();
         errors.add("unable to parse column reference in GROUP BY clause"); // TODO
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("is not in select list");
         errors.add("aggregate functions are not allowed in");
-
         return errors;
     }
 

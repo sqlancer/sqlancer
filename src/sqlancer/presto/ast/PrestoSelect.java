@@ -14,6 +14,7 @@ public class PrestoSelect extends SelectBase<PrestoExpression>
 
     private boolean isDistinct;
 
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }

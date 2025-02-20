@@ -18,6 +18,7 @@ public class DuckDBSelect extends SelectBase<DuckDBExpression>
         this.isDistinct = isDistinct;
     }
 
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }

@@ -10,6 +10,7 @@ public class YCQLSelect extends SelectBase<YCQLExpression> implements YCQLExpres
         this.isDistinct = isDistinct;
     }
 
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }

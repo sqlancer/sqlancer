@@ -143,7 +143,7 @@ public class SQLite3TableGenerator {
     }
 
     private void addColumnConstraints(String s) {
-        sb.append(", " + s + " (");
+        sb.append(", ").append(s).append(" (");
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
             if (i != 0) {
                 sb.append(", ");

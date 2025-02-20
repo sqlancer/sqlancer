@@ -3,6 +3,8 @@ package sqlancer.common.ast;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.Randomly;
+
 public class SelectBase<T> {
 
     List<T> fetchColumns;
@@ -14,6 +16,7 @@ public class SelectBase<T> {
     T havingClause;
     T limitClause;
     T offsetClause;
+    public SelectType selectOption = SelectType.ALL; // default value
 
     public void setFetchColumns(List<T> fetchColumns) {
         if (fetchColumns == null || fetchColumns.isEmpty()) {
@@ -125,5 +128,25 @@ public class SelectBase<T> {
 
     public void setGroupByClause(List<T> groupByExpressions) {
         setGroupByExpressions(groupByExpressions);
+    }
+
+    public boolean isDistinct() {
+        return selectOption == SelectType.DISTINCT;
+    }
+
+    public enum SelectType {
+        DISTINCT, ALL;
+
+        public static SelectType getRandom() {
+            return Randomly.fromOptions(values());
+        }
+    }
+
+    public SelectType getSelectOption() {
+        return selectOption;
+    }
+
+    public void setSelectOption(SelectType option) {
+        this.selectOption = option;
     }
 }
