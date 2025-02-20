@@ -204,8 +204,7 @@ class ClickHouseToStringVisitorTest {
         ClickHouseSelect select = new ClickHouseSelect();
         select.setFetchColumns(Arrays.asList(a1_ref, a2_ref, b1_ref, b2_ref));
         select.setFromClause(table1_ref);
-        ClickHouseJoin join = new ClickHouseJoin(table1_ref, table2_ref,
-                ClickHouseJoin.JoinType.CROSS);
+        ClickHouseJoin join = new ClickHouseJoin(table1_ref, table2_ref, ClickHouseJoin.JoinType.CROSS);
         select.setJoinClauses(Arrays.asList(join));
         String result = ClickHouseVisitor.asString(select);
         String answer = "SELECT t1.a1, t2.a2, t1.b1, t2.b2 FROM t1 JOIN t2";
@@ -246,8 +245,7 @@ class ClickHouseToStringVisitorTest {
         ClickHouseSelect select = new ClickHouseSelect();
         select.setFetchColumns(Arrays.asList(a1_ref, a2_ref, b1_ref, b2_ref));
         select.setFromClause(table1_ref);
-        ClickHouseJoin join = new ClickHouseJoin(table1_ref, table2_ref,
-                ClickHouseJoin.JoinType.CROSS);
+        ClickHouseJoin join = new ClickHouseJoin(table1_ref, table2_ref, ClickHouseJoin.JoinType.CROSS);
         select.setJoinClauses(Arrays.asList(join));
         String result = ClickHouseVisitor.asString(select);
         String answer = "SELECT left.a1, left.b1, right.a2, right.b2 FROM t1 AS left JOIN t2 AS right";
@@ -288,10 +286,8 @@ class ClickHouseToStringVisitorTest {
         ClickHouseSelect select = new ClickHouseSelect();
         select.setFetchColumns(Arrays.asList(a1_ref, a2_ref, b1_ref, b2_ref));
         select.setFromClause(table1_ref);
-        ClickHouseJoinOnClause on = new ClickHouseJoinOnClause(a1_ref,
-                a2_ref);
-        ClickHouseJoin join = new ClickHouseJoin(table1_ref, table2_ref,
-                ClickHouseJoin.JoinType.INNER, on);
+        ClickHouseJoinOnClause on = new ClickHouseJoinOnClause(a1_ref, a2_ref);
+        ClickHouseJoin join = new ClickHouseJoin(table1_ref, table2_ref, ClickHouseJoin.JoinType.INNER, on);
         select.setJoinClauses(Arrays.asList(join));
         String result = ClickHouseVisitor.asString(select);
         String answer = "SELECT t1.a1, t2.a2, t1.b1, t2.b2 FROM t1 INNER JOIN t2 ON ((t1.a1)=(t2.a2))";
@@ -332,10 +328,8 @@ class ClickHouseToStringVisitorTest {
         ClickHouseSelect select = new ClickHouseSelect();
         select.setFetchColumns(Arrays.asList(a1_ref, a2_ref, b1_ref, b2_ref));
         select.setFromClause(table1_ref);
-        ClickHouseJoinOnClause on = new ClickHouseJoinOnClause(a1_ref,
-                a2_ref);
-        ClickHouseJoin join = new ClickHouseJoin(table1_ref, table2_ref,
-                ClickHouseJoin.JoinType.INNER, on);
+        ClickHouseJoinOnClause on = new ClickHouseJoinOnClause(a1_ref, a2_ref);
+        ClickHouseJoin join = new ClickHouseJoin(table1_ref, table2_ref, ClickHouseJoin.JoinType.INNER, on);
         select.setJoinClauses(Arrays.asList(join));
         String result = ClickHouseVisitor.asString(select);
         String answer = "SELECT left.a1, right.a2, left.b1, right.b2 FROM t1 AS left INNER JOIN t2 AS right ON ((left.a1)=(right.a2))";
