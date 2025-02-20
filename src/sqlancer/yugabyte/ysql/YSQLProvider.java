@@ -40,6 +40,8 @@ import sqlancer.yugabyte.ysql.gen.YSQLUpdateGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLVacuumGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLViewGenerator;
 
+import static sqlancer.yugabyte.ysql.YSQLOptions.YSQLOracleFactory.CATALOG;
+
 @AutoService(DatabaseProvider.class)
 public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOptions> {
 
@@ -300,26 +302,49 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
     private String getCreateDatabaseCommand(YSQLGlobalState state) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE ").append(databaseName).append(" ");
-        if (Randomly.getBoolean() && state.getDbmsSpecificOptions().testCollations) {
+        if (CATALOG.equals(state.getDbmsSpecificOptions().oracle.getFirst())) {
+            // Force colocation true if CATALOG test is selected
             sb.append("WITH ");
-            if (Randomly.getBoolean()) {
-                sb.append("ENCODING '");
-                sb.append(Randomly.fromOptions("utf8"));
-                sb.append("' ");
-            }
-
-            // create non colocated database with low priority to avoid cluster resource issues
             if (Randomly.getPercentage() > 0.05) {
                 sb.append("COLOCATION = true ");
             }
 
-            for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
-                if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
-                    sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+            if (Randomly.getBoolean() && state.getDbmsSpecificOptions().testCollations) {
+                if (Randomly.getBoolean()) {
+                    sb.append("ENCODING '");
+                    sb.append(Randomly.fromOptions("utf8"));
+                    sb.append("' ");
                 }
-            }
-            sb.append(" TEMPLATE template0");
+                for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
+                    if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
+                        sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+                    }
+                }
+                sb.append(" TEMPLATE template0");
 
+            }
+        } else {
+            if (Randomly.getBoolean() && state.getDbmsSpecificOptions().testCollations) {
+                sb.append("WITH ");
+                if (Randomly.getBoolean()) {
+                    sb.append("ENCODING '");
+                    sb.append(Randomly.fromOptions("utf8"));
+                    sb.append("' ");
+                }
+
+                // create non colocated database with low priority to avoid cluster resource issues
+                if (Randomly.getPercentage() > 0.05) {
+                    sb.append("COLOCATION = true ");
+                }
+
+                for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
+                    if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
+                        sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+                    }
+                }
+                sb.append(" TEMPLATE template0");
+
+            }
         }
         return sb.toString();
     }
