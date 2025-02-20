@@ -65,8 +65,30 @@ public abstract class JoinBase<T extends Expression<?>> {
         INNER, LEFT, RIGHT, FULL, CROSS, JoinType, NATURAL, STRAIGHT, OUTER, LEFT_OUTER, RIGHT_OUTER, FULL_OUTER,
         LEFT_ANTI, RIGHT_ANTI;
 
+        private static final JoinType[] DATAFUSION_TYPES = {INNER};
+        private static final JoinType[] MYSQL_TYPES = {INNER, LEFT, RIGHT};
+        private static final JoinType[] POSTGRES_TYPES = {INNER, LEFT, RIGHT, FULL};
+
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
+        }
+
+        public static JoinType getRandomForDatabase(String dbType) {
+            JoinType[] allowedTypes;
+            switch(dbType) {
+            case "DATAFUSION":
+                allowedTypes = DATAFUSION_TYPES;
+                break;
+            case "MYSQL":
+                allowedTypes = MYSQL_TYPES;
+                break;
+            case "POSTGRES":
+                allowedTypes = POSTGRES_TYPES;
+                break;
+            default:
+                allowedTypes = values();
+            }
+            return Randomly.fromOptions(allowedTypes);
         }
 
         public static JoinType getRandomExcept(JoinType... exclude) {

@@ -41,7 +41,7 @@ public class DataFusionJoin extends JoinBase<DataFusionExpression>
             // TODO(datafusion) this `joinGen` can generate super chaotic exprsions, maybe we should make it more like a
             // normal join expression
             DataFusionExpressionGenerator joinGen = new DataFusionExpressionGenerator(globalState).setColumns(columns);
-            switch (DataFusionJoin.JoinType.getRandom()) {
+            switch (DataFusionJoin.JoinType.getRandomForDatabase("DATAFUSION")) {
             case INNER:
                 joinExpressions.add(DataFusionJoin.createInnerJoin(leftTable, rightTable,
                         joinGen.generateExpression(DataFusionSchema.DataFusionDataType.BOOLEAN)));
