@@ -4,7 +4,7 @@ import java.util.List;
 
 import sqlancer.common.ast.SelectBase;
 
-public abstract class NewToStringVisitor<E> {
+public abstract class NewToStringVisitor<E extends Expression<?>> {
 
     protected final StringBuilder sb = new StringBuilder();
 

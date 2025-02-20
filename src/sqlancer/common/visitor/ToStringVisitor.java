@@ -112,7 +112,10 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         }
     }
 
-    protected abstract T getDistinctOnClause(SelectBase<T> select);
+    protected T getDistinctOnClause(SelectBase<T> select) {
+        return select.getDistinctOnClause();
+    }
+
 
 
     protected void visitColumns(SelectBase<T> select) {
@@ -121,10 +124,10 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         } else {
             visit(select.getFetchColumns());
         }
-        sb.append(" FROM ");
     }
 
     protected void visitFromClause(SelectBase<T> select) {
+        sb.append(" FROM ");
         visit(select.getFromList());
     }
 
@@ -188,7 +191,7 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
     }
 
     protected void visitGroupByClause(SelectBase<T> select) {
-        if (select.getGroupByExpressions().size() > 0) {
+        if (!select.getGroupByExpressions().isEmpty()) {
             sb.append(" GROUP BY ");
             visit(select.getGroupByExpressions());
         }

@@ -54,7 +54,7 @@ public abstract class JoinBase<T extends Expression<?>> {
     }
 
     public enum JoinType {
-        INNER, LEFT, RIGHT, FULL, CROSS, JoinType, NATURAL;
+        INNER, LEFT, RIGHT, FULL, CROSS, JoinType, NATURAL, STRAIGHT, OUTER;
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
