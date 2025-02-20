@@ -302,7 +302,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
     private String getCreateDatabaseCommand(YSQLGlobalState state) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE DATABASE ").append(databaseName).append(" ");
-        if (CATALOG.equals(state.getDbmsSpecificOptions().oracle.getFirst())) {
+        if (CATALOG.equals(state.getDbmsSpecificOptions().oracle.get(0))) {
             // Force colocation true if CATALOG test is selected
             sb.append("WITH ");
             if (Randomly.getPercentage() > 0.05) {
