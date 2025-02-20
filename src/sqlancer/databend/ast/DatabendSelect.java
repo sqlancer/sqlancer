@@ -3,6 +3,7 @@ package sqlancer.databend.ast;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.databend.DatabendSchema.DatabendColumn;
@@ -24,15 +25,17 @@ public class DatabendSelect extends SelectBase<DatabendExpression>
     }
 
     @Override
-    public void setJoinClauses(List<DatabendJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<DatabendExpression>> joinStatements) {
         List<DatabendExpression> expressions = joinStatements.stream().map(e -> (DatabendExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
     @Override
-    public List<DatabendJoin> getJoinClauses() {
-        return getJoinList().stream().map(e -> (DatabendJoin) e).collect(Collectors.toList());
+    public List<JoinBase<DatabendExpression>> getJoinClauses() {
+        return getJoinList().stream()
+                .map(e -> (JoinBase<DatabendExpression>) e)
+                .collect(Collectors.toList());
     }
 
     @Override

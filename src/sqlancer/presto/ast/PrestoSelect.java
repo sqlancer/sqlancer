@@ -3,6 +3,7 @@ package sqlancer.presto.ast;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.presto.PrestoSchema.PrestoColumn;
@@ -24,15 +25,15 @@ public class PrestoSelect extends SelectBase<PrestoExpression>
     }
 
     @Override
-    public void setJoinClauses(List<PrestoJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<PrestoExpression>> joinStatements) {
         List<PrestoExpression> expressions = joinStatements.stream().map(e -> (PrestoExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
     @Override
-    public List<PrestoJoin> getJoinClauses() {
-        return getJoinList().stream().map(e -> (PrestoJoin) e).collect(Collectors.toList());
+    public List<JoinBase<PrestoExpression>> getJoinClauses() {
+        return getJoinList().stream().map(e -> (JoinBase<PrestoExpression>) e).collect(Collectors.toList());
     }
 
     @Override

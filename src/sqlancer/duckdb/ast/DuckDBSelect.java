@@ -3,6 +3,7 @@ package sqlancer.duckdb.ast;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
@@ -24,15 +25,15 @@ public class DuckDBSelect extends SelectBase<DuckDBExpression>
     }
 
     @Override
-    public void setJoinClauses(List<DuckDBJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<DuckDBExpression>> joinStatements) {
         List<DuckDBExpression> expressions = joinStatements.stream().map(e -> (DuckDBExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
     @Override
-    public List<DuckDBJoin> getJoinClauses() {
-        return getJoinList().stream().map(e -> (DuckDBJoin) e).collect(Collectors.toList());
+    public List<JoinBase<DuckDBExpression>> getJoinClauses() {
+        return getJoinList().stream().map(e -> (JoinBase<DuckDBExpression>) e).collect(Collectors.toList());
     }
 
     @Override

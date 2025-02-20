@@ -3,6 +3,7 @@ package sqlancer.hsqldb.ast;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
@@ -24,15 +25,15 @@ public class HSQLDBSelect extends SelectBase<HSQLDBExpression>
     }
 
     @Override
-    public void setJoinClauses(List<HSQLDBJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<HSQLDBExpression>> joinStatements) {
         List<HSQLDBExpression> expressions = joinStatements.stream().map(e -> (HSQLDBExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
     @Override
-    public List<HSQLDBJoin> getJoinClauses() {
-        return getJoinList().stream().map(e -> (HSQLDBJoin) e).collect(Collectors.toList());
+    public List<JoinBase<HSQLDBExpression>> getJoinClauses() {
+        return getJoinList().stream().map(e -> (JoinBase<HSQLDBExpression>) e).collect(Collectors.toList());
     }
 
     @Override
