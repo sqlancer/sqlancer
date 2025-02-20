@@ -73,6 +73,7 @@ public abstract class JoinBase<T extends Expression<?>> {
         private static final JoinType[] SQLITE3_TYPES = { INNER, CROSS, OUTER, NATURAL, RIGHT, FULL };
         private static final JoinType[] TIDB_TYPES = { NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS };
         private static final JoinType[] COCKROACHDB_TYPES = { INNER, LEFT, RIGHT, FULL, CROSS, NATURAL };
+        private static final JoinType[] DORIS_TYPES = { INNER, STRAIGHT, LEFT, RIGHT };
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
@@ -100,10 +101,14 @@ public abstract class JoinBase<T extends Expression<?>> {
                 allowedTypes = POSTGRES_TYPES;
                 break;
             case "TIDB":
+            case "MARIADB":
                 allowedTypes = TIDB_TYPES;
                 break;
             case "COCKROACHDB":
                 allowedTypes = COCKROACHDB_TYPES;
+                break;
+            case "DORIS":
+                allowedTypes = DORIS_TYPES;
                 break;
             default:
                 allowedTypes = values();

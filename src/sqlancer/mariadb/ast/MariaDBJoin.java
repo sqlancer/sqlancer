@@ -51,7 +51,7 @@ public class MariaDBJoin extends JoinBase<MariaDBExpression>
 
     public static List<MariaDBJoin> getRandomJoinClauses(List<MariaDBTable> tables, Randomly r) {
         List<MariaDBJoin> joinStatements = new ArrayList<>();
-        List<JoinType> options = new ArrayList<>(Arrays.asList(JoinType.values()));
+        List<JoinType> options = new ArrayList<>(Arrays.asList(JoinType.getValues("MARIADB")));
         List<MariaDBColumn> columns = new ArrayList<>();
         if (tables.size() > 1) {
             int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
