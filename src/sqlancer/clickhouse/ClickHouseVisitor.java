@@ -9,6 +9,9 @@ import sqlancer.clickhouse.ast.ClickHouseCastOperation;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
+import sqlancer.clickhouse.ast.ClickHouseJoin;
+import sqlancer.clickhouse.ast.ClickHouseJoinOnClause;
+import sqlancer.clickhouse.ast.ClickHousePostfixText;
 import sqlancer.clickhouse.ast.ClickHouseSelect;
 import sqlancer.clickhouse.ast.ClickHouseTableReference;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
@@ -45,7 +48,7 @@ public interface ClickHouseVisitor {
 
     };
 
-    default void visit(ClickHouseExpression.ClickHousePostfixText op) {
+    default void visit(ClickHousePostfixText op) {
 
     }
 
@@ -55,7 +58,7 @@ public interface ClickHouseVisitor {
 
     void visit(ClickHouseAliasOperation alias);
 
-    void visit(ClickHouseExpression.ClickHouseJoin join);
+    void visit(ClickHouseJoin join);
 
     void visit(ClickHouseAggregate aggregate);
 
@@ -80,16 +83,16 @@ public interface ClickHouseVisitor {
             visit((ClickHouseTableReference) expr);
         } else if (expr instanceof ClickHouseCastOperation) {
             visit((ClickHouseCastOperation) expr);
-        } else if (expr instanceof ClickHouseExpression.ClickHouseJoin) {
-            visit((ClickHouseExpression.ClickHouseJoin) expr);
-        } else if (expr instanceof ClickHouseExpression.ClickHousePostfixText) {
-            visit((ClickHouseExpression.ClickHousePostfixText) expr);
+        } else if (expr instanceof ClickHouseJoin) {
+            visit((ClickHouseJoin) expr);
+        } else if (expr instanceof ClickHousePostfixText) {
+            visit((ClickHousePostfixText) expr);
         } else if (expr instanceof ClickHouseAggregate) {
             visit((ClickHouseAggregate) expr);
         } else if (expr instanceof ClickHouseAliasOperation) {
             visit((ClickHouseAliasOperation) expr);
-        } else if (expr instanceof ClickHouseExpression.ClickHouseJoinOnClause) {
-            visit((ClickHouseExpression.ClickHouseJoinOnClause) expr);
+        } else if (expr instanceof ClickHouseJoinOnClause) {
+            visit((ClickHouseJoinOnClause) expr);
         } else {
             throw new AssertionError(expr);
         }

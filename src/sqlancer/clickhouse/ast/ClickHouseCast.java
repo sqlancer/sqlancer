@@ -10,7 +10,7 @@ import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
-public final class ClickHouseCast extends ClickHouseExpression {
+public final class ClickHouseCast implements ClickHouseExpression {
 
     private static final double MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = Math.pow(2, 51 - 1) - 1;
     private static final double MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = -Math.pow(2, 51 - 1);

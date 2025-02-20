@@ -6,10 +6,11 @@ import java.util.List;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ClickHouseToStringVisitor;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Select;
 
-public class ClickHouseSelect extends ClickHouseExpression implements
-        Select<ClickHouseExpression.ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn> {
+public class ClickHouseSelect  implements ClickHouseExpression,
+        Select<ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn> {
 
     private ClickHouseSelect.SelectType fromOptions = ClickHouseSelect.SelectType.ALL;
     private List<ClickHouseExpression> fromClauses;
@@ -19,7 +20,7 @@ public class ClickHouseSelect extends ClickHouseExpression implements
     private List<ClickHouseExpression> orderByClause = Collections.emptyList();
     private ClickHouseExpression offsetClause;
     private List<ClickHouseExpression> fetchColumns = Collections.emptyList();
-    private List<ClickHouseExpression.ClickHouseJoin> joinStatements = Collections.emptyList();
+    private List<JoinBase<ClickHouseExpression>> joinStatements = Collections.emptyList();
     private ClickHouseExpression havingClause;
 
     public enum SelectType {
@@ -108,12 +109,12 @@ public class ClickHouseSelect extends ClickHouseExpression implements
     }
 
     @Override
-    public void setJoinClauses(List<ClickHouseExpression.ClickHouseJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<ClickHouseExpression>> joinStatements) {
         this.joinStatements = joinStatements;
     }
 
     @Override
-    public List<ClickHouseExpression.ClickHouseJoin> getJoinClauses() {
+    public List<JoinBase<ClickHouseExpression>> getJoinClauses() {
         return joinStatements;
     }
 

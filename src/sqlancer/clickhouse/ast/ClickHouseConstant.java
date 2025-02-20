@@ -4,7 +4,7 @@ import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
-public abstract class ClickHouseConstant extends ClickHouseExpression {
+public abstract class ClickHouseConstant implements ClickHouseExpression {
 
     public boolean isNull() {
         return false;

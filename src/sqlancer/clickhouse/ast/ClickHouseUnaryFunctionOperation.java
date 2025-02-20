@@ -4,8 +4,8 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.visitor.UnaryOperation;
 
-public class ClickHouseUnaryFunctionOperation extends ClickHouseExpression
-        implements UnaryOperation<ClickHouseExpression> {
+public class ClickHouseUnaryFunctionOperation implements ClickHouseExpression,
+        UnaryOperation<ClickHouseExpression> {
     private final ClickHouseUnaryFunctionOperation.ClickHouseUnaryFunctionOperator operator;
     private final ClickHouseExpression expression;
 

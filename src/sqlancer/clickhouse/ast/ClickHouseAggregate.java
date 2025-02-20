@@ -9,7 +9,7 @@ import com.clickhouse.client.ClickHouseDataType;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseSchema;
 
-public class ClickHouseAggregate extends ClickHouseExpression {
+public class ClickHouseAggregate implements ClickHouseExpression {
 
     private final ClickHouseAggregate.ClickHouseAggregateFunction func;
     private final ClickHouseExpression expr;

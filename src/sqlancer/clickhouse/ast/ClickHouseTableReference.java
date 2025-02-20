@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 
-public class ClickHouseTableReference extends ClickHouseExpression {
+public class ClickHouseTableReference implements ClickHouseExpression {
 
     private final ClickHouseTable table;
     private final String alias;
