@@ -1,6 +1,6 @@
 package sqlancer.oceanbase;
 
-import  java.util.List;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -27,7 +27,6 @@ import sqlancer.oceanbase.ast.OceanBaseTableReference;
 import sqlancer.oceanbase.ast.OceanBaseText;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPostfixOperation;
 import sqlancer.oceanbase.ast.OceanBaseUnaryPrefixOperation;
-
 
 public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpression> implements OceanBaseVisitor {
 
