@@ -30,8 +30,7 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
 
-public final class PostgresToStringVisitor
-        extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
+public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 
     @Override
     protected boolean hasDistinctOnSupport() {
@@ -115,7 +114,7 @@ public final class PostgresToStringVisitor
     }
 
     @Override
-    protected PostgresExpression getJoinTableReference(JoinBase<PostgresExpression>  join) {
+    protected PostgresExpression getJoinTableReference(JoinBase<PostgresExpression> join) {
         return join.getTableReference();
     }
 

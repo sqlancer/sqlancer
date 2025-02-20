@@ -108,7 +108,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
     }
 
     @Override
-    protected void visitJoinClauses(SelectBase<CockroachDBExpression> select){
+    protected void visitJoinClauses(SelectBase<CockroachDBExpression> select) {
         if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
             sb.append(", ");
         }

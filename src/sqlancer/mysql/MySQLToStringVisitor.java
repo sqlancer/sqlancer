@@ -64,7 +64,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visitSelectOption(SelectBase<MySQLExpression> s) {
-        switch (((MySQLSelect)s).getFromOptions()) {
+        switch (((MySQLSelect) s).getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");
             break;

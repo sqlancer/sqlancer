@@ -104,7 +104,7 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
     }
 
     protected void visitDistinctOnClause(SelectBase<T> select) {
-        //todo
+        // todo
         if (hasDistinctOnSupport() && getDistinctOnClause(select) != null) {
             sb.append("ON (");
             visit(getDistinctOnClause(select));
@@ -115,8 +115,6 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
     protected T getDistinctOnClause(SelectBase<T> select) {
         return select.getDistinctOnClause();
     }
-
-
 
     protected void visitColumns(SelectBase<T> select) {
         if (select.getFetchColumns() == null) {
@@ -131,12 +129,11 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         visit(select.getFromList());
     }
 
-    protected void visitJoinClauses(SelectBase<T> select){
+    protected void visitJoinClauses(SelectBase<T> select) {
         for (JoinBase join : select.getJoinClauses()) {
             visitJoinClause(join);
         }
     }
-
 
     protected void visitJoinClause(JoinBase<T> join) {
         sb.append(" ");
@@ -203,8 +200,8 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
             throw new AssertionError(join.getType());
         }
 
-
     }
+
     public void visitOnClauses(JoinBase<T> join) {
         if (join.getOnClause() != null) {
             sb.append(" ON ");
@@ -216,7 +213,6 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
     protected boolean shouldVisitOnClause(JoinBase<T> join) {
         return join.getType() != JoinBase.JoinType.CROSS;
     }
-
 
     protected void visitWhereClause(SelectBase<T> select) {
         if (select.getWhereClause() != null) {

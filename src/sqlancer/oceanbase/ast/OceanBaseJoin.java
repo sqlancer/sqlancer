@@ -5,7 +5,8 @@ import sqlancer.common.ast.newast.Join;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseColumn;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseTable;
 
-public class OceanBaseJoin extends JoinBase<OceanBaseExpression> implements OceanBaseExpression, Join<OceanBaseExpression, OceanBaseTable, OceanBaseColumn> {
+public class OceanBaseJoin extends JoinBase<OceanBaseExpression>
+        implements OceanBaseExpression, Join<OceanBaseExpression, OceanBaseTable, OceanBaseColumn> {
 
     public OceanBaseJoin(OceanBaseExpression tableReference, OceanBaseExpression onClause, JoinType type) {
         super(tableReference, onClause, type);

@@ -33,9 +33,7 @@ public class DatabendSelect extends SelectBase<DatabendExpression>
 
     @Override
     public List<JoinBase<DatabendExpression>> getJoinClauses() {
-        return getJoinList().stream()
-                .map(e -> (JoinBase<DatabendExpression>) e)
-                .collect(Collectors.toList());
+        return getJoinList().stream().map(e -> (JoinBase<DatabendExpression>) e).collect(Collectors.toList());
     }
 
     @Override

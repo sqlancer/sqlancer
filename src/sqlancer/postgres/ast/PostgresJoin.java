@@ -12,7 +12,8 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class PostgresJoin extends JoinBase<PostgresExpression> implements PostgresExpression, Join<PostgresExpression, PostgresTable, PostgresColumn> {
+public class PostgresJoin extends JoinBase<PostgresExpression>
+        implements PostgresExpression, Join<PostgresExpression, PostgresTable, PostgresColumn> {
 
     public PostgresJoin(PostgresExpression tableReference, PostgresExpression onClause, JoinType type) {
         super(tableReference, onClause, type);

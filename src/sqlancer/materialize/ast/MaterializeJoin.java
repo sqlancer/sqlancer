@@ -9,8 +9,7 @@ import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 public class MaterializeJoin extends JoinBase<MaterializeExpression>
         implements MaterializeExpression, Join<MaterializeExpression, MaterializeTable, MaterializeColumn> {
 
-    public MaterializeJoin(MaterializeExpression tableReference, MaterializeExpression onClause,
-            JoinType type) {
+    public MaterializeJoin(MaterializeExpression tableReference, MaterializeExpression onClause, JoinType type) {
         super(tableReference, onClause, type);
     }
 

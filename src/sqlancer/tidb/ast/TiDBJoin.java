@@ -11,10 +11,10 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
-public class TiDBJoin extends JoinBase<TiDBExpression> implements TiDBExpression, Join<TiDBExpression, TiDBTable, TiDBColumn> {
+public class TiDBJoin extends JoinBase<TiDBExpression>
+        implements TiDBExpression, Join<TiDBExpression, TiDBTable, TiDBColumn> {
 
     private NaturalJoinType outerType;
-
 
     public enum NaturalJoinType {
         INNER, LEFT, RIGHT;

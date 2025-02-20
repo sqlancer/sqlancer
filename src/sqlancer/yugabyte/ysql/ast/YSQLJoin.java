@@ -6,7 +6,8 @@ import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
-public class YSQLJoin extends JoinBase<YSQLExpression> implements YSQLExpression, Join<YSQLExpression, YSQLTable, YSQLColumn> {
+public class YSQLJoin extends JoinBase<YSQLExpression>
+        implements YSQLExpression, Join<YSQLExpression, YSQLTable, YSQLColumn> {
 
     public YSQLJoin(YSQLExpression tableReference, YSQLExpression onClause, JoinBase.JoinType type) {
         super(tableReference, onClause, type);

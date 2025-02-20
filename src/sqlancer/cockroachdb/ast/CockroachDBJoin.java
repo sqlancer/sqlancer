@@ -9,8 +9,8 @@ public class CockroachDBJoin extends JoinBase<CockroachDBExpression>
         implements CockroachDBExpression, Join<CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
 
     public CockroachDBJoin(CockroachDBExpression leftTable, CockroachDBExpression rightTable,
-            CockroachDBExpression whereCondition,  JoinType joinType ) {
-        super(leftTable, rightTable, whereCondition,  joinType);
+            CockroachDBExpression whereCondition, JoinType joinType) {
+        super(leftTable, rightTable, whereCondition, joinType);
     }
 
     public CockroachDBExpression getLeftTable() {

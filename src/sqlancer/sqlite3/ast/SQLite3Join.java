@@ -39,7 +39,6 @@ public class SQLite3Join extends JoinBase<SQLite3Expression>
         return onClause;
     }
 
-
     public JoinType getType() {
         return type;
     }

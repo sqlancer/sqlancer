@@ -12,10 +12,10 @@ import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public class MySQLJoin extends JoinBase<MySQLExpression> implements MySQLExpression, Join<MySQLExpression, MySQLTable, MySQLColumn> {
+public class MySQLJoin extends JoinBase<MySQLExpression>
+        implements MySQLExpression, Join<MySQLExpression, MySQLTable, MySQLColumn> {
 
     private final MySQLTable table;
-
 
     public MySQLJoin(MySQLJoin other) {
         super(null, other.onClause, other.type);

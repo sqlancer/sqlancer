@@ -12,7 +12,8 @@ import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 import sqlancer.materialize.MaterializeVisitor;
 
-public class MaterializeSelect extends SelectBase<MaterializeExpression> implements MaterializeExpression, Select<MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeSchema.MaterializeColumn> {
+public class MaterializeSelect extends SelectBase<MaterializeExpression> implements MaterializeExpression,
+        Select<MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeSchema.MaterializeColumn> {
 
     private List<JoinBase<MaterializeExpression>> joinClauses = Collections.emptyList();
     private MaterializeExpression distinctOnClause;
@@ -100,7 +101,7 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
 
     @Override
     public void setJoinClauses(List<JoinBase<MaterializeExpression>> joinStatements) {
-        this.joinClauses =  joinStatements;
+        this.joinClauses = joinStatements;
     }
 
     @Override

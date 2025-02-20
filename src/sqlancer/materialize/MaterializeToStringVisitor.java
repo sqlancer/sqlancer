@@ -27,8 +27,8 @@ import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
 import sqlancer.materialize.ast.MaterializeSimilarTo;
 
-public final class MaterializeToStringVisitor extends
-        ToStringVisitor<MaterializeExpression> implements MaterializeVisitor {
+public final class MaterializeToStringVisitor extends ToStringVisitor<MaterializeExpression>
+        implements MaterializeVisitor {
 
     @Override
     protected boolean hasDistinctOnSupport() {

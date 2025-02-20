@@ -64,7 +64,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visitSelectOption(SelectBase<OceanBaseExpression> s) {
-        switch (((OceanBaseSelect)s).getFromOptions()) {
+        switch (((OceanBaseSelect) s).getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");
             break;

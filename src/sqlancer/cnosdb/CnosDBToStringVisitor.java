@@ -24,9 +24,7 @@ import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.BinaryOperation;
 import sqlancer.common.visitor.ToStringVisitor;
 
-public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpression>
-        implements CnosDBVisitor {
-
+public final class CnosDBToStringVisitor extends ToStringVisitor<CnosDBExpression> implements CnosDBVisitor {
 
     @Override
     protected void visitJoinType(JoinBase<CnosDBExpression> join) {

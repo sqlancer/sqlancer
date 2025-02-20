@@ -11,7 +11,8 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.gen.MariaDBExpressionGenerator;
 
-public class MariaDBJoin extends JoinBase<MariaDBExpression> implements MariaDBExpression, Join<MariaDBExpression, MariaDBTable, MariaDBColumn> {
+public class MariaDBJoin extends JoinBase<MariaDBExpression>
+        implements MariaDBExpression, Join<MariaDBExpression, MariaDBTable, MariaDBColumn> {
 
     private final MariaDBTable table;
 

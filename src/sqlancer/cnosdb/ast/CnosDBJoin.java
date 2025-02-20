@@ -7,7 +7,7 @@ import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 
 public class CnosDBJoin extends JoinBase<CnosDBExpression>
-implements CnosDBExpression, Join<CnosDBExpression, CnosDBTable, CnosDBColumn> {
+        implements CnosDBExpression, Join<CnosDBExpression, CnosDBTable, CnosDBColumn> {
 
     public CnosDBJoin(CnosDBExpression tableReference, CnosDBExpression onClause, JoinType type) {
         super(tableReference, onClause, type);
