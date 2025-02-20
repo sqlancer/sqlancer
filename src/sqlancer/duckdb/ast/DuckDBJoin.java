@@ -4,27 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 
-public class DuckDBJoin implements DuckDBExpression, Join<DuckDBExpression, DuckDBTable, DuckDBColumn> {
+public class DuckDBJoin extends JoinBase<DuckDBExpression> implements DuckDBExpression, Join<DuckDBExpression, DuckDBTable, DuckDBColumn> {
 
     private final DuckDBTableReference leftTable;
     private final DuckDBTableReference rightTable;
-    private final JoinType joinType;
-    private DuckDBExpression onCondition;
     private OuterType outerType;
-
-    public enum JoinType {
-        INNER, NATURAL, LEFT, RIGHT;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
 
     public enum OuterType {
         FULL, LEFT, RIGHT;
@@ -36,10 +27,9 @@ public class DuckDBJoin implements DuckDBExpression, Join<DuckDBExpression, Duck
 
     public DuckDBJoin(DuckDBTableReference leftTable, DuckDBTableReference rightTable, JoinType joinType,
             DuckDBExpression whereCondition) {
+        super(joinType, whereCondition);
         this.leftTable = leftTable;
         this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
     }
 
     public DuckDBTableReference getLeftTable() {
@@ -51,11 +41,11 @@ public class DuckDBJoin implements DuckDBExpression, Join<DuckDBExpression, Duck
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     public DuckDBExpression getOnCondition() {
-        return onCondition;
+        return onClause;
     }
 
     private void setOuterType(OuterType outerType) {
@@ -74,7 +64,7 @@ public class DuckDBJoin implements DuckDBExpression, Join<DuckDBExpression, Duck
             List<DuckDBColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
             DuckDBExpressionGenerator joinGen = new DuckDBExpressionGenerator(globalState).setColumns(columns);
-            switch (DuckDBJoin.JoinType.getRandom()) {
+            switch (DuckDBJoin.JoinType.getRandomForDatabase("DUCKDB")) {
             case INNER:
                 joinExpressions.add(DuckDBJoin.createInnerJoin(leftTable, rightTable, joinGen.generateExpression()));
                 break;
@@ -120,6 +110,6 @@ public class DuckDBJoin implements DuckDBExpression, Join<DuckDBExpression, Duck
 
     @Override
     public void setOnClause(DuckDBExpression onClause) {
-        this.onCondition = onClause;
+        super.onClause = onClause;
     }
 }

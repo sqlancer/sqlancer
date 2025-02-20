@@ -68,7 +68,7 @@ public class DatabendJoin extends JoinBase<DatabendExpression>
             DatabendNewExpressionGenerator joinGen = new DatabendNewExpressionGenerator(globalState)
                     .setColumns(columns);
 
-            switch (JoinType.getRandom()) {
+            switch (JoinType.getRandomForDatabase("DATABEND")) {
             case INNER:
                 joinExpressions.add(DatabendJoin.createInnerJoin(leftTable, rightTable,
                         joinGen.generateExpression(DatabendSchema.DatabendDataType.BOOLEAN)));
