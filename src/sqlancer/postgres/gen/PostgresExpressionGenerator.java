@@ -677,7 +677,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             PostgresExpression joinClause = generateExpression(PostgresDataType.BOOLEAN);
             PostgresTable table = Randomly.fromList(targetTables);
             targetTables.remove(table);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("POSTGRES");
             PostgresJoin j = new PostgresJoin(new PostgresFromTable(table, Randomly.getBoolean()), joinClause, options);
             joinStatements.add(j);
         }
@@ -686,7 +686,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             PostgresTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
             PostgresSubquery subquery = createSubquery(globalState, String.format("sub%d", i), subqueryTables);
             PostgresExpression joinClause = generateExpression(PostgresDataType.BOOLEAN);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("POSTGRES");
             PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }
@@ -785,9 +785,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
         JoinType newJoinType = JoinType.INNER;
         if (join.getType() == JoinType.LEFT || join.getType() == JoinType.RIGHT) {
-            newJoinType = JoinType.getRandomExcept(JoinType.LEFT, JoinType.RIGHT);
+            newJoinType = JoinType.getRandomExcept("POSTGRES", JoinType.LEFT, JoinType.RIGHT);
         } else {
-            newJoinType = JoinType.getRandomExcept(join.getType());
+            newJoinType = JoinType.getRandomExcept("POSTGRES", join.getType());
         }
         boolean increase = join.getType().ordinal() < newJoinType.ordinal();
         join.setType(newJoinType);

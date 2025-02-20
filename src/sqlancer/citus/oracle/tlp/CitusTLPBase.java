@@ -233,7 +233,7 @@ public class CitusTLPBase extends PostgresTLPBase {
             PostgresExpressionGenerator subqueryJoinGen = new PostgresExpressionGenerator(globalState)
                     .setColumns(columns);
             PostgresExpression joinClause = subqueryJoinGen.generateExpression(PostgresDataType.BOOLEAN);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("POSTGRES");
             PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }

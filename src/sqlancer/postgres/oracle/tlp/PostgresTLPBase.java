@@ -60,7 +60,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
             PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
             PostgresTable table = Randomly.fromList(tables);
             tables.remove(table);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("POSTGRES");
             PostgresJoin j = new PostgresJoin(new PostgresFromTable(table, Randomly.getBoolean()), joinClause, options);
             joinStatements.add(j);
         }
@@ -70,7 +70,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
             PostgresSubquery subquery = PostgresTLPBase.createSubquery(globalState, String.format("sub%d", i),
                     subqueryTables);
             PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("POSTGRES");
             PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }

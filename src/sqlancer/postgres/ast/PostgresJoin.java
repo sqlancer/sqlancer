@@ -45,7 +45,7 @@ public class PostgresJoin extends JoinBase<PostgresExpression>
             columns.addAll(left.getTable().getColumns());
             columns.addAll(right.getTable().getColumns());
             PostgresExpressionGenerator joinGen = new PostgresExpressionGenerator(globalState).setColumns(columns);
-            joinExpressions.add(PostgresJoin.createJoin(left, right, JoinType.getRandom(),
+            joinExpressions.add(PostgresJoin.createJoin(left, right, JoinType.getRandomForDatabase("POSTGRES"),
                     joinGen.generateExpression(0, PostgresDataType.BOOLEAN)));
         }
         return joinExpressions;
