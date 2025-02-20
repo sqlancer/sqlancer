@@ -628,7 +628,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
             YSQLTable table = Randomly.fromList(tables);
             tables.remove(table);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("YSQL");
             YSQLJoin j = new YSQLJoin(new YSQLSelect.YSQLFromTable(table, Randomly.getBoolean()), joinClause, options);
             joinStatements.add(j);
         }
@@ -637,7 +637,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             YSQLTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
             YSQLSelect.YSQLSubquery subquery = createSubquery(globalState, String.format("sub%d", i), subqueryTables);
             YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("YSQL");
             YSQLJoin j = new YSQLJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }

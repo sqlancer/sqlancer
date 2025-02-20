@@ -66,8 +66,12 @@ public abstract class JoinBase<T extends Expression<?>> {
         LEFT_ANTI, RIGHT_ANTI;
 
         private static final JoinType[] DATAFUSION_TYPES = {INNER};
-        private static final JoinType[] MYSQL_TYPES = {INNER, LEFT, RIGHT};
-        private static final JoinType[] POSTGRES_TYPES = {INNER, LEFT, RIGHT, FULL};
+        private static final JoinType[] DATABEND_TYPES = {INNER, NATURAL, LEFT, RIGHT};
+        private static final JoinType[] H2_TYPES = {INNER, CROSS, NATURAL, LEFT, RIGHT};
+        private static final JoinType[] PRESTO_TYPES = {INNER, LEFT, RIGHT};
+        private static final JoinType[] POSTGRES_TYPES = {INNER, LEFT, RIGHT, FULL, CROSS};
+        private static final JoinType[] SQLITE3_TYPES = {INNER, CROSS, OUTER, NATURAL, RIGHT, FULL};
+        private static final JoinType[] TIDB_TYPES = {NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS};
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
@@ -79,11 +83,23 @@ public abstract class JoinBase<T extends Expression<?>> {
             case "DATAFUSION":
                 allowedTypes = DATAFUSION_TYPES;
                 break;
-            case "MYSQL":
-                allowedTypes = MYSQL_TYPES;
+            case "DATABEND":
+            case "DUCKDB":
+            case "HSQLDB":
+                allowedTypes = DATABEND_TYPES;
+                break;
+            case "H2":
+                allowedTypes = H2_TYPES;
+                break;
+            case "PRESTO":
+                allowedTypes = PRESTO_TYPES;
                 break;
             case "POSTGRES":
+            case "YSQL":
                 allowedTypes = POSTGRES_TYPES;
+                break;
+            case "TIDB":
+                allowedTypes = TIDB_TYPES;
                 break;
             default:
                 allowedTypes = values();
@@ -91,11 +107,36 @@ public abstract class JoinBase<T extends Expression<?>> {
             return Randomly.fromOptions(allowedTypes);
         }
 
-        public static JoinType getRandomExcept(JoinType... exclude) {
-            JoinType[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
+        public static JoinType getRandomExcept(String dbType, JoinType... exclude) {
+            JoinType[] allowedTypes;
+
+            switch (dbType) {
+            case "POSTGRES":
+                allowedTypes = POSTGRES_TYPES;
+                break;
+            case "TIDB":
+                allowedTypes = TIDB_TYPES;
+                break;
+            default:
+                allowedTypes = values();
+            }
+
+            JoinType[] values = Arrays.stream(allowedTypes).filter(m -> !Arrays.asList(exclude).contains(m))
                     .toArray(JoinType[]::new);
             return Randomly.fromOptions(values);
         }
 
+        public static JoinType[] getValues(String dbType) {
+            JoinType[] allowedTypes;
+
+            switch (dbType) {
+            case "SQLITE3":
+                allowedTypes = SQLITE3_TYPES;
+                break;
+            default:
+                allowedTypes = values();
+            }
+            return allowedTypes;
+        }
     }
 }

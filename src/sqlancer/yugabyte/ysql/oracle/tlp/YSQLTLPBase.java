@@ -56,7 +56,7 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
             YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
             YSQLTable table = Randomly.fromList(tables);
             tables.remove(table);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("YSQL");
             YSQLJoin j = new YSQLJoin(new YSQLSelect.YSQLFromTable(table, Randomly.getBoolean()), joinClause, options);
             joinStatements.add(j);
         }
@@ -66,7 +66,7 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
             YSQLSelect.YSQLSubquery subquery = YSQLExpressionGenerator.createSubquery(globalState,
                     String.format("sub%d", i), subqueryTables);
             YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
-            JoinType options = JoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("YSQL");
             YSQLJoin j = new YSQLJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }
