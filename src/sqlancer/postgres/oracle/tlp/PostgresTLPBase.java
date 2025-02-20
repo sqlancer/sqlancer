@@ -77,6 +77,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         return joinStatements;
     }
 
+    @SuppressWarnings("unchecked")
     protected void generateSelectBase(List<PostgresTable> tables, List<PostgresJoin> joins) {
         List<PostgresExpression> tableList = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
                 .collect(Collectors.toList());
@@ -86,7 +87,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         select.setFetchColumns(generateFetchColumns());
         select.setFromList(tableList);
         select.setWhereClause(null);
-        select.setJoinClauses((List<JoinBase<PostgresExpression>>)(List<?>)joins);
+        select.setJoinClauses((List<JoinBase<PostgresExpression>>) (List<?>) joins);
         if (Randomly.getBoolean()) {
             select.setForClause(ForClause.getRandom());
         }

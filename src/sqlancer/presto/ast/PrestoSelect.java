@@ -31,6 +31,7 @@ public class PrestoSelect extends SelectBase<PrestoExpression>
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<JoinBase<PrestoExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (JoinBase<PrestoExpression>) e).collect(Collectors.toList());

@@ -58,6 +58,7 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
         this.reproducer = null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void check() throws SQLException {
         reproducer = null;
@@ -66,7 +67,7 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
         gen = gen.setTablesAndColumns(targetTables);
 
         Z select = gen.generateSelect();
-        select.setJoinClauses((List<JoinBase<E>>)(List<?>) gen.getRandomJoinClauses());
+        select.setJoinClauses((List<JoinBase<E>>) (List<?>) gen.getRandomJoinClauses());
         select.setFromList(gen.getTableRefs());
 
         E randomWhereCondition = gen.generateBooleanExpression();

@@ -59,6 +59,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         return new SQLQueryAdapter(SQLite3Visitor.asString(selectStatement), errors);
     }
 
+    @SuppressWarnings("unchecked")
     public SQLite3Select getQuery() throws SQLException {
         assert !globalState.getSchema().getDatabaseTables().isEmpty();
         localState = globalState.getState().getLocalState();
@@ -75,7 +76,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         List<SQLite3Column> columnsWithoutRowid = columns.stream()
                 .filter(c -> !SQLite3Schema.ROWID_STRINGS.contains(c.getName())).collect(Collectors.toList());
         List<SQLite3Join> joinStatements = getJoinStatements(globalState, tables, columnsWithoutRowid);
-        selectStatement.setJoinClauses((List<JoinBase<SQLite3Expression>>)(List<?>)joinStatements);
+        selectStatement.setJoinClauses((List<JoinBase<SQLite3Expression>>) (List<?>) joinStatements);
         selectStatement.setFromList(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
 
         fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);

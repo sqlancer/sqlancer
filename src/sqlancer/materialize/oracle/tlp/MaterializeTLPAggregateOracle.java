@@ -168,12 +168,12 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
     }
 
     private MaterializeSelect getSelect(List<MaterializeExpression> aggregates, List<MaterializeExpression> from,
-                                        MaterializeExpression whereClause, List<JoinBase<MaterializeExpression>> joinList) {
+            MaterializeExpression whereClause, List<JoinBase<MaterializeExpression>> joinList) {
         MaterializeSelect leftSelect = new MaterializeSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
-        leftSelect.setJoinClauses((List<JoinBase<MaterializeExpression>>)(List<?>)joinList);
+        leftSelect.setJoinClauses(joinList);
         if (Randomly.getBooleanWithSmallProbability()) {
             leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         }

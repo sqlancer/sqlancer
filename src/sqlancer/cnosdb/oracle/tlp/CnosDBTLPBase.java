@@ -74,6 +74,7 @@ public class CnosDBTLPBase extends TernaryLogicPartitioningOracleBase<CnosDBExpr
         return CnosDBNoRECOracle.getJoinStatements(state, columns, tables);
     }
 
+    @SuppressWarnings("unchecked")
     protected void generateSelectBase(List<CnosDBTable> tables, List<CnosDBJoin> joins) {
         List<CnosDBExpression> tableList = tables.stream().map(CnosDBFromTable::new).collect(Collectors.toList());
         gen = new CnosDBExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -82,7 +83,7 @@ public class CnosDBTLPBase extends TernaryLogicPartitioningOracleBase<CnosDBExpr
         select.setFetchColumns(generateFetchColumns());
         select.setFromList(tableList);
         select.setWhereClause(null);
-        select.setJoinClauses((List<JoinBase<CnosDBExpression>>)(List<?>)joins);
+        select.setJoinClauses((List<JoinBase<CnosDBExpression>>) (List<?>) joins);
     }
 
     List<CnosDBExpression> generateFetchColumns() {

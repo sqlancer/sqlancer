@@ -37,6 +37,7 @@ public class DataFusionSelect extends SelectBase<DataFusionExpression> implement
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<JoinBase<DataFusionExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (JoinBase<DataFusionExpression>) e).collect(Collectors.toList());

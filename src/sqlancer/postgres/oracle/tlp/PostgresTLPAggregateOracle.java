@@ -180,12 +180,12 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
     }
 
     private PostgresSelect getSelect(List<PostgresExpression> aggregates, List<PostgresExpression> from,
-                                     PostgresExpression whereClause, List<JoinBase<PostgresExpression>> joinList) {
+            PostgresExpression whereClause, List<JoinBase<PostgresExpression>> joinList) {
         PostgresSelect leftSelect = new PostgresSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
-        leftSelect.setJoinClauses((List<JoinBase<PostgresExpression>>)(List<?>)joinList);
+        leftSelect.setJoinClauses(joinList);
         if (Randomly.getBooleanWithSmallProbability()) {
             leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         }

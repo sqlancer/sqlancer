@@ -179,12 +179,12 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YS
     }
 
     private YSQLSelect getSelect(List<YSQLExpression> aggregates, List<YSQLExpression> from, YSQLExpression whereClause,
-                                 List<JoinBase<YSQLExpression>> joinList) {
+            List<JoinBase<YSQLExpression>> joinList) {
         YSQLSelect leftSelect = new YSQLSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
-        leftSelect.setJoinClauses((List<JoinBase<YSQLExpression>>)(List<?>)joinList);
+        leftSelect.setJoinClauses(joinList);
         if (Randomly.getBooleanWithSmallProbability()) {
             leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         }

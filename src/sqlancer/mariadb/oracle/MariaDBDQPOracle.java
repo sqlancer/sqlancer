@@ -36,6 +36,7 @@ public class MariaDBDQPOracle implements TestOracle<MariaDBGlobalState> {
         MariaDBErrors.addCommonErrors(errors);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void check() throws Exception {
         MariaDBTables tables = s.getRandomTableNonEmptyTables();
@@ -58,7 +59,7 @@ public class MariaDBDQPOracle implements TestOracle<MariaDBGlobalState> {
 
         // Set the join.
         List<MariaDBJoin> joinExpressions = MariaDBJoin.getRandomJoinClauses(tables.getTables(), state.getRandomly());
-        select.setJoinClauses((List<JoinBase<MariaDBExpression>>)(List<?>) joinExpressions);
+        select.setJoinClauses((List<JoinBase<MariaDBExpression>>) (List<?>) joinExpressions);
 
         // Set the from clause from the tables that are not used in the join.
         select.setFromList(

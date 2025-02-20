@@ -31,6 +31,7 @@ public class HSQLDBSelect extends SelectBase<HSQLDBExpression>
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<JoinBase<HSQLDBExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (JoinBase<HSQLDBExpression>) e).collect(Collectors.toList());

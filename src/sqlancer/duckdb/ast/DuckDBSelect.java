@@ -31,6 +31,7 @@ public class DuckDBSelect extends SelectBase<DuckDBExpression>
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<JoinBase<DuckDBExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (JoinBase<DuckDBExpression>) e).collect(Collectors.toList());

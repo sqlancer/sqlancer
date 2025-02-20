@@ -31,6 +31,7 @@ public class DatabendSelect extends SelectBase<DatabendExpression>
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<JoinBase<DatabendExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (JoinBase<DatabendExpression>) e).collect(Collectors.toList());

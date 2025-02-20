@@ -43,6 +43,7 @@ public class SQLite3TLPHavingOracle implements TestOracle<SQLite3GlobalState> {
         errors.add("ON clause references tables to its right");
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void check() throws SQLException {
         SQLite3Schema s = state.getSchema();

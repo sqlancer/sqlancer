@@ -97,6 +97,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         return new CnosDBExpressionGenerator(state).setColumns(columns).generateExpression(CnosDBDataType.BOOLEAN);
     }
 
+    @SuppressWarnings("unchecked")
     private int getUnoptimizedQueryCount(List<CnosDBExpression> fromTables, CnosDBExpression randomWhereCondition,
             List<CnosDBJoin> joinStatements) throws Exception {
         CnosDBSelect select = new CnosDBSelect();
@@ -106,7 +107,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         select.setFetchColumns(List.of(asText));
         select.setFromList(fromTables);
         select.setSelectType(SelectType.ALL);
-        select.setJoinClauses((List<JoinBase<CnosDBExpression>>)(List<?>)joinStatements);
+        select.setJoinClauses((List<JoinBase<CnosDBExpression>>) (List<?>) joinStatements);
         int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + CnosDBVisitor.asString(select) + ") as res";
         if (options.logEachSelect()) {
@@ -134,6 +135,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         return secondCount;
     }
 
+    @SuppressWarnings("unchecked")
     private int getOptimizedQueryCount(List<CnosDBExpression> randomTables, List<CnosDBColumn> columns,
             CnosDBExpression randomWhereCondition, List<CnosDBJoin> joinStatements) {
         CnosDBSelect select = new CnosDBSelect();
@@ -145,7 +147,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
             select.setOrderByClauses(new CnosDBExpressionGenerator(state).setColumns(columns).generateOrderBy());
         }
         select.setSelectType(SelectType.ALL);
-        select.setJoinClauses((List<JoinBase<CnosDBExpression>>)(List<?>)joinStatements);
+        select.setJoinClauses((List<JoinBase<CnosDBExpression>>) (List<?>) joinStatements);
         int firstCount = 0;
         optimizedQueryString = CnosDBVisitor.asString(select);
         if (options.logEachSelect()) {

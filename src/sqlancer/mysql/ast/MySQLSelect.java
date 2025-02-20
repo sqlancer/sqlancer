@@ -62,6 +62,7 @@ public class MySQLSelect extends SelectBase<MySQLExpression>
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<JoinBase<MySQLExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (JoinBase<MySQLExpression>) e).collect(Collectors.toList());

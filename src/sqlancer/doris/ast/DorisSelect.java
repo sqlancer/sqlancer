@@ -54,6 +54,7 @@ public class DorisSelect extends SelectBase<DorisExpression>
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<JoinBase<DorisExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (JoinBase<DorisExpression>) e).collect(Collectors.toList());

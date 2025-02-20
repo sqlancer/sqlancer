@@ -80,6 +80,7 @@ public class MaterializeTLPBase
         return joinStatements;
     }
 
+    @SuppressWarnings("unchecked")
     protected void generateSelectBase(List<MaterializeTable> tables, List<MaterializeJoin> joins) {
         List<MaterializeExpression> tableList = tables.stream()
                 .map(t -> new MaterializeFromTable(t, Randomly.getBoolean())).collect(Collectors.toList());
@@ -89,7 +90,7 @@ public class MaterializeTLPBase
         select.setFetchColumns(generateFetchColumns());
         select.setFromList(tableList);
         select.setWhereClause(null);
-        select.setJoinClauses((List<JoinBase<MaterializeExpression>>)(List<?>)joins);
+        select.setJoinClauses((List<JoinBase<MaterializeExpression>>) (List<?>) joins);
         if (Randomly.getBoolean()) {
             select.setForClause(ForClause.getRandom());
         }

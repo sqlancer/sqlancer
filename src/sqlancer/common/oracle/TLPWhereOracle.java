@@ -73,6 +73,7 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         this.errors = expectedErrors;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void check() throws SQLException {
         reproducer = null;
@@ -84,7 +85,7 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
 
         boolean shouldCreateDummy = true;
         select.setFetchColumns(gen.generateFetchColumns(shouldCreateDummy));
-        select.setJoinClauses((List<JoinBase<E>>)(List<?>) gen.getRandomJoinClauses());
+        select.setJoinClauses((List<JoinBase<E>>) (List<?>) gen.getRandomJoinClauses());
         select.setFromList(gen.getTableRefs());
         select.setWhereClause(null);
 

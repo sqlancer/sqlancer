@@ -73,6 +73,7 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
         return joinStatements;
     }
 
+    @SuppressWarnings("unchecked")
     protected void generateSelectBase(List<YSQLTable> tables, List<YSQLJoin> joins) {
         List<YSQLExpression> tableList = tables.stream()
                 .map(t -> new YSQLSelect.YSQLFromTable(t, Randomly.getBoolean())).collect(Collectors.toList());
@@ -82,7 +83,7 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
         select.setFetchColumns(generateFetchColumns());
         select.setFromList(tableList);
         select.setWhereClause(null);
-        select.setJoinClauses((List<JoinBase<YSQLExpression>>)(List<?>)joins);
+        select.setJoinClauses((List<JoinBase<YSQLExpression>>) (List<?>) joins);
         if (Randomly.getBoolean()) {
             select.setForClause(YSQLSelect.ForClause.getRandom());
         }

@@ -25,6 +25,7 @@ public class H2Select extends SelectBase<H2Expression>
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<JoinBase<H2Expression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (JoinBase<H2Expression>) e).collect(Collectors.toList());
