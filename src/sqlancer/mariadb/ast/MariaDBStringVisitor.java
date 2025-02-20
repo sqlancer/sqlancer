@@ -156,8 +156,7 @@ public class MariaDBStringVisitor extends ToStringVisitor<MariaDBExpression> imp
     }
 
     @Override
-    public void visitSpecific(MariaDBExpression expr) {
-    }
+    public void visitSpecific(MariaDBExpression expr) { MariaDBVisitor.super.visit(expr); }
 
     @Override
     protected MariaDBExpression getJoinOnClause(JoinBase<MariaDBExpression> join) {
