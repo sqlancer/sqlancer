@@ -101,7 +101,6 @@ public abstract class JoinBase<T extends Expression<?>> {
                 allowedTypes = POSTGRES_TYPES;
                 break;
             case "TIDB":
-            case "MARIADB":
                 allowedTypes = TIDB_TYPES;
                 break;
             case "COCKROACHDB":
@@ -144,6 +143,9 @@ public abstract class JoinBase<T extends Expression<?>> {
             switch (dbType) {
             case "SQLITE3":
                 allowedTypes = SQLITE3_TYPES;
+                break;
+            case "MARIADB":
+                allowedTypes = TIDB_TYPES;
                 break;
             default:
                 allowedTypes = values();
