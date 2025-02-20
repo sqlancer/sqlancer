@@ -41,6 +41,7 @@ public class CnosDBSelect extends SelectBase<CnosDBExpression>
         this.joinClauses = joinStatements;
     }
 
+    @Override
     public CnosDBExpression getDistinctOnClause() {
         return distinctOnClause;
     }

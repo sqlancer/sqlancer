@@ -110,6 +110,7 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
         return joinClauses;
     }
 
+    @Override
     public PostgresExpression getDistinctOnClause() {
         return distinctOnClause;
     }

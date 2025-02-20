@@ -39,6 +39,7 @@ public class YSQLSelect extends SelectBase<YSQLExpression>
 
     }
 
+    @Override
     public YSQLExpression getDistinctOnClause() {
         return distinctOnClause;
     }

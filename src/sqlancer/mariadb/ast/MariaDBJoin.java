@@ -30,10 +30,12 @@ public class MariaDBJoin extends JoinBase<MariaDBExpression>
         return table;
     }
 
+    @Override
     public MariaDBExpression getOnClause() {
         return onClause;
     }
 
+    @Override
     public JoinType getType() {
         return type;
     }

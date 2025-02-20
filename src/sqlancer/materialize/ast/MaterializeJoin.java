@@ -13,14 +13,17 @@ public class MaterializeJoin extends JoinBase<MaterializeExpression>
         super(tableReference, onClause, type);
     }
 
+    @Override
     public MaterializeExpression getTableReference() {
         return tableReference;
     }
 
+    @Override
     public MaterializeExpression getOnClause() {
         return onClause;
     }
 
+    @Override
     public JoinType getType() {
         return type;
     }

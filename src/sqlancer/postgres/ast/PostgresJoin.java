@@ -60,6 +60,7 @@ public class PostgresJoin extends JoinBase<PostgresExpression>
         this.type = type;
     }
 
+    @Override
     public PostgresExpression getTableReference() {
         return tableReference;
     }
@@ -72,10 +73,12 @@ public class PostgresJoin extends JoinBase<PostgresExpression>
         return rightTable;
     }
 
+    @Override
     public PostgresExpression getOnClause() {
         return onClause;
     }
 
+    @Override
     public JoinType getType() {
         return type;
     }

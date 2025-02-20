@@ -13,14 +13,17 @@ public class YSQLJoin extends JoinBase<YSQLExpression>
         super(tableReference, onClause, type);
     }
 
+    @Override
     public YSQLExpression getTableReference() {
         return tableReference;
     }
 
+    @Override
     public YSQLExpression getOnClause() {
         return onClause;
     }
 
+    @Override
     public JoinType getType() {
         return type;
     }

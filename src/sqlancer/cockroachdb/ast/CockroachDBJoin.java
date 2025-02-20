@@ -34,6 +34,7 @@ public class CockroachDBJoin extends JoinBase<CockroachDBExpression>
         this.onClause = onClause;
     }
 
+    @Override
     public CockroachDBExpression getOnClause() {
         return onClause;
     }

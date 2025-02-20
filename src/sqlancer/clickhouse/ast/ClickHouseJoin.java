@@ -32,10 +32,12 @@ public class ClickHouseJoin extends JoinBase<ClickHouseExpression> implements Cl
         return (ClickHouseTableReference) rightTable;
     }
 
+    @Override
     public ClickHouseExpression getOnClause() {
         return onClause;
     }
 
+    @Override
     public ClickHouseJoin.JoinType getType() {
         return type;
     }

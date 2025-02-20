@@ -35,10 +35,12 @@ public class SQLite3Join extends JoinBase<SQLite3Expression>
         return table;
     }
 
+    @Override
     public SQLite3Expression getOnClause() {
         return onClause;
     }
 
+    @Override
     public JoinType getType() {
         return type;
     }

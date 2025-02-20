@@ -109,6 +109,7 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
         return joinClauses;
     }
 
+    @Override
     public MaterializeExpression getDistinctOnClause() {
         return distinctOnClause;
     }

@@ -24,6 +24,7 @@ public class CnosDBJoin extends JoinBase<CnosDBExpression>
         return onClause;
     }
 
+    @Override
     public JoinType getType() {
         return type;
     }

@@ -31,10 +31,12 @@ public class MySQLJoin extends JoinBase<MySQLExpression>
         return table;
     }
 
+    @Override
     public MySQLExpression getOnClause() {
         return onClause;
     }
 
+    @Override
     public JoinType getType() {
         return type;
     }
