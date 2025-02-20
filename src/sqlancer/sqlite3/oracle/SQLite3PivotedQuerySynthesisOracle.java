@@ -11,6 +11,8 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.StateToReproduce.OracleRunReproductionState;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -25,7 +27,6 @@ import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Join;
-import sqlancer.sqlite3.ast.SQLite3Join.JoinType;
 import sqlancer.sqlite3.ast.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
@@ -74,7 +75,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         List<SQLite3Column> columnsWithoutRowid = columns.stream()
                 .filter(c -> !SQLite3Schema.ROWID_STRINGS.contains(c.getName())).collect(Collectors.toList());
         List<SQLite3Join> joinStatements = getJoinStatements(globalState, tables, columnsWithoutRowid);
-        selectStatement.setJoinClauses(joinStatements);
+        selectStatement.setJoinClauses((List<JoinBase<SQLite3Expression>>)(List<?>)joinStatements);
         selectStatement.setFromList(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
 
         fetchColumns = Randomly.nonEmptySubset(columnsWithoutRowid);

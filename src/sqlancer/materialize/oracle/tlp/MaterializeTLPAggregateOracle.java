@@ -11,6 +11,7 @@ import org.postgresql.util.PSQLException;
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
@@ -21,7 +22,6 @@ import sqlancer.materialize.ast.MaterializeAggregate;
 import sqlancer.materialize.ast.MaterializeAggregate.MaterializeAggregateFunction;
 import sqlancer.materialize.ast.MaterializeAlias;
 import sqlancer.materialize.ast.MaterializeExpression;
-import sqlancer.materialize.ast.MaterializeJoin;
 import sqlancer.materialize.ast.MaterializePostfixOperation;
 import sqlancer.materialize.ast.MaterializePostfixOperation.PostfixOperator;
 import sqlancer.materialize.ast.MaterializePrefixOperation;
@@ -168,12 +168,12 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
     }
 
     private MaterializeSelect getSelect(List<MaterializeExpression> aggregates, List<MaterializeExpression> from,
-            MaterializeExpression whereClause, List<MaterializeJoin> joinList) {
+                                        MaterializeExpression whereClause, List<JoinBase<MaterializeExpression>> joinList) {
         MaterializeSelect leftSelect = new MaterializeSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);
         leftSelect.setWhereClause(whereClause);
-        leftSelect.setJoinClauses(joinList);
+        leftSelect.setJoinClauses((List<JoinBase<MaterializeExpression>>)(List<?>)joinList);
         if (Randomly.getBooleanWithSmallProbability()) {
             leftSelect.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         }

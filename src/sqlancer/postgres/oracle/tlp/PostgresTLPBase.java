@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -20,7 +22,6 @@ import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
-import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
@@ -59,7 +60,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
             PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
             PostgresTable table = Randomly.fromList(tables);
             tables.remove(table);
-            PostgresJoinType options = PostgresJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             PostgresJoin j = new PostgresJoin(new PostgresFromTable(table, Randomly.getBoolean()), joinClause, options);
             joinStatements.add(j);
         }
@@ -69,7 +70,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
             PostgresSubquery subquery = PostgresTLPBase.createSubquery(globalState, String.format("sub%d", i),
                     subqueryTables);
             PostgresExpression joinClause = gen.generateExpression(PostgresDataType.BOOLEAN);
-            PostgresJoinType options = PostgresJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }
@@ -85,7 +86,7 @@ public class PostgresTLPBase extends TernaryLogicPartitioningOracleBase<Postgres
         select.setFetchColumns(generateFetchColumns());
         select.setFromList(tableList);
         select.setWhereClause(null);
-        select.setJoinClauses(joins);
+        select.setJoinClauses((List<JoinBase<PostgresExpression>>)(List<?>)joins);
         if (Randomly.getBoolean()) {
             select.setForClause(ForClause.getRandom());
         }

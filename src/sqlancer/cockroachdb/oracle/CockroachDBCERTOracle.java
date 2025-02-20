@@ -22,11 +22,12 @@ import sqlancer.cockroachdb.ast.CockroachDBBinaryLogicalOperation.CockroachDBBin
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBJoin;
-import sqlancer.cockroachdb.ast.CockroachDBJoin.JoinType;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.common.DBMSCommon;
+import sqlancer.common.ast.JoinBase.JoinType;
+
 import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;

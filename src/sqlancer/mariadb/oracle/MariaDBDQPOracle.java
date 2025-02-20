@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -57,7 +58,7 @@ public class MariaDBDQPOracle implements TestOracle<MariaDBGlobalState> {
 
         // Set the join.
         List<MariaDBJoin> joinExpressions = MariaDBJoin.getRandomJoinClauses(tables.getTables(), state.getRandomly());
-        select.setJoinClauses(joinExpressions);
+        select.setJoinClauses((List<JoinBase<MariaDBExpression>>)(List<?>) joinExpressions);
 
         // Set the from clause from the tables that are not used in the join.
         select.setFromList(

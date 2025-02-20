@@ -16,7 +16,6 @@ import sqlancer.cnosdb.ast.CnosDBAggregate;
 import sqlancer.cnosdb.ast.CnosDBAggregate.CnosDBAggregateFunction;
 import sqlancer.cnosdb.ast.CnosDBAlias;
 import sqlancer.cnosdb.ast.CnosDBExpression;
-import sqlancer.cnosdb.ast.CnosDBJoin;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation;
 import sqlancer.cnosdb.ast.CnosDBPostfixOperation.PostfixOperator;
 import sqlancer.cnosdb.ast.CnosDBPrefixOperation;
@@ -24,6 +23,7 @@ import sqlancer.cnosdb.ast.CnosDBPrefixOperation.PrefixOperator;
 import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.client.CnosDBResultSet;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
 
 public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracle<CnosDBGlobalState> {
@@ -161,7 +161,7 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
     }
 
     private CnosDBSelect getSelect(List<CnosDBExpression> aggregates, List<CnosDBExpression> from,
-            CnosDBExpression whereClause, List<CnosDBJoin> joinList) {
+                                   CnosDBExpression whereClause, List<JoinBase<CnosDBExpression>> joinList) {
         CnosDBSelect leftSelect = new CnosDBSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);

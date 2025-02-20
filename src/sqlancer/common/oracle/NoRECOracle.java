@@ -1,6 +1,7 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -8,6 +9,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.common.ast.newast.Select;
@@ -64,7 +66,7 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
         gen = gen.setTablesAndColumns(targetTables);
 
         Z select = gen.generateSelect();
-        select.setJoinClauses(gen.getRandomJoinClauses());
+        select.setJoinClauses((List<JoinBase<E>>)(List<?>) gen.getRandomJoinClauses());
         select.setFromList(gen.getTableRefs());
 
         E randomWhereCondition = gen.generateBooleanExpression();

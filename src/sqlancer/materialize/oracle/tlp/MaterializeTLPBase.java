@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -20,7 +22,6 @@ import sqlancer.materialize.ast.MaterializeColumnValue;
 import sqlancer.materialize.ast.MaterializeConstant;
 import sqlancer.materialize.ast.MaterializeExpression;
 import sqlancer.materialize.ast.MaterializeJoin;
-import sqlancer.materialize.ast.MaterializeJoin.MaterializeJoinType;
 import sqlancer.materialize.ast.MaterializeSelect;
 import sqlancer.materialize.ast.MaterializeSelect.ForClause;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
@@ -60,7 +61,7 @@ public class MaterializeTLPBase
             MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
             MaterializeTable table = Randomly.fromList(tables);
             tables.remove(table);
-            MaterializeJoinType options = MaterializeJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             MaterializeJoin j = new MaterializeJoin(new MaterializeFromTable(table, Randomly.getBoolean()), joinClause,
                     options);
             joinStatements.add(j);
@@ -71,7 +72,7 @@ public class MaterializeTLPBase
             MaterializeSubquery subquery = MaterializeTLPBase.createSubquery(globalState, String.format("sub%d", i),
                     subqueryTables);
             MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
-            MaterializeJoinType options = MaterializeJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             MaterializeJoin j = new MaterializeJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }
@@ -88,7 +89,7 @@ public class MaterializeTLPBase
         select.setFetchColumns(generateFetchColumns());
         select.setFromList(tableList);
         select.setWhereClause(null);
-        select.setJoinClauses(joins);
+        select.setJoinClauses((List<JoinBase<MaterializeExpression>>)(List<?>)joins);
         if (Randomly.getBoolean()) {
             select.setForClause(ForClause.getRandom());
         }

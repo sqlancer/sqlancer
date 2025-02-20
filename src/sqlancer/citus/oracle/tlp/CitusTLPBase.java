@@ -12,6 +12,7 @@ import sqlancer.Randomly;
 import sqlancer.citus.CitusGlobalState;
 import sqlancer.citus.CitusSchema.CitusTable;
 import sqlancer.citus.gen.CitusCommon;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
@@ -24,7 +25,6 @@ import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresJoin;
-import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
@@ -167,8 +167,8 @@ public class CitusTLPBase extends PostgresTLPBase {
         } else {
             joinClause = equiJoinClause;
         }
-        PostgresJoinType options = Randomly.fromOptions(PostgresJoinType.INNER, PostgresJoinType.LEFT,
-                PostgresJoinType.RIGHT, PostgresJoinType.FULL);
+        JoinType options = Randomly.fromOptions(JoinType.INNER, JoinType.LEFT,
+                JoinType.RIGHT, JoinType.FULL);
         return new PostgresJoin(new PostgresFromTable(joinTable, Randomly.getBoolean()), joinClause, options);
     }
 
@@ -185,7 +185,7 @@ public class CitusTLPBase extends PostgresTLPBase {
         // the other table being joined
         PostgresExpression joinClause = new PostgresBinaryComparisonOperation(leftExpr, rightExpr,
                 PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator.EQUALS);
-        PostgresJoinType options = PostgresJoinType.INNER;
+        JoinType options = JoinType.INNER;
         return new PostgresJoin(new PostgresFromTable(joinTable, Randomly.getBoolean()), joinClause, options);
     }
 
@@ -234,7 +234,7 @@ public class CitusTLPBase extends PostgresTLPBase {
             PostgresExpressionGenerator subqueryJoinGen = new PostgresExpressionGenerator(globalState)
                     .setColumns(columns);
             PostgresExpression joinClause = subqueryJoinGen.generateExpression(PostgresDataType.BOOLEAN);
-            PostgresJoinType options = PostgresJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             PostgresJoin j = new PostgresJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }
