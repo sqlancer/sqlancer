@@ -12,7 +12,8 @@ import sqlancer.presto.PrestoSchema.PrestoColumn;
 import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.gen.PrestoTypedExpressionGenerator;
 
-public class PrestoJoin extends JoinBase<PrestoExpression> implements PrestoExpression, Join<PrestoExpression, PrestoTable, PrestoColumn> {
+public class PrestoJoin extends JoinBase<PrestoExpression>
+        implements PrestoExpression, Join<PrestoExpression, PrestoTable, PrestoColumn> {
 
     private final PrestoTableReference leftTable;
     private final PrestoTableReference rightTable;

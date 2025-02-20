@@ -6,7 +6,8 @@ import sqlancer.common.ast.newast.Join;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBTable;
 
-public class HSQLDBJoin extends JoinBase<HSQLDBExpression> implements HSQLDBExpression, Join<HSQLDBExpression, HSQLDBTable, HSQLDBColumn> {
+public class HSQLDBJoin extends JoinBase<HSQLDBExpression>
+        implements HSQLDBExpression, Join<HSQLDBExpression, HSQLDBTable, HSQLDBColumn> {
 
     private final HSQLDBTableReference leftTable;
     private final HSQLDBTableReference rightTable;

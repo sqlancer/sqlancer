@@ -65,13 +65,13 @@ public abstract class JoinBase<T extends Expression<?>> {
         INNER, LEFT, RIGHT, FULL, CROSS, JoinType, NATURAL, STRAIGHT, OUTER, LEFT_OUTER, RIGHT_OUTER, FULL_OUTER,
         LEFT_ANTI, RIGHT_ANTI;
 
-        private static final JoinType[] DATAFUSION_TYPES = {INNER};
-        private static final JoinType[] DATABEND_TYPES = {INNER, NATURAL, LEFT, RIGHT};
-        private static final JoinType[] H2_TYPES = {INNER, CROSS, NATURAL, LEFT, RIGHT};
-        private static final JoinType[] PRESTO_TYPES = {INNER, LEFT, RIGHT};
-        private static final JoinType[] POSTGRES_TYPES = {INNER, LEFT, RIGHT, FULL, CROSS};
-        private static final JoinType[] SQLITE3_TYPES = {INNER, CROSS, OUTER, NATURAL, RIGHT, FULL};
-        private static final JoinType[] TIDB_TYPES = {NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS};
+        private static final JoinType[] DATAFUSION_TYPES = { INNER };
+        private static final JoinType[] DATABEND_TYPES = { INNER, NATURAL, LEFT, RIGHT };
+        private static final JoinType[] H2_TYPES = { INNER, CROSS, NATURAL, LEFT, RIGHT };
+        private static final JoinType[] PRESTO_TYPES = { INNER, LEFT, RIGHT };
+        private static final JoinType[] POSTGRES_TYPES = { INNER, LEFT, RIGHT, FULL, CROSS };
+        private static final JoinType[] SQLITE3_TYPES = { INNER, CROSS, OUTER, NATURAL, RIGHT, FULL };
+        private static final JoinType[] TIDB_TYPES = { NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS };
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
@@ -79,7 +79,7 @@ public abstract class JoinBase<T extends Expression<?>> {
 
         public static JoinType getRandomForDatabase(String dbType) {
             JoinType[] allowedTypes;
-            switch(dbType) {
+            switch (dbType) {
             case "DATAFUSION":
                 allowedTypes = DATAFUSION_TYPES;
                 break;

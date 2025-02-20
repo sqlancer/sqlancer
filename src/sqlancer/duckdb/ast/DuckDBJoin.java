@@ -11,7 +11,8 @@ import sqlancer.duckdb.DuckDBSchema.DuckDBColumn;
 import sqlancer.duckdb.DuckDBSchema.DuckDBTable;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 
-public class DuckDBJoin extends JoinBase<DuckDBExpression> implements DuckDBExpression, Join<DuckDBExpression, DuckDBTable, DuckDBColumn> {
+public class DuckDBJoin extends JoinBase<DuckDBExpression>
+        implements DuckDBExpression, Join<DuckDBExpression, DuckDBTable, DuckDBColumn> {
 
     private final DuckDBTableReference leftTable;
     private final DuckDBTableReference rightTable;
