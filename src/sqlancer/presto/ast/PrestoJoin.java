@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.presto.PrestoGlobalState;
 import sqlancer.presto.PrestoSchema;
@@ -11,20 +12,17 @@ import sqlancer.presto.PrestoSchema.PrestoColumn;
 import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.gen.PrestoTypedExpressionGenerator;
 
-public class PrestoJoin implements PrestoExpression, Join<PrestoExpression, PrestoTable, PrestoColumn> {
+public class PrestoJoin extends JoinBase<PrestoExpression> implements PrestoExpression, Join<PrestoExpression, PrestoTable, PrestoColumn> {
 
     private final PrestoTableReference leftTable;
     private final PrestoTableReference rightTable;
-    private final JoinType joinType;
-    private PrestoExpression onCondition;
     private OuterType outerType;
 
     public PrestoJoin(PrestoTableReference leftTable, PrestoTableReference rightTable, JoinType joinType,
             PrestoExpression whereCondition) {
+        super(joinType, whereCondition);
         this.leftTable = leftTable;
         this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
     }
 
     public static List<PrestoJoin> getJoins(List<PrestoTableReference> tableList, PrestoGlobalState globalState) {
@@ -36,7 +34,7 @@ public class PrestoJoin implements PrestoExpression, Join<PrestoExpression, Pres
             columns.addAll(rightTable.getTable().getColumns());
             PrestoTypedExpressionGenerator joinGen = new PrestoTypedExpressionGenerator(globalState)
                     .setColumns(columns);
-            switch (JoinType.getRandom()) {
+            switch (JoinType.getRandomForDatabase("PRESTO")) {
             case INNER:
                 joinExpressions.add(PrestoJoin.createInnerJoin(leftTable, rightTable, joinGen.generateExpression(
                         PrestoSchema.PrestoCompositeDataType.fromDataType(PrestoSchema.PrestoDataType.BOOLEAN))));
@@ -80,11 +78,11 @@ public class PrestoJoin implements PrestoExpression, Join<PrestoExpression, Pres
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     public PrestoExpression getOnCondition() {
-        return onCondition;
+        return onClause;
     }
 
     public OuterType getOuterType() {
@@ -94,14 +92,6 @@ public class PrestoJoin implements PrestoExpression, Join<PrestoExpression, Pres
     @SuppressWarnings("unused")
     private void setOuterType(OuterType outerType) {
         this.outerType = outerType;
-    }
-
-    public enum JoinType {
-        INNER, LEFT, RIGHT;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
     }
 
     public enum OuterType {
@@ -114,7 +104,7 @@ public class PrestoJoin implements PrestoExpression, Join<PrestoExpression, Pres
 
     @Override
     public void setOnClause(PrestoExpression onClause) {
-        onCondition = onClause;
+        super.onClause = onClause;
     }
 
 }
