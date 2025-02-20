@@ -1,5 +1,6 @@
 package sqlancer.sqlite3;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3BetweenOperation;
 import sqlancer.sqlite3.ast.SQLite3BinaryComparisonOperation;
@@ -101,8 +102,8 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
                 visit(expr);
             }
         }
-        for (SQLite3Expression expr : s.getJoinClauses()) {
-            visit(expr);
+        for (JoinBase<SQLite3Expression> expr : s.getJoinClauses()) {
+            visit((SQLite3Join) expr);
         }
         visit(s.getWhereClause());
         if (s.getHavingClause() != null) {
