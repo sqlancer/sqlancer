@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.sqlite3.SQLite3Errors;
@@ -55,7 +56,7 @@ public class SQLite3TLPHavingOracle implements TestOracle<SQLite3GlobalState> {
         List<SQLite3Table> tables = targetTables.getTables();
         List<SQLite3Join> joinStatements = gen.getRandomJoinClauses(tables);
         List<SQLite3Expression> from = SQLite3Common.getTableRefs(tables, state.getSchema());
-        select.setJoinClauses(joinStatements);
+        select.setJoinClauses((List<JoinBase<SQLite3Expression>>)(List<?>) joinStatements);
         select.setSelectType(SelectType.ALL);
         select.setFromList(from);
         // TODO order by?

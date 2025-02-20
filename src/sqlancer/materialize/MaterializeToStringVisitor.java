@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
-import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.BinaryOperation;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
@@ -30,11 +29,6 @@ import sqlancer.materialize.ast.MaterializeSimilarTo;
 
 public final class MaterializeToStringVisitor extends
         ToStringVisitor<MaterializeExpression> implements MaterializeVisitor {
-
-    @Override
-    protected MaterializeExpression getDistinctOnClause(SelectBase<MaterializeExpression> select) {
-        return select.getDistinctOnClause();
-    }
 
     @Override
     protected boolean hasDistinctOnSupport() {

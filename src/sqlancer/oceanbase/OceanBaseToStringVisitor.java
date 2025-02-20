@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
 import sqlancer.oceanbase.ast.OceanBaseAggregate;
@@ -129,6 +130,16 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
     @Override
     public String get() {
         return sb.toString();
+    }
+
+    @Override
+    protected OceanBaseExpression getJoinOnClause(JoinBase<OceanBaseExpression> join) {
+        return null;
+    }
+
+    @Override
+    protected OceanBaseExpression getJoinTableReference(JoinBase<OceanBaseExpression> join) {
+        return null;
     }
 
     @Override
