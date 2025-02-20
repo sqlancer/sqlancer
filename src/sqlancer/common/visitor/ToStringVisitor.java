@@ -130,7 +130,7 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
     }
 
     protected void visitJoinClauses(SelectBase<T> select) {
-        for (JoinBase join : select.getJoinClauses()) {
+        for (JoinBase<T> join : select.getJoinClauses()) {
             visitJoinClause(join);
         }
     }

@@ -9,7 +9,7 @@ import sqlancer.clickhouse.ClickHouseToStringVisitor;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Select;
 
-public class ClickHouseSelect  implements ClickHouseExpression,
+public class ClickHouseSelect implements ClickHouseExpression,
         Select<ClickHouseJoin, ClickHouseExpression, ClickHouseTable, ClickHouseColumn> {
 
     private ClickHouseSelect.SelectType fromOptions = ClickHouseSelect.SelectType.ALL;

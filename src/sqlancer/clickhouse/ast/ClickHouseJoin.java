@@ -4,17 +4,16 @@ import sqlancer.clickhouse.ClickHouseSchema;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 
-public class ClickHouseJoin extends JoinBase<ClickHouseExpression>
-        implements ClickHouseExpression, Join<ClickHouseExpression, ClickHouseSchema.ClickHouseTable, ClickHouseSchema.ClickHouseColumn> {
+public class ClickHouseJoin extends JoinBase<ClickHouseExpression> implements ClickHouseExpression,
+        Join<ClickHouseExpression, ClickHouseSchema.ClickHouseTable, ClickHouseSchema.ClickHouseColumn> {
 
     public ClickHouseJoin(ClickHouseTableReference leftTable, ClickHouseTableReference rightTable,
-                          ClickHouseJoin.JoinType type, ClickHouseJoinOnClause onClause) {
+            ClickHouseJoin.JoinType type, ClickHouseJoinOnClause onClause) {
         super(leftTable, rightTable, onClause, type);
 
     }
 
-    public ClickHouseJoin(ClickHouseTableReference leftTable, ClickHouseTableReference rightTable,
-                          JoinType type) {
+    public ClickHouseJoin(ClickHouseTableReference leftTable, ClickHouseTableReference rightTable, JoinType type) {
         super(leftTable, rightTable, type);
         this.leftTable = leftTable;
         this.rightTable = rightTable;

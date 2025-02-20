@@ -2,8 +2,7 @@ package sqlancer.clickhouse.ast;
 
 import sqlancer.common.visitor.UnaryOperation;
 
-public class ClickHousePostfixText
-        implements ClickHouseExpression, UnaryOperation<ClickHouseExpression> {
+public class ClickHousePostfixText implements ClickHouseExpression, UnaryOperation<ClickHouseExpression> {
 
     private final ClickHouseExpression expr;
     private final String text;

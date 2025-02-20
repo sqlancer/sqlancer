@@ -39,6 +39,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
         ClickHouseErrors.addExpectedExpressionErrors(errors);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void check() throws SQLException {
         gen = new ClickHouseExpressionGenerator(state);
@@ -55,7 +56,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
             List<ClickHouseJoin> joinStatements = gen.getRandomJoinClauses(table, tables);
             columns.addAll(joinStatements.stream().flatMap(j -> j.getRightTable().getColumnReferences().stream())
                     .collect(Collectors.toList()));
-            select.setJoinClauses((List<JoinBase<ClickHouseExpression>>)(List<?>)joinStatements);
+            select.setJoinClauses((List<JoinBase<ClickHouseExpression>>) (List<?>) joinStatements);
         }
         gen.addColumns(columns);
         int small = Randomly.smallNumber();

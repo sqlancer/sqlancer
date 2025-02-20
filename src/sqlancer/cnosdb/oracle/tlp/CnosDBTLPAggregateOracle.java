@@ -161,7 +161,7 @@ public class CnosDBTLPAggregateOracle extends CnosDBTLPBase implements TestOracl
     }
 
     private CnosDBSelect getSelect(List<CnosDBExpression> aggregates, List<CnosDBExpression> from,
-                                   CnosDBExpression whereClause, List<JoinBase<CnosDBExpression>> joinList) {
+            CnosDBExpression whereClause, List<JoinBase<CnosDBExpression>> joinList) {
         CnosDBSelect leftSelect = new CnosDBSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);
