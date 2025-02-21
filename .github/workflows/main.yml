@@ -44,635 +44,640 @@ jobs:
       - name: Naming Convention Tests
         run: python src/check_names.py
 
-#  citus:
-#    name: DBMS Tests (Citus)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up Citus
-#        run: |
-#          echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list
-#          curl https://install.citusdata.com/community/deb.sh | sudo bash
-#          sudo apt-get -y install  postgresql-15-citus-11.1
-#          sudo chown -R $USER:$USER /var/run/postgresql
-#          export PATH=/usr/lib/postgresql/15/bin:$PATH
-#          cd ~
-#          mkdir -p citus/coordinator citus/worker1 citus/worker2
-#          initdb -D citus/coordinator
-#          initdb -D citus/worker1
-#          initdb -D citus/worker2
-#          echo "shared_preload_libraries = 'citus'" >> citus/coordinator/postgresql.conf
-#          echo "shared_preload_libraries = 'citus'" >> citus/worker1/postgresql.conf
-#          echo "shared_preload_libraries = 'citus'" >> citus/worker2/postgresql.conf
-#          pg_ctl -D citus/coordinator -o "-p 9700" -l coordinator_logfile start || cat coordinator_logfile || cat citus/coordinator/coordinator_logfile
-#          pg_ctl -D citus/worker1 -o "-p 9701" -l worker1_logfile start
-#          ls citus/worker1
-#          pg_ctl -D citus/worker2 -o "-p 9702" -l worker2_logfile start
-#          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9700 -d postgres -U $USER
-#          createdb test -p 9700 -U $USER
-#          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9701 -d postgres -U $USER
-#          createdb test -p 9701 -U $USER
-#          psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9702 -d postgres -U $USER
-#          createdb test -p 9702 -U $USER
-#          psql -c "CREATE EXTENSION citus;" -p 9700 -U $USER -d test
-#          psql -c "CREATE EXTENSION citus;" -p 9701 -U $USER -d test
-#          psql -c "CREATE EXTENSION citus;" -p 9702 -U $USER -d test
-#          psql -c "SELECT * from citus_add_node('localhost', 9701);" -p 9700 -U $USER -d test
-#          psql -c "SELECT * from citus_add_node('localhost', 9702);" -p 9700 -U $USER -d test
-#      - name: Run Tests
-#        run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
+  # Disabled since job does not work in public repo
+  # citus:
+  #   name: DBMS Tests (Citus)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Set up JDK 11
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
+  #         cache: 'maven'
+  #     - name: Build SQLancer
+  #       run: mvn -B package -DskipTests=true
+  #     - name: Set up Citus
+  #       run: |
+  #         echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | sudo tee  /etc/apt/sources.list.d/pgdg.list
+  #         curl https://install.citusdata.com/community/deb.sh | sudo bash
+  #         sudo apt-get -y install  postgresql-15-citus-11.1
+  #         sudo chown -R $USER:$USER /var/run/postgresql
+  #         export PATH=/usr/lib/postgresql/15/bin:$PATH
+  #         cd ~
+  #         mkdir -p citus/coordinator citus/worker1 citus/worker2
+  #         initdb -D citus/coordinator
+  #         initdb -D citus/worker1
+  #         initdb -D citus/worker2
+  #         echo "shared_preload_libraries = 'citus'" >> citus/coordinator/postgresql.conf
+  #         echo "shared_preload_libraries = 'citus'" >> citus/worker1/postgresql.conf
+  #         echo "shared_preload_libraries = 'citus'" >> citus/worker2/postgresql.conf
+  #         pg_ctl -D citus/coordinator -o "-p 9700" -l coordinator_logfile start || cat coordinator_logfile || cat citus/coordinator/coordinator_logfile
+  #         pg_ctl -D citus/worker1 -o "-p 9701" -l worker1_logfile start
+  #         ls citus/worker1
+  #         pg_ctl -D citus/worker2 -o "-p 9702" -l worker2_logfile start
+  #         psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9700 -d postgres -U $USER
+  #         createdb test -p 9700 -U $USER
+  #         psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9701 -d postgres -U $USER
+  #         createdb test -p 9701 -U $USER
+  #         psql -c "CREATE ROLE sqlancer SUPERUSER LOGIN CREATEDB PASSWORD 'sqlancer';" -p 9702 -d postgres -U $USER
+  #         createdb test -p 9702 -U $USER
+  #         psql -c "CREATE EXTENSION citus;" -p 9700 -U $USER -d test
+  #         psql -c "CREATE EXTENSION citus;" -p 9701 -U $USER -d test
+  #         psql -c "CREATE EXTENSION citus;" -p 9702 -U $USER -d test
+  #         psql -c "SELECT * from citus_add_node('localhost', 9701);" -p 9700 -U $USER -d test
+  #         psql -c "SELECT * from citus_add_node('localhost', 9702);" -p 9700 -U $USER -d test
+  #     - name: Run Tests
+  #       run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
 
-#  cnosdb:
-#    name: DBMS Tests (CnosDB)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up ClickHouse
-#        run: |
-#          docker pull cnosdb/cnosdb:community-latest
-#          docker run --name cnosdb -p 8902:8902 -d cnosdb/cnosdb:community-latest
-#          sleep 5
-#      - name: Run Tests
-#        run: |
-#          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBNoREC test
-#          sleep 20
-#          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBTLP test
-#
-#  clickhouse:
-#    name: DBMS Tests (ClickHouse)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up ClickHouse
-#        run: |
-#          docker pull clickhouse/clickhouse-server:24.3.1.2672
-#          docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:24.3.1.2672
-#          sleep 5
-#      - name: Run Tests
-#        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
-#      - name: Show fatal errors
-#        run: docker exec clickhouse-server grep Fatal /var/log/clickhouse-server/clickhouse-server.log || echo No Fatal Errors found
-#      - name: Teardown ClickHouse server
-#        run: |
-#          docker stop clickhouse-server
-#          docker rm clickhouse-server
-#
-#  cockroachdb:
-#    name: DBMS Tests (CockroachDB)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up CockroachDB
-#        run: |
-#          wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
-#          cd  cockroach-v24.2.0.linux-amd64/ && ./cockroach start-single-node --insecure &
-#          sleep 10
-#      - name: Create SQLancer user
-#        run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
-#      - name: Run Tests
-#        run: |
-#          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBNoREC test
-#          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBTLP test
-#          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBCERT test
-#
-#  cockroachdb-qpg:
-#    name: QPG Tests (CockroachDB)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up CockroachDB
-#        run: |
-#          wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
-#          cd  cockroach-v24.2.0.linux-amd64/ && ./cockroach start-single-node --insecure &
-#          sleep 10
-#      - name: Create SQLancer user
-#        run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
-#      - name: Run Tests
-#        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBQPG test
-#
-#  databend:
-#    name: DBMS Tests (Databend)
-#    runs-on: ubuntu-latest
-#    services:
-#      databend:
-#        image: datafuselabs/databend:v1.2.687-nightly
-#        env:
-#          QUERY_DEFAULT_USER: sqlancer
-#          QUERY_DEFAULT_PASSWORD: sqlancer
-#        ports:
-#          - 8000:8000
-#          - 3307:3307
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: |
-#          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendTLP test
-#          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendNoREC test
-#          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendPQS test
-#
-#  datafusion:
-#    name: DBMS Tests (DataFusion)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up Rust
-#        uses: actions-rs/toolchain@v1
-#        with:
-#          toolchain: stable
-#          override: true
-#      - name: Run DataFusion Server
-#        run: |
-#          cd src/sqlancer/datafusion/server/datafusion_server
-#          cargo run & sleep 300
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: |
-#          DATAFUSION_AVAILABLE=true mvn test -Pdatafusion-tests
-#
-#  duckdb:
-#    name: DBMS Tests (DuckDB)
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build
-#        run: mvn -B package -DskipTests=true
-#      - name: DuckDB Tests
-#        run: |
-#          mvn -Dtest=TestDuckDBTLP test
-#          mvn -Dtest=TestDuckDBNoREC test
-#
-#  h2:
-#    name: DBMS Tests (H2)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: mvn -Dtest=TestH2 test
-#
-#  hsqldb:
-#    name: DBMS Tests (HSQLB)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: |
-#          mvn -Dtest=TestHSQLDBNoREC test
-#          mvn -Dtest=TestHSQLDBTLP test
-#
-#  mariadb:
-#    name: DBMS Tests (MariaDB)
-#    runs-on: ubuntu-latest
-#    services:
-#      mysql:
-#        image: mariadb:11.3.2
-#        env:
-#          MYSQL_ROOT_PASSWORD: root
-#        ports:
-#          - 3306:3306
-#        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=10
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Create SQLancer User
-#        run: sudo mysql -h 127.0.0.1 -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
-#      - name: Run Tests
-#        run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
+  cnosdb:
+    name: DBMS Tests (CnosDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up ClickHouse
+        run: |
+          docker pull cnosdb/cnosdb:community-latest
+          docker run --name cnosdb -p 8902:8902 -d cnosdb/cnosdb:community-latest
+          sleep 5
+      - name: Run Tests
+        run: |
+          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBNoREC test
+          sleep 20
+          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBTLP test
 
-#  materialize:
-#    name: DBMS Tests (Materialize)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up Materialize
-#        run: |
-#          docker pull materialize/materialized:latest
-#          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
-#          sleep 5
-#          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
-#          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: |
-#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeNoREC
-#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeTLP
-#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
-#
-#  materialize-qpg:
-#    name: QPG Tests (Materialize)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up Materialize
-#        run: |
-#          docker pull materialize/materialized:latest
-#          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
-#          sleep 5
-#          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
-#          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: |
-#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQPG
-#          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQueryPlan
+  clickhouse:
+    name: DBMS Tests (ClickHouse)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up ClickHouse
+        run: |
+          docker pull clickhouse/clickhouse-server:24.3.1.2672
+          docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:24.3.1.2672
+          sleep 5
+      - name: Run Tests
+        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
+      - name: Show fatal errors
+        run: docker exec clickhouse-server grep Fatal /var/log/clickhouse-server/clickhouse-server.log || echo No Fatal Errors found
+      - name: Teardown ClickHouse server
+        run: |
+          docker stop clickhouse-server
+          docker rm clickhouse-server
 
-#  mysql:
-#    name: DBMS Tests (MySQL)
-#    runs-on: ubuntu-latest
-#    services:
-#      mysql:
-#        image: mysql:8.0.36
-#        env:
-#          MYSQL_ROOT_PASSWORD: root
-#        ports:
-#          - 3306:3306
-#        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=10
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Create SQLancer user
-#        run: mysql -h 127.0.0.1  -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
-#      - name: Run Tests
-#        run: |
-#          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
-#          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
-#          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLCERT
-#
-#  oceanbase:
-#    name: DBMS Tests (OceanBase)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up OceanBase
-#        run: |
-#          docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce:4.2.1-lts
-#          sleep 120
-#          mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
-#      - name: Run Tests
-#        run: |
-#          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseNoREC
-#          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBasePQS
-#          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseTLP
-#  postgres:
-#    name: DBMS Tests (PostgreSQL)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up PostgreSQL
-#        uses: harmon758/postgresql-action@v1.0.0
-#        with:
-#          postgresql version: '12'
-#          postgresql user: 'sqlancer'
-#          postgresql password: 'sqlancer'
-#          postgresql db: 'test'
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: |
-#          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresPQS test
-#          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresTLP test
-#          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresNoREC test
-#          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresCERT test
-#
-#  presto:
-#    name: DBMS Tests (Presto)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Set up Presto
-#        run: |
-#          docker pull prestodb/presto:latest
-#          echo "connector.name=memory" >> memory.properties
-#          docker run -p 8080:8080 -d -v ./memory.properties:/opt/presto-server/etc/catalog/memory.properties --name presto prestodb/presto:latest
-#          sleep 30
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: |
-#          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoNoREC test
-#          docker restart presto && sleep 30
-#          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoTLP test
-#  sqlite:
-#    name: DBMS Tests (SQLite)
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build
-#        run: mvn -B package -DskipTests=true
-#      - name: SQLite Tests
-#        run: |
-#          mvn -Dtest=TestSQLitePQS test
-#          mvn -Dtest=TestSQLiteTLP test
-#          mvn -Dtest=TestSQLiteNoREC test
-#
-#  sqlite-qpg:
-#    name: QPG Tests (SQLite)
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build
-#        run: mvn -B package -DskipTests=true
-#      - name: SQLite Tests for QPG
-#        run: |
-#          mvn -Dtest=TestSQLiteQPG test
-#
-#  tidb:
-#    name: DBMS Tests (TiDB)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up TiDB
-#        run: |
-#          docker pull pingcap/tidb:latest
-#          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:v7.5.1
-#          sleep 10
-#      - name: Create SQLancer user
-#        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-#      - name: Run Tests
-#        run: |
-#          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test
-#          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBCERT test
-#
-#  tidb-qpg:
-#    name: QPG Tests (TiDB)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up TiDB
-#        run: |
-#          docker pull pingcap/tidb:latest
-#          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
-#          sleep 10
-#      - name: Create SQLancer user
-#        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-#      - name: Run Tests
-#        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDBQPG test
-#
-#  yugabyte:
-#    name: DBMS Tests (YugabyteDB)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Set up Yugabyte
-#        run: |
-#          docker pull yugabytedb/yugabyte:latest
-#          docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false
-#          sleep 5
-#      - name: Run Tests
-#        run: |
-#          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLNoREC test
-#          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLTLP test
-#          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLPQS test
-#          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYCQL test
-#
-#  doris:
-#    name: DBMS Tests (Apache Doris)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 0
-#      - name: Set up JDK 11
-#        uses: actions/setup-java@v3
-#        with:
-#          distribution: 'temurin'
-#          java-version: '11'
-#          cache: 'maven'
-#      - name: install mysql client
-#        run: |
-#          sudo apt update
-#          sudo apt install mysql-client --assume-yes
-#      - name: Set up Apache Doris
-#        run: |
-#          sudo sysctl -w vm.max_map_count=2000000
-#          wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.1.4-bin-x64.tar.gz
-#          tar zxf apache-doris-2.1.4-bin-x64.tar.gz
-#          mv apache-doris-2.1.4-bin-x64 apache-doris
-#          sudo swapoff -a
-#          cd apache-doris/fe
-#          ./bin/start_fe.sh --daemon
-#          cd ../be
-#          ./bin/start_be.sh --daemon
-#
-#          sleep 30
-#          IP=$(hostname -I | awk '{print $1}')
-#          mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
-#          mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
-#      - name: Build SQLancer
-#        run: mvn -B package -DskipTests=true
-#      - name: Run Tests
-#        run: |
-#          DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test
-#          DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test
-#          DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test
+  cockroachdb:
+    name: DBMS Tests (CockroachDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up CockroachDB
+        run: |
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
+          cd  cockroach-v24.2.0.linux-amd64/ && ./cockroach start-single-node --insecure &
+          sleep 10
+      - name: Create SQLancer user
+        run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+      - name: Run Tests
+        run: |
+          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBNoREC test
+          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBTLP test
+          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBCERT test
+
+  cockroachdb-qpg:
+    name: QPG Tests (CockroachDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up CockroachDB
+        run: |
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
+          cd  cockroach-v24.2.0.linux-amd64/ && ./cockroach start-single-node --insecure &
+          sleep 10
+      - name: Create SQLancer user
+        run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
+      - name: Run Tests
+        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBQPG test
+
+  databend:
+    name: DBMS Tests (Databend)
+    runs-on: ubuntu-latest
+    services:
+      databend:
+        image: datafuselabs/databend:v1.2.687-nightly
+        env:
+          QUERY_DEFAULT_USER: sqlancer
+          QUERY_DEFAULT_PASSWORD: sqlancer
+        ports:
+          - 8000:8000
+          - 3307:3307
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendTLP test
+          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendNoREC test
+          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendPQS test
+
+  datafusion:
+    name: DBMS Tests (DataFusion)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Run DataFusion Server
+        run: |
+          cd src/sqlancer/datafusion/server/datafusion_server
+          cargo run & sleep 300
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          DATAFUSION_AVAILABLE=true mvn test -Pdatafusion-tests
+
+  duckdb:
+    name: DBMS Tests (DuckDB)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build
+        run: mvn -B package -DskipTests=true
+      - name: DuckDB Tests
+        run: |
+          mvn -Dtest=TestDuckDBTLP test
+          mvn -Dtest=TestDuckDBNoREC test
+
+  h2:
+    name: DBMS Tests (H2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: mvn -Dtest=TestH2 test
+
+  hsqldb:
+    name: DBMS Tests (HSQLB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          mvn -Dtest=TestHSQLDBNoREC test
+          mvn -Dtest=TestHSQLDBTLP test
+
+  mariadb:
+    name: DBMS Tests (MariaDB)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mariadb:11.3.2
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Create SQLancer User
+        run: sudo mysql -h 127.0.0.1 -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
+      - name: Run Tests
+        run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
+
+  # Disabled since job does not work in public repo
+  # materialize:
+  #   name: DBMS Tests (Materialize)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Set up Materialize
+  #       run: |
+  #         docker pull materialize/materialized:latest
+  #         docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
+  #         sleep 5
+  #         # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
+  #         psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+  #     - name: Set up JDK 11
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
+  #         cache: 'maven'
+  #     - name: Build SQLancer
+  #       run: mvn -B package -DskipTests=true
+  #     - name: Run Tests
+  #       run: |
+  #         MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeNoREC
+  #         MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeTLP
+  #         MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
+  #
+  # Disabled since job does not work in public repo
+  # materialize-qpg:
+  #   name: QPG Tests (Materialize)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Set up Materialize
+  #       run: |
+  #         docker pull materialize/materialized:latest
+  #         docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
+  #         sleep 5
+  #         # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
+  #         psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+  #     - name: Set up JDK 11
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
+  #         cache: 'maven'
+  #     - name: Build SQLancer
+  #       run: mvn -B package -DskipTests=true
+  #     - name: Run Tests
+  #       run: |
+  #         MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQPG
+  #         MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQueryPlan
+
+  mysql:
+    name: DBMS Tests (MySQL)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0.36
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Create SQLancer user
+        run: mysql -h 127.0.0.1  -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
+      - name: Run Tests
+        run: |
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLCERT
+
+  oceanbase:
+    name: DBMS Tests (OceanBase)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up OceanBase
+        run: |
+          docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce:4.2.1-lts
+          sleep 120
+          mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
+      - name: Run Tests
+        run: |
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseNoREC
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBasePQS
+          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseTLP
+  postgres:
+    name: DBMS Tests (PostgreSQL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up PostgreSQL
+        uses: harmon758/postgresql-action@v1.0.0
+        with:
+          postgresql version: '12'
+          postgresql user: 'sqlancer'
+          postgresql password: 'sqlancer'
+          postgresql db: 'test'
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresPQS test
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresTLP test
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresNoREC test
+          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresCERT test
+
+  presto:
+    name: DBMS Tests (Presto)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Set up Presto
+        run: |
+          docker pull prestodb/presto:latest
+          echo "connector.name=memory" >> memory.properties
+          docker run -p 8080:8080 -d -v ./memory.properties:/opt/presto-server/etc/catalog/memory.properties --name presto prestodb/presto:latest
+          sleep 30
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: |
+          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoNoREC test
+          docker restart presto && sleep 30
+          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoTLP test
+  sqlite:
+    name: DBMS Tests (SQLite)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build
+        run: mvn -B package -DskipTests=true
+      - name: SQLite Tests
+        run: |
+          mvn -Dtest=TestSQLitePQS test
+          mvn -Dtest=TestSQLiteTLP test
+          mvn -Dtest=TestSQLiteNoREC test
+
+  sqlite-qpg:
+    name: QPG Tests (SQLite)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build
+        run: mvn -B package -DskipTests=true
+      - name: SQLite Tests for QPG
+        run: |
+          mvn -Dtest=TestSQLiteQPG test
+          
+  # Disable flaky test
+  # tidb:
+  #   name: DBMS Tests (TiDB)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Set up JDK 11
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
+  #         cache: 'maven'
+  #     - name: Build SQLancer
+  #       run: mvn -B package -DskipTests=true
+  #     - name: Set up TiDB
+  #       run: |
+  #         docker pull pingcap/tidb:latest
+  #         docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:v7.5.1
+  #         sleep 10
+  #     - name: Create SQLancer user
+  #       run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+  #     - name: Run Tests
+  #       run: |
+  #         TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test
+  #         TIDB_AVAILABLE=true mvn -Dtest=TestTiDBCERT test
+
+  tidb-qpg:
+    name: QPG Tests (TiDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up TiDB
+        run: |
+          docker pull pingcap/tidb:latest
+          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
+          sleep 10
+      - name: Create SQLancer user
+        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+      - name: Run Tests
+        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDBQPG test
+
+  yugabyte:
+    name: DBMS Tests (YugabyteDB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up Yugabyte
+        run: |
+          docker pull yugabytedb/yugabyte:latest
+          docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false
+          sleep 5
+      - name: Run Tests
+        run: |
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLNoREC test
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLTLP test
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLPQS test
+          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYCQL test
+
+  # Disable flaky test
+  # doris:
+  #   name: DBMS Tests (Apache Doris)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Set up JDK 11
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
+  #         cache: 'maven'
+  #     - name: install mysql client
+  #       run: |
+  #         sudo apt update
+  #         sudo apt install mysql-client --assume-yes
+  #     - name: Set up Apache Doris
+  #       run: |
+  #         sudo sysctl -w vm.max_map_count=2000000
+  #         wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.1.4-bin-x64.tar.gz
+  #         tar zxf apache-doris-2.1.4-bin-x64.tar.gz
+  #         mv apache-doris-2.1.4-bin-x64 apache-doris
+  #         sudo swapoff -a
+  #         cd apache-doris/fe
+  #         ./bin/start_fe.sh --daemon
+  #         cd ../be
+  #         ./bin/start_be.sh --daemon
+
+  #         sleep 30
+  #         IP=$(hostname -I | awk '{print $1}')
+  #         mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
+  #         mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
+  #     - name: Build SQLancer
+  #       run: mvn -B package -DskipTests=true
+  #     - name: Run Tests
+  #       run: |
+  #         DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test
+  #         DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test
+  #         DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test
 
   reducer:
     name: Reducer Tests
