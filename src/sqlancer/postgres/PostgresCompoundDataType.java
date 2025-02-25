@@ -17,6 +17,7 @@ public final class PostgresCompoundDataType implements AbstractCompoundDataType<
         this.size = size;
     }
 
+    @Override
     public PostgresDataType getDataType() {
         return dataType;
     }
@@ -28,6 +29,7 @@ public final class PostgresCompoundDataType implements AbstractCompoundDataType<
         return elemType;
     }
 
+    @Override
     public Optional<Integer> getSize() {
         if (size == null) {
             return Optional.empty();

@@ -18,6 +18,7 @@ public final class MaterializeCompoundDataType implements AbstractCompoundDataTy
         this.size = size;
     }
 
+    @Override
     public MaterializeDataType getDataType() {
         return dataType;
     }
@@ -29,6 +30,7 @@ public final class MaterializeCompoundDataType implements AbstractCompoundDataTy
         return elemType;
     }
 
+    @Override
     public Optional<Integer> getSize() {
         if (size == null) {
             return Optional.empty();

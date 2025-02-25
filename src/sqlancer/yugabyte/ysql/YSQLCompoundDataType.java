@@ -25,6 +25,7 @@ public final class YSQLCompoundDataType implements AbstractCompoundDataType<YSQL
         return new YSQLCompoundDataType(type, null, null);
     }
 
+    @Override
     public YSQLDataType getDataType() {
         return dataType;
     }
@@ -36,6 +37,7 @@ public final class YSQLCompoundDataType implements AbstractCompoundDataType<YSQL
         return elemType;
     }
 
+    @Override
     public Optional<Integer> getSize() {
         if (size == null) {
             return Optional.empty();
