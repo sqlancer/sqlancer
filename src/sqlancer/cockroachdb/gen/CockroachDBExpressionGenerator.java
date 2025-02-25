@@ -407,7 +407,7 @@ public class CockroachDBExpressionGenerator extends
             CockroachDBExpressionGenerator joinGen = new CockroachDBExpressionGenerator(globalState)
                     .setColumns(columns);
             joinExpressions.add(CockroachDBJoin.createJoin(leftTable, rightTable,
-                    CockroachDBJoin.JoinType.getRandomForDatabase("CockroachDB"),
+                    CockroachDBJoin.JoinType.getRandomForDatabase("COCKROACHDB"),
                     joinGen.generateExpression(CockroachDBDataType.BOOL.get())));
         }
 

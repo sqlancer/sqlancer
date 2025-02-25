@@ -80,7 +80,8 @@ public class CockroachDBTLPBase
             columns.addAll(rightTable.getTable().getColumns());
             CockroachDBExpressionGenerator joinGen = new CockroachDBExpressionGenerator(globalState)
                     .setColumns(columns);
-            joinExpressions.add(CockroachDBJoin.createJoin(leftTable, rightTable, CockroachDBJoin.JoinType.getRandom(),
+            joinExpressions.add(CockroachDBJoin.createJoin(leftTable, rightTable,
+                    CockroachDBJoin.JoinType.getRandomForDatabase("COCKROACHDB"),
                     joinGen.generateExpression(CockroachDBDataType.BOOL.get())));
         }
         return joinExpressions;
