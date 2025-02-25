@@ -1,7 +1,5 @@
 package sqlancer.postgres;
 
-import java.util.Optional;
-
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.schema.AbstractCompoundDataType;

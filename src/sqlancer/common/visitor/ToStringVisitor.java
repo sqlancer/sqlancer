@@ -8,7 +8,6 @@ import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.schema.AbstractCompoundDataType;
-import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.visitor.UnaryOperation.OperatorKind;
 
 public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisitor<T> {
@@ -351,9 +350,5 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
 
     protected void mapByteaType(AbstractCompoundDataType<?> compoundType) {
         sb.append("BYTEA");
-    }
-
-    protected String handleUnknownType(String typeName) {
-        throw new AssertionError(typeName);
     }
 }
