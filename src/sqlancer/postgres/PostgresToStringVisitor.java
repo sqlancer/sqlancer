@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
+import sqlancer.common.schema.AbstractCompoundDataType;
 import sqlancer.common.visitor.BinaryOperation;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -157,52 +158,22 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
 
     private void appendType(PostgresCastOperation cast) {
         PostgresCompoundDataType compoundType = cast.getCompoundType();
-        switch (compoundType.getDataType()) {
-        case BOOLEAN:
-            sb.append("BOOLEAN");
-            break;
-        case INT: // TODO support also other int types
-            sb.append("INT");
-            break;
-        case TEXT:
-            // TODO: append TEXT, CHAR
-            sb.append(Randomly.fromOptions("VARCHAR"));
-            break;
-        case REAL:
-            sb.append("FLOAT");
-            break;
-        case DECIMAL:
-            sb.append("DECIMAL");
-            break;
-        case FLOAT:
-            sb.append("REAL");
-            break;
-        case RANGE:
-            sb.append("int4range");
-            break;
-        case MONEY:
-            sb.append("MONEY");
-            break;
-        case INET:
-            sb.append("INET");
-            break;
-        case BIT:
-            sb.append("BIT");
-            // if (Randomly.getBoolean()) {
-            // sb.append("(");
-            // sb.append(Randomly.getNotCachedInteger(1, 100));
-            // sb.append(")");
-            // }
-            break;
-        default:
-            throw new AssertionError(cast.getType());
-        }
-        Optional<Integer> size = compoundType.getSize();
-        if (size.isPresent()) {
-            sb.append("(");
-            sb.append(size.get());
-            sb.append(")");
-        }
+        appendCastType(compoundType);
+    }
+
+    @Override
+    public void mapRealType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("FLOAT");
+    }
+
+    @Override
+    public void mapFloatType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("REAL");
+    }
+
+    @Override
+    public void mapByteaType(AbstractCompoundDataType<?> compoundType) {
+        throw new AssertionError(compoundType.getDataType());
     }
 
     @Override

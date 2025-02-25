@@ -2,9 +2,10 @@ package sqlancer.postgres;
 
 import java.util.Optional;
 
+import sqlancer.common.schema.AbstractCompoundDataType;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public final class PostgresCompoundDataType {
+public final class PostgresCompoundDataType implements AbstractCompoundDataType<PostgresDataType> {
 
     private final PostgresDataType dataType;
     private final PostgresCompoundDataType elemType;
@@ -33,6 +34,14 @@ public final class PostgresCompoundDataType {
         } else {
             return Optional.of(size);
         }
+    }
+
+    @Override
+    public AbstractCompoundDataType<PostgresDataType> getElementType() {
+        if (elemType == null) {
+            throw new AssertionError();
+        }
+        return elemType;
     }
 
     public static PostgresCompoundDataType create(PostgresDataType type, int size) {
