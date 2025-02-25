@@ -125,11 +125,17 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 
     @Override
     protected CockroachDBExpression getJoinOnClause(JoinBase<CockroachDBExpression> join) {
+        if (join instanceof CockroachDBJoin) {
+            return join.getOnClause();
+        }
         return null;
     }
 
     @Override
     protected CockroachDBExpression getJoinTableReference(JoinBase<CockroachDBExpression> join) {
+        if (join instanceof CockroachDBJoin) {
+            return ((CockroachDBJoin) join).getRightTable();
+        }
         return null;
     }
 
