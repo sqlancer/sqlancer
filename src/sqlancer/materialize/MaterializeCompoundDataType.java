@@ -2,9 +2,10 @@ package sqlancer.materialize;
 
 import java.util.Optional;
 
+import sqlancer.common.schema.AbstractCompoundDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 
-public final class MaterializeCompoundDataType {
+public final class MaterializeCompoundDataType implements AbstractCompoundDataType<MaterializeDataType> {
 
     private final MaterializeDataType dataType;
     private final MaterializeCompoundDataType elemType;
@@ -34,6 +35,11 @@ public final class MaterializeCompoundDataType {
         } else {
             return Optional.of(size);
         }
+    }
+
+    @Override
+    public AbstractCompoundDataType<MaterializeDataType> getElementType() {
+        return elemType;
     }
 
     public static MaterializeCompoundDataType create(MaterializeDataType type, int size) {

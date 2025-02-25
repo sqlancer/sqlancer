@@ -1,11 +1,14 @@
 package sqlancer.common.visitor;
 
 import java.util.List;
+import java.util.Optional;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Expression;
+import sqlancer.common.schema.AbstractCompoundDataType;
+import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.visitor.UnaryOperation.OperatorKind;
 
 public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisitor<T> {
@@ -259,4 +262,98 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         return false;
     }
 
+    protected void appendCastType(AbstractCompoundDataType<?> compoundType) {
+        switch (compoundType.getDataType().name()) {
+        case "BOOLEAN":
+            mapBooleanType(compoundType);
+            break;
+        case "INT":
+            mapIntType(compoundType);
+            break;
+        case "TEXT":
+            mapTextType(compoundType);
+            break;
+        case "REAL":
+            mapRealType(compoundType);
+            break;
+        case "DECIMAL":
+            mapDecimalType(compoundType);
+            break;
+        case "FLOAT":
+            mapFloatType(compoundType);
+            break;
+        case "BIT":
+            mapBitType(compoundType);
+            break;
+        case "RANGE":
+            mapRangeType(compoundType);
+            break;
+        case "MONEY":
+            mapMoneyType(compoundType);
+            break;
+        case "INET":
+            mapInetType(compoundType);
+            break;
+        case "BYTEA":
+            mapByteaType(compoundType);
+            break;
+        default:
+            throw new AssertionError(compoundType.getDataType());
+        }
+
+        Optional<Integer> size = compoundType.getSize();
+        if (size.isPresent()) {
+            sb.append("(");
+            sb.append(size.get());
+            sb.append(")");
+        }
+    }
+
+    protected void mapBooleanType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("BOOLEAN");
+    }
+
+    protected void mapIntType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("INT");
+    }
+
+    protected void mapTextType(AbstractCompoundDataType<?> compoundType) {
+        sb.append(Randomly.fromOptions("VARCHAR"));
+    }
+
+    protected void mapRealType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("REAL");
+    }
+
+    protected void mapDecimalType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("DECIMAL");
+    }
+
+    protected void mapFloatType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("FLOAT");
+    }
+
+    protected void mapBitType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("BIT");
+    }
+
+    protected void mapRangeType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("int4range");
+    }
+
+    protected void mapMoneyType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("MONEY");
+    }
+
+    protected void mapInetType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("INET");
+    }
+
+    protected void mapByteaType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("BYTEA");
+    }
+
+    protected String handleUnknownType(String typeName) {
+        throw new AssertionError(typeName);
+    }
 }
