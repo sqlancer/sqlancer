@@ -171,30 +171,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLUnaryPostfixOperation op) {
-        sb.append("(");
-        visit(op.getExpression());
-        sb.append(")");
-        sb.append(" IS ");
-        if (op.isNegated()) {
-            sb.append("NOT ");
-        }
-        switch (op.getOperator()) {
-        case IS_FALSE:
-            sb.append("FALSE");
-            break;
-        case IS_NULL:
-            if (Randomly.getBoolean()) {
-                sb.append("UNKNOWN");
-            } else {
-                sb.append("NULL");
-            }
-            break;
-        case IS_TRUE:
-            sb.append("TRUE");
-            break;
-        default:
-            throw new AssertionError(op);
-        }
+        visitUnaryPostfixOperation(op);
     }
 
     @Override
@@ -212,15 +189,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLBinaryLogicalOperation op) {
-        sb.append("(");
-        visit(op.getLeft());
-        sb.append(")");
-        sb.append(" ");
-        sb.append(op.getTextRepresentation());
-        sb.append(" ");
-        sb.append("(");
-        visit(op.getRight());
-        sb.append(")");
+        visitBinaryLogicalOperation(op);
     }
 
     @Override
@@ -245,21 +214,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLInOperation op) {
-        sb.append("(");
-        visit(op.getExpr());
-        sb.append(")");
-        if (!op.isTrue()) {
-            sb.append(" NOT");
-        }
-        sb.append(" IN ");
-        sb.append("(");
-        for (int i = 0; i < op.getListElements().size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            visit(op.getListElements().get(i));
-        }
-        sb.append(")");
+        visitInOperation(op);
     }
 
     @Override

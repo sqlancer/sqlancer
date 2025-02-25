@@ -7,8 +7,11 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Expression;
+import sqlancer.common.schema.AbstractBinaryLogicalOperation;
 import sqlancer.common.schema.AbstractCastOperation;
 import sqlancer.common.schema.AbstractCompoundDataType;
+import sqlancer.common.schema.AbstractInOperation;
+import sqlancer.common.schema.AbstractPostfixOperation;
 import sqlancer.common.visitor.UnaryOperation.OperatorKind;
 
 public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisitor<T> {
@@ -372,4 +375,62 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         appendCastType(cast.getCompoundType());
     }
 
+    protected void visitUnaryPostfixOperation(AbstractPostfixOperation<T> op) {
+        sb.append("(");
+        visit(op.getExpression());
+        sb.append(")");
+        sb.append(" IS ");
+        if (op.isNegated()) {
+            sb.append("NOT ");
+        }
+
+        String operatorName = op.getOperator().toString();
+        switch (operatorName) {
+        case "IS_FALSE":
+            sb.append("FALSE");
+            break;
+        case "IS_NULL":
+            if (Randomly.getBoolean()) {
+                sb.append("UNKNOWN");
+            } else {
+                sb.append("NULL");
+            }
+            break;
+        case "IS_TRUE":
+            sb.append("TRUE");
+            break;
+        default:
+            throw new AssertionError(op);
+        }
+    }
+
+    protected void visitBinaryLogicalOperation(AbstractBinaryLogicalOperation<T> op) {
+        sb.append("(");
+        visit(op.getLeft());
+        sb.append(")");
+        sb.append(" ");
+        sb.append(op.getTextRepresentation());
+        sb.append(" ");
+        sb.append("(");
+        visit(op.getRight());
+        sb.append(")");
+    }
+
+    protected void visitInOperation(AbstractInOperation<T> op) {
+        sb.append("(");
+        visit(op.getExpr());
+        sb.append(")");
+        if (!op.isTrue()) {
+            sb.append(" NOT");
+        }
+        sb.append(" IN ");
+        sb.append("(");
+        for (int i = 0; i < op.getListElements().size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            visit(op.getListElements().get(i));
+        }
+        sb.append(")");
+    }
 }

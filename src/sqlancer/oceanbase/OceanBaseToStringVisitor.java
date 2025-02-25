@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
-import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
 import sqlancer.oceanbase.ast.OceanBaseAggregate;
@@ -46,25 +45,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             visit(s.getHint(), 0);
             sb.append(" */ ");
         }
-        visitSelectOption(s);
-        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
-        if (s.getModifiers().size() > 0) {
-            sb.append(" ");
-        }
-        visitColumns(s);
-        visitFromClause(s);
-        visitJoinClauses(s);
-        visitWhereClause(s);
-        visitGroupByClause(s);
-        visitHavingClause(s);
-        visitOrderByClause(s);
-        visitLimitClause(s);
-        visitOffsetClause(s);
-    }
-
-    @Override
-    public void visitSelectOption(SelectBase<OceanBaseExpression> s) {
-        switch (((OceanBaseSelect) s).getFromOptions()) {
+        switch (s.getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");
             break;
@@ -74,10 +55,10 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
         default:
             throw new AssertionError();
         }
-    }
-
-    @Override
-    public void visitColumns(SelectBase<OceanBaseExpression> s) {
+        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
+        if (s.getModifiers().size() > 0) {
+            sb.append(" ");
+        }
         if (s.getFetchColumns() == null) {
             sb.append("*");
         } else {
@@ -88,10 +69,6 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
                 visit(s.getFetchColumns().get(i));
             }
         }
-    }
-
-    @Override
-    public void visitFromClause(SelectBase<OceanBaseExpression> s) {
         sb.append(" FROM ");
         for (int i = 0; i < s.getFromList().size(); i++) {
             if (i != 0) {
@@ -99,26 +76,14 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             }
             visit(s.getFromList().get(i));
         }
-    }
-
-    @Override
-    public void visitJoinClauses(SelectBase<OceanBaseExpression> s) {
         for (OceanBaseExpression j : s.getJoinList()) {
             visit(j);
         }
-    }
-
-    @Override
-    public void visitWhereClause(SelectBase<OceanBaseExpression> s) {
         if (s.getWhereClause() != null) {
             OceanBaseExpression whereClause = s.getWhereClause();
             sb.append(" WHERE ");
             visit(whereClause);
         }
-    }
-
-    @Override
-    public void visitGroupByClause(SelectBase<OceanBaseExpression> s) {
         if (s.getGroupByExpressions() != null && s.getGroupByExpressions().size() > 0) {
             sb.append(" ");
             sb.append("GROUP BY ");
@@ -130,10 +95,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
                 visit(groupBys.get(i));
             }
         }
-    }
-
-    @Override
-    public void visitOrderByClause(SelectBase<OceanBaseExpression> s) {
+        visitHavingClause(s);
         if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
             List<OceanBaseExpression> orderBys = s.getOrderByClauses();
@@ -144,6 +106,8 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
                 visit(s.getOrderByClauses().get(i));
             }
         }
+        visitLimitClause(s);
+        visitOffsetClause(s);
     }
 
     @Override
@@ -184,30 +148,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visit(OceanBaseUnaryPostfixOperation op) {
-        sb.append("(");
-        visit(op.getExpression());
-        sb.append(")");
-        sb.append(" IS ");
-        if (op.isNegated()) {
-            sb.append("NOT ");
-        }
-        switch (op.getOperator()) {
-        case IS_FALSE:
-            sb.append("FALSE");
-            break;
-        case IS_NULL:
-            if (Randomly.getBoolean()) {
-                sb.append("UNKNOWN");
-            } else {
-                sb.append("NULL");
-            }
-            break;
-        case IS_TRUE:
-            sb.append("TRUE");
-            break;
-        default:
-            throw new AssertionError(op);
-        }
+        visitUnaryPostfixOperation(op);
     }
 
     @Override
@@ -225,15 +166,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visit(OceanBaseBinaryLogicalOperation op) {
-        sb.append("(");
-        visit(op.getLeft());
-        sb.append(")");
-        sb.append(" ");
-        sb.append(op.getTextRepresentation());
-        sb.append(" ");
-        sb.append("(");
-        visit(op.getRight());
-        sb.append(")");
+        visitBinaryLogicalOperation(op);
     }
 
     @Override
@@ -258,21 +191,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visit(OceanBaseInOperation op) {
-        sb.append("(");
-        visit(op.getExpr());
-        sb.append(")");
-        if (!op.isTrue()) {
-            sb.append(" NOT");
-        }
-        sb.append(" IN ");
-        sb.append("(");
-        for (int i = 0; i < op.getListElements().size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            visit(op.getListElements().get(i));
-        }
-        sb.append(")");
+        visitInOperation(op);
     }
 
     @Override

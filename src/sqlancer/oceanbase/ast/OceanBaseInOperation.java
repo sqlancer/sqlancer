@@ -2,7 +2,9 @@ package sqlancer.oceanbase.ast;
 
 import java.util.List;
 
-public class OceanBaseInOperation implements OceanBaseExpression {
+import sqlancer.common.schema.AbstractInOperation;
+
+public class OceanBaseInOperation implements OceanBaseExpression, AbstractInOperation<OceanBaseExpression> {
 
     private final OceanBaseExpression expr;
     private final List<OceanBaseExpression> listElements;
