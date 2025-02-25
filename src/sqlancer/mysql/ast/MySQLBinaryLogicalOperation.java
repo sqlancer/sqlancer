@@ -82,6 +82,7 @@ public class MySQLBinaryLogicalOperation implements MySQLExpression, AbstractBin
         this.textRepresentation = op.getTextRepresentation();
     }
 
+    @Override
     public MySQLExpression getLeft() {
         return left;
     }
@@ -90,10 +91,12 @@ public class MySQLBinaryLogicalOperation implements MySQLExpression, AbstractBin
         return op;
     }
 
+    @Override
     public MySQLExpression getRight() {
         return right;
     }
 
+    @Override
     public String getTextRepresentation() {
         return textRepresentation;
     }

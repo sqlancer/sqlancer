@@ -84,6 +84,7 @@ public class OceanBaseBinaryLogicalOperation
         this.textRepresentation = op.getTextRepresentation();
     }
 
+    @Override
     public OceanBaseExpression getLeft() {
         return left;
     }
@@ -92,10 +93,12 @@ public class OceanBaseBinaryLogicalOperation
         return op;
     }
 
+    @Override
     public OceanBaseExpression getRight() {
         return right;
     }
 
+    @Override
     public String getTextRepresentation() {
         return textRepresentation;
     }

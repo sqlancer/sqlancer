@@ -19,14 +19,17 @@ public class OceanBaseUnaryPostfixOperation
         this.setNegate(negate);
     }
 
+    @Override
     public OceanBaseExpression getExpression() {
         return expression;
     }
 
+    @Override
     public UnaryPostfixOperator getOperator() {
         return operator;
     }
 
+    @Override
     public boolean isNegated() {
         return negate;
     }

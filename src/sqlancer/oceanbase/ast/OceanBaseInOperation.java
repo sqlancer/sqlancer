@@ -16,10 +16,12 @@ public class OceanBaseInOperation implements OceanBaseExpression, AbstractInOper
         this.isTrue = isTrue;
     }
 
+    @Override
     public OceanBaseExpression getExpr() {
         return expr;
     }
 
+    @Override
     public List<OceanBaseExpression> getListElements() {
         return listElements;
     }
@@ -52,6 +54,7 @@ public class OceanBaseInOperation implements OceanBaseExpression, AbstractInOper
 
     }
 
+    @Override
     public boolean isTrue() {
         return isTrue;
     }

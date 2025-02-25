@@ -21,10 +21,12 @@ public class MySQLInOperation implements MySQLExpression, AbstractInOperation<My
         this.isTrue = isTrue;
     }
 
+    @Override
     public MySQLExpression getExpr() {
         return expr;
     }
 
+    @Override
     public List<MySQLExpression> getListElements() {
         return listElements;
     }
@@ -66,6 +68,7 @@ public class MySQLInOperation implements MySQLExpression, AbstractInOperation<My
 
     }
 
+    @Override
     public boolean isTrue() {
         return isTrue;
     }

@@ -18,14 +18,17 @@ public class MySQLUnaryPostfixOperation implements MySQLExpression, AbstractPost
         this.setNegate(negate);
     }
 
+    @Override
     public MySQLExpression getExpression() {
         return expression;
     }
 
+    @Override
     public UnaryPostfixOperator getOperator() {
         return operator;
     }
 
+    @Override
     public boolean isNegated() {
         return negate;
     }
