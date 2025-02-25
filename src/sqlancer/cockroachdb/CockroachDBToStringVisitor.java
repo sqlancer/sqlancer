@@ -1,6 +1,6 @@
 package sqlancer.cockroachdb;
 
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import sqlancer.Randomly;
 import sqlancer.cockroachdb.ast.CockroachDBAggregate;
@@ -103,7 +103,7 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
     @Override
     protected void visitFromClause(SelectBase<CockroachDBExpression> select) {
         if (!select.getFromList().isEmpty()) {
-            visit(select.getFromList().stream().map(t -> t).collect(Collectors.toList()));
+            visit(new ArrayList<>(select.getFromList()));
         }
     }
 
@@ -112,7 +112,15 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
         if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
             sb.append(", ");
         }
-        visit(select.getJoinList().stream().map(j -> j).collect(Collectors.toList()));
+        visit(new ArrayList<>(select.getJoinList()));
+    }
+
+    @Override
+    protected void visitGroupByClause(SelectBase<CockroachDBExpression> select) {
+        if (select.getGroupByExpressions() != null && !select.getGroupByExpressions().isEmpty()) {
+            sb.append(" GROUP BY ");
+            visit(select.getGroupByExpressions());
+        }
     }
 
     @Override

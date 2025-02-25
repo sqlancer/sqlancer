@@ -8,9 +8,14 @@ import sqlancer.common.ast.newast.Join;
 public class CockroachDBJoin extends JoinBase<CockroachDBExpression>
         implements CockroachDBExpression, Join<CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
 
+    private final CockroachDBExpression leftTable;
+    private final CockroachDBExpression rightTable;
+
     public CockroachDBJoin(CockroachDBExpression leftTable, CockroachDBExpression rightTable,
             CockroachDBExpression whereCondition, JoinType joinType) {
-        super(leftTable, rightTable, whereCondition, joinType);
+        super(joinType, whereCondition);
+        this.leftTable = leftTable;
+        this.rightTable = rightTable;
     }
 
     public CockroachDBExpression getLeftTable() {
