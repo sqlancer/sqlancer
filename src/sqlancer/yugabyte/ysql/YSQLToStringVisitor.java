@@ -1,7 +1,5 @@
 package sqlancer.yugabyte.ysql;
 
-import java.util.Optional;
-
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.visitor.BinaryOperation;
@@ -208,55 +206,6 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
 
     private void appendType(YSQLCastOperation cast) {
         YSQLCompoundDataType compoundType = cast.getCompoundType();
-        switch (compoundType.getDataType()) {
-        case BOOLEAN:
-            sb.append("BOOLEAN");
-            break;
-        case INT: // TODO support also other int types
-            sb.append("INT");
-            break;
-        case TEXT:
-            // TODO: append TEXT, CHAR
-            sb.append(Randomly.fromOptions("VARCHAR"));
-            break;
-        case REAL:
-            sb.append("REAL");
-            break;
-        case DECIMAL:
-            sb.append("DECIMAL");
-            break;
-        case FLOAT:
-            sb.append("FLOAT");
-            break;
-        case RANGE:
-            sb.append("int4range");
-            break;
-        case MONEY:
-            sb.append("MONEY");
-            break;
-        case INET:
-            sb.append("INET");
-            break;
-        case BIT:
-            sb.append("BIT");
-            break;
-        case BYTEA:
-            sb.append("BYTEA");
-            break;
-        // if (Randomly.getBoolean()) {
-        // sb.append("(");
-        // sb.append(Randomly.getNotCachedInteger(1, 100));
-        // sb.append(")");
-        // }
-        default:
-            throw new AssertionError(cast.getType());
-        }
-        Optional<Integer> size = compoundType.getSize();
-        if (size.isPresent()) {
-            sb.append("(");
-            sb.append(size.get());
-            sb.append(")");
-        }
+        appendCastType(compoundType);
     }
-
 }

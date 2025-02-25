@@ -2,9 +2,10 @@ package sqlancer.yugabyte.ysql;
 
 import java.util.Optional;
 
+import sqlancer.common.schema.AbstractCompoundDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 
-public final class YSQLCompoundDataType {
+public final class YSQLCompoundDataType implements AbstractCompoundDataType<YSQLDataType> {
 
     private final YSQLDataType dataType;
     private final YSQLCompoundDataType elemType;
@@ -41,5 +42,13 @@ public final class YSQLCompoundDataType {
         } else {
             return Optional.of(size);
         }
+    }
+
+    @Override
+    public AbstractCompoundDataType<YSQLDataType> getElementType() {
+        if (elemType == null) {
+            throw new AssertionError();
+        }
+        return elemType;
     }
 }
