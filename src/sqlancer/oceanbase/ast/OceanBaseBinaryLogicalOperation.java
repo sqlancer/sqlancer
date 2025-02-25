@@ -1,8 +1,10 @@
 package sqlancer.oceanbase.ast;
 
 import sqlancer.Randomly;
+import sqlancer.common.schema.AbstractBinaryLogicalOperation;
 
-public class OceanBaseBinaryLogicalOperation implements OceanBaseExpression {
+public class OceanBaseBinaryLogicalOperation
+        implements OceanBaseExpression, AbstractBinaryLogicalOperation<OceanBaseExpression> {
 
     private final OceanBaseExpression left;
     private final OceanBaseExpression right;

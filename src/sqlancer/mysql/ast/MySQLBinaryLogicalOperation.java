@@ -1,8 +1,9 @@
 package sqlancer.mysql.ast;
 
 import sqlancer.Randomly;
+import sqlancer.common.schema.AbstractBinaryLogicalOperation;
 
-public class MySQLBinaryLogicalOperation implements MySQLExpression {
+public class MySQLBinaryLogicalOperation implements MySQLExpression, AbstractBinaryLogicalOperation<MySQLExpression> {
 
     private final MySQLExpression left;
     private final MySQLExpression right;
