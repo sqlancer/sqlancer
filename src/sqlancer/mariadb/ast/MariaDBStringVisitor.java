@@ -50,8 +50,10 @@ public class MariaDBStringVisitor extends ToStringVisitor<MariaDBExpression> imp
             }
             visit(s.getFromList().get(j));
         }
-        for (JoinBase<MariaDBExpression> j : s.getJoinClauses()) {
-            visit((MariaDBJoin) j);
+        if (!s.getJoinClauses().isEmpty()) {
+            for (JoinBase<MariaDBExpression> j : s.getJoinClauses()) {
+                visit((MariaDBJoin) j);
+            }
         }
         if (s.getWhereCondition() != null) {
             sb.append(" WHERE ");

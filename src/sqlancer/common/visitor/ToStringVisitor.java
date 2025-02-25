@@ -199,7 +199,6 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         default:
             throw new AssertionError(join.getType());
         }
-
     }
 
     public void visitOnClauses(JoinBase<T> join) {
