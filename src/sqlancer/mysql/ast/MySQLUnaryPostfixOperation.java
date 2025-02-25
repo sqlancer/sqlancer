@@ -1,6 +1,8 @@
 package sqlancer.mysql.ast;
 
-public class MySQLUnaryPostfixOperation implements MySQLExpression {
+import sqlancer.common.schema.AbstractPostfixOperation;
+
+public class MySQLUnaryPostfixOperation implements MySQLExpression, AbstractPostfixOperation<MySQLExpression> {
 
     private final MySQLExpression expression;
     private final UnaryPostfixOperator operator;
