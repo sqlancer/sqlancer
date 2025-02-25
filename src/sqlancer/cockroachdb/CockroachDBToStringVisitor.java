@@ -161,14 +161,75 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
 
     @Override
     public void visit(CockroachDBJoin join) {
+//        visit(join.getLeftTable());
+//        switch (join.getJoinType()) {
+//        case INNER:
+//            sb.append(" INNER ");
+//            potentiallyAddHint(false);
+//            sb.append("JOIN ");
+//            visit(join.getRightTable());
+//            sb.append(" ON ");
+//            visit(join.getOnClause());
+//            break;
+//        case LEFT:
+//            sb.append(" LEFT");
+//            sb.append(" OUTER ");
+//            potentiallyAddHint(true);
+//            sb.append("JOIN ");
+//            visit(join.getRightTable());
+//            sb.append(" ON ");
+//            visit(join.getOnClause());
+//            break;
+//        case RIGHT:
+//            sb.append(" RIGHT");
+//            sb.append(" OUTER ");
+//            potentiallyAddHint(true);
+//            sb.append("JOIN ");
+//            visit(join.getRightTable());
+//            sb.append(" ON ");
+//            visit(join.getOnClause());
+//            break;
+//        case FULL:
+//            sb.append(" FULL");
+//            sb.append(" OUTER ");
+//            potentiallyAddHint(true);
+//            sb.append("JOIN ");
+//            visit(join.getRightTable());
+//            sb.append(" ON ");
+//            visit(join.getOnClause());
+//            break;
+//        case CROSS:
+//            sb.append(" CROSS ");
+//            potentiallyAddHint(false);
+//            sb.append("JOIN ");
+//            visit(join.getRightTable());
+//            break;
+//        case NATURAL:
+//            sb.append(" NATURAL ");
+//            // potentiallyAddHint(false);
+//            sb.append("JOIN ");
+//            visit(join.getRightTable());
+//            break;
+//        default:
+//            throw new AssertionError();
+//        }
+        if (join.getLeftTable() == null) {
+            throw new AssertionError("Left table is null");
+        }
         visit(join.getLeftTable());
         switch (join.getJoinType()) {
         case INNER:
             sb.append(" INNER ");
             potentiallyAddHint(false);
             sb.append("JOIN ");
+            if (join.getRightTable() == null) {
+                throw new AssertionError("Right table is null for INNER join");
+            }
             visit(join.getRightTable());
             sb.append(" ON ");
+            if (join.getOnClause() == null) {
+                throw new AssertionError("ON clause is null for INNER join");
+            }
             visit(join.getOnClause());
             break;
         case LEFT:
@@ -176,8 +237,14 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
             sb.append(" OUTER ");
             potentiallyAddHint(true);
             sb.append("JOIN ");
+            if (join.getRightTable() == null) {
+                throw new AssertionError("Right table is null for LEFT join");
+            }
             visit(join.getRightTable());
             sb.append(" ON ");
+            if (join.getOnClause() == null) {
+                throw new AssertionError("ON clause is null for LEFT join");
+            }
             visit(join.getOnClause());
             break;
         case RIGHT:
@@ -185,8 +252,14 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
             sb.append(" OUTER ");
             potentiallyAddHint(true);
             sb.append("JOIN ");
+            if (join.getRightTable() == null) {
+                throw new AssertionError("Right table is null for RIGHT join");
+            }
             visit(join.getRightTable());
             sb.append(" ON ");
+            if (join.getOnClause() == null) {
+                throw new AssertionError("ON clause is null for RIGHT join");
+            }
             visit(join.getOnClause());
             break;
         case FULL:
@@ -194,24 +267,36 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
             sb.append(" OUTER ");
             potentiallyAddHint(true);
             sb.append("JOIN ");
+            if (join.getRightTable() == null) {
+                throw new AssertionError("Right table is null for FULL join");
+            }
             visit(join.getRightTable());
             sb.append(" ON ");
+            if (join.getOnClause() == null) {
+                throw new AssertionError("ON clause is null for FULL join");
+            }
             visit(join.getOnClause());
             break;
         case CROSS:
             sb.append(" CROSS ");
             potentiallyAddHint(false);
             sb.append("JOIN ");
+            if (join.getRightTable() == null) {
+                throw new AssertionError("Right table is null for CROSS join");
+            }
             visit(join.getRightTable());
             break;
         case NATURAL:
             sb.append(" NATURAL ");
             // potentiallyAddHint(false);
             sb.append("JOIN ");
+            if (join.getRightTable() == null) {
+                throw new AssertionError("Right table is null for NATURAL join");
+            }
             visit(join.getRightTable());
             break;
         default:
-            throw new AssertionError();
+            throw new AssertionError("Unknown join type: " + join.getJoinType());
         }
     }
 
