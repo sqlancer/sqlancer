@@ -2,7 +2,7 @@ package sqlancer.common.schema;
 
 import java.util.Optional;
 
-public interface AbstractCompoundDataType<T extends Enum<T>> {
+public interface AbstractCompoundDataType<T> {
 
     T getDataType();
 

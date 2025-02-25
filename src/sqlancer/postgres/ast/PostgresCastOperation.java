@@ -1,9 +1,11 @@
 package sqlancer.postgres.ast;
 
+import sqlancer.common.schema.AbstractCastOperation;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
-public class PostgresCastOperation implements PostgresExpression {
+public class PostgresCastOperation
+        implements PostgresExpression, AbstractCastOperation<PostgresExpression, PostgresDataType> {
 
     private final PostgresExpression expression;
     private final PostgresCompoundDataType type;
@@ -30,6 +32,7 @@ public class PostgresCastOperation implements PostgresExpression {
         return expectedValue.cast(type.getDataType());
     }
 
+    @Override
     public PostgresExpression getExpression() {
         return expression;
     }
@@ -38,6 +41,7 @@ public class PostgresCastOperation implements PostgresExpression {
         return type.getDataType();
     }
 
+    @Override
     public PostgresCompoundDataType getCompoundType() {
         return type;
     }

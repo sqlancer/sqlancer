@@ -1,9 +1,10 @@
 package sqlancer.yugabyte.ysql.ast;
 
+import sqlancer.common.schema.AbstractCastOperation;
 import sqlancer.yugabyte.ysql.YSQLCompoundDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 
-public class YSQLCastOperation implements YSQLExpression {
+public class YSQLCastOperation implements YSQLExpression, AbstractCastOperation<YSQLExpression, YSQLDataType> {
 
     private final YSQLExpression expression;
     private final YSQLCompoundDataType type;
@@ -30,6 +31,7 @@ public class YSQLCastOperation implements YSQLExpression {
         return expectedValue.cast(type.getDataType());
     }
 
+    @Override
     public YSQLExpression getExpression() {
         return expression;
     }
@@ -38,6 +40,7 @@ public class YSQLCastOperation implements YSQLExpression {
         return type.getDataType();
     }
 
+    @Override
     public YSQLCompoundDataType getCompoundType() {
         return type;
     }

@@ -7,6 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Expression;
+import sqlancer.common.schema.AbstractCastOperation;
 import sqlancer.common.schema.AbstractCompoundDataType;
 import sqlancer.common.visitor.UnaryOperation.OperatorKind;
 
@@ -262,7 +263,7 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
     }
 
     protected void appendCastType(AbstractCompoundDataType<?> compoundType) {
-        switch (compoundType.getDataType().name()) {
+        switch (compoundType.getDataType().toString()) {
         case "BOOLEAN":
             mapBooleanType(compoundType);
             break;
@@ -351,4 +352,24 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
     protected void mapByteaType(AbstractCompoundDataType<?> compoundType) {
         sb.append("BYTEA");
     }
+
+    protected void visitCastOperation(AbstractCastOperation<T, ?> cast) {
+        if (Randomly.getBoolean()) {
+            sb.append("CAST(");
+            visit(cast.getExpression());
+            sb.append(" AS ");
+            appendType(cast);
+            sb.append(")");
+        } else {
+            sb.append("(");
+            visit(cast.getExpression());
+            sb.append(")::");
+            appendType(cast);
+        }
+    }
+
+    protected void appendType(AbstractCastOperation<T, ?> cast) {
+        appendCastType(cast.getCompoundType());
+    }
+
 }

@@ -105,18 +105,7 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
 
     @Override
     public void visit(YSQLCastOperation cast) {
-        if (Randomly.getBoolean()) {
-            sb.append("CAST(");
-            visit(cast.getExpression());
-            sb.append(" AS ");
-            appendType(cast);
-            sb.append(")");
-        } else {
-            sb.append("(");
-            visit(cast.getExpression());
-            sb.append(")::");
-            appendType(cast);
-        }
+        visitCastOperation(cast);
     }
 
     @Override
@@ -204,8 +193,4 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
         super.visit((BinaryOperation<YSQLExpression>) op);
     }
 
-    private void appendType(YSQLCastOperation cast) {
-        YSQLCompoundDataType compoundType = cast.getCompoundType();
-        appendCastType(compoundType);
-    }
 }

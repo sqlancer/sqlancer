@@ -140,23 +140,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
 
     @Override
     public void visit(PostgresCastOperation cast) {
-        if (Randomly.getBoolean()) {
-            sb.append("CAST(");
-            visit(cast.getExpression());
-            sb.append(" AS ");
-            appendType(cast);
-            sb.append(")");
-        } else {
-            sb.append("(");
-            visit(cast.getExpression());
-            sb.append(")::");
-            appendType(cast);
-        }
-    }
-
-    private void appendType(PostgresCastOperation cast) {
-        PostgresCompoundDataType compoundType = cast.getCompoundType();
-        appendCastType(compoundType);
+        visitCastOperation(cast);
     }
 
     @Override
