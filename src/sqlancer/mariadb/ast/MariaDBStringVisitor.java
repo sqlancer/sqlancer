@@ -7,8 +7,6 @@ import sqlancer.common.visitor.ToStringVisitor;
 
 public class MariaDBStringVisitor extends ToStringVisitor<MariaDBExpression> implements MariaDBVisitor {
 
-    private final StringBuilder sb = new StringBuilder();
-
     @Override
     public void visit(MariaDBConstant c) {
         sb.append(c.toString());
@@ -50,10 +48,8 @@ public class MariaDBStringVisitor extends ToStringVisitor<MariaDBExpression> imp
             }
             visit(s.getFromList().get(j));
         }
-        if (!s.getJoinClauses().isEmpty()) {
-            for (JoinBase<MariaDBExpression> j : s.getJoinClauses()) {
-                visit((MariaDBJoin) j);
-            }
+        for (JoinBase<MariaDBExpression> j : s.getJoinClauses()) {
+            visit((MariaDBJoin) j);
         }
         if (s.getWhereCondition() != null) {
             sb.append(" WHERE ");
