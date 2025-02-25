@@ -74,6 +74,8 @@ public abstract class JoinBase<T extends Expression<?>> {
         private static final JoinType[] TIDB_TYPES = { NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS };
         private static final JoinType[] COCKROACHDB_TYPES = { INNER, LEFT, RIGHT, FULL, CROSS, NATURAL };
         private static final JoinType[] DORIS_TYPES = { INNER, STRAIGHT, LEFT, RIGHT };
+        private static final JoinType[] CLICKHOUSE_TYPES = { INNER, CROSS, LEFT_OUTER, RIGHT_OUTER, FULL_OUTER,
+                LEFT_ANTI, RIGHT_ANTI };
 
         public static JoinType getRandom() {
             return Randomly.fromOptions(values());
@@ -146,6 +148,9 @@ public abstract class JoinBase<T extends Expression<?>> {
                 break;
             case "MARIADB":
                 allowedTypes = TIDB_TYPES;
+                break;
+            case "CLICKHOUSE":
+                allowedTypes = CLICKHOUSE_TYPES;
                 break;
             default:
                 allowedTypes = values();

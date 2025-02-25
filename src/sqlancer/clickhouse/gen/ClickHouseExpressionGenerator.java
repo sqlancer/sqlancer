@@ -281,7 +281,7 @@ public class ClickHouseExpressionGenerator
                 ClickHouseTableReference rightTable = new ClickHouseTableReference(Randomly.fromList(tables),
                         "right_" + i);
                 ClickHouseJoinOnClause joinClause = generateJoinClause(leftTable, rightTable);
-                ClickHouseJoin.JoinType options = Randomly.fromOptions(ClickHouseJoin.JoinType.values());
+                ClickHouseJoin.JoinType options = Randomly.fromOptions(ClickHouseJoin.JoinType.getValues("CLICKHOUSE"));
                 ClickHouseJoin j = new ClickHouseJoin(leftTable, rightTable, options, joinClause);
                 joinStatements.add(j);
                 leftTables.add(rightTable);
@@ -392,7 +392,7 @@ public class ClickHouseExpressionGenerator
                 ClickHouseTableReference rightTable = new ClickHouseTableReference(Randomly.fromList(tables),
                         "right_" + i);
                 ClickHouseJoinOnClause joinClause = generateJoinClause(leftTable, rightTable);
-                ClickHouseJoin.JoinType options = Randomly.fromOptions(ClickHouseJoin.JoinType.values());
+                ClickHouseJoin.JoinType options = Randomly.fromOptions(ClickHouseJoin.JoinType.getValues("CLICKHOUSE"));
                 ClickHouseJoin j = new ClickHouseJoin(leftTable, rightTable, options, joinClause);
                 joinStatements.add(j);
                 leftTables.add(rightTable);
