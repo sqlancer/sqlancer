@@ -1,5 +1,6 @@
 package sqlancer.questdb;
 
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.questdb.ast.QuestDBConstant;
 import sqlancer.questdb.ast.QuestDBExpression;
@@ -23,39 +24,27 @@ public class QuestDBToStringVisitor extends NewToStringVisitor<QuestDBExpression
     }
 
     private void visit(QuestDBSelect select) {
-        sb.append("SELECT ");
-        if (select.isDistinct()) {
-            sb.append("DISTINCT ");
-        }
-        visit(select.getFetchColumns());
-        sb.append(" FROM ");
-        visit(select.getFromList());
-        if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
-            sb.append(", ");
-        }
-        if (!select.getJoinList().isEmpty()) {
-            visit(select.getJoinList());
-        }
-        if (select.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(select.getWhereClause());
-        }
-        // if (!select.getGroupByExpressions().isEmpty()) {
-        // sb.append(" GROUP BY ");
-        // visit(select.getGroupByExpressions());
-        // }
-        // if (select.getHavingClause() != null) {
-        // sb.append(" HAVING ");
-        // visit(select.getHavingClause());
-        // }
-        // if (!select.getOrderByClauses().isEmpty()) {
-        // sb.append(" ORDER BY ");
-        // visit(select.getOrderByClauses());
-        // }
-        if (select.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(select.getLimitClause());
-        }
+        visitSelect(select);
+    }
+
+    @Override
+    protected void visitGroupByClause(SelectBase<QuestDBExpression> select) {
+        // Do nothing as QuestDB doesn't support GROUP BY
+    }
+
+    @Override
+    protected void visitHavingClause(SelectBase<QuestDBExpression> select) {
+        // Do nothing as QuestDB doesn't support HAVING
+    }
+
+    @Override
+    protected void visitOrderByClause(SelectBase<QuestDBExpression> select) {
+        // Do nothing as QuestDB doesn't support ORDER BY
+    }
+
+    @Override
+    protected void visitOffsetClause(SelectBase<QuestDBExpression> select) {
+        // Do nothing as QuestDB doesn't support OFFSET
     }
 
     public static String asString(QuestDBExpression expr) {

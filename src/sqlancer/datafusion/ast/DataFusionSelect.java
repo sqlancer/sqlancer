@@ -25,6 +25,11 @@ public class DataFusionSelect extends SelectBase<DataFusionExpression> implement
     }
 
     @Override
+    public boolean isDistinct() {
+        return false;
+    }
+
+    @Override
     public void setJoinClauses(List<DataFusionJoin> joinStatements) {
         List<DataFusionExpression> expressions = joinStatements.stream().map(e -> (DataFusionExpression) e)
                 .collect(Collectors.toList());

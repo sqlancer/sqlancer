@@ -6,7 +6,7 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3WindowFunctionExpression extends SQLite3Expression {
+public class SQLite3WindowFunctionExpression implements SQLite3Expression {
 
     private final SQLite3Expression baseWindowFunction; // also contains the arguments to the window function
     private List<SQLite3Expression> partitionBy = new ArrayList<>();
@@ -16,7 +16,7 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
     private SQLite3FrameSpecExclude exclude;
     private SQLite3FrameSpecKind frameSpecKind;
 
-    public static class SQLite3WindowFunctionFrameSpecTerm extends SQLite3Expression {
+    public static class SQLite3WindowFunctionFrameSpecTerm implements SQLite3Expression {
 
         public enum SQLite3WindowFunctionFrameSpecTermKind {
             UNBOUNDED_PRECEDING("UNBOUNDED PRECEDING"), EXPR_PRECEDING("PRECEDING"), CURRENT_ROW("CURRENT ROW"),
@@ -63,7 +63,7 @@ public class SQLite3WindowFunctionExpression extends SQLite3Expression {
 
     }
 
-    public static class SQLite3WindowFunctionFrameSpecBetween extends SQLite3Expression {
+    public static class SQLite3WindowFunctionFrameSpecBetween implements SQLite3Expression {
 
         private final SQLite3WindowFunctionFrameSpecTerm left;
         private final SQLite3WindowFunctionFrameSpecTerm right;

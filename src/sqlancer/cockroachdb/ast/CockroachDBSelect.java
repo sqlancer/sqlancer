@@ -14,6 +14,7 @@ public class CockroachDBSelect extends SelectBase<CockroachDBExpression> impleme
 
     private boolean isDistinct;
 
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }

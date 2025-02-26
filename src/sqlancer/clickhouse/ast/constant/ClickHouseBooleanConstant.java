@@ -21,11 +21,6 @@ public class ClickHouseBooleanConstant extends ClickHouseConstant {
     }
 
     @Override
-    public boolean isNull() {
-        return false;
-    }
-
-    @Override
     public boolean asBooleanNotNull() {
         return value;
     }

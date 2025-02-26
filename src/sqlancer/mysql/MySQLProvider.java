@@ -165,7 +165,7 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
                 sb.append(" UPDATE HISTOGRAM ON ");
                 String columns = table.getColumns().stream().map(MySQLColumn::getName)
                         .collect(Collectors.joining(", "));
-                sb.append(columns + ";");
+                sb.append(columns).append(";");
                 globalState.executeStatement(new SQLQueryAdapter(sb.toString(), errors));
             }
         }

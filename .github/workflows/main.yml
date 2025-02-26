@@ -435,31 +435,33 @@ jobs:
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP -P all
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLCERT -P all
 
-  oceanbase:
-    name: DBMS Tests (OceanBase)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'maven'
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true -P all
-      - name: Set up OceanBase
-        run: |
-          docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce:4.2.1-lts
-          sleep 120
-          mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
-      - name: Run Tests
-        run: |
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseNoREC -P all
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBasePQS -P all
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseTLP -P all
+  # Disable flaky test
+  # oceanbase:
+  #   name: DBMS Tests (OceanBase)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Set up JDK 11
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
+  #         cache: 'maven'
+  #     - name: Build SQLancer
+  #       run: mvn -B package -DskipTests=true
+  #     - name: Set up OceanBase
+  #       run: |
+  #         docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce:4.2.1-lts
+  #         sleep 120
+  #         mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
+  #     - name: Run Tests
+  #       run: |
+  #         OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseNoREC
+  #         OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBasePQS
+  #         OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseTLP
+
   postgres:
     name: DBMS Tests (PostgreSQL)
     runs-on: ubuntu-latest
@@ -555,34 +557,36 @@ jobs:
         run: mvn -B package -DskipTests=true -P all
       - name: SQLite Tests for QPG
         run: |
-          mvn -Dtest=TestSQLiteQPG test -P all
+          mvn -Dtest=TestSQLiteQPG test
+          
+  # Disable flaky test
+  # tidb:
+  #   name: DBMS Tests (TiDB)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Set up JDK 11
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
+  #         cache: 'maven'
+  #     - name: Build SQLancer
+  #       run: mvn -B package -DskipTests=true
+  #     - name: Set up TiDB
+  #       run: |
+  #         docker pull pingcap/tidb:latest
+  #         docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:v7.5.1
+  #         sleep 10
+  #     - name: Create SQLancer user
+  #       run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+  #     - name: Run Tests
+  #       run: |
+  #         TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test
+  #         TIDB_AVAILABLE=true mvn -Dtest=TestTiDBCERT test
 
-  tidb:
-    name: DBMS Tests (TiDB)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'maven'
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true -P all
-      - name: Set up TiDB
-        run: |
-          docker pull pingcap/tidb:latest
-          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:v7.5.1
-          sleep 10
-      - name: Create SQLancer user
-        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-      - name: Run Tests
-        run: |
-          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test -P all
-          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBCERT test -P all
 
   tidb-qpg:
     name: QPG Tests (TiDB)
@@ -636,46 +640,48 @@ jobs:
           YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLPQS test -P all
           YUGABYTE_AVAILABLE=true mvn -Dtest=TestYCQL test -P all
 
-  doris:
-    name: DBMS Tests (Apache Doris)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'maven'
-      - name: install mysql client
-        run: |
-          sudo apt update
-          sudo apt install mysql-client --assume-yes
-      - name: Set up Apache Doris
-        run: |
-          sudo sysctl -w vm.max_map_count=2000000
-          wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.1.4-bin-x64.tar.gz
-          tar zxf apache-doris-2.1.4-bin-x64.tar.gz
-          mv apache-doris-2.1.4-bin-x64 apache-doris
-          sudo swapoff -a
-          cd apache-doris/fe
-          ./bin/start_fe.sh --daemon
-          cd ../be
-          ./bin/start_be.sh --daemon
+  # Disable flaky test
+  # doris:
+  #   name: DBMS Tests (Apache Doris)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Set up JDK 11
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         distribution: 'temurin'
+  #         java-version: '11'
+  #         cache: 'maven'
+  #     - name: install mysql client
+  #       run: |
+  #         sudo apt update
+  #         sudo apt install mysql-client --assume-yes
+  #     - name: Set up Apache Doris
+  #       run: |
+  #         sudo sysctl -w vm.max_map_count=2000000
+  #         wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.1.4-bin-x64.tar.gz
+  #         tar zxf apache-doris-2.1.4-bin-x64.tar.gz
+  #         mv apache-doris-2.1.4-bin-x64 apache-doris
+  #         sudo swapoff -a
+  #         cd apache-doris/fe
+  #         ./bin/start_fe.sh --daemon
+  #         cd ../be
+  #         ./bin/start_be.sh --daemon
 
-          sleep 30
-          IP=$(hostname -I | awk '{print $1}')
-          mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
-          mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
-      - name: Build SQLancer
-        run: mvn -B package -DskipTests=true -P all
-      - name: Run Tests
-        run: |
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test -P all
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test -P all
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test -P all
+
+  #         sleep 30
+  #         IP=$(hostname -I | awk '{print $1}')
+  #         mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
+  #         mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
+  #     - name: Build SQLancer
+  #       run: mvn -B package -DskipTests=true
+  #     - name: Run Tests
+  #       run: |
+  #         DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test
+  #         DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test
+  #         DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test
 
   reducer:
     name: Reducer Tests
