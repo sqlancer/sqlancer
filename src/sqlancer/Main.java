@@ -30,6 +30,7 @@ import com.beust.jcommander.JCommander.Builder;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
+
 public final class Main {
 
     public static final File LOG_DIRECTORY = new File("logs");
