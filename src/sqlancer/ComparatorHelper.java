@@ -3,6 +3,7 @@ package sqlancer;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -87,20 +88,10 @@ public final class ComparatorHelper {
 
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
             String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state) {
+
         if (resultSet.size() != secondResultSet.size()) {
-            String queryFormatString = "-- %s;" + System.lineSeparator() + "-- cardinality: %d"
-                    + System.lineSeparator();
-            String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
-            String combinedQueryString = String.join(";", combinedString);
-            String secondQueryString = String.format(queryFormatString, combinedQueryString, secondResultSet.size());
-            state.getState().getLocalState()
-                    .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
-            String assertionMessage = String.format(
-                    "The size of the result sets mismatch (%d and %d)!" + System.lineSeparator()
-                            + "First query: \"%s\", whose cardinality is: %d" + System.lineSeparator()
-                            + "Second query:\"%s\", whose cardinality is: %d",
-                    resultSet.size(), secondResultSet.size(), originalQueryString, resultSet.size(),
-                    combinedQueryString, secondResultSet.size());
+            String assertionMessage = logCardinalityMismatch(resultSet, secondResultSet, originalQueryString,
+                    combinedString, state);
             throw new AssertionError(assertionMessage);
         }
 
@@ -109,29 +100,52 @@ public final class ComparatorHelper {
 
         boolean validateResultSizeOnly = state.getOptions().validateResultSizeOnly();
         if (!validateResultSizeOnly && !firstHashSet.equals(secondHashSet)) {
-            Set<String> firstResultSetMisses = new HashSet<>(firstHashSet);
-            firstResultSetMisses.removeAll(secondHashSet);
-            Set<String> secondResultSetMisses = new HashSet<>(secondHashSet);
-            secondResultSetMisses.removeAll(firstHashSet);
-
-            String queryFormatString = "-- Query: \"%s\"; It misses: \"%s\"";
-            String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
-            String secondQueryString = String.format(queryFormatString, String.join(";", combinedString),
-                    secondResultSetMisses);
-            // update the SELECT queries to be logged at the bottom of the error log file
-            state.getState().getLocalState()
-                    .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
-            String assertionMessage = String.format("The content of the result sets mismatch!" + System.lineSeparator()
-                    + "First query : \"%s\"" + System.lineSeparator() + "Second query: \"%s\"", originalQueryString,
-                    secondQueryString);
+            String assertionMessage = validateResultSetContent(originalQueryString, combinedString, state, firstHashSet,
+                    secondHashSet);
             throw new AssertionError(assertionMessage);
         }
+    }
+
+    private static String validateResultSetContent(String originalQueryString, List<String> combinedString,
+            SQLGlobalState<?, ?> state, Set<String> firstHashSet, Set<String> secondHashSet) {
+        Set<String> firstResultSetMisses = new HashSet<>(firstHashSet);
+        firstResultSetMisses.removeAll(secondHashSet);
+        Set<String> secondResultSetMisses = new HashSet<>(secondHashSet);
+        secondResultSetMisses.removeAll(firstHashSet);
+
+        String queryFormatString = "-- Query: \"%s\"; It misses: \"%s\"";
+        String firstQueryString = String.format(queryFormatString, originalQueryString, firstResultSetMisses);
+        String secondQueryString = String.format(queryFormatString, String.join(";", combinedString),
+                secondResultSetMisses);
+        // update the SELECT queries to be logged at the bottom of the error log file
+        state.getState().getLocalState()
+                .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
+        return String.format("The content of the result sets mismatch!" + System.lineSeparator()
+                + "First query : \"%s\"" + System.lineSeparator() + "Second query: \"%s\"", originalQueryString,
+                secondQueryString);
+    }
+
+    private static String logCardinalityMismatch(List<String> resultSet, List<String> secondResultSet,
+            String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state) {
+        String queryFormatString = "-- %s;" + System.lineSeparator() + "-- cardinality: %d" + System.lineSeparator();
+        String firstQueryString = String.format(queryFormatString, originalQueryString, resultSet.size());
+        String combinedQueryString = String.join(";", combinedString);
+        String secondQueryString = String.format(queryFormatString, combinedQueryString, secondResultSet.size());
+        state.getState().getLocalState()
+                .log(String.format("%s" + System.lineSeparator() + "%s", firstQueryString, secondQueryString));
+        return String.format(
+                "The size of the result sets mismatch (%d and %d)!" + System.lineSeparator()
+                        + "First query: \"%s\", whose cardinality is: %d" + System.lineSeparator()
+                        + "Second query:\"%s\", whose cardinality is: %d",
+                resultSet.size(), secondResultSet.size(), originalQueryString, resultSet.size(), combinedQueryString,
+                secondResultSet.size());
     }
 
     public static void assumeResultSetsAreEqual(List<String> resultSet, List<String> secondResultSet,
             String originalQueryString, List<String> combinedString, SQLGlobalState<?, ?> state,
             UnaryOperator<String> canonicalizationRule) {
-        // Overloaded version of assumeResultSetsAreEqual that takes a canonicalization function which is applied to
+        // Overloaded version of assumeResultSetsAreEqual that takes a canonicalization
+        // function which is applied to
         // both result sets before their comparison.
         List<String> canonicalizedResultSet = resultSet.stream().map(canonicalizationRule).collect(Collectors.toList());
         List<String> canonicalizedSecondResultSet = secondResultSet.stream().map(canonicalizationRule)
@@ -143,7 +157,9 @@ public final class ComparatorHelper {
     public static List<String> getCombinedResultSet(String firstQueryString, String secondQueryString,
             String thirdQueryString, List<String> combinedString, boolean asUnion, SQLGlobalState<?, ?> state,
             ExpectedErrors errors) throws SQLException {
+
         List<String> secondResultSet;
+
         if (asUnion) {
             String unionString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL "
                     + thirdQueryString;
@@ -151,12 +167,11 @@ public final class ComparatorHelper {
             secondResultSet = getResultSetFirstColumnAsString(unionString, errors, state);
         } else {
             secondResultSet = new ArrayList<>();
-            secondResultSet.addAll(getResultSetFirstColumnAsString(firstQueryString, errors, state));
-            secondResultSet.addAll(getResultSetFirstColumnAsString(secondQueryString, errors, state));
-            secondResultSet.addAll(getResultSetFirstColumnAsString(thirdQueryString, errors, state));
-            combinedString.add(firstQueryString);
-            combinedString.add(secondQueryString);
-            combinedString.add(thirdQueryString);
+            combinedString.addAll(Arrays.asList(firstQueryString, secondQueryString, thirdQueryString));
+
+            for (String queryString : combinedString) {
+                secondResultSet.addAll(getResultSetFirstColumnAsString(queryString, errors, state));
+            }
         }
         return secondResultSet;
     }

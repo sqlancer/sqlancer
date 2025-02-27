@@ -3,7 +3,7 @@ package sqlancer.sqlite3.ast;
 import sqlancer.Randomly;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3SetClause extends SQLite3Expression {
+public class SQLite3SetClause implements SQLite3Expression {
 
     private final SQLite3Expression left;
     private final SQLite3Expression right;

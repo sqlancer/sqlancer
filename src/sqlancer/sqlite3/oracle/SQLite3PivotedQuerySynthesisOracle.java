@@ -20,15 +20,15 @@ import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
 import sqlancer.sqlite3.ast.SQLite3Cast;
+import sqlancer.sqlite3.ast.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Constant;
+import sqlancer.sqlite3.ast.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression;
-import sqlancer.sqlite3.ast.SQLite3Expression.Join;
-import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
+import sqlancer.sqlite3.ast.SQLite3Join;
+import sqlancer.sqlite3.ast.SQLite3Join.JoinType;
+import sqlancer.sqlite3.ast.SQLite3PostfixText;
+import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation;
+import sqlancer.sqlite3.ast.SQLite3PostfixUnaryOperation.PostfixUnaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation;
 import sqlancer.sqlite3.ast.SQLite3UnaryOperation.UnaryOperator;
@@ -73,7 +73,7 @@ public class SQLite3PivotedQuerySynthesisOracle
         // once a bug is found
         List<SQLite3Column> columnsWithoutRowid = columns.stream()
                 .filter(c -> !SQLite3Schema.ROWID_STRINGS.contains(c.getName())).collect(Collectors.toList());
-        List<Join> joinStatements = getJoinStatements(globalState, tables, columnsWithoutRowid);
+        List<SQLite3Join> joinStatements = getJoinStatements(globalState, tables, columnsWithoutRowid);
         selectStatement.setJoinClauses(joinStatements);
         selectStatement.setFromList(SQLite3Common.getTableRefs(tables, globalState.getSchema()));
 
@@ -106,10 +106,10 @@ public class SQLite3PivotedQuerySynthesisOracle
         return selectStatement;
     }
 
-    private List<Join> getJoinStatements(SQLite3GlobalState globalState, List<SQLite3Table> tables,
+    private List<SQLite3Join> getJoinStatements(SQLite3GlobalState globalState, List<SQLite3Table> tables,
             List<SQLite3Column> columns) {
-        List<Join> joinStatements = new SQLite3ExpressionGenerator(globalState).getRandomJoinClauses(tables);
-        for (Join j : joinStatements) {
+        List<SQLite3Join> joinStatements = new SQLite3ExpressionGenerator(globalState).getRandomJoinClauses(tables);
+        for (SQLite3Join j : joinStatements) {
             if (j.getType() == JoinType.NATURAL) {
                 /* NATURAL joins have no on clause and cannot be rectified */
                 j.setType(JoinType.INNER);

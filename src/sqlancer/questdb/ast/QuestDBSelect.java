@@ -9,6 +9,7 @@ public class QuestDBSelect extends SelectBase<QuestDBExpression> implements Ques
         isDistinct = distinct;
     }
 
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }

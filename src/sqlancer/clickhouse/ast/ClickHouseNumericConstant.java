@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import com.clickhouse.client.ClickHouseDataType;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
 public abstract class ClickHouseNumericConstant<T extends Number> extends ClickHouseConstant {
@@ -19,12 +20,64 @@ public abstract class ClickHouseNumericConstant<T extends Number> extends ClickH
     }
 
     @Override
+    public Object getValue() {
+        return value;
+    }
+
+    @Override
+    public boolean asBooleanNotNull() {
+        if (this.value instanceof BigInteger) {
+            return asBooleanNotNullBigInteger();
+        }
+        return asBooleanNotNullNumeric();
+    }
+
+    private boolean asBooleanNotNullBigInteger() {
+        return this.value != BigInteger.ZERO;
+    }
+
+    private boolean asBooleanNotNullNumeric() {
+        return this.value.doubleValue() != 0;
+    }
+
+    @Override
+    public ClickHouseConstant applyLess(ClickHouseConstant right) {
+        if (this.value instanceof Float || this.value instanceof Double) {
+            return applyLessFloat(right);
+        }
+        return applyLessInt(right);
+    }
+
+    private ClickHouseConstant applyLessFloat(ClickHouseConstant right) {
+        if (this.getDataType() == right.getDataType()) {
+            return this.asDouble() < right.asDouble() ? ClickHouseCreateConstant.createTrue()
+                    : ClickHouseCreateConstant.createFalse();
+        }
+        ClickHouseConstant converted;
+        if (this.value instanceof Float) {
+            converted = right.cast(ClickHouseDataType.Float32);
+        } else {
+            converted = right.cast(ClickHouseDataType.Float64);
+        }
+        return this.asDouble() < converted.asDouble() ? ClickHouseCreateConstant.createTrue()
+                : ClickHouseCreateConstant.createFalse();
+    }
+
+    private ClickHouseConstant applyLessInt(ClickHouseConstant right) {
+        if (this.getDataType() == right.getDataType()) {
+            return this.asInt() < right.asInt() ? ClickHouseCreateConstant.createTrue()
+                    : ClickHouseCreateConstant.createFalse();
+        }
+        throw new IgnoreMeException();
+    }
+
+    @Override
     public ClickHouseConstant cast(ClickHouseDataType type) {
         if (type == ClickHouseDataType.Nothing) {
             return ClickHouseCreateConstant.createNullConstant();
         }
 
-        if (value instanceof BigInteger) {
+        if (this.value instanceof BigInteger) {
             return castBigInteger(type);
         }
         return castNumeric(type);
