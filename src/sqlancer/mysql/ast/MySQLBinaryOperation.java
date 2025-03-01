@@ -10,7 +10,7 @@ public class MySQLBinaryOperation implements MySQLExpression {
 
     private final MySQLExpression left;
     private final MySQLExpression right;
-    private final MySQLBinaryOperator op;
+    private final MySQLBinaryOperator binaryOperator;
 
     public enum MySQLBinaryOperator {
 
@@ -37,13 +37,13 @@ public class MySQLBinaryOperation implements MySQLExpression {
         private String textRepresentation;
 
         private static MySQLConstant applyBitOperation(MySQLConstant left, MySQLConstant right,
-                BinaryOperator<Long> op) {
+                BinaryOperator<Long> binaryOperator) {
             if (left.isNull() || right.isNull()) {
                 return MySQLConstant.createNullConstant();
             } else {
                 long leftVal = left.castAs(CastType.SIGNED).getInt();
                 long rightVal = right.castAs(CastType.SIGNED).getInt();
-                long value = op.apply(leftVal, rightVal);
+                long value = binaryOperator.apply(leftVal, rightVal);
                 return MySQLConstant.createUnsignedIntConstant(value);
             }
         }
@@ -64,10 +64,10 @@ public class MySQLBinaryOperation implements MySQLExpression {
 
     }
 
-    public MySQLBinaryOperation(MySQLExpression left, MySQLExpression right, MySQLBinaryOperator op) {
+    public MySQLBinaryOperation(MySQLExpression left, MySQLExpression right, MySQLBinaryOperator binaryOperator) {
         this.left = left;
         this.right = right;
-        this.op = op;
+        this.binaryOperator = binaryOperator;
     }
 
     @Override
@@ -96,7 +96,7 @@ public class MySQLBinaryOperation implements MySQLExpression {
             }
         }
 
-        return op.apply(leftExpected, rightExpected);
+        return binaryOperator.apply(leftExpected, rightExpected);
     }
 
     public MySQLExpression getLeft() {
@@ -104,7 +104,7 @@ public class MySQLBinaryOperation implements MySQLExpression {
     }
 
     public MySQLBinaryOperator getOp() {
-        return op;
+        return binaryOperator;
     }
 
     public MySQLExpression getRight() {
