@@ -40,17 +40,25 @@ public class MySQLIndexGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         MySQLErrors.addExpressionErrors(errors);
         sb.append("CREATE ");
+        MySQLTable table = schema.getRandomTable();
         if (Randomly.getBoolean()) {
             // "FULLTEXT" TODO Column 'c3' cannot be part of FULLTEXT index
             // A SPATIAL index may only contain a geometrical type column
-            sb.append("UNIQUE ");
-            errors.add("Duplicate entry");
+
+            // A FULLTEXT index may only contain a FULLTEXT index
+            if (table.getColumns().stream().anyMatch(c -> c.getType() == MySQLDataType.TEXT
+                    || c.getType() == MySQLDataType.LONGTEXT)) {
+                sb.append("FULLTEXT ");
+            } else {
+                sb.append("UNIQUE ");
+                errors.add("Duplicate entry");
+            }
+
         }
         sb.append("INDEX ");
         sb.append(globalState.getSchema().getFreeIndexName());
         indexType();
         sb.append(" ON ");
-        MySQLTable table = schema.getRandomTable();
         MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append(table.getName());
         sb.append("(");
