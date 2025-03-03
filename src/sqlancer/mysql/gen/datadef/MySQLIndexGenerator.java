@@ -40,66 +40,23 @@ public class MySQLIndexGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         MySQLErrors.addExpressionErrors(errors);
         sb.append("CREATE ");
-        MySQLTable table = schema.getRandomTable();
         if (Randomly.getBoolean()) {
             // "FULLTEXT" TODO Column 'c3' cannot be part of FULLTEXT index
             // A SPATIAL index may only contain a geometrical type column
-
-            // A FULLTEXT index may only contain a FULLTEXT index
-            if (table.getColumns().stream().anyMatch(c -> c.getType() == MySQLDataType.TEXT
-                    || c.getType() == MySQLDataType.LONGTEXT)) {
-                sb.append("FULLTEXT ");
-            } else {
-                sb.append("UNIQUE ");
-                errors.add("Duplicate entry");
-            }
-
+            sb.append("UNIQUE ");
+            errors.add("Duplicate entry");
         }
         sb.append("INDEX ");
         sb.append(globalState.getSchema().getFreeIndexName());
         indexType();
         sb.append(" ON ");
+        MySQLTable table = schema.getRandomTable();
         MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append(table.getName());
         sb.append("(");
-        if (table.getEngine() == MySQLEngine.INNO_DB && Randomly.getBoolean()) {
-            for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                sb.append("(");
-                MySQLExpression randExpr = gen.generateExpression();
-                sb.append(MySQLVisitor.asString(randExpr));
-                sb.append(")");
 
-            }
-        } else {
-            List<MySQLColumn> randomColumn = table.getRandomNonEmptyColumnSubset();
-            int i = 0;
-            for (MySQLColumn c : randomColumn) {
-                if (i++ != 0) {
-                    sb.append(", ");
-                }
-                if (c.isPrimaryKey()) {
-                    columnIsPrimaryKey = true;
-                }
-                sb.append(c.getName());
-                if (Randomly.getBoolean() && c.getType() == MySQLDataType.VARCHAR) {
-                    sb.append("(");
-                    // TODO for string
-                    if (MySQLBugs.bug114534) {
-                        sb.append(r.getInteger(2, 5));
-                    } else {
-                        sb.append(r.getInteger(1, 5));
-                    }
-                    sb.append(")");
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" ");
-                    sb.append(Randomly.fromOptions("ASC", "DESC"));
-                }
-            }
-        }
+        sb.append(generateIndexColumns(table, gen));
+
         sb.append(")");
         indexOption();
         algorithmOption();
@@ -167,5 +124,46 @@ public class MySQLIndexGenerator {
 
     public void setNewSchema(MySQLSchema schema) {
         this.schema = schema;
+    }
+
+    private String generateIndexColumns(MySQLTable table ,MySQLExpressionGenerator gen){
+        StringBuilder colsSB = new StringBuilder();
+        if (table.getEngine() == MySQLEngine.INNO_DB && Randomly.getBoolean()) {
+            for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+                if (i != 0) {
+                    colsSB.append(", ");
+                }
+                colsSB.append("(");
+                MySQLExpression randExpr = gen.generateExpression();
+                colsSB.append(MySQLVisitor.asString(randExpr));
+                colsSB.append(")");
+            }
+        } else {
+            List<MySQLColumn> randomColumns = table.getRandomNonEmptyColumnSubset();
+            int i = 0;
+            for (MySQLColumn c : randomColumns) {
+                if (i++ != 0) {
+                    colsSB.append(", ");
+                }
+                if (c.isPrimaryKey()) {
+                    columnIsPrimaryKey = true;
+                }
+                colsSB.append(c.getName());
+                if (Randomly.getBoolean() && c.getType() == MySQLDataType.VARCHAR) {
+                    colsSB.append("(");
+                    if (MySQLBugs.bug114534) {
+                        colsSB.append(r.getInteger(2, 5));
+                    } else {
+                        colsSB.append(r.getInteger(1, 5));
+                    }
+                    colsSB.append(")");
+                }
+                if (Randomly.getBoolean()) {
+                    colsSB.append(" ");
+                    colsSB.append(Randomly.fromOptions("ASC", "DESC"));
+                }
+            }
+        }
+        return colsSB.toString();
     }
 }
