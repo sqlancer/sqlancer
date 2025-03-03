@@ -54,44 +54,9 @@ public class MySQLIndexGenerator {
         MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append(table.getName());
         sb.append("(");
-        if (table.getEngine() == MySQLEngine.INNO_DB && Randomly.getBoolean()) {
-            for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                sb.append("(");
-                MySQLExpression randExpr = gen.generateExpression();
-                sb.append(MySQLVisitor.asString(randExpr));
-                sb.append(")");
 
-            }
-        } else {
-            List<MySQLColumn> randomColumn = table.getRandomNonEmptyColumnSubset();
-            int i = 0;
-            for (MySQLColumn c : randomColumn) {
-                if (i++ != 0) {
-                    sb.append(", ");
-                }
-                if (c.isPrimaryKey()) {
-                    columnIsPrimaryKey = true;
-                }
-                sb.append(c.getName());
-                if (Randomly.getBoolean() && c.getType() == MySQLDataType.VARCHAR) {
-                    sb.append("(");
-                    // TODO for string
-                    if (MySQLBugs.bug114534) {
-                        sb.append(r.getInteger(2, 5));
-                    } else {
-                        sb.append(r.getInteger(1, 5));
-                    }
-                    sb.append(")");
-                }
-                if (Randomly.getBoolean()) {
-                    sb.append(" ");
-                    sb.append(Randomly.fromOptions("ASC", "DESC"));
-                }
-            }
-        }
+        sb.append(generateIndexColumns(table, gen));
+
         sb.append(")");
         indexOption();
         algorithmOption();
@@ -159,5 +124,46 @@ public class MySQLIndexGenerator {
 
     public void setNewSchema(MySQLSchema schema) {
         this.schema = schema;
+    }
+
+    private String generateIndexColumns(MySQLTable table ,MySQLExpressionGenerator gen){
+        StringBuilder colsSB = new StringBuilder();
+        if (table.getEngine() == MySQLEngine.INNO_DB && Randomly.getBoolean()) {
+            for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
+                if (i != 0) {
+                    colsSB.append(", ");
+                }
+                colsSB.append("(");
+                MySQLExpression randExpr = gen.generateExpression();
+                colsSB.append(MySQLVisitor.asString(randExpr));
+                colsSB.append(")");
+            }
+        } else {
+            List<MySQLColumn> randomColumns = table.getRandomNonEmptyColumnSubset();
+            int i = 0;
+            for (MySQLColumn c : randomColumns) {
+                if (i++ != 0) {
+                    colsSB.append(", ");
+                }
+                if (c.isPrimaryKey()) {
+                    columnIsPrimaryKey = true;
+                }
+                colsSB.append(c.getName());
+                if (Randomly.getBoolean() && c.getType() == MySQLDataType.VARCHAR) {
+                    colsSB.append("(");
+                    if (MySQLBugs.bug114534) {
+                        colsSB.append(r.getInteger(2, 5));
+                    } else {
+                        colsSB.append(r.getInteger(1, 5));
+                    }
+                    colsSB.append(")");
+                }
+                if (Randomly.getBoolean()) {
+                    colsSB.append(" ");
+                    colsSB.append(Randomly.fromOptions("ASC", "DESC"));
+                }
+            }
+        }
+        return colsSB.toString();
     }
 }
