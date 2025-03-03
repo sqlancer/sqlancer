@@ -1,6 +1,5 @@
 package sqlancer.postgres.gen;
 
-import jnr.ffi.Struct;
 import sqlancer.Randomly;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;

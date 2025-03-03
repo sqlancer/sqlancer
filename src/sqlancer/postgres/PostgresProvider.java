@@ -1,5 +1,6 @@
 package sqlancer.postgres;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -7,6 +8,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.auto.service.AutoService;
 
@@ -22,26 +25,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.postgres.gen.PostgresAlterTableGenerator;
-import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
-import sqlancer.postgres.gen.PostgresClusterGenerator;
-import sqlancer.postgres.gen.PostgresCommentGenerator;
-import sqlancer.postgres.gen.PostgresDeleteGenerator;
-import sqlancer.postgres.gen.PostgresDiscardGenerator;
-import sqlancer.postgres.gen.PostgresDropIndexGenerator;
-import sqlancer.postgres.gen.PostgresIndexGenerator;
-import sqlancer.postgres.gen.PostgresInsertGenerator;
-import sqlancer.postgres.gen.PostgresNotifyGenerator;
-import sqlancer.postgres.gen.PostgresReindexGenerator;
-import sqlancer.postgres.gen.PostgresSequenceGenerator;
-import sqlancer.postgres.gen.PostgresSetGenerator;
-import sqlancer.postgres.gen.PostgresStatisticsGenerator;
-import sqlancer.postgres.gen.PostgresTableGenerator;
-import sqlancer.postgres.gen.PostgresTransactionGenerator;
-import sqlancer.postgres.gen.PostgresTruncateGenerator;
-import sqlancer.postgres.gen.PostgresUpdateGenerator;
-import sqlancer.postgres.gen.PostgresVacuumGenerator;
-import sqlancer.postgres.gen.PostgresViewGenerator;
+import sqlancer.postgres.gen.*;
 
 // EXISTS
 // IN
@@ -73,6 +57,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     }
 
     public enum Action implements AbstractAction<PostgresGlobalState> {
+        EXPLAIN(PostgresExplainGenerator::explain),
         ANALYZE(PostgresAnalyzeGenerator::create), //
         ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
                 generateOnlyKnown)), //
@@ -146,6 +131,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             nrPerformed = r.getInteger(0, 5);
             break;
         case COMMIT:
+        case EXPLAIN:
             nrPerformed = r.getInteger(0, 0);
             break;
         case ALTER_TABLE:
@@ -183,6 +169,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         case INSERT:
             nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
             break;
+
         default:
             throw new AssertionError(a);
         }
@@ -347,6 +334,57 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     @Override
     public String getDBMSName() {
         return "postgres";
+    }
+
+
+    @Override
+    public String getQueryPlan(String selectStr, PostgresGlobalState globalState) throws Exception {
+        String queryPlan = "";
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(selectStr);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        List<String> invalidList = List.of("create", "notify", "discard", "listen", "unlisten", "reset","set","delete","alter","analyze");
+        if(invalidList.contains(selectStr.split("\\s+")[0].toLowerCase())){
+            return "";
+        }
+
+        SQLQueryAdapter q = new SQLQueryAdapter(PostgresExplainGenerator.explain(selectStr),null);
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            while (rs.next()) {
+                queryPlan += rs.getString(1);
+            }
+        } catch (SQLException | AssertionError e) {
+            queryPlan = "";
+        }
+        return queryPlan;
+    }
+
+    @Override
+    protected double[] initializeWeightedAverageReward() {
+        return new double[PostgresProvider.Action.values().length];
+    }
+
+    @Override
+    protected void executeMutator(int index, PostgresGlobalState globalState) throws Exception {
+        SQLQueryAdapter queryMutateTable = PostgresProvider.Action.values()[index].getQuery(globalState);
+        globalState.executeStatement(queryMutateTable);
+    }
+
+    @Override
+    protected boolean addRowsToAllTables(PostgresGlobalState globalState) throws Exception {
+        List<PostgresSchema.PostgresTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (PostgresSchema.PostgresTable table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = PostgresInsertGenerator.insertRows(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+        return true;
     }
 
 }
