@@ -27,7 +27,7 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
     private static final int NR_SCHEMA_READ_TRIES = 10;
 
     public enum MySQLDataType {
-        INT, VARCHAR, FLOAT, DOUBLE, DECIMAL , TEXT, LONGTEXT;
+        INT, VARCHAR, FLOAT, DOUBLE, DECIMAL;
 
         public static MySQLDataType getRandom(MySQLGlobalState globalState) {
             if (globalState.usesPQS()) {
