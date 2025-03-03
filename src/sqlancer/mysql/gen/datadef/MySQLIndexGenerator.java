@@ -54,12 +54,18 @@ public class MySQLIndexGenerator {
         MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(table.getColumns());
         sb.append(table.getName());
         sb.append("(");
-
         sb.append(generateIndexColumns(table, gen));
-
         sb.append(")");
         indexOption();
         algorithmOption();
+
+
+        if (Randomly.getBoolean()) {
+            sb.append(" COMMENT '");
+            sb.append("idx_").append(generateRandomComment());
+            sb.append("'");
+        }
+
         String string = sb.toString();
         sb = new StringBuilder();
         if (containsInPlace) {
@@ -125,8 +131,7 @@ public class MySQLIndexGenerator {
     public void setNewSchema(MySQLSchema schema) {
         this.schema = schema;
     }
-
-    private String generateIndexColumns(MySQLTable table ,MySQLExpressionGenerator gen){
+    private String generateIndexColumns(MySQLTable table, MySQLExpressionGenerator gen) {
         StringBuilder colsSB = new StringBuilder();
         if (table.getEngine() == MySQLEngine.INNO_DB && Randomly.getBoolean()) {
             for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
@@ -166,4 +171,15 @@ public class MySQLIndexGenerator {
         }
         return colsSB.toString();
     }
+    private String generateRandomComment() {
+        int length = r.getInteger(5, 15); // Random length between 5 and 15 characters
+        StringBuilder comment = new StringBuilder();
+        String alphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for (int i = 0; i < length; i++) {
+            int index = r.getInteger(0, alphaNumeric.length() - 1);
+            comment.append(alphaNumeric.charAt(index));
+        }
+        return comment.toString();
+    }
+
 }
