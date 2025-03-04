@@ -1,10 +1,20 @@
 package sqlancer.mysql;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
+import sqlancer.mysql.MySQLSchema.MySQLColumn;
+import sqlancer.mysql.MySQLSchema.MySQLCompositeDataType;
+import sqlancer.mysql.MySQLSchema.MySQLDataType;
+import sqlancer.mysql.MySQLSchema.MySQLTable;
+import sqlancer.mysql.ast.MySQLAggregate;
+import sqlancer.mysql.ast.MySQLAlias;
+import sqlancer.mysql.ast.MySQLAllOperator;
+import sqlancer.mysql.ast.MySQLAnyOperator;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -14,17 +24,24 @@ import sqlancer.mysql.ast.MySQLCollate;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLConstant;
+import sqlancer.mysql.ast.MySQLConstant.MySQLNullConstant;
 import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
+import sqlancer.mysql.ast.MySQLExpressionBag;
 import sqlancer.mysql.ast.MySQLInOperation;
 import sqlancer.mysql.ast.MySQLJoin;
 import sqlancer.mysql.ast.MySQLOrderByTerm;
+import sqlancer.mysql.ast.MySQLResultMap;
 import sqlancer.mysql.ast.MySQLOrderByTerm.MySQLOrder;
 import sqlancer.mysql.ast.MySQLSelect;
 import sqlancer.mysql.ast.MySQLStringExpression;
+import sqlancer.mysql.ast.MySQLTableAndColumnReference;
 import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLText;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
+import sqlancer.mysql.ast.MySQLValues;
+import sqlancer.mysql.ast.MySQLValuesRow;
+import sqlancer.mysql.ast.MySQLWithClause;
 
 public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> implements MySQLVisitor {
 
@@ -37,6 +54,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLSelect s) {
+        if (s.getWithClause() != null) {
+            visit(s.getWithClause());
+            sb.append(" ");
+        }
         sb.append("SELECT ");
         if (s.getHint() != null) {
             sb.append("/*+ ");
@@ -69,9 +90,11 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 }
                 visit(s.getFetchColumns().get(i));
                 // MySQL does not allow duplicate column names
-                sb.append(" AS ");
-                sb.append("ref");
-                sb.append(ref++);
+                if (!(s.getFetchColumns().get(i) instanceof MySQLAlias)) {
+                    sb.append(" AS ");
+                    sb.append("ref");
+                    sb.append(ref++);
+                }
             }
         }
         sb.append(" FROM ");
@@ -250,6 +273,9 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLExists op) {
+        if(op.isNegated()) {
+            sb.append(" NOT");
+        }
         sb.append(" EXISTS (");
         visit(op.getExpr());
         sb.append(")");
@@ -321,5 +347,213 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     @Override
     public void visit(MySQLText text) {
         sb.append(text.getText());
+    }
+
+    @Override
+    public void visit(MySQLExpressionBag bag) {
+        visit(bag.getInnerExpr());
+    }
+
+    @Override
+    public void visit(MySQLTableAndColumnReference tAndCRef) {
+        MySQLTable table = tAndCRef.getTable();
+        sb.append(table.getName());
+        sb.append("(");
+        sb.append(table.getColumnsAsString());
+        sb.append(") ");
+    }
+
+    @Override
+    public void visit(MySQLValues values) {
+        LinkedHashMap<MySQLColumn, List<MySQLConstant>> vs = values.getValues();
+        int size = vs.get(vs.keySet().iterator().next()).size();
+        // sb.append("VALUES ");
+        // sb.append("(");
+        for (int i = 0; i < size; i++) {
+            sb.append("(");
+            for (MySQLColumn name : vs.keySet()) {
+                visit(vs.get(name).get(i));
+                sb.append(", ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("), ");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.deleteCharAt(sb.length() - 1);
+    }
+
+    @Override
+    public void visit(MySQLValuesRow values) {
+        // https://database.guide/values-statement-in-mysql/
+        LinkedHashMap<MySQLColumn, List<MySQLConstant>> vs = values.getValues();
+        int size = vs.get(vs.keySet().iterator().next()).size();
+        sb.append("(VALUES ");
+        for (int i = 0; i < size; i++) {
+            sb.append("ROW(");
+            for (MySQLColumn name : vs.keySet()) {
+                visit(vs.get(name).get(i));
+                sb.append(", ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("), ");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(MySQLWithClause withClasure) {
+        sb.append("WITH ");
+        visit(withClasure.getLeft());
+        sb.append(" AS (");
+        visit(withClasure.getRight());
+        sb.append(") ");
+    }
+
+    @Override
+    public void visit(MySQLResultMap tableSummary) {
+        // we use CASE WHEN THEN END here
+        LinkedHashMap<MySQLColumnReference, List<MySQLConstant>> vs = tableSummary.getDbStates();
+        List<MySQLConstant> results = tableSummary.getResult();
+        HashMap<MySQLColumnReference, MySQLCompositeDataType> columnType = tableSummary.getColumnType();
+
+        int size = vs.get(vs.keySet().iterator().next()).size();
+        if (size == 0) {
+            sb.append("(");
+            for (MySQLColumnReference tr: vs.keySet()) {
+                visit(tr);
+                sb.append(" IS NULL AND ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append(")");
+            return;
+        }
+
+        sb.append(" CASE ");
+        for (int i = 0; i < size; i++) {
+            sb.append("WHEN ");
+            for (MySQLColumnReference tr: vs.keySet()) {
+                visit(tr);
+                if (vs.get(tr).get(i) instanceof MySQLNullConstant) {
+                    sb.append(" IS NULL");
+                } else {
+                    sb.append(" = ");
+                    if (columnType != null) {
+                        sb.append("CONVERT(");
+                    }
+                    sb.append(vs.get(tr).get(i).toString());
+                    if (columnType != null) {
+                        sb.append(", " + columnType.get(tr).toString().replaceAll("'", "").replaceAll("\"", "") + ")");
+                    }
+                }
+                sb.append(" AND ");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("THEN ");
+            sb.append("CONVERT(");
+            visit(results.get(i));
+            sb.append(", " + tableSummary.getResultType().toString().replaceAll("'", "").replaceAll("\"", "") + ")");
+            sb.append(" ");
+        }
+        sb.append("END ");
+    }
+
+    @Override
+    public void visit(MySQLAllOperator allOperation) {
+        sb.append("(");
+        visit(allOperation.getLeftExpr());
+        sb.append(") ");
+        sb.append(allOperation.getOperator());
+        sb.append(" ALL (");
+        if (allOperation.getRightExpr() instanceof MySQLValues) {
+            MySQLValues values = (MySQLValues) allOperation.getRightExpr();
+            LinkedHashMap<MySQLColumn, List<MySQLConstant>> vs = values.getValues();
+            int size = vs.get(vs.keySet().iterator().next()).size();
+            for (int i = 0; i < size; i++) {
+                if (i != 0) {
+                    sb.append(" UNION SELECT ");
+                } else {
+                    sb.append(" SELECT ");
+                }
+                
+                for (MySQLColumn name : vs.keySet()) {
+                    visit(vs.get(name).get(i));
+                    sb.append(", ");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+                sb.deleteCharAt(sb.length() - 1);
+            }
+        } else {
+            visit(allOperation.getRightExpr());
+        }
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(MySQLAnyOperator anyOperation) {
+        sb.append("(");
+        visit(anyOperation.getLeftExpr());
+        sb.append(") ");
+        sb.append(anyOperation.getOperator());
+        sb.append(" ANY (");
+        if (anyOperation.getRightExpr() instanceof MySQLValues) {
+            MySQLValues values = (MySQLValues) anyOperation.getRightExpr();
+            LinkedHashMap<MySQLColumn, List<MySQLConstant>> vs = values.getValues();
+            int size = vs.get(vs.keySet().iterator().next()).size();
+            for (int i = 0; i < size; i++) {
+                if (i != 0) {
+                    sb.append(" UNION SELECT ");
+                } else {
+                    sb.append(" SELECT ");
+                }
+                
+                for (MySQLColumn name : vs.keySet()) {
+                    visit(vs.get(name).get(i));
+                    sb.append(", ");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+                sb.deleteCharAt(sb.length() - 1);
+            }
+        } else {
+            visit(anyOperation.getRightExpr());
+        }
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(MySQLAlias alias) {
+        MySQLExpression e = alias.getExpression();
+        if (e instanceof MySQLSelect) {
+            sb.append("(");
+        }
+        visit(e);
+        if (e instanceof MySQLSelect) {
+            sb.append(")");
+        }
+        sb.append(" AS ");
+        sb.append(alias.getAlias());
+    }
+
+    @Override
+    public void visit(MySQLAggregate aggr) {
+        sb.append(aggr.getFunction());
+        sb.append("(");
+        visit(aggr.getArgs());
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(MySQLCompositeDataType type) {
+        sb.append(type.toString());
     }
 }
