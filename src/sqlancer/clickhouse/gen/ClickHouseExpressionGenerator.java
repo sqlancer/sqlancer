@@ -96,50 +96,69 @@ public class ClickHouseExpressionGenerator
         }
     }
 
-    public ClickHouseExpression generateAggregateExpressionWithColumns(List<ClickHouseColumnReference> columns,
-            int remainingDepth) {
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            return new ClickHouseAggregate(generateExpressionWithColumns(columns, remainingDepth - 1),
-                    ClickHouseAggregate.ClickHouseAggregateFunction.getRandom());
-        }
-        if (columns.isEmpty() || remainingDepth <= 2 && Randomly.getBooleanWithRatherLowProbability()) {
-            return generateConstant(null);
-        }
+  public ClickHouseExpression generateAggregateExpressionWithColumns(List<ClickHouseColumnReference> columns,
+        int remainingDepth) {
+    if (Randomly.getBooleanWithRatherLowProbability()) {
+        return new ClickHouseAggregate(
+            generateExpressionWithColumns(columns, remainingDepth - 1),
+            ClickHouseAggregate.ClickHouseAggregateFunction.getRandom()
+        );
+    }
 
-        if (remainingDepth <= 2 || Randomly.getBooleanWithRatherLowProbability()) {
-            return columns.get((int) Randomly.getNotCachedInteger(0, columns.size() - 1));
-        }
+    if (columns.isEmpty() || (remainingDepth <= 2 && Randomly.getBooleanWithRatherLowProbability())) {
+        return generateConstant(ClickHouseLancerDataType.getRandomNumeric()); // Ensure numeric constant
+    }
 
-        ColumnLike expr = Randomly.fromOptions(ColumnLike.values());
-        switch (expr) {
-        case UNARY_PREFIX:
-            return new ClickHouseUnaryPrefixOperation(generateExpressionWithColumns(columns, remainingDepth - 1),
-                    ClickHouseUnaryPrefixOperator.MINUS);
-        case BINARY_ARITHMETIC:
-            return new ClickHouseBinaryArithmeticOperation(generateExpressionWithColumns(columns, remainingDepth - 1),
-                    generateExpressionWithColumns(columns, remainingDepth - 1),
-                    ClickHouseBinaryArithmeticOperation.ClickHouseBinaryArithmeticOperator.getRandom());
-        case UNARY_FUNCTION:
-            return new ClickHouseUnaryFunctionOperation(generateExpressionWithColumns(columns, remainingDepth - 1),
-                    ClickHouseUnaryFunctionOperation.ClickHouseUnaryFunctionOperator.getRandom());
-        case BINARY_FUNCTION:
-            return new ClickHouseBinaryFunctionOperation(generateExpressionWithColumns(columns, remainingDepth - 1),
-                    generateExpressionWithColumns(columns, remainingDepth - 1),
-                    ClickHouseBinaryFunctionOperation.ClickHouseBinaryFunctionOperator.getRandom());
-        default:
-            throw new AssertionError(expr);
+    if (remainingDepth <= 2 || Randomly.getBooleanWithRatherLowProbability()) {
+        List<ClickHouseColumnReference> numericColumns = columns.stream()
+            .filter(c -> c.getColumn().getType().getType().isNumeric()) // Ensure numeric type
+            .collect(Collectors.toList());
+
+        if (!numericColumns.isEmpty()) {
+            return numericColumns.get((int) Randomly.getNotCachedInteger(0, numericColumns.size()));
+        } else {
+            return generateConstant(ClickHouseLancerDataType.getRandomNumeric()); // Fallback to numeric constant
         }
     }
 
-    public ClickHouseExpression generateExpressionWithExpression(List<ClickHouseExpression> expression,
-            int remainingDepth) {
-        if (remainingDepth <= 2 || Randomly.getBooleanWithRatherLowProbability()) {
-            if (Randomly.getBoolean()) {
-                return expression.get((int) Randomly.getNotCachedInteger(0, expression.size() - 1));
-            } else {
-                return generateConstant(null);
-            }
+    ColumnLike expr = Randomly.fromOptions(ColumnLike.values());
+    switch (expr) {
+        case UNARY_PREFIX:
+            return new ClickHouseUnaryPrefixOperation(
+                generateExpressionWithColumns(columns, remainingDepth - 1),
+                ClickHouseUnaryPrefixOperator.MINUS
+            );
+        case BINARY_ARITHMETIC:
+            return new ClickHouseBinaryArithmeticOperation(
+                generateExpressionWithColumns(columns, remainingDepth - 1),
+                generateExpressionWithColumns(columns, remainingDepth - 1),
+                ClickHouseBinaryArithmeticOperation.ClickHouseBinaryArithmeticOperator.getRandom()
+            );
+        case UNARY_FUNCTION:
+            return new ClickHouseUnaryFunctionOperation(
+                generateExpressionWithColumns(columns, remainingDepth - 1),
+                ClickHouseUnaryFunctionOperation.ClickHouseUnaryFunctionOperator.getRandom()
+            );
+        case BINARY_FUNCTION:
+            return new ClickHouseBinaryFunctionOperation(
+                generateExpressionWithColumns(columns, remainingDepth - 1),
+                generateExpressionWithColumns(columns, remainingDepth - 1),
+                ClickHouseBinaryFunctionOperation.ClickHouseBinaryFunctionOperator.getRandom()
+            );
+        default:
+            throw new AssertionError(expr);
+    }
+}
+
+   public ClickHouseExpression generateExpressionWithExpression(List<ClickHouseExpression> expression,
+        int remainingDepth) {
+    if (remainingDepth <= 2 || Randomly.getBooleanWithRatherLowProbability()) {
+        if (!expression.isEmpty() && Randomly.getBoolean()) {
+            return expression.get((int) Randomly.getNotCachedInteger(0, expression.size() - 1));
+        } else {
+            return generateConstant(ClickHouseLancerDataType.UInt8); // Ensure valid boolean constant
         }
+    }
 
         Expression type = Randomly.fromOptions(Expression.values());
         switch (type) {
@@ -365,12 +384,20 @@ public class ClickHouseExpressionGenerator
         return this;
     }
 
-    @Override
-    public ClickHouseExpression generateBooleanExpression() {
-        List<ClickHouseColumnReference> columnRefs = columns.stream()
-                .map(c -> c.asColumnReference(c.getTable().getName())).collect(Collectors.toList());
-        return generateExpressionWithColumns(columnRefs, 5);
+ @Override
+public ClickHouseExpression generateBooleanExpression() {
+    List<ClickHouseColumnReference> columnRefs = columns.stream()
+            .map(c -> c.asColumnReference(c.getTable().getName()))
+            .filter(c -> c.getColumn().getType().getType() == ClickHouseDataType.UInt8) // Ensure only UInt8 columns
+            .collect(Collectors.toList());
+
+    if (columnRefs.isEmpty()) {
+        return new ClickHouseUnaryFunctionOperation(generateExpression(ClickHouseLancerDataType.UInt8, 3),
+                ClickHouseUnaryFunctionOperation.ClickHouseUnaryFunctionOperator.NOT); // Ensure boolean expression
     }
+    
+    return generateExpressionWithColumns(columnRefs, 5);
+}
 
     @Override
     public ClickHouseSelect generateSelect() {
@@ -434,7 +461,7 @@ public class ClickHouseExpressionGenerator
 
         select.setFetchColumns(List.of(inner));
         select.setWhereClause(null);
-        return "SELECT SUM(check <> 0) FROM (" + select.asString() + ") as res";
+        return "SELECT SUM(`check` <> 0) FROM (" + select.asString() + ") AS result_alias";
     }
 
     @Override
