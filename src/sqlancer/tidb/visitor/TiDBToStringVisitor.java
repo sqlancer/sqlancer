@@ -264,16 +264,19 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
         // sb.append("(");
         for (int i = 0; i < size; i++) {
             sb.append("(");
+            Boolean isFirstColumn = true;
             for (TiDBColumn name : vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(", ");
+                }
                 visit(vs.get(name).get(i));
+                isFirstColumn = false;
+            }
+            sb.append(")");
+            if (i < size - 1) {
                 sb.append(", ");
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("), ");
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
     }
 
     @Override
@@ -284,16 +287,19 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
         sb.append("(VALUES ");
         for (int i = 0; i < size; i++) {
             sb.append("ROW(");
+            Boolean isFirstColumn = true;
             for (TiDBColumn name : vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(", ");
+                }
                 visit(vs.get(name).get(i));
+                isFirstColumn = false;
+            }
+            sb.append(")");
+            if (i < size - 1) {
                 sb.append(", ");
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("), ");
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
     }
 
@@ -315,15 +321,15 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
         int size = vs.get(vs.keySet().iterator().next()).size();
         if (size == 0) {
             sb.append("(");
+            Boolean isFirstColumn = true;
             for (TiDBColumnReference tr: vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(" AND ");
+                }
                 visit(tr);
-                sb.append(" IS NULL AND ");
+                sb.append(" IS NULL");
+                isFirstColumn = false;
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
             sb.append(")");
             return;
         }
@@ -331,24 +337,21 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
         sb.append(" CASE ");
         for (int i = 0; i < size; i++) {
             sb.append("WHEN ");
+            Boolean isFirstColumn = true;
             for (TiDBColumnReference tr: vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(" AND ");
+                }
                 visit(tr);
                 if (vs.get(tr).get(i) instanceof TiDBNullConstant) {
                     sb.append(" IS NULL");
                 } else {
                     sb.append(" = ");
                     sb.append(vs.get(tr).get(i).toString());
-                    // if (values.getColumns().get(j).getType() != null) {
-                    //     sb.append("::" + values.getColumns().get(j).getType().toString());
-                    // }
                 }
-                sb.append(" AND ");
+                isFirstColumn = false;
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("THEN ");
+            sb.append(" THEN ");
             visit(results.get(i));
             // sb.append("::" + summaryDataType.toString() + " ");
             sb.append(" ");
@@ -373,13 +376,14 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
                 } else {
                     sb.append(" SELECT ");
                 }
-                
+                Boolean isFirstColumn = true;
                 for (TiDBColumn name : vs.keySet()) {
+                    if (!isFirstColumn) {
+                        sb.append(", ");
+                    }
                     visit(vs.get(name).get(i));
-                    sb.append(", ");
+                    isFirstColumn = false;
                 }
-                sb.deleteCharAt(sb.length() - 1);
-                sb.deleteCharAt(sb.length() - 1);
             }
         } else {
             visit(allOperation.getRightExpr());
@@ -404,13 +408,14 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
                 } else {
                     sb.append(" SELECT ");
                 }
-                
+                Boolean isFirstColumn = true;
                 for (TiDBColumn name : vs.keySet()) {
+                    if (!isFirstColumn) {
+                        sb.append(", ");
+                    }
                     visit(vs.get(name).get(i));
-                    sb.append(", ");
+                    isFirstColumn = false;
                 }
-                sb.deleteCharAt(sb.length() - 1);
-                sb.deleteCharAt(sb.length() - 1);
             }
         } else {
             visit(anyOperation.getRightExpr());

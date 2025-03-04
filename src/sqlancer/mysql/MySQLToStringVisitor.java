@@ -371,16 +371,19 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         // sb.append("(");
         for (int i = 0; i < size; i++) {
             sb.append("(");
+            Boolean isFirstColumn = true;
             for (MySQLColumn name : vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(", ");
+                }
                 visit(vs.get(name).get(i));
+                isFirstColumn = false;
+            }
+            sb.append(")");
+            if (i < size - 1) {
                 sb.append(", ");
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("), ");
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
     }
 
     @Override
@@ -391,16 +394,19 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         sb.append("(VALUES ");
         for (int i = 0; i < size; i++) {
             sb.append("ROW(");
+            Boolean isFirstColumn = true;
             for (MySQLColumn name : vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(", ");
+                }
                 visit(vs.get(name).get(i));
+                isFirstColumn = false;
+            }
+            sb.append(")");
+            if (i < size - 1) {
                 sb.append(", ");
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("), ");
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
     }
 
@@ -423,15 +429,15 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         int size = vs.get(vs.keySet().iterator().next()).size();
         if (size == 0) {
             sb.append("(");
+            Boolean isFirstColumn = true;
             for (MySQLColumnReference tr: vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(" AND ");
+                }
                 visit(tr);
-                sb.append(" IS NULL AND ");
+                sb.append(" IS NULL");
+                isFirstColumn = false;
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
             sb.append(")");
             return;
         }
@@ -439,7 +445,11 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         sb.append(" CASE ");
         for (int i = 0; i < size; i++) {
             sb.append("WHEN ");
+            Boolean isFirstColumn = true;
             for (MySQLColumnReference tr: vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(" AND ");
+                }
                 visit(tr);
                 if (vs.get(tr).get(i) instanceof MySQLNullConstant) {
                     sb.append(" IS NULL");
@@ -453,13 +463,9 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                         sb.append(", " + columnType.get(tr).toString().replaceAll("'", "").replaceAll("\"", "") + ")");
                     }
                 }
-                sb.append(" AND ");
+                isFirstColumn = false;
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("THEN ");
+            sb.append(" THEN ");
             sb.append("CONVERT(");
             visit(results.get(i));
             sb.append(", " + tableSummary.getResultType().toString().replaceAll("'", "").replaceAll("\"", "") + ")");
@@ -485,13 +491,14 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 } else {
                     sb.append(" SELECT ");
                 }
-                
+                Boolean isFirstColumn = true;
                 for (MySQLColumn name : vs.keySet()) {
+                    if (!isFirstColumn) {
+                        sb.append(", ");
+                    }
                     visit(vs.get(name).get(i));
-                    sb.append(", ");
+                    isFirstColumn = false;
                 }
-                sb.deleteCharAt(sb.length() - 1);
-                sb.deleteCharAt(sb.length() - 1);
             }
         } else {
             visit(allOperation.getRightExpr());
@@ -516,13 +523,14 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 } else {
                     sb.append(" SELECT ");
                 }
-                
+                Boolean isFirstColumn = true;
                 for (MySQLColumn name : vs.keySet()) {
+                    if (!isFirstColumn) {
+                        sb.append(", ");
+                    }
                     visit(vs.get(name).get(i));
-                    sb.append(", ");
+                    isFirstColumn = false;
                 }
-                sb.deleteCharAt(sb.length() - 1);
-                sb.deleteCharAt(sb.length() - 1);
             }
         } else {
             visit(anyOperation.getRightExpr());

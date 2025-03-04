@@ -123,7 +123,11 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
         sb.append(" CASE ");
         for (int i = 0; i < size; i++) {
             sb.append("WHEN ");
+            Boolean isFirstCondition = true;
             for (DuckDBColumnReference columnRef : dbstate.keySet()) {
+                if (!isFirstCondition) {
+                    sb.append(" AND ");
+                }
                 visit(columnRef);
                 if (dbstate.get(columnRef).get(i) instanceof DuckDBNullConstant) {
                     sb.append(" IS NULL");
@@ -139,12 +143,9 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
                     sb.append(" = ");
                     visit(dbstate.get(columnRef).get(i));
                 }
-                sb.append(" AND ");
+                isFirstCondition = false;
             }
-            for (int k = 0; k < 4; k++) {
-                sb.deleteCharAt(sb.length() - 1);
-            }
-            sb.append("THEN ");
+            sb.append(" THEN ");
             visit(result.get(i));
             sb.append(" ");
         }

@@ -749,12 +749,11 @@ public class CockroachDBCODDTestOracle extends CODDTestBase<CockroachDBGlobalSta
             if (idxTypeMap.get(i) != null) {
                 columnTypeName = idxTypeMap.get(i).toString();
             }
-            sb.append("c" + String.valueOf(i) + " " + columnTypeName + ", ");
-            // sb.append("c" + String.valueOf(i) + " " + idxTypeMap.get(i+1) + ", ");
-            // sb.append("c" + String.valueOf(i) + ", ");
+            sb.append("c" + String.valueOf(i) + " " + columnTypeName);
+            if (i < columnNumber - 1) {
+                sb.append(", ");
+            }
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(");");
         String crateTableString = sb.toString();
         if (options.logEachSelect()) {

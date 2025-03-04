@@ -781,10 +781,11 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                         columnTypeName = "";
                 }
             }
-            sb.append("c" + String.valueOf(i) + " " + columnTypeName + ", ");
+            sb.append("c" + String.valueOf(i) + " " + columnTypeName);
+            if (i < columnNumber - 1) {
+                sb.append(", ");
+            }
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(");");
         String crateTableString = sb.toString();
         if (options.logEachSelect()) {

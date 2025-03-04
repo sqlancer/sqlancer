@@ -273,21 +273,24 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
         sb.append("(VALUES ");
         for (int i = 0; i < size; i++) {
             sb.append("(");
+            boolean isFirstColumn = true;
             for (CockroachDBColumn c: vs.keySet()) {
+                if (!isFirstColumn) {
+                    sb.append(", ");
+                }
                 sb.append(vs.get(c).get(i).toString());
                 if (!(vs.get(c).get(i) instanceof CockroachDBNullConstant)) {
                     if (c.getType() != null) {
                         sb.append("::" + c.getType().toString());
                     }
                 }
+                isFirstColumn = false;
+            }
+            sb.append(")");
+            if (i < size - 1) {
                 sb.append(", ");
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("), ");
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
     }
 
@@ -343,7 +346,11 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
         sb.append(" CASE ");
         for (int i = 0; i < size; i++) {
             sb.append("WHEN ");
+            Boolean isFirstCondition = true;
             for (CockroachDBColumnReference columnRef : dbstate.keySet()) {
+                if (!isFirstCondition) {
+                    sb.append(" AND ");
+                }
                 visit(columnRef);
                 if (dbstate.get(columnRef).get(i) instanceof CockroachDBNullConstant) {
                     sb.append(" IS NULL");
@@ -356,12 +363,9 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
                         }
                     }
                 }
-                sb.append(" AND ");
+                isFirstCondition = false;
             }
-            for (int k = 0; k < 4; k++) {
-                sb.deleteCharAt(sb.length() - 1);
-            }
-            sb.append("THEN ");
+            sb.append(" THEN ");
             visit(result.get(i));
             if (!(result.get(i) instanceof CockroachDBNullConstant)) {
                 if (expr.getResultType() != null) {

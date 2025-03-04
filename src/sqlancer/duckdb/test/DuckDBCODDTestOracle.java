@@ -781,10 +781,11 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
         sb.append("CREATE TABLE " + tableName + " (");
         for (int i = 0; i < columnNumber; ++i) {
             String columnTypeName = idxTypeMap.get(i).toString();
-            sb.append("c" + String.valueOf(i) + " " + columnTypeName + ", ");
+            sb.append("c" + String.valueOf(i) + " " + columnTypeName);
+            if (i < columnNumber - 1) {
+                sb.append(", ");
+            }
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(");");
         String crateTableString = sb.toString();
         if (options.logEachSelect()) {
