@@ -27,7 +27,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClasure;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClause;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -140,7 +140,7 @@ public interface SQLite3Visitor {
     
     void visit(SQLite3Alias alias);
 
-    void visit(SQLite3WithClasure withClasure);
+    void visit(SQLite3WithClause withClause);
 
     void visit(SQLite3TableAndColumnRef tableAndColumnRef);
 
@@ -217,8 +217,8 @@ public interface SQLite3Visitor {
             visit((SQLite3SetClause) expr);
         } else if (expr instanceof SQLite3Alias) {
             visit((SQLite3Alias) expr);
-        } else if (expr instanceof SQLite3WithClasure) {
-            visit((SQLite3WithClasure) expr);
+        } else if (expr instanceof SQLite3WithClause) {
+            visit((SQLite3WithClause) expr);
         } else if (expr instanceof SQLite3TableAndColumnRef) {
             visit((SQLite3TableAndColumnRef) expr);
         } else if (expr instanceof SQLite3Values) {

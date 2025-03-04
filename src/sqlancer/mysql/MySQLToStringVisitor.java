@@ -405,11 +405,11 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     }
 
     @Override
-    public void visit(MySQLWithClause withClasure) {
+    public void visit(MySQLWithClause withClause) {
         sb.append("WITH ");
-        visit(withClasure.getLeft());
+        visit(withClause.getLeft());
         sb.append(" AS (");
-        visit(withClasure.getRight());
+        visit(withClause.getRight());
         sb.append(") ");
     }
 

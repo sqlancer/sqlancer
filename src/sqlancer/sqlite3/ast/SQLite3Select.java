@@ -25,7 +25,7 @@ public class SQLite3Select extends SQLite3Expression
     private List<SQLite3Expression> fetchColumns = Collections.emptyList();
     private List<Join> joinStatements = Collections.emptyList();
     private SQLite3Expression havingClause;
-    private SQLite3WithClasure withClause = null;
+    private SQLite3WithClause withClause = null;
 
     public SQLite3Select() {
     }
@@ -165,15 +165,15 @@ public class SQLite3Select extends SQLite3Expression
         return SQLite3Visitor.asString(this);
     }
 
-    public void setWithClasure(SQLite3WithClasure withClasure) {
-        this.withClause = withClasure;
+    public void setWithClause(SQLite3WithClause withClause) {
+        this.withClause = withClause;
     }
 
-    public void updateWithClasureRight(SQLite3Expression withClasureRight) {
-        this.withClause.updateRight(withClasureRight);
+    public void updateWithClauseRight(SQLite3Expression withClauseRight) {
+        this.withClause.updateRight(withClauseRight);
     }
 
-    public SQLite3Expression getWithClasure() {
+    public SQLite3Expression getWithClause() {
         return this.withClause;
     }
 

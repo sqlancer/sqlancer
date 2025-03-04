@@ -36,7 +36,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClasure;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClause;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
 import sqlancer.sqlite3.ast.SQLite3Function;
@@ -112,8 +112,8 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
         if (inner) {
             sb.append("(");
         }
-        if (s.getWithClasure() != null) {
-            visit(s.getWithClasure());
+        if (s.getWithClause() != null) {
+            visit(s.getWithClause());
             sb.append(" ");
         }
         sb.append("SELECT ");
@@ -519,11 +519,11 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     }
 
     @Override
-    public void visit(SQLite3WithClasure withClasure) {
+    public void visit(SQLite3WithClause withClause) {
         sb.append("WITH ");
-        visit(withClasure.getLeft());
+        visit(withClause.getLeft());
         sb.append(" AS ");
-        visit(withClasure.getRight());
+        visit(withClause.getRight());
     }
 
     @Override

@@ -29,7 +29,7 @@ import sqlancer.cockroachdb.ast.CockroachDBTableAndColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.ast.CockroachDBTypeof;
 import sqlancer.cockroachdb.ast.CockroachDBValues;
-import sqlancer.cockroachdb.ast.CockroachDBWithClasure;
+import sqlancer.cockroachdb.ast.CockroachDBWithClause;
 import sqlancer.common.visitor.ToStringVisitor;
 
 public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpression> implements CockroachDBVisitor {
@@ -292,11 +292,11 @@ public class CockroachDBToStringVisitor extends ToStringVisitor<CockroachDBExpre
     }
 
     @Override
-    public void visit(CockroachDBWithClasure withClasure) {
+    public void visit(CockroachDBWithClause withClause) {
         sb.append("WITH ");
-        visit(withClasure.getLeft());
+        visit(withClause.getLeft());
         sb.append(" AS (");
-        visit(withClasure.getRight());
+        visit(withClause.getRight());
         sb.append(") ");
     }
 

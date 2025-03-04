@@ -220,8 +220,8 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             DuckDBExpressionBag tableBag = new DuckDBExpressionBag(tableRef);
             originalQuery = this.genSelectExpression(tableBag, null);
 
-            DuckDBWithClause optWithClasure = new DuckDBWithClause(tableRef, Arrays.asList(auxiliaryQuery));
-            originalQuery.setWithClause(optWithClasure);
+            DuckDBWithClause optWithClause = new DuckDBWithClause(tableRef, Arrays.asList(auxiliaryQuery));
+            originalQuery.setWithClause(optWithClause);
             originalQueryString = DuckDBToStringVisitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
 
@@ -239,8 +239,8 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
                     DuckDBValues valueRow = new DuckDBValues(rowRs);
                     values.add(valueRow);
                 }
-                DuckDBWithClause refWithClasure = new DuckDBWithClause(tableRef, values);
-                originalQuery.setWithClause(refWithClasure);
+                DuckDBWithClause refWithClause = new DuckDBWithClause(tableRef, values);
+                originalQuery.setWithClause(refWithClause);
                 foldedQueryString = DuckDBToStringVisitor.asString(originalQuery);
                 foldedResult = getQueryResult(foldedQueryString, state);
             } else if (Randomly.getBoolean()) {

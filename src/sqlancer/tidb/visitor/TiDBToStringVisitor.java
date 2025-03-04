@@ -32,7 +32,7 @@ import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.ast.TiDBText;
 import sqlancer.tidb.ast.TiDBValues;
 import sqlancer.tidb.ast.TiDBValuesRow;
-import sqlancer.tidb.ast.TiDBWithClasure;
+import sqlancer.tidb.ast.TiDBWithClause;
 
 public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> implements TiDBVisitor {
 
@@ -298,11 +298,11 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
     }
 
     @Override
-    public void visit(TiDBWithClasure withClasure) {
+    public void visit(TiDBWithClause withClause) {
         sb.append("WITH ");
-        visit(withClasure.getLeft());
+        visit(withClause.getLeft());
         sb.append(" AS (");
-        visit(withClasure.getRight());
+        visit(withClause.getRight());
         sb.append(") ");
     }
 

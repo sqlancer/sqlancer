@@ -21,7 +21,7 @@ import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.ast.TiDBText;
 import sqlancer.tidb.ast.TiDBValues;
 import sqlancer.tidb.ast.TiDBValuesRow;
-import sqlancer.tidb.ast.TiDBWithClasure;
+import sqlancer.tidb.ast.TiDBWithClause;
 
 public interface TiDBVisitor {
 
@@ -60,8 +60,8 @@ public interface TiDBVisitor {
             visit((TiDBValues) expr);
         } else if (expr instanceof TiDBValuesRow) {
             visit((TiDBValuesRow) expr);
-        } else if (expr instanceof TiDBWithClasure) {
-            visit((TiDBWithClasure) expr);
+        } else if (expr instanceof TiDBWithClause) {
+            visit((TiDBWithClause) expr);
         } else if (expr instanceof TiDBResultMap) {
             visit((TiDBResultMap) expr);
         } else if (expr instanceof TiDBAllOperator) {
@@ -101,7 +101,7 @@ public interface TiDBVisitor {
     void visit(TiDBTableAndColumnReference tAndCRef);
     void visit(TiDBValues values);
     void visit(TiDBValuesRow values);
-    void visit(TiDBWithClasure withClasure);
+    void visit(TiDBWithClause withClause);
     void visit(TiDBResultMap tableSummary);
     void visit(TiDBAllOperator allOperation);
     void visit(TiDBAnyOperator anyOperation);

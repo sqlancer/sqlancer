@@ -51,7 +51,7 @@ import sqlancer.cockroachdb.ast.CockroachDBTableAndColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.ast.CockroachDBTypeof;
 import sqlancer.cockroachdb.ast.CockroachDBValues;
-import sqlancer.cockroachdb.ast.CockroachDBWithClasure;
+import sqlancer.cockroachdb.ast.CockroachDBWithClause;
 import sqlancer.cockroachdb.ast.CockroachDBAggregate.CockroachDBAggregateFunction;
 import sqlancer.cockroachdb.ast.CockroachDBBinaryComparisonOperator.CockroachDBComparisonOperator;
 import sqlancer.cockroachdb.ast.CockroachDBBinaryLogicalOperation.CockroachDBBinaryLogicalOperator;
@@ -314,16 +314,16 @@ public class CockroachDBCODDTestOracle extends CODDTestBase<CockroachDBGlobalSta
 
             CockroachDBExpressionBag tempTableRefBag = new CockroachDBExpressionBag(tempTableRef);
             CockroachDBTableAndColumnReference tableAndColumnRef = new CockroachDBTableAndColumnReference(temporaryTable);
-            CockroachDBWithClasure withClasure = new CockroachDBWithClasure(tableAndColumnRef, auxiliaryQuery);
+            CockroachDBWithClause withClause = new CockroachDBWithClause(tableAndColumnRef, auxiliaryQuery);
             originalQuery = genSelectExpression(tempTableRefBag, null, null);
-            originalQuery.setWithClause(withClasure);
+            originalQuery.setWithClause(withClause);
             originalQueryString = CockroachDBVisitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
 
             // folded query
             if (Randomly.getBoolean()) {
                 // folded query: WITH table AS VALUES ()
-                withClasure.updateRight(values);
+                withClause.updateRight(values);
                 foldedQueryString = CockroachDBVisitor.asString(originalQuery);
                 foldedResult = getQueryResult(foldedQueryString, state);
             } else if (Randomly.getBoolean()) {

@@ -1563,12 +1563,12 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
         }
     }
 
-    public static class SQLite3WithClasure extends SQLite3Expression {
+    public static class SQLite3WithClause extends SQLite3Expression {
 
         private SQLite3Expression left;
         private SQLite3Expression right;
 
-        public SQLite3WithClasure(SQLite3Expression left, SQLite3Expression right) {
+        public SQLite3WithClause(SQLite3Expression left, SQLite3Expression right) {
             this.left = left;
             this.right = right;
         }

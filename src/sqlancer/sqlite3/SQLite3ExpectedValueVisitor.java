@@ -28,7 +28,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClasure;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClause;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Subquery;
 import sqlancer.sqlite3.ast.SQLite3Expression.TypeLiteral;
@@ -318,10 +318,10 @@ public class SQLite3ExpectedValueVisitor implements SQLite3Visitor {
     }
 
     @Override
-    public void visit(SQLite3WithClasure withClasure) {
-        print(withClasure);
-        print(withClasure.getLeft());
-        print(withClasure.getRight());
+    public void visit(SQLite3WithClause withClause) {
+        print(withClause);
+        print(withClause.getLeft());
+        print(withClause.getRight());
     }
 
     @Override

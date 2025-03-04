@@ -1,10 +1,10 @@
 package sqlancer.tidb.ast;
 
-public class TiDBWithClasure implements TiDBExpression {
+public class TiDBWithClause implements TiDBExpression {
     private TiDBExpression left;
     private TiDBExpression right;
 
-    public TiDBWithClasure(TiDBExpression left, TiDBExpression right) {
+    public TiDBWithClause(TiDBExpression left, TiDBExpression right) {
         this.left = left;
         this.right = right;
     }

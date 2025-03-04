@@ -52,7 +52,7 @@ import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.ast.TiDBResultMap;
 import sqlancer.tidb.ast.TiDBValues;
 import sqlancer.tidb.ast.TiDBValuesRow;
-import sqlancer.tidb.ast.TiDBWithClasure;
+import sqlancer.tidb.ast.TiDBWithClause;
 import sqlancer.tidb.ast.TiDBAggregate.TiDBAggregateFunction;
 import sqlancer.tidb.ast.TiDBBinaryComparisonOperation.TiDBComparisonOperator;
 import sqlancer.tidb.ast.TiDBBinaryLogicalOperation.TiDBBinaryLogicalOperator;
@@ -286,15 +286,15 @@ public class TiDBCODDTestOracle extends CODDTestBase<TiDBGlobalState> implements
 
             TiDBExpressionBag tempTableRefBag = new TiDBExpressionBag(tempTableRef);
             TiDBTableAndColumnReference tableAndColumnRef = new TiDBTableAndColumnReference(temporaryTable);
-            TiDBWithClasure withClasure = null;
+            TiDBWithClause withClause = null;
             if (Randomly.getBoolean() || true) {
-                withClasure = new TiDBWithClasure(tableAndColumnRef, auxiliaryQuery);
+                withClause = new TiDBWithClause(tableAndColumnRef, auxiliaryQuery);
             } else {
                 // there is an error in `WITH t0(c0) AS VALUES`
-                withClasure = new TiDBWithClasure(tableAndColumnRef, resValues); 
+                withClause = new TiDBWithClause(tableAndColumnRef, resValues); 
             }
             originalQuery = genSelectExpression(tempTableRefBag, null, null);
-            originalQuery.setWithClause(withClasure);
+            originalQuery.setWithClause(withClause);
             originalQueryString = TiDBVisitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
 

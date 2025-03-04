@@ -21,7 +21,7 @@ import sqlancer.cockroachdb.ast.CockroachDBTableAndColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.ast.CockroachDBTypeof;
 import sqlancer.cockroachdb.ast.CockroachDBValues;
-import sqlancer.cockroachdb.ast.CockroachDBWithClasure;
+import sqlancer.cockroachdb.ast.CockroachDBWithClause;
 
 public interface CockroachDBVisitor {
 
@@ -51,7 +51,7 @@ public interface CockroachDBVisitor {
     void visit(CockroachDBExists existsExpr);
     void visit(CockroachDBExpressionBag exprBag);
     void visit(CockroachDBValues values);
-    void visit(CockroachDBWithClasure withClasure);
+    void visit(CockroachDBWithClause withClause);
     void visit(CockroachDBTableAndColumnReference tableAndColumnReference);
     void visit(CockroachDBAlias alias);
     void visit(CockroachDBTypeof typeOf);
@@ -88,8 +88,8 @@ public interface CockroachDBVisitor {
             visit((CockroachDBExpressionBag) expr);
         } else if (expr instanceof CockroachDBValues) {
             visit((CockroachDBValues) expr);
-        } else if (expr instanceof CockroachDBWithClasure) {
-            visit ((CockroachDBWithClasure) expr);
+        } else if (expr instanceof CockroachDBWithClause) {
+            visit ((CockroachDBWithClause) expr);
         } else if (expr instanceof CockroachDBTableAndColumnReference) {
             visit ((CockroachDBTableAndColumnReference) expr);
         } else if (expr instanceof CockroachDBAlias) {

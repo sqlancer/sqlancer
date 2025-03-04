@@ -281,14 +281,14 @@ public class MySQLCODDTestOracle extends CODDTestBase<MySQLGlobalState> implemen
 
             MySQLExpressionBag tempTableRefBag = new MySQLExpressionBag(tempTableRef);
             MySQLTableAndColumnReference tableAndColumnRef = new MySQLTableAndColumnReference(temporaryTable);
-            MySQLWithClause withClasure = null;
+            MySQLWithClause withClause = null;
             if (Randomly.getBoolean()) {
-                withClasure = new MySQLWithClause(tableAndColumnRef, auxiliaryQuery);
+                withClause = new MySQLWithClause(tableAndColumnRef, auxiliaryQuery);
             } else {
-                withClasure = new MySQLWithClause(tableAndColumnRef, resValues); 
+                withClause = new MySQLWithClause(tableAndColumnRef, resValues); 
             }
             originalQuery = genSelectExpression(tempTableRefBag, null, null);
-            originalQuery.setWithClause(withClasure);
+            originalQuery.setWithClause(withClause);
             originalQueryString = MySQLVisitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
 
