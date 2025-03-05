@@ -6,7 +6,7 @@ public class MySQLCastOperation implements MySQLExpression {
     private final CastType type;
 
     public enum CastType {
-        SIGNED, UNSIGNED;
+        SIGNED, UNSIGNED , INT, BOOLEAN ,TEXT;
 
         public static CastType getRandom() {
             return SIGNED;

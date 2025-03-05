@@ -69,6 +69,11 @@ public abstract class MySQLConstant implements MySQLExpression {
         }
 
         @Override
+        public boolean isBoolean() {
+            return false;
+        }
+
+        @Override
         public String getTextRepresentation() {
             return String.valueOf(val);
         }
@@ -147,6 +152,11 @@ public abstract class MySQLConstant implements MySQLExpression {
         @Override
         public boolean isString() {
             return true;
+        }
+
+        @Override
+        public boolean isBoolean() {
+            return false;
         }
 
         @Override
@@ -299,6 +309,11 @@ public abstract class MySQLConstant implements MySQLExpression {
             return isSigned;
         }
 
+        @Override
+        public boolean isBoolean() {
+            return false;
+        }
+
         private String getStringRepr() {
             if (isSigned) {
                 return String.valueOf(value);
@@ -338,6 +353,11 @@ public abstract class MySQLConstant implements MySQLExpression {
         @Override
         public boolean isNull() {
             return true;
+        }
+
+        @Override
+        public boolean isBoolean() {
+            return false;
         }
 
         @Override
@@ -392,7 +412,9 @@ public abstract class MySQLConstant implements MySQLExpression {
     public boolean isString() {
         return false;
     }
-
+    public static MySQLConstant createBooleanConstant(boolean value) {
+        return new MySQLBooleanConstant(value);
+    }
     public static MySQLConstant createNullConstant() {
         return new MySQLNullConstant();
     }
@@ -418,6 +440,8 @@ public abstract class MySQLConstant implements MySQLExpression {
         return this;
     }
 
+    public abstract boolean isBoolean();
+
     public abstract boolean asBooleanNotNull();
 
     public abstract String getTextRepresentation();
@@ -438,6 +462,7 @@ public abstract class MySQLConstant implements MySQLExpression {
     public String toString() {
         return getTextRepresentation();
     }
+
 
     public abstract MySQLConstant isEquals(MySQLConstant rightVal);
 
