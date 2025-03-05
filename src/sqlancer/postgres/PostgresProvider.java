@@ -57,7 +57,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     }
 
     public enum Action implements AbstractAction<PostgresGlobalState> {
-        EXPLAIN(PostgresExplainGenerator::explain),
         ANALYZE(PostgresAnalyzeGenerator::create), //
         ALTER_TABLE(g -> PostgresAlterTableGenerator.create(g.getSchema().getRandomTable(t -> !t.isView()), g,
                 generateOnlyKnown)), //
@@ -131,7 +130,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             nrPerformed = r.getInteger(0, 5);
             break;
         case COMMIT:
-        case EXPLAIN:
             nrPerformed = r.getInteger(0, 0);
             break;
         case ALTER_TABLE:
