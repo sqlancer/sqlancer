@@ -360,7 +360,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         } catch (SQLException | AssertionError e) {
             queryPlan = "";
         }
-        return queryPlan;
+        return formatQueryPlan(queryPlan);
     }
 
     @Override
@@ -383,6 +383,29 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             globalState.executeStatement(queryAddRows);
         }
         return true;
+    }
+
+    private String formatQueryPlan(String queryPlan){
+        StringBuilder outQueryPlanFormatted = new StringBuilder();
+        boolean insideBrackets = false;
+
+        for(char ch: queryPlan.toCharArray()){
+            if(ch == '\n' || ch == ' '){
+                continue;
+            }
+            if(ch == '('){
+                insideBrackets = true;
+            }
+            else if(ch == ')'){
+                insideBrackets = false;
+                outQueryPlanFormatted.append(';');
+                continue;
+            }
+            if (!insideBrackets)
+                outQueryPlanFormatted.append(ch);
+        }
+
+        return outQueryPlanFormatted.toString();
     }
 
 }
