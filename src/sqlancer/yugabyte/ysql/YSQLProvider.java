@@ -22,23 +22,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.yugabyte.ysql.gen.YSQLAlterTableGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLAnalyzeGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLCommentGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLDeleteGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLDiscardGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLDropIndexGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLIndexGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLInsertGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLNotifyGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLSequenceGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLSetGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLTableGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLTransactionGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLTruncateGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLUpdateGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLVacuumGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLViewGenerator;
+import sqlancer.yugabyte.ysql.gen.*;
 
 import static sqlancer.yugabyte.ysql.YSQLOptions.YSQLOracleFactory.CATALOG;
 
@@ -106,10 +90,13 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
                 nrPerformed = r.getInteger(0, 15);
                 break;
             case CREATE_VIEW:
-                nrPerformed = r.getInteger(0, 2);
+                nrPerformed = r.getInteger(0, 5);
+                break;
+            case REFRESH_VIEW:
+                nrPerformed = r.getInteger(0, 20);
                 break;
             case UPDATE:
-                nrPerformed = r.getInteger(0, 10);
+                nrPerformed = r.getInteger(0, 20);
                 break;
             case INSERT:
                 nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
@@ -386,7 +373,8 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         LISTEN((g) -> YSQLNotifyGenerator.createListen()), //
         UNLISTEN((g) -> YSQLNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(YSQLSequenceGenerator::createSequence), //
-        CREATE_VIEW(YSQLViewGenerator::create);
+        CREATE_VIEW(YSQLViewGenerator::create),
+        REFRESH_VIEW(YSQLMaterializedViewRefresh::create);
 
         private final SQLQueryProvider<YSQLGlobalState> sqlQueryProvider;
 
