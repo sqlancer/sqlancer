@@ -51,11 +51,4 @@ public class MySQLToStringVisitorTest {
                 MySQLAggregate.MySQLAggregateFunction.MAX_DISTINCT);
         assertEquals("MAX(DISTINCT a)", MySQLVisitor.asString(aggrMaxDistinct));
     }
-    @Test
-    public void testMySQLNoRECOracle() {
-        assertEquals(0, Main.executeMain("--num-threads", "4",
-                "--num-tries", "100", "--num-queries", "5000", "--max-generated-databases", "1",
-                "--host", "localhost", "--port", "3306", "--username", "springstudent", "--password", "springstudent",
-                "mysql", "--oracle", "TLP_WHERE"));
-    }
 }
