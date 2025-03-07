@@ -20,8 +20,9 @@ public final class PostgresInsertGenerator {
 
     public static SQLQueryAdapter insert(PostgresGlobalState globalState) {
         PostgresTable table = globalState.getSchema().getRandomTable(t -> t.isInsertable());
-        return insertRows(globalState,table);
+        return insertRows(globalState, table);
     }
+
     public static SQLQueryAdapter insertRows(PostgresGlobalState globalState, PostgresSchema.PostgresTable table) {
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("cannot insert into column");

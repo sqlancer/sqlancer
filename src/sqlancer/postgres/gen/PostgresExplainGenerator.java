@@ -1,12 +1,12 @@
 package sqlancer.postgres.gen;
 
-public class PostgresExplainGenerator {
+public final class PostgresExplainGenerator {
 
-    private PostgresExplainGenerator(){
+    private PostgresExplainGenerator() {
 
     }
-    
-    public static String explain(String selectStr) throws Exception{
+
+    public static String explain(String selectStr) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("EXPLAIN ");
         sb.append(selectStr);

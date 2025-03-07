@@ -13,7 +13,6 @@ import sqlancer.postgres.PostgresProvider;
 
 public class TestPostgresQueryPlan {
 
-
     @Test
     void testPostgresQueryPlan() throws Exception {
         String databaseName = "postgres";

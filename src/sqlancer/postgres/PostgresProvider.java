@@ -25,7 +25,27 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.postgres.gen.*;
+import sqlancer.postgres.gen.PostgresAlterTableGenerator;
+import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
+import sqlancer.postgres.gen.PostgresClusterGenerator;
+import sqlancer.postgres.gen.PostgresCommentGenerator;
+import sqlancer.postgres.gen.PostgresDeleteGenerator;
+import sqlancer.postgres.gen.PostgresDiscardGenerator;
+import sqlancer.postgres.gen.PostgresDropIndexGenerator;
+import sqlancer.postgres.gen.PostgresExplainGenerator;
+import sqlancer.postgres.gen.PostgresIndexGenerator;
+import sqlancer.postgres.gen.PostgresInsertGenerator;
+import sqlancer.postgres.gen.PostgresNotifyGenerator;
+import sqlancer.postgres.gen.PostgresReindexGenerator;
+import sqlancer.postgres.gen.PostgresSequenceGenerator;
+import sqlancer.postgres.gen.PostgresSetGenerator;
+import sqlancer.postgres.gen.PostgresStatisticsGenerator;
+import sqlancer.postgres.gen.PostgresTableGenerator;
+import sqlancer.postgres.gen.PostgresTransactionGenerator;
+import sqlancer.postgres.gen.PostgresTruncateGenerator;
+import sqlancer.postgres.gen.PostgresUpdateGenerator;
+import sqlancer.postgres.gen.PostgresVacuumGenerator;
+import sqlancer.postgres.gen.PostgresViewGenerator;
 
 // EXISTS
 // IN
@@ -334,7 +354,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         return "postgres";
     }
 
-
     @Override
     public String getQueryPlan(String selectStr, PostgresGlobalState globalState) throws Exception {
         String queryPlan = "";
@@ -347,12 +366,13 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             }
         }
 
-        List<String> invalidList = List.of("create", "notify", "discard", "listen", "unlisten", "reset","set","delete","alter","analyze");
-        if(invalidList.contains(selectStr.split("\\s+")[0].toLowerCase())){
+        List<String> invalidList = List.of("create", "notify", "discard", "listen", "unlisten", "reset", "set",
+                "delete", "alter", "analyze");
+        if (invalidList.contains(selectStr.split("\\s+")[0].toLowerCase())) {
             return "";
         }
 
-        SQLQueryAdapter q = new SQLQueryAdapter(PostgresExplainGenerator.explain(selectStr),null);
+        SQLQueryAdapter q = new SQLQueryAdapter(PostgresExplainGenerator.explain(selectStr), null);
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             while (rs.next()) {
                 queryPlan += rs.getString(1);
@@ -385,24 +405,24 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         return true;
     }
 
-    private String formatQueryPlan(String queryPlan){
+    private String formatQueryPlan(String queryPlan) {
         StringBuilder outQueryPlanFormatted = new StringBuilder();
         boolean insideBrackets = false;
 
-        for(char ch: queryPlan.toCharArray()){
-            if(ch == '\n' || ch == ' '){
+        for (char ch : queryPlan.toCharArray()) {
+            if (ch == '\n' || ch == ' ') {
                 continue;
             }
-            if(ch == '('){
+            if (ch == '(') {
                 insideBrackets = true;
-            }
-            else if(ch == ')'){
+            } else if (ch == ')') {
                 insideBrackets = false;
                 outQueryPlanFormatted.append(';');
                 continue;
             }
-            if (!insideBrackets)
+            if (!insideBrackets) {
                 outQueryPlanFormatted.append(ch);
+            }
         }
 
         return outQueryPlanFormatted.toString();
