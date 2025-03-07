@@ -2,6 +2,7 @@ package sqlancer.clickhouse.ast;
 
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -126,5 +127,32 @@ class ClickHouseBinaryComparisonOperationTest {
 
         assertEquals(false, positiveConst.applyEquals(float64OneConst).asBooleanNotNull());
         assertEquals(false, positiveConst.applyEquals(float64ZeroConst).asBooleanNotNull());
+    }
+
+    @Test
+    void getExpectedValueInt64EqualsFloat64() {
+
+        ClickHouseConstant bigInt = ClickHouseCreateConstant.createInt64Constant(new BigInteger("9223372036854775807"));
+        ClickHouseConstant floatVal = ClickHouseCreateConstant.createFloat64Constant(9223372036854775807.0);
+
+        assertEquals(true, bigInt.applyEquals(floatVal).asBooleanNotNull());
+    }
+
+    @Test
+    void getExpectedValueNullEqualsNull() {
+        ClickHouseConstant nullConst = ClickHouseCreateConstant.createNullConstant();
+        ClickHouseConstant equals = nullConst.applyEquals(ClickHouseCreateConstant.createNullConstant());
+        assertEquals(true, equals.isNull());
+    }
+
+    // how ClickHouse deals with edge cases involving large numbers and floating-point precision.
+    @Test
+    void testInt64Float64PrecisionLoss() {
+        // Int64 max value (9,223,372,036,854,775,807) cannot be exactly represented as Float64
+        ClickHouseConstant bigInt = ClickHouseCreateConstant.createInt64Constant(new BigInteger("9223372036854775807"));
+        ClickHouseConstant approxFloat = ClickHouseCreateConstant.createFloat64Constant(9223372036854776808.0);
+
+        // ClickHouse rounds both to the nearest representable Float64 value (9,223,372,036,854,776,000) not (9,223,372,036,854,776,808.0)
+        assertEquals(true, bigInt.applyEquals(approxFloat).asBooleanNotNull());
     }
 }
