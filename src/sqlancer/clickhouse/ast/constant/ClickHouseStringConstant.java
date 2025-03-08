@@ -32,7 +32,7 @@ public class ClickHouseStringConstant extends ClickHouseConstant {
 
     @Override
     public boolean asBooleanNotNull() {
-        return value.length() > 0;
+        return !value.isEmpty();
     }
 
     @Override
@@ -76,13 +76,13 @@ public class ClickHouseStringConstant extends ClickHouseConstant {
         case Int64:
             return ClickHouseCreateConstant.createInt64Constant(BigInteger.valueOf(Integer.parseInt(value)));
         case Float32:
-            return ClickHouseCreateConstant.createFloat32Constant((float) Float.parseFloat(value));
+            return ClickHouseCreateConstant.createFloat32Constant(Float.parseFloat(value));
         case Float64:
-            return ClickHouseCreateConstant.createFloat64Constant((double) Double.parseDouble(value));
+            return ClickHouseCreateConstant.createFloat64Constant(Double.parseDouble(value));
         case Nothing:
             return ClickHouseCreateConstant.createNullConstant();
         case Bool:
-            return ClickHouseCreateConstant.createBooleanConstant(value == "true");
+            return ClickHouseCreateConstant.createBooleanConstant(value.equals("true"));
         case IntervalYear:
         case IntervalQuarter:
         case IntervalMonth:

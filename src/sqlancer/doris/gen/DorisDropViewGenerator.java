@@ -3,6 +3,7 @@ package sqlancer.doris.gen;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.schema.AbstractTable;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 
 public final class DorisDropViewGenerator {
@@ -11,7 +12,7 @@ public final class DorisDropViewGenerator {
     }
 
     public static SQLQueryAdapter dropView(DorisGlobalState globalState) {
-        if (globalState.getSchema().getTables(t -> t.isView()).size() == 0) {
+        if (globalState.getSchema().getTables(AbstractTable::isView).isEmpty()) {
             throw new IgnoreMeException();
         }
         StringBuilder sb = new StringBuilder("DROP VIEW ");
@@ -20,7 +21,7 @@ public final class DorisDropViewGenerator {
         }
         // TODO: DROP VIEW syntax: DROP MATERIALIZED VIEW [IF EXISTS] mv_name ON table_name;
         // should record original table name in view table
-        sb.append(globalState.getSchema().getRandomTableOrBailout(t -> t.isView()).getName());
+        sb.append(globalState.getSchema().getRandomTableOrBailout(AbstractTable::isView).getName());
         return new SQLQueryAdapter(sb.toString(), null, true);
     }
 

@@ -595,7 +595,7 @@ public final class Main {
                         System.out.println(
                                 formatInteger(nrSuccessfulActions.get()) + " successfully-executed statements");
                         System.out.println(
-                                formatInteger(nrUnsuccessfulActions.get()) + " unsuccessfuly-executed statements");
+                                formatInteger(nrUnsuccessfulActions.get()) + " unsuccessfully-executed statements");
                     }
 
                     private String formatInteger(long intValue) {

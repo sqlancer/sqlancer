@@ -46,7 +46,7 @@ public class CockroachDBTLPBase
         select = new CockroachDBSelect();
         select.setFetchColumns(generateFetchColumns());
         List<CockroachDBTable> tables = targetTables.getTables();
-        List<CockroachDBExpression> tableList = tables.stream().map(t -> new CockroachDBTableReference(t))
+        List<CockroachDBExpression> tableList = tables.stream().map(CockroachDBTableReference::new)
                 .collect(Collectors.toList());
         List<CockroachDBExpression> joins = getJoins(tableList, state);
         select.setJoinList(joins);
@@ -56,11 +56,11 @@ public class CockroachDBTLPBase
 
     List<CockroachDBExpression> generateFetchColumns() {
         List<CockroachDBExpression> columns = new ArrayList<>();
-        if (Randomly.getBoolean() || targetTables.getColumns().size() == 0) {
+        if (Randomly.getBoolean() || targetTables.getColumns().isEmpty()) {
             columns.add(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false)));
         } else {
             columns.addAll(Randomly.nonEmptySubset(targetTables.getColumns()).stream()
-                    .map(c -> new CockroachDBColumnReference(c)).collect(Collectors.toList()));
+                    .map(CockroachDBColumnReference::new).collect(Collectors.toList()));
         }
         return columns;
     }

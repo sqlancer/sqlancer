@@ -159,7 +159,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 
     @Override
     public List<TiDBJoin> getRandomJoinClauses() {
-        List<TiDBExpression> tableList = tables.stream().map(t -> new TiDBTableReference(t))
+        List<TiDBExpression> tableList = tables.stream().map(TiDBTableReference::new)
                 .collect(Collectors.toList());
         List<TiDBJoin> joins = TiDBJoin.getJoins(tableList, globalState);
         tables = tableList.stream().map(t -> ((TiDBTableReference) t).getTable()).collect(Collectors.toList());
@@ -168,7 +168,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
 
     @Override
     public List<TiDBExpression> getTableRefs() {
-        return tables.stream().map(t -> new TiDBTableReference(t)).collect(Collectors.toList());
+        return tables.stream().map(TiDBTableReference::new).collect(Collectors.toList());
     }
 
     @Override
@@ -177,7 +177,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
             return List.of(new TiDBColumnReference(
                     new TiDBColumn("*", new TiDBCompositeDataType(TiDBDataType.INT), false, false, false)));
         }
-        return Randomly.nonEmptySubset(this.columns).stream().map(c -> new TiDBColumnReference(c))
+        return Randomly.nonEmptySubset(this.columns).stream().map(TiDBColumnReference::new)
                 .collect(Collectors.toList());
     }
 
@@ -318,7 +318,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
     }
 
     boolean mutateHaving(TiDBSelect select) {
-        if (select.getGroupByExpressions().size() == 0) {
+        if (select.getGroupByExpressions().isEmpty()) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(generateExpression());
             return false;
@@ -367,7 +367,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
     }
 
     private boolean mutateGroupBy(TiDBSelect select) {
-        boolean increase = select.getGroupByExpressions().size() > 0;
+        boolean increase = !select.getGroupByExpressions().isEmpty();
         if (increase) {
             select.clearGroupByExpressions();
             select.clearHavingClause();

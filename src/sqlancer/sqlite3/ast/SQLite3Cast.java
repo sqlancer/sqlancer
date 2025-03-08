@@ -2,6 +2,7 @@ package sqlancer.sqlite3.ast;
 
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -13,7 +14,7 @@ public final class SQLite3Cast {
 
     private static final double MAX_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = Math.pow(2, 51 - 1) - 1;
     private static final double MIN_INT_FOR_WHICH_CONVERSION_TO_INT_IS_TRIED = -Math.pow(2, 51 - 1);
-    public static final Charset DEFAULT_ENCODING = Charset.forName("UTF-8");
+    public static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
 
     private static final byte FILE_SEPARATOR = 0x1c;
     private static final byte GROUP_SEPARATOR = 0x1d;

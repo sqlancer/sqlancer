@@ -9,6 +9,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.tidb.TiDBExpressionGenerator;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
@@ -47,7 +48,7 @@ public class TiDBTableGenerator {
         StringBuilder sb = new StringBuilder("CREATE TABLE ");
         sb.append(tableName);
 
-        if (Randomly.getBoolean() && globalState.getSchema().getDatabaseTables().size() > 0) {
+        if (Randomly.getBoolean() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
             sb.append(" LIKE ");
             TiDBTable otherTable = globalState.getSchema().getRandomTable();
             sb.append(otherTable.getName());
@@ -115,7 +116,7 @@ public class TiDBTableGenerator {
         if (primaryKeyAsTableConstraints) {
             sb.append(", PRIMARY KEY(");
             sb.append(
-                    Randomly.nonEmptySubset(columns).stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+                    Randomly.nonEmptySubset(columns).stream().map(AbstractTableColumn::getName).collect(Collectors.joining(", ")));
             sb.append(")");
             // TODO: do nto include blob/text columns here
             errors.add(" used in key specification without a key length");

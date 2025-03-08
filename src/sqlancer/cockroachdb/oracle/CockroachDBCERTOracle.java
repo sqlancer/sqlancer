@@ -50,11 +50,10 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         // Randomly generate a query
         CockroachDBTables tables = state.getSchema().getRandomTableNonEmptyTables(2);
         List<CockroachDBExpression> tableList = CockroachDBCommon.getTableReferences(
-                tables.getTables().stream().map(t -> new CockroachDBTableReference(t)).collect(Collectors.toList()));
+                tables.getTables().stream().map(CockroachDBTableReference::new).collect(Collectors.toList()));
         gen = new CockroachDBExpressionGenerator(state).setColumns(tables.getColumns());
-        List<CockroachDBExpression> fetchColumns = new ArrayList<>();
-        fetchColumns.addAll(Randomly.nonEmptySubset(tables.getColumns()).stream()
-                .map(c -> new CockroachDBColumnReference(c)).collect(Collectors.toList()));
+        List<CockroachDBExpression> fetchColumns = Randomly.nonEmptySubset(tables.getColumns()).stream()
+                .map(CockroachDBColumnReference::new).collect(Collectors.toList());
         select = new CockroachDBSelect();
         select.setFetchColumns(fetchColumns);
         select.setFromList(tableList);
@@ -177,7 +176,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
 
     @Override
     protected boolean mutateGroupBy() {
-        boolean increase = select.getGroupByExpressions().size() > 0;
+        boolean increase = !select.getGroupByExpressions().isEmpty();
         if (increase) {
             select.clearGroupByExpressions();
         } else {
@@ -188,7 +187,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
 
     @Override
     protected boolean mutateHaving() {
-        if (select.getGroupByExpressions().size() == 0) {
+        if (select.getGroupByExpressions().isEmpty()) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
             return false;

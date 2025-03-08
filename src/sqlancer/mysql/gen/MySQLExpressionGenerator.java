@@ -238,7 +238,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
     @Override
     public List<MySQLExpression> getTableRefs() {
-        return tables.stream().map(t -> new MySQLTableReference(t)).collect(Collectors.toList());
+        return tables.stream().map(MySQLTableReference::new).collect(Collectors.toList());
     }
 
     @Override
@@ -301,7 +301,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     }
 
     boolean mutateGroupBy(MySQLSelect select) {
-        boolean increase = select.getGroupByExpressions().size() > 0;
+        boolean increase = !select.getGroupByExpressions().isEmpty();
         if (increase) {
             select.clearGroupByExpressions();
         } else {
@@ -311,7 +311,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     }
 
     boolean mutateHaving(MySQLSelect select) {
-        if (select.getGroupByExpressions().size() == 0) {
+        if (select.getGroupByExpressions().isEmpty()) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(generateExpression());
             return false;

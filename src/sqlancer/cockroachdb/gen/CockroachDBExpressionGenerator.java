@@ -397,7 +397,7 @@ public class CockroachDBExpressionGenerator extends
     @Override
     public List<CockroachDBJoin> getRandomJoinClauses() {
         List<CockroachDBJoin> joinExpressions = new ArrayList<>();
-        List<CockroachDBTableReference> tableReferences = tables.stream().map(t -> new CockroachDBTableReference(t))
+        List<CockroachDBTableReference> tableReferences = tables.stream().map(CockroachDBTableReference::new)
                 .collect(Collectors.toList());
         while (tableReferences.size() >= 2 && Randomly.getBoolean()) {
             CockroachDBTableReference leftTable = tableReferences.remove(0);
@@ -410,13 +410,13 @@ public class CockroachDBExpressionGenerator extends
                     joinGen.generateExpression(CockroachDBDataType.BOOL.get())));
         }
 
-        tables = tableReferences.stream().map(t -> t.getTable()).collect(Collectors.toList());
+        tables = tableReferences.stream().map(CockroachDBTableReference::getTable).collect(Collectors.toList());
         return joinExpressions;
     }
 
     @Override
     public List<CockroachDBExpression> getTableRefs() {
-        List<CockroachDBTableReference> tableReferences = tables.stream().map(t -> new CockroachDBTableReference(t))
+        List<CockroachDBTableReference> tableReferences = tables.stream().map(CockroachDBTableReference::new)
                 .collect(Collectors.toList());
 
         return CockroachDBCommon.getTableReferences(tableReferences);
@@ -452,15 +452,15 @@ public class CockroachDBExpressionGenerator extends
         }
         return "SELECT SUM(count) FROM (SELECT CAST(" + CockroachDBVisitor.asString(whereCondition)
                 + " IS TRUE AS INT) as count FROM " + fromString + " "
-                + joinList.stream().map(j -> CockroachDBVisitor.asString(j)).collect(Collectors.joining(", ")) + ")";
+                + joinList.stream().map(CockroachDBVisitor::asString).collect(Collectors.joining(", ")) + ")";
     }
 
     @Override
     public List<CockroachDBExpression> generateFetchColumns(boolean shouldCreateDummy) {
-        if (shouldCreateDummy || columns.size() == 0) {
+        if (shouldCreateDummy || columns.isEmpty()) {
             return List.of(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false)));
         }
-        return Randomly.nonEmptySubset(columns).stream().map(c -> new CockroachDBColumnReference(c))
+        return Randomly.nonEmptySubset(columns).stream().map(CockroachDBColumnReference::new)
                 .collect(Collectors.toList());
     }
 
@@ -541,7 +541,7 @@ public class CockroachDBExpressionGenerator extends
     }
 
     boolean mutateGroupBy(CockroachDBSelect select) {
-        boolean increase = select.getGroupByExpressions().size() > 0;
+        boolean increase = !select.getGroupByExpressions().isEmpty();
         if (increase) {
             select.clearGroupByExpressions();
         } else {
@@ -551,7 +551,7 @@ public class CockroachDBExpressionGenerator extends
     }
 
     boolean mutateHaving(CockroachDBSelect select) {
-        if (select.getGroupByExpressions().size() == 0) {
+        if (select.getGroupByExpressions().isEmpty()) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(generateExpression(CockroachDBDataType.BOOL.get()));
             return false;

@@ -16,7 +16,7 @@ class TestCastToNumeric {
 
     @Test
     void testLong() {
-        long numbers[] = new long[] { 0, 1, 123, Long.MAX_VALUE, Long.MIN_VALUE };
+        long []numbers = new long[] { 0, 1, 123, Long.MAX_VALUE, Long.MIN_VALUE };
         for (long number : numbers) {
             assertEquals(castLongConstant(number), number);
         }

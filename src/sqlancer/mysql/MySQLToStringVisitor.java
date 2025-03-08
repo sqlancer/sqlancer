@@ -1,7 +1,6 @@
 package sqlancer.mysql;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
@@ -58,8 +57,8 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         default:
             throw new AssertionError();
         }
-        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
-        if (s.getModifiers().size() > 0) {
+        sb.append(String.join(" ", s.getModifiers()));
+        if (!s.getModifiers().isEmpty()) {
             sb.append(" ");
         }
         if (s.getFetchColumns() == null) {
@@ -92,7 +91,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
             sb.append(" WHERE ");
             visit(whereClause);
         }
-        if (s.getGroupByExpressions() != null && s.getGroupByExpressions().size() > 0) {
+        if (s.getGroupByExpressions() != null && !s.getGroupByExpressions().isEmpty()) {
             sb.append(" ");
             sb.append("GROUP BY ");
             List<MySQLExpression> groupBys = s.getGroupByExpressions();
