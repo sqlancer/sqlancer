@@ -37,7 +37,7 @@ public class MySQLBinaryOperation implements MySQLExpression {
         private String textRepresentation;
 
         private static MySQLConstant applyBitOperation(MySQLConstant left, MySQLConstant right,
-                                                       BinaryOperator<Long> op) {
+                BinaryOperator<Long> op) {
             if (left.isNull() || right.isNull()) {
                 return MySQLConstant.createNullConstant();
             } else {
