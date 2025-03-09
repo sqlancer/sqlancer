@@ -1,12 +1,6 @@
 package sqlancer;
 
-import java.util.Arrays;
-import java.util.List;
-
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-
-import sqlancer.DBMSSpecificOptions;
 
 public abstract class SQLOptions<T extends OracleFactory<? extends GlobalState<?, ?, ?>>> implements DBMSSpecificOptions<T> {
     public static final String DEFAULT_HOST = "localhost";

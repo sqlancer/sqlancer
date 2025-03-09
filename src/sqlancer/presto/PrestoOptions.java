@@ -5,7 +5,6 @@ import java.util.List;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-import sqlancer.DBMSSpecificOptions;
 import sqlancer.SQLOptions;
 
 @Parameters(commandDescription = "Presto")

@@ -2,8 +2,6 @@ package sqlancer;
 
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.postgres.PostgresOptions;
-import sqlancer.postgres.PostgresSchema;
 
 public abstract class SQLSequenceGenerator {
 
