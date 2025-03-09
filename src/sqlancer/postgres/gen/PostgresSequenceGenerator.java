@@ -1,19 +1,16 @@
 package sqlancer.postgres.gen;
 
-import sqlancer.Randomly;
 import sqlancer.SQLSequenceGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.yugabyte.ysql.YSQLGlobalState;
 
 public final class PostgresSequenceGenerator extends SQLSequenceGenerator {
 
-    public PostgresSequenceGenerator() {
+    private PostgresSequenceGenerator() {
         super();
     }
 
-    public static SQLQueryAdapter createSequence(YSQLGlobalState globalState) {
+    public static SQLQueryAdapter createSequence(PostgresGlobalState globalState) {
         return SQLSequenceGenerator.createSequence(globalState);
     }
 }

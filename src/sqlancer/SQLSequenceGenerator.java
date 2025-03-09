@@ -1,16 +1,16 @@
 package sqlancer;
 
-import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.yugabyte.ysql.YSQLGlobalState;
+import sqlancer.postgres.PostgresOptions;
+import sqlancer.postgres.PostgresSchema;
 
 public abstract class SQLSequenceGenerator {
 
     protected SQLSequenceGenerator() {
     }
 
-    public static SQLQueryAdapter createSequence(YSQLGlobalState globalState) {
+    public static SQLQueryAdapter createSequence(ExpandedGlobalState<?, ?> globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE");
         if (Randomly.getBoolean()) {
