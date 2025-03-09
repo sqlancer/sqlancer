@@ -7,9 +7,6 @@ public abstract class SQLOptions<T extends OracleFactory<? extends GlobalState<?
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 3307;
 
-    private SQLOptions() {
-    }
-
     @Parameter(names = "--test-collate", arity = 1)
     public boolean testCollate = true;
 
@@ -75,4 +72,7 @@ public abstract class SQLOptions<T extends OracleFactory<? extends GlobalState<?
 
     @Parameter(names = "--max-num-updates", description = "The maximum number of UPDATE statements that are issued for a database", arity = 1)
     public int maxNumUpdates = 5;
+
+    protected SQLOptions() {
+    }
 }
