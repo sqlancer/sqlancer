@@ -3,7 +3,7 @@ package sqlancer;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 
-public abstract class SQLSequenceGenerator {
+public class SQLSequenceGenerator {
 
     protected SQLSequenceGenerator() {
     }
