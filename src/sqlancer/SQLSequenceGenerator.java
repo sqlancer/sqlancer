@@ -5,7 +5,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 
-public class SQLSequenceGenerator {
+public abstract class SQLSequenceGenerator {
 
     protected SQLSequenceGenerator() {
     }
