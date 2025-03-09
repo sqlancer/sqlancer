@@ -17,12 +17,13 @@ Minimum Requirements:
 * Java 11 or above
 * [Maven](https://maven.apache.org/)
 
-The following commands clone SQLancer, create a JAR, and start SQLancer to test SQLite using [Non-optimizing Reference Engine Construction (NoREC)](https://arxiv.org/abs/2007.08292):
+
+The following commands clone SQLancer, create a JAR with all DBMS, and start SQLancer to test SQLite using [Non-optimizing Reference Engine Construction (NoREC)](https://arxiv.org/abs/2007.08292):
 
 ```
 git clone https://github.com/sqlancer/sqlancer
 cd sqlancer
-mvn package -DskipTests
+mvn package -DskipTests -P all
 cd target
 java -jar sqlancer-*.jar --num-threads 4 sqlite3 --oracle NoREC
 ```
@@ -31,7 +32,17 @@ java -jar sqlancer-*.jar --num-threads 4 sqlite3 --oracle NoREC
 
 **Parameters.** If you launch SQLancer without parameters, available options and commands are displayed. Note that general options that are supported by all DBMS-testing implementations (e.g., `--num-threads`) need to precede the name of the DBMS to be tested (e.g., `sqlite3`). Options that are supported only for specific DBMS (e.g., `--test-rtree` for SQLite3), or options for which each testing implementation provides different values (e.g. `--oracle NoREC`) need to go after the DBMS name.
 
-**DBMSs.** To run SQLancer on SQLite, it was not necessary to install and set up a DBMS. The reason for this is that embedded DBMSs run in the same process as the application and thus require no separate installation or setup. Embedded DBMSs supported by SQLancer include DuckDB, H2, and SQLite. Their binaries are included as [JAR dependencies](https://github.com/sqlancer/sqlancer/blob/main/pom.xml). Note that any crashes in these systems will also cause a crash in the JVM on which SQLancer runs.
+**DBMSs.** To run SQLancer with DBMS support, it is essential to package the JAR with the selected DBMS as maven profiles, with default having no DBMS. The reason for this is that embedded DBMSs run in the same process as the application, and the maven profiles determines which DBMS goes inside the JAR. Embedded DBMSs supported by SQLancer include DuckDB, H2, and SQLite. Their binaries are included as [JAR dependencies](https://github.com/sqlancer/sqlancer/blob/main/pom.xml). Note that any crashes in these systems will also cause a crash in the JVM on which SQLancer runs.
+
+Examples of how to run DBMS profiles (Profiles can be found inside pom.xml):
+
+```
+mvn package -DskipTest -P all
+mvn package -DskipTest -P sqlite3
+mvn package -DskipTest -P sqlite3,questdb
+```
+
+
 
 
 # Using SQLancer
@@ -85,7 +96,26 @@ SQLancer has pioneered and includes multiple approaches for DBMS testing, as out
 | Differential Query Plans (DQP)                                  | SIGMOD 2024   | [Paper](https://dl.acm.org/doi/pdf/10.1145/3654991) [Video](https://www.youtube.com/watch?v=9Qp7quJfGEk) [Code](https://github.com/sqlancer/sqlancer/issues/918)   | DQP aims to find logic bugs by controlling the execution of different query plans for a given query and validating that they produce a consistent result. DQP supports MySQL, MariaDB, and TiDB.                                                                                                                                                                                                                                                                                                                                                                                                |
 | Constant Optimization Driven Database System Testing (CODDTest) | SIGMOD 2025   | [Code](https://github.com/sqlancer/sqlancer/pull/1054)                                                                                                             | CODDTest finds logic bugs in DBMSs, including in advanced features such as subqueries. It is based on the insight that we can assume the database state to be constant for a database session, which then enables us to substitute parts of a query with their results, essentially corresponding to constant folding and constant propagation, which are two traditional compiler optimizations.                                                                                                                                                                                               |
 
-Please find the `.bib` entries [here](docs/PAPERS.md).                                                                               |
+Please find the `.bib` entries [here](docs/PAPERS.md).    
+
+# Calculating metrics
+To calculate LCOM, Ca and Ce, a shell script `metrics.sh` has been written in the home directory. To run it, enter the following commends:
+
+Mac / Linux:
+
+```
+chmod a+x metrics.sh
+./metrics.sh
+```
+
+Windows:
+
+```
+git bash ./metrics.sh
+```
+
+This would generate two files `outputclass.csv` and `outputmethod.csv` that you can find in the same directory level as the `sqlancer` project. These
+files would contain the metrics LCOM, Ca and Ce that we want to find.
 
 # FAQ
 

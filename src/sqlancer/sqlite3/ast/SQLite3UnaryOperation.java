@@ -8,7 +8,7 @@ import sqlancer.sqlite3.SQLite3CollateHelper;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public class SQLite3UnaryOperation extends SQLite3Expression implements UnaryOperation<SQLite3Expression> {
+public class SQLite3UnaryOperation implements SQLite3Expression, UnaryOperation<SQLite3Expression> {
 
     private final SQLite3UnaryOperation.UnaryOperator operation;
     private final SQLite3Expression expression;

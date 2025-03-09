@@ -46,7 +46,7 @@ public class DorisTableGenerator {
 
         List<DorisColumn> keysColumn = columns.stream().filter(DorisColumn::isKey).collect(Collectors.toList());
         if (globalState.getDbmsSpecificOptions().testDataModel && Randomly.getBoolean() && !keysColumn.isEmpty()) {
-            sb.append(" " + dataModel).append(" KEY(");
+            sb.append(" ").append(dataModel).append(" KEY(");
             sb.append(keysColumn.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
             sb.append(")");
         }

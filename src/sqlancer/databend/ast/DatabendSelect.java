@@ -18,6 +18,7 @@ public class DatabendSelect extends SelectBase<DatabendExpression>
         this.isDistinct = isDistinct;
     }
 
+    @Override
     public boolean isDistinct() {
         return isDistinct;
     }

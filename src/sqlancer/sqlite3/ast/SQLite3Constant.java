@@ -9,7 +9,7 @@ import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.schema.SQLite3DataType;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 
-public abstract class SQLite3Constant extends SQLite3Expression {
+public abstract class SQLite3Constant implements SQLite3Expression {
 
     public static class SQLite3NullConstant extends SQLite3Constant {
 
