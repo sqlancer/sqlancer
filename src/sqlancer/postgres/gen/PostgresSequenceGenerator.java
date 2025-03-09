@@ -8,6 +8,7 @@ public final class PostgresSequenceGenerator extends SQLSequenceGenerator {
 
     private PostgresSequenceGenerator() {
         super();
+
     }
 
     public static SQLQueryAdapter createSequence(PostgresGlobalState globalState) {

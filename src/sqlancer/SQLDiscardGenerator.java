@@ -1,6 +1,6 @@
 package sqlancer;
 
-public class SQLDiscardGenerator {
+public abstract class SQLDiscardGenerator {
 
     protected SQLDiscardGenerator() {
     }

@@ -7,6 +7,9 @@ public abstract class SQLOptions<T extends OracleFactory<? extends GlobalState<?
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 3307;
 
+    private SQLOptions() {
+    }
+
     @Parameter(names = "--test-collate", arity = 1)
     public boolean testCollate = true;
 
