@@ -443,17 +443,11 @@ public final class Randomly {
     }
 
     public int getInteger(int left, int right) {
-        if (left == right) {
-            return left;
-        }
         return (int) getLong(left, right);
     }
 
     // TODO redundant?
     public long getLong(long left, long right) {
-        if (left == right) {
-            return left;
-        }
         return getNextLong(left, right);
     }
 
