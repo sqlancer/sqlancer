@@ -194,7 +194,7 @@ public abstract class OceanBaseConstant implements OceanBaseExpression {
         @Override
         public boolean isEmpty() {
             // "" " "
-            if (value.length() == 0) {
+            if (value.isEmpty()) {
                 return true;
             } else {
                 for (int i = 0; i < value.length(); i++) {

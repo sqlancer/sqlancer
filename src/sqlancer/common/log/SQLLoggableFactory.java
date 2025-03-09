@@ -16,7 +16,7 @@ public class SQLLoggableFactory extends LoggableFactory {
         }
         completeString = completeString.replace("\n", "\\n");
         completeString = completeString.replace("\r", "\\r");
-        if (suffix != null && suffix.length() != 0) {
+        if (suffix != null && !suffix.isEmpty()) {
             completeString += suffix;
         }
         return new LoggedString(completeString);

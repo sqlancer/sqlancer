@@ -318,7 +318,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
     }
 
     boolean mutateHaving(TiDBSelect select) {
-        if (select.getGroupByExpressions().size() == 0) {
+        if (select.getGroupByExpressions().isEmpty()) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(generateExpression());
             return false;
@@ -367,7 +367,7 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
     }
 
     private boolean mutateGroupBy(TiDBSelect select) {
-        boolean increase = select.getGroupByExpressions().size() > 0;
+        boolean increase = !select.getGroupByExpressions().isEmpty();
         if (increase) {
             select.clearGroupByExpressions();
             select.clearHavingClause();
