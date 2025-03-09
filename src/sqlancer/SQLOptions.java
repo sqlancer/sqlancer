@@ -2,7 +2,8 @@ package sqlancer;
 
 import com.beust.jcommander.Parameter;
 
-public abstract class SQLOptions<T extends OracleFactory<? extends GlobalState<?, ?, ?>>> implements DBMSSpecificOptions<T> {
+public abstract class SQLOptions<T extends OracleFactory<? extends GlobalState<?, ?, ?>>>
+        implements DBMSSpecificOptions<T> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 3307;
 
