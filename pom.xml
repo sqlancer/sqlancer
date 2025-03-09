@@ -494,6 +494,11 @@
           <version>0.3.2</version>
         </dependency>
         <dependency>
+          <groupId>com.clickhouse</groupId>
+          <artifactId>clickhouse-client</artifactId>
+          <version>0.3.2</version> <!-- Replace with latest version -->
+        </dependency>
+        <dependency>
           <groupId>com.h2database</groupId>
           <artifactId>h2</artifactId>
           <version>2.3.232</version>
