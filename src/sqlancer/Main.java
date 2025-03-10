@@ -386,24 +386,29 @@ public final class Main {
         System.exit(executeMain(args));
     }
 
-    public static class DBMSExecutor<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> {
+   public static class DBMSExecutor<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> {
 
-        private final DatabaseProvider<G, O, C> provider;
-        private final MainOptions options;
-        private final O command;
-        private final String databaseName;
-        private StateLogger logger;
-        private StateToReproduce stateToRepro;
-        private final Randomly r;
+    private final DatabaseProvider<G, O, C> provider;
+    private final MainOptions options;
+    private final O command;
+    private final String databaseName;
+    private StateLogger logger;
+    private StateToReproduce stateToRepro;
+    private final Randomly r;
 
-        public DBMSExecutor(DatabaseProvider<G, O, C> provider, MainOptions options, O dbmsSpecificOptions,
-                String databaseName, Randomly r) {
-            this.provider = provider;
-            this.options = options;
-            this.databaseName = databaseName;
-            this.command = dbmsSpecificOptions;
-            this.r = r;
-        }
+    public DBMSExecutor(final DatabaseProvider<G, O, C> provider, 
+                        final MainOptions options, 
+                        final O dbmsSpecificOptions, 
+                        final String databaseName, 
+                        final Randomly r) {
+        this.provider = provider;
+        this.options = options;
+        this.databaseName = databaseName;
+        this.command = dbmsSpecificOptions;
+        this.r = r;
+    }
+}
+
 
         private G createGlobalState() {
             try {
@@ -523,43 +528,43 @@ public final class Main {
 
     public static class DBMSExecutorFactory<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> {
 
-        private final DatabaseProvider<G, O, C> provider;
-        private final MainOptions options;
-        private final O command;
+    private final DatabaseProvider<G, O, C> provider;
+    private final MainOptions options;
+    private final O command;
 
-        public DBMSExecutorFactory(DatabaseProvider<G, O, C> provider, MainOptions options) {
-            this.provider = provider;
-            this.options = options;
-            this.command = createCommand();
-        }
-
-        private O createCommand() {
-            try {
-                return provider.getOptionClass().getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                throw new AssertionError(e);
-            }
-        }
-
-        public O getCommand() {
-            return command;
-        }
-
-        @SuppressWarnings("unchecked")
-        public DBMSExecutor<G, O, C> getDBMSExecutor(String databaseName, Randomly r) {
-            try {
-                return new DBMSExecutor<G, O, C>(provider.getClass().getDeclaredConstructor().newInstance(), options,
-                        command, databaseName, r);
-            } catch (Exception e) {
-                throw new AssertionError(e);
-            }
-        }
-
-        public DatabaseProvider<G, O, C> getProvider() {
-            return provider;
-        }
-
+    public DBMSExecutorFactory(final DatabaseProvider<G, O, C> provider, final MainOptions options) {
+        this.provider = provider;
+        this.options = options;
+        this.command = createCommand();
     }
+
+    private O createCommand() {
+        try {
+            return provider.getOptionClass().getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public O getCommand() {
+        return command;
+    }
+
+    @SuppressWarnings("unchecked")
+    public DBMSExecutor<G, O, C> getDBMSExecutor(final String databaseName, final Randomly r) {
+        try {
+            return new DBMSExecutor<G, O, C>(provider.getClass().getDeclaredConstructor().newInstance(), options,
+                    command, databaseName, r);
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public DatabaseProvider<G, O, C> getProvider() {
+        return provider;
+    }
+}
+
 
     public static int executeMain(String... args) throws AssertionError {
         List<DatabaseProvider<?, ?, ?>> providers = getDBMSProviders();
