@@ -56,7 +56,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             throw new AssertionError();
         }
         sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
-        if (s.getModifiers().size() > 0) {
+        if (!s.getModifiers().isEmpty()) {
             sb.append(" ");
         }
         if (s.getFetchColumns() == null) {
@@ -85,7 +85,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             sb.append(" WHERE ");
             visit(whereClause);
         }
-        if (s.getGroupByExpressions() != null && s.getGroupByExpressions().size() > 0) {
+        if (s.getGroupByExpressions() != null && !s.getGroupByExpressions().isEmpty()) {
             sb.append(" ");
             sb.append("GROUP BY ");
             List<OceanBaseExpression> groupBys = s.getGroupByExpressions();
@@ -260,7 +260,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             sb.append(op.getStr());
         } else {
             String str = op.getStr();
-            if (str.length() > 0) {
+            if (!str.isEmpty()) {
                 sb.append(r.getInteger(0, 100000));
             } else {
                 sb.append(r.getInteger(0, 1000000));
