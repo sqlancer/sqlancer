@@ -187,7 +187,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         case INSERT:
             nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
             break;
-
         default:
             throw new AssertionError(a);
         }
