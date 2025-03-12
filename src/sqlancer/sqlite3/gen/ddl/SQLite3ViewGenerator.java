@@ -67,7 +67,7 @@ public final class SQLite3ViewGenerator {
      * from the CREATE TABLE and CREATE VIEW statements. This is non-trivial, and currently not implemented. Rather, we
      * avoid generating expressions with an affinity or view.
      *
-     * @see http://sqlite.1065341.n5.nabble.com/Determining-column-collating-functions-td108157.html#a108159
+     * @see <a href="https://www.sqlite.org/datatype3.html">Datatypes and Affinity in SQLite</a>
      *
      * @param randomQuery
      *
