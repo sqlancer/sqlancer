@@ -7,10 +7,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
@@ -364,13 +369,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                 e.printStackTrace();
             }
         }
-
-        List<String> invalidList = List.of("create", "notify", "discard", "listen", "unlisten", "reset", "set",
-                "delete", "alter", "analyze");
-        if (invalidList.contains(selectStr.split("\\s+")[0].toLowerCase())) {
-            return "";
-        }
-
         SQLQueryAdapter q = new SQLQueryAdapter(PostgresExplainGenerator.explain(selectStr), null);
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             while (rs.next()) {
@@ -404,27 +402,31 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         return true;
     }
 
-    private String formatQueryPlan(String queryPlan) {
-        StringBuilder outQueryPlanFormatted = new StringBuilder();
-        boolean insideBrackets = false;
+    public String formatQueryPlan(String queryPlan) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(queryPlan).get(0).get("Plan");
+        // Extract nodes using BFS algorithm
+        List<String> nodeTypes = extractNodeTypesIterative(root);
+        return String.join(" ", nodeTypes);
+    }
 
-        for (char ch : queryPlan.toCharArray()) {
-            if (ch == '\n' || ch == ' ') {
-                continue;
+    // BFS algorithm for traversing the Json Query Plan
+    private static List<String> extractNodeTypesIterative(JsonNode root) {
+        List<String> result = new ArrayList<>();
+        Queue<JsonNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            JsonNode node = queue.poll();
+            if (node.has("Node Type")) {
+                result.add(node.get("Node Type").asText());
             }
-            if (ch == '(') {
-                insideBrackets = true;
-            } else if (ch == ')') {
-                insideBrackets = false;
-                outQueryPlanFormatted.append(';');
-                continue;
-            }
-            if (!insideBrackets) {
-                outQueryPlanFormatted.append(ch);
+            if (node.has("Plans") && node.get("Plans").isArray()) {
+                for (JsonNode plan : node.get("Plans")) {
+                    queue.add(plan);
+                }
             }
         }
-
-        return outQueryPlanFormatted.toString();
+        return result;
     }
 
 }
