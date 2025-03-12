@@ -72,6 +72,8 @@ public interface PostgresVisitor {
 
     void visit(PostgresLikeOperation op);
 
+    void visit(PostgresWindowFunction windowFunction);
+
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
             visit((PostgresConstant) expression);
@@ -113,7 +115,10 @@ public interface PostgresVisitor {
             visit((PostgresColumnReference) expression);
         } else if (expression instanceof PostgresTableReference) {
             visit((PostgresTableReference) expression);
-        } else {
+        } else if (expression instanceof PostgresWindowFunction) {
+            visit((PostgresWindowFunction) expression);
+        }
+        else {
             throw new AssertionError(expression);
         }
     }

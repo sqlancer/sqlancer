@@ -37,6 +37,55 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
         }
     }
 
+    public static class WindowDefinition {
+        private final List<PostgresExpression> partitionBy;
+        private final List<PostgresOrderByTerm> orderBy;
+        private final WindowFrame frame;
+
+        public WindowDefinition(List<PostgresExpression> partitionBy, 
+                              List<PostgresOrderByTerm> orderBy,
+                              WindowFrame frame) {
+            this.partitionBy = partitionBy;
+            this.orderBy = orderBy;
+            this.frame = frame;
+        }
+
+        public List<PostgresExpression> getPartitionBy() {
+            return partitionBy;
+        }
+
+        public List<PostgresOrderByTerm> getOrderBy() {
+            return orderBy;
+        }
+
+        public WindowFrame getFrame() {
+            return frame;
+        }
+    }
+
+    // Getters setters for windowfunctions
+    public List<PostgresExpression> getWindowFunctions() {
+        return windowFunctions;
+    }
+
+    public void setWindowFunctions(List<PostgresExpression> windowFunctions) {
+        this.windowFunctions = windowFunctions != null ? windowFunctions : new ArrayList<>();
+    }
+
+    // Add methods for window definitions
+    public void addWindowDefinition(String name, WindowDefinition definition) {
+        windowDefinitions.put(name, definition);
+    }
+
+    public WindowDefinition getWindowDefinition(String name) {
+        return windowDefinitions.get(name);
+    }
+
+    public Map<String, WindowDefinition> getWindowDefinitions() {
+        return windowDefinitions;
+    }
+
+
     public static class PostgresFromTable implements PostgresExpression {
         private final PostgresTable t;
         private final boolean only;
