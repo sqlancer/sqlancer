@@ -422,6 +422,53 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             throw new AssertionError();
         }
     }
+    
+    private PostgresExpression generateWindowFunction(int depth, PostgresDataType returnType) {
+    // Generate window function arguments
+    List<PostgresExpression> arguments = new ArrayList<>();
+    if (Randomly.getBoolean()) {
+        arguments.add(generateExpression(depth + 1));
+    }
+
+    // Generate PARTITION BY expressions
+    List<PostgresExpression> partitionBy = new ArrayList<>();
+    if (Randomly.getBoolean()) {
+        int count = Randomly.smallNumber();
+        for (int i = 0; i < count; i++) {
+            partitionBy.add(generateExpression(depth + 1));
+        }
+    }
+
+    // Generate ORDER BY expressions
+    List<PostgresOrderByTerm> orderBy = new ArrayList<>();
+    if (Randomly.getBoolean()) {
+        int count = Randomly.smallNumber();
+        for (int i = 0; i < count; i++) {
+            PostgresExpression expr = generateExpression(depth + 1);
+            orderBy.add(new PostgresOrderByTerm(expr, Randomly.getBoolean()));
+        }
+    }
+
+    // Generate window frame
+    WindowFrame frame = null;
+    if (Randomly.getBoolean()) {
+        WindowFrame.FrameType frameType = Randomly.fromOptions(WindowFrame.FrameType.values());
+        PostgresExpression startExpr = generateConstant(globalState.getRandomly(), PostgresDataType.INT);
+        PostgresExpression endExpr = generateConstant(globalState.getRandomly(), PostgresDataType.INT);
+        frame = new WindowFrame(frameType, startExpr, endExpr);
+    }
+
+    WindowSpecification windowSpec = new WindowSpecification(partitionBy, orderBy, frame);
+
+    // Select a window function
+    String functionName = Randomly.fromList(Arrays.asList(
+        "row_number", "rank", "dense_rank", "percent_rank",
+        "cume_dist", "ntile", "lag", "lead", "first_value",
+        "last_value", "nth_value"
+    ));
+
+    return new PostgresWindowFunction(functionName, arguments, windowSpec, returnType);
+    }
 
     private PostgresExpression generateConcat(int depth) {
         PostgresExpression left = generateExpression(depth + 1, PostgresDataType.TEXT);
@@ -447,7 +494,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum IntExpression {
-        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
+        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION, WINDOW_FUNCTION
     }
 
     private PostgresExpression generateIntExpression(int depth) {
@@ -667,7 +714,21 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     @Override
     public PostgresSelect generateSelect() {
-        return new PostgresSelect();
+        PostgresSelect select = new PostgresSelect();
+        
+        // Add window functions to fetch columns if appropriate
+        if (Randomly.getBoolean()) {
+            List<PostgresExpression> windowFunctions = new ArrayList<>();
+            int numWindowFunctions = Randomly.smallNumber();
+            for (int i = 0; i < numWindowFunctions; i++) {
+                windowFunctions.add(generateWindowFunction(0, Randomly.fromList(Arrays.asList(
+                    PostgresDataType.INT, PostgresDataType.FLOAT
+                ))));
+            }
+            select.setWindowFunctions(windowFunctions);
+        }
+        
+        return select;
     }
 
     @Override
@@ -766,6 +827,43 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         mutators.add(this::mutateDistinct);
 
         return Randomly.fromList(mutators).apply(select);
+    }
+
+    
+    @Override
+    public boolean mutate(PostgresSelect select) {
+        List<Function<PostgresSelect, Boolean>> mutators = new ArrayList<>();
+
+        mutators.add(this::mutateJoin);
+        mutators.add(this::mutateWhere);
+        mutators.add(this::mutateGroupBy);
+        mutators.add(this::mutateHaving);
+        mutators.add(this::mutateWindowFunction); // Add window function mutation
+        if (!PostgresBugs.bug18643) {
+            mutators.add(this::mutateAnd);
+            mutators.add(this::mutateOr);
+        }
+        mutators.add(this::mutateDistinct);
+
+        return Randomly.fromList(mutators).apply(select);
+    }
+
+    private boolean mutateWindowFunction(PostgresSelect select) {
+        List<PostgresExpression> windowFunctions = select.getWindowFunctions();
+        if (windowFunctions == null || windowFunctions.isEmpty()) {
+            // Add a new window function
+            windowFunctions = new ArrayList<>();
+            windowFunctions.add(generateWindowFunction(0, PostgresDataType.INT));
+            select.setWindowFunctions(windowFunctions);
+            return false;
+        } else {
+            // Remove a random window function
+            windowFunctions.remove(Randomly.fromList(windowFunctions));
+            if (windowFunctions.isEmpty()) {
+                select.setWindowFunctions(null);
+            }
+            return true;
+        }
     }
 
     boolean mutateJoin(PostgresSelect select) {

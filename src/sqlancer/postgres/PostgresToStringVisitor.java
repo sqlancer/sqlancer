@@ -362,4 +362,37 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         super.visit((BinaryOperation<PostgresExpression>) op);
     }
 
+    @Override
+    public void visit(PostgresWindowFunction windowFunction) {
+        sb.append(windowFunction.getFunctionName());
+        sb.append("(");
+        visit(windowFunction.getArguments());
+        sb.append(") OVER (");
+        
+        WindowSpecification spec = windowFunction.getWindowSpec();
+        if (!spec.getPartitionBy().isEmpty()) {
+            sb.append("PARTITION BY ");
+            visit(spec.getPartitionBy());
+        }
+        
+        if (!spec.getOrderBy().isEmpty()) {
+            if (!spec.getPartitionBy().isEmpty()) {
+                sb.append(" ");
+            }
+            sb.append("ORDER BY ");
+            visit(spec.getOrderBy());
+        }
+
+        if (spec.getFrame() != null) {
+            sb.append(" ");
+            WindowFrame frame = spec.getFrame();
+            sb.append(frame.getType().getSQL());
+            sb.append(" BETWEEN ");
+            visit(frame.getStartExpr());
+            sb.append(" AND ");
+            visit(frame.getEndExpr());
+        }
+        
+        sb.append(")");
+    }
 }
