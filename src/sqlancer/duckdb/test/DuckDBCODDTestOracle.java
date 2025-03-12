@@ -35,7 +35,6 @@ import sqlancer.duckdb.ast.DuckDBAlias;
 import sqlancer.duckdb.ast.DuckDBBinaryOperator;
 import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBConstant;
-import sqlancer.duckdb.ast.DuckDBConstantWithType;
 import sqlancer.duckdb.ast.DuckDBExistsOperator;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBExpressionBag;
@@ -166,7 +165,7 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             // folded query
             DuckDBCompositeDataType constantType = this.getColumnTypeFromSelect(auxiliaryQuery).get(0);
             DuckDBConstant constant = (DuckDBConstant) auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().toArray()[0]).get(0);
-            DuckDBConstantWithType equivalentExpr = new DuckDBConstantWithType(constant, constantType);
+            DuckDBTypeCast equivalentExpr = new DuckDBTypeCast(constant, constantType);
             specificCondition.updateInnerExpr(equivalentExpr);
             foldedQueryString = DuckDBToStringVisitor.asString(originalQuery);
             foldedResult = getQueryResult(foldedQueryString, state);
@@ -201,7 +200,7 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
                 List<DuckDBExpression> rowRs = new ArrayList<>();
                 for (int j = 0; j < typeList.size(); ++j) {
                     DuckDBConstant c = (DuckDBConstant) auxiliaryQueryResult.get("c" + String.valueOf(j)).get(i);
-                    rowRs.add(new DuckDBConstantWithType(c, typeList.get(j)));
+                    rowRs.add(new DuckDBTypeCast(c, typeList.get(j)));
                 }
                 DuckDBValues valueRow = new DuckDBValues(rowRs);
                 values.add(valueRow);
@@ -234,7 +233,7 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
                     List<DuckDBExpression> rowRs = new ArrayList<>();
                     for (int j = 0; j < typeList.size(); ++j) {
                         DuckDBConstant c = (DuckDBConstant) auxiliaryQueryResult.get("c" + String.valueOf(j)).get(i);
-                        rowRs.add(new DuckDBConstantWithType(c, typeList.get(j)));
+                        rowRs.add(new DuckDBTypeCast(c, typeList.get(j)));
                     }
                     DuckDBValues valueRow = new DuckDBValues(rowRs);
                     values.add(valueRow);
@@ -490,7 +489,7 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
         List<DuckDBExpression> constantRes = new ArrayList<>();
         for (DuckDBExpression e : summary) {
             DuckDBConstant c = (DuckDBConstant) e;
-            constantRes.add(new DuckDBConstantWithType(c, exprType));
+            constantRes.add(new DuckDBTypeCast(c, exprType));
         }
 
         LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> dbstate = new LinkedHashMap<>();
@@ -506,7 +505,7 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
                 if (columnsType.get(i).toString().equals("REAL") || columnsType.get(i).toString().startsWith("FLOAT")) {
                     throw new IgnoreMeException();
                 }
-                constants.add(new DuckDBConstantWithType(c, columnsType.get(i)));
+                constants.add(new DuckDBTypeCast(c, columnsType.get(i)));
             }
             dbstate.put(cRef, constants);
         }
@@ -584,7 +583,7 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
         List<DuckDBExpression> constantRes = new ArrayList<>();
         for (DuckDBExpression e : summary) {
             DuckDBConstant c = (DuckDBConstant) e;
-            constantRes.add(new DuckDBConstantWithType(c, exprType));
+            constantRes.add(new DuckDBTypeCast(c, exprType));
         }
 
         LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> dbstate = new LinkedHashMap<>();
@@ -600,7 +599,7 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
                 if (columnsType.get(i).toString().equals("REAL") || columnsType.get(i).toString().startsWith("FLOAT")) {
                     throw new IgnoreMeException();
                 }
-                constants.add(new DuckDBConstantWithType(c, columnsType.get(i)));
+                constants.add(new DuckDBTypeCast(c, columnsType.get(i)));
             }
             dbstate.put(cRef, constants);
         }

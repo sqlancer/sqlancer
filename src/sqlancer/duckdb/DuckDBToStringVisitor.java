@@ -7,7 +7,6 @@ import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBConstant;
-import sqlancer.duckdb.ast.DuckDBConstantWithType;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBExpressionBag;
 import sqlancer.duckdb.ast.DuckDBJoin;
@@ -27,8 +26,6 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
             visit((DuckDBSelect) expr);
         } else if (expr instanceof DuckDBJoin) {
             visit((DuckDBJoin) expr);
-        } else if (expr instanceof DuckDBConstantWithType) {
-            visit((DuckDBConstantWithType) expr);
         } else if (expr instanceof DuckDBResultMap) {
             visit((DuckDBResultMap) expr);
         } else if (expr instanceof DuckDBTypeCast) {
@@ -107,10 +104,6 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
         }
     }
 
-    public void visit(DuckDBConstantWithType expr) {
-        sb.append(expr.toString());
-    }
-
     public void visit(DuckDBResultMap expr) {
         // use CASE WHEN to express the constant result of a expression
         LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> dbstate = expr.getDbStates();
@@ -131,9 +124,9 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
                 visit(columnRef);
                 if (dbstate.get(columnRef).get(i) instanceof DuckDBNullConstant) {
                     sb.append(" IS NULL");
-                } else if (dbstate.get(columnRef).get(i) instanceof DuckDBConstantWithType) {
-                    DuckDBConstantWithType ct = (DuckDBConstantWithType) dbstate.get(columnRef).get(i);
-                    if (ct.getConstant() instanceof DuckDBNullConstant) {
+                } else if (dbstate.get(columnRef).get(i) instanceof DuckDBTypeCast) {
+                    DuckDBTypeCast ct = (DuckDBTypeCast) dbstate.get(columnRef).get(i);
+                    if (ct.getExpression() instanceof DuckDBNullConstant) {
                         sb.append(" IS NULL");
                     } else {
                         sb.append(" = ");
