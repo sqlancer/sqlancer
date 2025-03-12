@@ -62,23 +62,22 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         default:
             throw new AssertionError("Unexpected FROM option");
         }
-        
-        appendModifiers(s);
-        appendColumns(s);
-        appendFromClause(s);
-        appendJoins(s);
-        appendWhereClause(s);
-        appendGroupByClause(s);
-        appendOrderByClause(s);
-        appendLimitAndOffset(s);
-    }
+    appendModifiers(s);
+    appendColumns(s);
+    appendFromClause(s);
+    appendJoins(s);
+    appendWhereClause(s);
+    appendGroupByClause(s);
+    appendOrderByClause(s);
+    appendLimitAndOffset(s);
+}
 
-    private void appendModifiers(MySQLSelect s) {
-        String modifiers = s.getModifiers().stream().collect(Collectors.joining(" "));
-        if (!modifiers.isEmpty()) {
-            sb.append(modifiers).append(" ");
-        }
+private void appendModifiers(MySQLSelect s) {
+    String modifiers = s.getModifiers().stream().collect(Collectors.joining(" "));
+    if (!modifiers.isEmpty()) {
+        sb.append(modifiers).append(" ");
     }
+}
 
     private void appendColumns(MySQLSelect s) {
         if (s.getFetchColumns() == null) {
@@ -115,12 +114,15 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
             sb.append(" WHERE ");
             visit(s.getWhereClause());
         }
-    }
-
-    private void appendGroupByClause(MySQLSelect s) {
-        if (s.getGroupByExpressions() != null && !s.getGroupByExpressions().isEmpty()) {
-            sb.append(" GROUP BY ");
-            appendExpressionList(s.getGroupByExpressions());
+private void appendGroupByClause(MySQLSelect s) {
+    if (s.getGroupByExpressions() != null && !s.getGroupByExpressions().isEmpty()) {
+        sb.append(" GROUP BY ");
+        List<MySQLExpression> groupBys = s.getGroupByExpressions();
+        for (int i = 0; i < groupBys.size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            visit(groupBys.get(i));
         }
     }
 

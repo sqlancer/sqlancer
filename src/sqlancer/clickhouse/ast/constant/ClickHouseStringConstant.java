@@ -32,7 +32,7 @@ public class ClickHouseStringConstant extends ClickHouseConstant {
 
     @Override
     public boolean asBooleanNotNull() {
-        return value.length() > 0;
+        return !value.isEmpty();
     }
 
     @Override

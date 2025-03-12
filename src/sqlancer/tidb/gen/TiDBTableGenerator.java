@@ -47,7 +47,7 @@ public class TiDBTableGenerator {
         StringBuilder sb = new StringBuilder("CREATE TABLE ");
         sb.append(tableName);
 
-        if (Randomly.getBoolean() && globalState.getSchema().getDatabaseTables().size() > 0) {
+        if (Randomly.getBoolean() && !globalState.getSchema().getDatabaseTables().isEmpty()) {
             sb.append(" LIKE ");
             TiDBTable otherTable = globalState.getSchema().getRandomTable();
             sb.append(otherTable.getName());
