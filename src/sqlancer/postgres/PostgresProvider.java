@@ -10,14 +10,7 @@ import java.util.Arrays;
 
 import com.google.auto.service.AutoService;
 
-import sqlancer.AbstractAction;
-import sqlancer.DatabaseProvider;
-import sqlancer.IgnoreMeException;
-import sqlancer.MainOptions;
-import sqlancer.Randomly;
-import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
-import sqlancer.StatementExecutor;
+import sqlancer.*;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
@@ -42,28 +35,13 @@ import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
 import sqlancer.postgres.gen.PostgresViewGenerator;
+import sqlancer.ExpandedProvider;
 
 // EXISTS
 // IN
 @AutoService(DatabaseProvider.class)
-public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, PostgresOptions> {
-
-    /**
-     * Generate only data types and expressions that are understood by PQS.
-     */
-    public static boolean generateOnlyKnown;
-
-    protected String entryURL;
-    protected String username;
-    protected String password;
-    protected String entryPath;
-    protected String host;
-    protected int port;
-    protected String testURL;
-    protected String databaseName;
-    protected String createDatabaseCommand;
-    protected String extensionsList;
-
+public class PostgresProvider extends ExpandedProvider<PostgresGlobalState, PostgresOptions> {
+    
     public PostgresProvider() {
         super(PostgresGlobalState.class, PostgresOptions.class);
     }
