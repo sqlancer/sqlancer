@@ -1,12 +1,6 @@
 package sqlancer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +10,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestRandomly {
 
@@ -288,11 +284,33 @@ public class TestRandomly {
         Randomly r = new Randomly();
 
         assertEquals(left, r.getBigInteger(left, left));
-
         BigInteger bi = r.getBigInteger(left, right);
 
         assertTrue(bi.compareTo(left) >= 0 && bi.compareTo(right) <= 0,
                 "BigInteger should be between left and right (inclusive right and left)");
     }
+    @Test
+    public void testGetRandomBigDecimal() {
+        Randomly r = new Randomly();
+        BigDecimal bd = r.getRandomBigDecimal();
 
+        assertTrue(bd.compareTo(BigDecimal.ZERO) >= 0 && bd.compareTo(BigDecimal.ONE) < 0,
+                "RandomBigDecimal should be between 0.0 (inclusive it) and 1.0 (exclusive it)");
+    }
+    @Test
+    public void testGetPositiveIntegerNotNull() {
+        Randomly r = new Randomly();
+        for (int i = 0; i < 100; i++) {
+            long val = r.getPositiveIntegerNotNull();
+
+            assertNotEquals(0, val, "val should not return zero");
+            assertTrue(val >= 0, "val should be non-negative");
+        }
+    }
+    @Test
+    public void testGetNonCachedIntegerStatic() {
+        long val = Randomly.getNonCachedInteger();
+
+        assertNotNull(val);
+    }
 }
