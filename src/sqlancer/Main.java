@@ -396,8 +396,8 @@ public final class Main {
         private StateToReproduce stateToRepro;
         private final Randomly r;
 
-        public DBMSExecutor(DatabaseProvider<G, O, C> provider, MainOptions options, O dbmsSpecificOptions,
-                String databaseName, Randomly r) {
+        public DBMSExecutor(final DatabaseProvider<G, O, C> provider, final MainOptions options,
+                final O dbmsSpecificOptions, final String databaseName, final Randomly r) {
             this.provider = provider;
             this.options = options;
             this.databaseName = databaseName;
