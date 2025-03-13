@@ -424,48 +424,65 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
     
     private PostgresExpression generateWindowFunction(int depth, PostgresDataType returnType) {
-    // Generate window function arguments
-    List<PostgresExpression> arguments = new ArrayList<>();
-    if (Randomly.getBoolean()) {
-        arguments.add(generateExpression(depth + 1));
-    }
-
-    // Generate PARTITION BY expressions
-    List<PostgresExpression> partitionBy = new ArrayList<>();
-    if (Randomly.getBoolean()) {
-        int count = Randomly.smallNumber();
-        for (int i = 0; i < count; i++) {
-            partitionBy.add(generateExpression(depth + 1));
-        }
-    }
-
-    // Generate ORDER BY expressions
-    List<PostgresOrderByTerm> orderBy = new ArrayList<>();
-    if (Randomly.getBoolean()) {
-        int count = Randomly.smallNumber();
-        for (int i = 0; i < count; i++) {
-            PostgresExpression expr = generateExpression(depth + 1);
-            orderBy.add(new PostgresOrderByTerm(expr, Randomly.getBoolean()));
-        }
-    }
-
-    // Generate window frame
-    WindowFrame frame = null;
-    if (Randomly.getBoolean()) {
-        WindowFrame.FrameType frameType = Randomly.fromOptions(WindowFrame.FrameType.values());
-        PostgresExpression startExpr = generateConstant(globalState.getRandomly(), PostgresDataType.INT);
-        PostgresExpression endExpr = generateConstant(globalState.getRandomly(), PostgresDataType.INT);
-        frame = new WindowFrame(frameType, startExpr, endExpr);
-    }
-
+    List<PostgresExpression> arguments = generateWindowFunctionArguments(depth);
+    List<PostgresExpression> partitionBy = generatePartitionByExpressions(depth);
+    List<PostgresOrderByTerm> orderBy = generateOrderByExpressions(depth);
+    WindowFrame frame = generateWindowFrame();
+    
     WindowSpecification windowSpec = new WindowSpecification(partitionBy, orderBy, frame);
+    String functionName = selectWindowFunctionName();
+    
+    return new PostgresWindowFunction(functionName, arguments, windowSpec, returnType);
+}
 
-    // Select a window function
-    String functionName = Randomly.fromList(Arrays.asList(
-        "row_number", "rank", "dense_rank", "percent_rank",
-        "cume_dist", "ntile", "lag", "lead", "first_value",
-        "last_value", "nth_value"
-    ));
+    private List<PostgresExpression> generateWindowFunctionArguments(int depth) {
+        List<PostgresExpression> arguments = new ArrayList<>();
+        if (Randomly.getBoolean()) {
+            arguments.add(generateExpression(depth + 1));
+        }
+        return arguments;
+    }
+
+    private List<PostgresExpression> generatePartitionByExpressions(int depth) {
+        List<PostgresExpression> partitionBy = new ArrayList<>();
+        if (Randomly.getBoolean()) {
+            int count = Randomly.smallNumber();
+            for (int i = 0; i < count; i++) {
+                partitionBy.add(generateExpression(depth + 1));
+            }
+        }
+        return partitionBy;
+    }
+
+    private List<PostgresOrderByTerm> generateOrderByExpressions(int depth) {
+        List<PostgresOrderByTerm> orderBy = new ArrayList<>();
+        if (Randomly.getBoolean()) {
+            int count = Randomly.smallNumber();
+            for (int i = 0; i < count; i++) {
+                PostgresExpression expr = generateExpression(depth + 1);
+                orderBy.add(new PostgresOrderByTerm(expr, Randomly.getBoolean()));
+            }
+        }
+        return orderBy;
+    }
+
+    private WindowFrame generateWindowFrame() {
+        if (Randomly.getBoolean()) {
+            WindowFrame.FrameType frameType = Randomly.fromOptions(WindowFrame.FrameType.values());
+            PostgresExpression startExpr = generateConstant(globalState.getRandomly(), PostgresDataType.INT);
+            PostgresExpression endExpr = generateConstant(globalState.getRandomly(), PostgresDataType.INT);
+            return new WindowFrame(frameType, startExpr, endExpr);
+        }
+        return null;
+    }
+
+    private String selectWindowFunctionName() {
+        return Randomly.fromList(Arrays.asList(
+            "row_number", "rank", "dense_rank", "percent_rank",
+            "cume_dist", "ntile", "lag", "lead", "first_value",
+            "last_value", "nth_value"
+        ));
+    }
 
     return new PostgresWindowFunction(functionName, arguments, windowSpec, returnType);
     }
@@ -716,19 +733,23 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     public PostgresSelect generateSelect() {
         PostgresSelect select = new PostgresSelect();
         
-        // Add window functions to fetch columns if appropriate
-        if (Randomly.getBoolean()) {
-            List<PostgresExpression> windowFunctions = new ArrayList<>();
-            int numWindowFunctions = Randomly.smallNumber();
-            for (int i = 0; i < numWindowFunctions; i++) {
-                windowFunctions.add(generateWindowFunction(0, Randomly.fromList(Arrays.asList(
-                    PostgresDataType.INT, PostgresDataType.FLOAT
-                ))));
-            }
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            List<PostgresExpression> windowFunctions = generateWindowFunctions();
             select.setWindowFunctions(windowFunctions);
         }
         
         return select;
+    }
+
+    private List<PostgresExpression> generateWindowFunctions() {
+        List<PostgresExpression> windowFunctions = new ArrayList<>();
+        int numWindowFunctions = Randomly.smallNumber();
+        for (int i = 0; i < numWindowFunctions; i++) {
+            windowFunctions.add(generateWindowFunction(0, Randomly.fromList(Arrays.asList(
+                PostgresDataType.INT, PostgresDataType.FLOAT
+            ))));
+        }
+        return windowFunctions;
     }
 
     @Override
