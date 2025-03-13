@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
@@ -24,7 +25,12 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
         TIMETZ, ARRAY;
 
         public static CockroachDBDataType getRandom() {
-            return Randomly.fromOptions(values());
+            // return Randomly.fromOptions(values());
+            // INTERVAL and JSONB can trigger a number of known issues, e.g., [1], so we skip them.
+            // [1] https://github.com/cockroachdb/cockroach/issues/45993
+            CockroachDBDataType[] filteredVals =
+                    Arrays.asList(values()).stream().filter(e -> e != INTERVAL && e != JSONB).toArray(CockroachDBDataType[]::new);
+            return Randomly.fromOptions(filteredVals);
         }
 
         public CockroachDBCompositeDataType get() {
