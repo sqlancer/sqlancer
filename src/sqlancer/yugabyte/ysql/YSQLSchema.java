@@ -4,11 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.postgresql.util.PSQLException;
 
@@ -16,12 +13,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.DBMSCommon;
-import sqlancer.common.schema.AbstractRelationalTable;
-import sqlancer.common.schema.AbstractRowValue;
-import sqlancer.common.schema.AbstractSchema;
-import sqlancer.common.schema.AbstractTableColumn;
-import sqlancer.common.schema.AbstractTables;
-import sqlancer.common.schema.TableIndex;
+import sqlancer.common.schema.*;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 import sqlancer.yugabyte.ysql.ast.YSQLConstant;
 
@@ -36,36 +28,36 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
 
     public static YSQLDataType getColumnType(String typeString) {
         switch (typeString) {
-        case "smallint":
-        case "integer":
-        case "bigint":
-            return YSQLDataType.INT;
-        case "boolean":
-            return YSQLDataType.BOOLEAN;
-        case "text":
-        case "character":
-        case "character varying":
-        case "name":
-            return YSQLDataType.TEXT;
-        case "numeric":
-            return YSQLDataType.DECIMAL;
-        case "double precision":
-            return YSQLDataType.FLOAT;
-        case "real":
-            return YSQLDataType.REAL;
-        case "int4range":
-            return YSQLDataType.RANGE;
-        case "money":
-            return YSQLDataType.MONEY;
-        case "bytea":
-            return YSQLDataType.BYTEA;
-        case "bit":
-        case "bit varying":
-            return YSQLDataType.BIT;
-        case "inet":
-            return YSQLDataType.INET;
-        default:
-            throw new AssertionError(typeString);
+            case "smallint":
+            case "integer":
+            case "bigint":
+                return YSQLDataType.INT;
+            case "boolean":
+                return YSQLDataType.BOOLEAN;
+            case "text":
+            case "character":
+            case "character varying":
+            case "name":
+                return YSQLDataType.TEXT;
+            case "numeric":
+                return YSQLDataType.DECIMAL;
+            case "double precision":
+                return YSQLDataType.FLOAT;
+            case "real":
+                return YSQLDataType.REAL;
+            case "int4range":
+                return YSQLDataType.RANGE;
+            case "money":
+                return YSQLDataType.MONEY;
+            case "bytea":
+                return YSQLDataType.BYTEA;
+            case "bit":
+            case "bit varying":
+                return YSQLDataType.BIT;
+            case "inet":
+                return YSQLDataType.INET;
+            default:
+                throw new AssertionError(typeString);
         }
     }
 
@@ -89,6 +81,23 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
                         List<YSQLIndex> indexes = getIndexes(con, tableName);
                         List<YSQLStatisticsObject> statistics = getStatistics(con);
                         YSQLTable t = new YSQLTable(tableName, databaseColumns, indexes, tableType, statistics, isView,
+                                isInsertable);
+                        for (YSQLColumn c : databaseColumns) {
+                            c.setTable(t);
+                        }
+                        databaseTables.add(t);
+                    }
+                }
+            }
+            try (Statement s = con.createStatement()) {
+                try (ResultSet rs = s.executeQuery(
+                        "select relname from pg_class where relkind = 'm';")) {
+                    while (rs.next()) {
+                        String tableName = rs.getString("relname");
+                        boolean isInsertable = false;
+                        List<YSQLColumn> databaseColumns = getTableColumns(con, tableName);
+                        List<YSQLStatisticsObject> statistics = getStatistics(con);
+                        YSQLTable t = new YSQLTable(tableName, databaseColumns, new ArrayList<>(), YSQLTable.TableType.MATERIALIZED_VIEW, statistics, false,
                                 isInsertable);
                         for (YSQLColumn c : databaseColumns) {
                             c.setTable(t);
@@ -180,6 +189,10 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
         return databaseName;
     }
 
+    public List<YSQLTable> getRandomMaterializedView() {
+        return getDatabaseTables().stream().filter(YSQLTable::isMaterializedView).collect(Collectors.toList());
+    }
+
     public enum YSQLDataType {
         // TODO: 23.02.2022 Planned types
         // SMALLINT, INT, BIGINT, NUMERIC, DECIMAL, REAL, DOUBLE_PRECISION, VARCHAR, CHAR, TEXT, DATE, TIME,
@@ -221,7 +234,7 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
 
         public YSQLRowValue getRandomRowValue(SQLConnection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RANDOM() LIMIT 1", columnNamesAsString(
-                    c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
+                            c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     // columnNamesAsString(c -> "typeof(" + c.getTable().getName() + "." +
                     // c.getName() + ")")
                     tableNamesAsString());
@@ -240,17 +253,17 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
                         constant = YSQLConstant.createNullConstant();
                     } else {
                         switch (column.getType()) {
-                        case INT:
-                            constant = YSQLConstant.createIntConstant(randomRowValues.getLong(columnIndex));
-                            break;
-                        case BOOLEAN:
-                            constant = YSQLConstant.createBooleanConstant(randomRowValues.getBoolean(columnIndex));
-                            break;
-                        case TEXT:
-                            constant = YSQLConstant.createTextConstant(randomRowValues.getString(columnIndex));
-                            break;
-                        default:
-                            throw new IgnoreMeException();
+                            case INT:
+                                constant = YSQLConstant.createIntConstant(randomRowValues.getLong(columnIndex));
+                                break;
+                            case BOOLEAN:
+                                constant = YSQLConstant.createBooleanConstant(randomRowValues.getBoolean(columnIndex));
+                                break;
+                            case TEXT:
+                                constant = YSQLConstant.createTextConstant(randomRowValues.getString(columnIndex));
+                                break;
+                            default:
+                                throw new IgnoreMeException();
                         }
                     }
                     values.put(column, constant);
@@ -280,7 +293,7 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
         private final boolean isInsertable;
 
         public YSQLTable(String tableName, List<YSQLColumn> columns, List<YSQLIndex> indexes, TableType tableType,
-                List<YSQLStatisticsObject> statistics, boolean isView, boolean isInsertable) {
+                         List<YSQLStatisticsObject> statistics, boolean isView, boolean isInsertable) {
             super(tableName, columns, indexes, isView);
             this.statistics = statistics;
             this.isInsertable = isInsertable;
@@ -299,8 +312,12 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
             return isInsertable;
         }
 
+        public boolean isMaterializedView() {
+            return tableType == YSQLTable.TableType.MATERIALIZED_VIEW;
+        }
+
         public enum TableType {
-            STANDARD, TEMPORARY
+            STANDARD, TEMPORARY, MATERIALIZED_VIEW
         }
 
     }

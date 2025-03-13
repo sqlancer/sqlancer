@@ -109,7 +109,11 @@ public final class Randomly {
     // CACHING END
 
     public static <T> T fromList(List<T> list) {
-        return list.get((int) getNextLong(0, list.size()));
+        try {
+            return list.get((int) getNextLong(0, list.size()));
+        } catch (IndexOutOfBoundsException e) {
+            throw new IgnoreMeException();
+        }
     }
 
     @SafeVarargs
@@ -124,8 +128,12 @@ public final class Randomly {
     }
 
     public static <T> List<T> nonEmptySubset(List<T> columns) {
-        int nr = 1 + getNextInt(0, columns.size());
-        return nonEmptySubset(columns, nr);
+        try {
+            int nr = 1 + getNextInt(0, columns.size());
+            return nonEmptySubset(columns, nr);
+        } catch (AssertionError e) {
+            throw new IgnoreMeException();
+        }
     }
 
     public static <T> List<T> nonEmptySubset(List<T> columns, int nr) {

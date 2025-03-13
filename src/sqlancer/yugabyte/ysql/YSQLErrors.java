@@ -50,6 +50,8 @@ public final class YSQLErrors {
         errors.add("specified value cannot be cast to type");
         errors.add("array OID value not set when in binary upgrade mode");
 
+        errors.add("is not a table");
+        errors.add("cannot change materialized view");
         errors.add("syntax error at or near \"(\"");
         errors.add("encoding conversion from");
         errors.add("does not exist");

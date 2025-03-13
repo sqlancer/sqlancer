@@ -17,7 +17,8 @@ public final class YSQLViewGenerator {
     public static SQLQueryAdapter create(YSQLGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE");
-        if (Randomly.getBoolean()) {
+        boolean isMaterialized = Randomly.getBoolean();
+        if (isMaterialized) {
             sb.append(" MATERIALIZED");
         } else {
             if (Randomly.getBoolean()) {

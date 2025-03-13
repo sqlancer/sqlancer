@@ -2,7 +2,9 @@ package sqlancer.yugabyte.ysql.gen;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
@@ -16,6 +18,10 @@ public final class YSQLCommentGenerator {
 
     public static SQLQueryAdapter generate(YSQLGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
+        ExpectedErrors errors = new ExpectedErrors();
+        YSQLErrors.addGroupingErrors(errors);
+        YSQLErrors.addViewErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
         sb.append("COMMENT ON ");
         Action type = Randomly.fromOptions(Action.values());
         YSQLTable randomTable = globalState.getSchema().getRandomTable();
@@ -58,7 +64,7 @@ public final class YSQLCommentGenerator {
             sb.append(globalState.getRandomly().getString().replace("'", "''"));
             sb.append("'");
         }
-        return new SQLQueryAdapter(sb.toString());
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     private enum Action {
