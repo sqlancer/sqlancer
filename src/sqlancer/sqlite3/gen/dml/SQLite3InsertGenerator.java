@@ -103,10 +103,8 @@ public class SQLite3InsertGenerator {
                         sb.append(
                                 SQLite3Visitor.asString(SQLite3ExpressionGenerator.getRandomLiteralValue(globalState)));
                     } else {
-                        if (Randomly.getBoolean()) {
-                            sb.append("excluded.");
-                        }
-                        sb.append(table.getRandomColumn().getName());
+                        sb.append("excluded.");
+                        sb.append(columns.get(i).getName());
                     }
 
                 }
