@@ -81,8 +81,6 @@ public final class CockroachDBInsertGenerator {
             if (Randomly.getBoolean()) {
                 sb.append(" NOTHING ");
             } else {
-                // TODO: also support excluded. (see
-                // https://www.cockroachlabs.com/docs/stable/insert.html)
                 sb.append(" UPDATE SET ");
                 List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
                 int i = 0;
@@ -92,7 +90,12 @@ public final class CockroachDBInsertGenerator {
                     }
                     sb.append(c.getName());
                     sb.append(" = ");
-                    sb.append(CockroachDBVisitor.asString(gen.generateConstant(c.getType())));
+                    if (Randomly.getBoolean()) {
+                        sb.append(CockroachDBVisitor.asString(gen.generateConstant(c.getType())));
+                    } else {
+                        sb.append("excluded.");
+                        sb.append(c.getName());
+                    }
                 }
                 errors.add("UPSERT or INSERT...ON CONFLICT command cannot affect row a second time");
             }
