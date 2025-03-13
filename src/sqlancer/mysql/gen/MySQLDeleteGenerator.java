@@ -1,6 +1,7 @@
 package sqlancer.mysql.gen;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
@@ -45,12 +46,17 @@ public class MySQLDeleteGenerator {
             sb.append(MySQLVisitor.asString(gen.generateExpression()));
             MySQLErrors.addExpressionErrors(errors);
         }
+        if (Randomly.getBoolean()) {
+            sb.append(" ORDER BY ");
+            sb.append(randomTable.getRandomColumn().getName());
+            sb.append(Randomly.getBoolean() ? " ASC" : " DESC");
+        }
+
         errors.addAll(Arrays.asList("doesn't have this option",
                 "Truncated incorrect DOUBLE value" /*
                                                     * ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997
                                                     */, "Truncated incorrect INTEGER value",
                 "Truncated incorrect DECIMAL value", "Data truncated for functional index"));
-        // TODO: support ORDER BY
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
