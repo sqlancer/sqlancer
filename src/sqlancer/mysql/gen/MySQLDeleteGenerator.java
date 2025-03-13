@@ -1,7 +1,6 @@
 package sqlancer.mysql.gen;
 
 import java.util.Arrays;
-import java.util.Random;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
