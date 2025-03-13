@@ -9,4 +9,7 @@ public interface MySQLExpression extends Expression<MySQLColumn> {
         throw new AssertionError("PQS not supported for this operator");
     }
 
+    default MySQLBooleanConstant asBooleanConstant() {
+        return null; // Override this method in relevant classes to return boolean constants.
+    }
 }
