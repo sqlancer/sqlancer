@@ -33,7 +33,7 @@ public class ClickHouseTableGenerator {
     }
 
     public static SQLQueryAdapter createTableStatement(String tableName,
-            ClickHouseProvider.ClickHouseGlobalState globalState) {
+                                                       ClickHouseProvider.ClickHouseGlobalState globalState) {
         ClickHouseTableGenerator chTableGenerator = new ClickHouseTableGenerator(tableName, globalState);
         chTableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();
@@ -77,32 +77,38 @@ public class ClickHouseTableGenerator {
         sb.append("(");
         sb.append(") ");
         if (engine == ClickHouseEngine.MergeTree) {
+
+            if (Randomly.getBoolean()) {
+                sb.append(" PARTITION BY ");
+                ClickHouseExpression partitionExpr = gen.generateExpressionWithColumns(
+                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
+                sb.append(ClickHouseToStringVisitor.asString(partitionExpr));
+            }
+
             if (Randomly.getBoolean()) {
                 sb.append(" ORDER BY ");
-                ClickHouseExpression expr = gen.generateExpressionWithColumns(
+                ClickHouseExpression orderByExpr = gen.generateExpressionWithColumns(
                         columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
-                sb.append(ClickHouseToStringVisitor.asString(expr));
+                sb.append(ClickHouseToStringVisitor.asString(orderByExpr));
             } else {
                 sb.append(" ORDER BY tuple() ");
             }
 
-            if (Randomly.getBoolean()) {
-                sb.append(" PARTITION BY ");
-                ClickHouseExpression expr = gen.generateExpressionWithColumns(
-                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
-                sb.append(ClickHouseToStringVisitor.asString(expr));
+            if (Randomly.getBooleanWithSmallProbability()) {
+                List<String> pkColumns = Randomly.nonEmptySubset(columnNames);
+                sb.append(" PRIMARY KEY (");
+                sb.append(String.join(", ", pkColumns));
+                sb.append(") ");
             }
             if (Randomly.getBoolean()) {
                 sb.append(" SAMPLE BY ");
-                ClickHouseExpression expr = gen.generateExpressionWithColumns(
+                ClickHouseExpression sampleExpr = gen.generateExpressionWithColumns(
                         columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
-                sb.append(ClickHouseToStringVisitor.asString(expr));
+                sb.append(ClickHouseToStringVisitor.asString(sampleExpr));
             }
             // Suppress index sanity checks https://github.com/sqlancer/sqlancer/issues/788
             sb.append(" SETTINGS allow_suspicious_indices=1");
-            // TODO: PRIMARY KEY
         }
-
     }
 
     private void addColumnsConstraint(ClickHouseExpressionGenerator gen) {
