@@ -89,7 +89,7 @@ public class ClickHouseTableGenerator {
                 sb.append(" ORDER BY ");
                 ClickHouseExpression orderByExpr = gen.generateExpressionWithColumns(
                         columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
-                sb.append(ClickHouseToStringVisitor.asString(orderByExpr));
+                 sb.append(ClickHouseToStringVisitor.asString(orderByExpr));
             } else {
                 sb.append(" ORDER BY tuple() ");
             }
