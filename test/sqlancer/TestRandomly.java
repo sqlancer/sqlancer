@@ -1,5 +1,12 @@
 package sqlancer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -12,15 +19,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class TestRandomly {
 
     private static final int NR_MIN_RUNS = 100000;
 
     @Test // test that every option is picked
     public void testFromOptions() {
-        Integer[] options = {1, 2, 3};
+        Integer[] options = { 1, 2, 3 };
         List<Integer> remainingOptions = new ArrayList<>(Arrays.asList(options));
         while (!remainingOptions.isEmpty()) {
             Integer pickedOption = Randomly.fromOptions(options);
@@ -34,7 +39,7 @@ public class TestRandomly {
         boolean encounteredEmptySubset = false;
         boolean encounteredOriginalSet = false;
         boolean encounteredStrictSubsetNonEmpty = false;
-        Integer[] options = {1, 2, 3};
+        Integer[] options = { 1, 2, 3 };
         List<Integer> optionList = new ArrayList<>(Arrays.asList(options));
         do {
             List<Integer> subset = Randomly.subset(optionList);
@@ -234,9 +239,9 @@ public class TestRandomly {
 
     @Test
     public void testNonEmptySubsetVarArgs() {
-        Integer[] options = {1, 2, 3, 4, 5};
+        Integer[] options = { 1, 2, 3, 4, 5 };
         List<Integer> subset = Randomly.nonEmptySubset(options);
-        //  subset =null;
+        // subset =null;
         assertFalse(subset.isEmpty(), "method nonEmptySubset (VarArgs) should return a subset not empty");
         for (Integer i : subset) {
             assertTrue(Arrays.asList(options).contains(i));
@@ -263,7 +268,6 @@ public class TestRandomly {
             assertTrue(options.contains(s));
         }
     }
-
 
     @Test
     public void testSmallNumber() {
@@ -326,11 +330,8 @@ public class TestRandomly {
             String c = r.getAlphabeticChar();
             assertNotNull(c, "getAlphabeticChar should not return null");
             assertEquals(1, c.length(), "getAlphabeticChar should return a single character");
-            assertTrue(Character.isAlphabetic(c.charAt(0)),
-                    "getAlphabeticChar should return an alphabetic character");
+            assertTrue(Character.isAlphabetic(c.charAt(0)), "getAlphabeticChar should return an alphabetic character");
         }
     }
-
-
 
 }
