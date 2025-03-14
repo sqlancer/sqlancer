@@ -149,30 +149,27 @@ public final class Randomly {
         return arr;
     }
 
+    // Select a random subset size and extract random elements
     public static <T> List<T> subset(List<T> columns) {
         int nr = getNextInt(0, columns.size() + 1);
-        return extractNrRandomColumns(columns, nr);
+        return extractNrRandomColumns(new ArrayList<>(columns), nr); // Pass shuffled copy
     }
 
-    public static <T> List<T> subset(int nr, @SuppressWarnings("unchecked") T... values) {
-        List<T> list = new ArrayList<>();
-        Collections.addAll(list, values);
-        return extractNrRandomColumns(list, nr);
+    // Accepts an explicit count for flexibility
+    public static <T> List<T> subset(int nr, List<T> values) {
+        return extractNrRandomColumns(new ArrayList<>(values), nr);
     }
 
-    public static <T> List<T> subset(@SuppressWarnings("unchecked") T... values) {
-        List<T> list = new ArrayList<>(Arrays.asList(values));
-        return subset(list);
-    }
-
-    public static <T> List<T> extractNrRandomColumns(List<T> columns, int nr) {
+    // Efficient random selection method
+    private static <T> List<T> extractNrRandomColumns(List<T> columns, int nr) {
         assert nr >= 0;
-        List<T> selectedColumns = new ArrayList<>();
-        List<T> remainingColumns = new ArrayList<>(columns);
-        for (int i = 0; i < nr; i++) {
-            selectedColumns.add(remainingColumns.remove(getNextInt(0, remainingColumns.size())));
-        }
-        return selectedColumns;
+        Collections.shuffle(columns);
+        return columns.subList(0, Math.min(nr, columns.size())); // Extract subset
+    }
+
+    // Optimized random integer function
+    private static int getNextInt(int min, int max) {
+        return ThreadLocalRandom.current().nextInt(min, max); // More efficient random number generation
     }
 
     public static int smallNumber() {
