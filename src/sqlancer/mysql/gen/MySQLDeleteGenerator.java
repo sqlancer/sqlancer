@@ -50,9 +50,8 @@ public class MySQLDeleteGenerator {
         }
         if (Randomly.getBoolean()) {
             sb.append(" ORDER BY ");
-            List<MySQLExpression> orderBy = new MySQLExpressionGenerator(globalState).setColumns(randomTable.getColumns()).generateOrderBys();
-            sb.append(orderBy.stream().map(expr -> MySQLVisitor.asString(expr) + (Randomly.getBoolean() ? " ASC" : " DESC"))
-                    .collect(Collectors.joining(", ")));
+            List<MySQLExpression> orderBy = gen.generateOrderBys();
+            sb.append(orderBy.stream().map(expr -> MySQLVisitor.asString(expr) + (Randomly.getBoolean() ? " ASC" : " DESC")).collect(Collectors.joining(", ")));
         }
 
         errors.addAll(Arrays.asList("doesn't have this option",
