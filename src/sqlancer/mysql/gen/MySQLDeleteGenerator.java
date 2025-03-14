@@ -1,6 +1,8 @@
 package sqlancer.mysql.gen;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
@@ -9,6 +11,7 @@ import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLVisitor;
+import sqlancer.mysql.ast.MySQLExpression;
 
 public class MySQLDeleteGenerator {
 
@@ -47,8 +50,9 @@ public class MySQLDeleteGenerator {
         }
         if (Randomly.getBoolean()) {
             sb.append(" ORDER BY ");
-            sb.append(randomTable.getRandomColumn().getName());
-            sb.append(Randomly.getBoolean() ? " ASC" : " DESC");
+            List<MySQLExpression> orderBy = new MySQLExpressionGenerator(globalState).setColumns(randomTable.getColumns()).generateOrderBys();
+            sb.append(orderBy.stream().map(expr -> MySQLVisitor.asString(expr) + (Randomly.getBoolean() ? " ASC" : " DESC"))
+                    .collect(Collectors.joining(", ")));
         }
 
         errors.addAll(Arrays.asList("doesn't have this option",
