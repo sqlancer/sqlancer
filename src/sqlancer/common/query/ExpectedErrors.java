@@ -43,11 +43,17 @@ public class ExpectedErrors {
     }
 
     public ExpectedErrors addRegexString(String errorPattern) {
+        if (errorPattern == null) {
+            throw new IllegalArgumentException();
+        }
         regexes.add(Pattern.compile(errorPattern));
         return this;
     }
 
     public ExpectedErrors addAll(Collection<String> list) {
+        if (list == null) {
+            throw new IllegalArgumentException();
+        }
         errors.addAll(list);
         return this;
     }
