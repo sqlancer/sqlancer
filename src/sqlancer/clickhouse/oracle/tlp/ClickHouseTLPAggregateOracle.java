@@ -40,7 +40,7 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
         List<ClickHouseColumnReference> nonPKColumns = columns.stream()
                 .filter(col -> !col.getColumn().isAlias() && !col.getColumn().isMaterialized())
                 .collect(Collectors.toList());
-        
+
         ClickHouseExpression aggregateExpr;
         if (!nonPKColumns.isEmpty()) {
             aggregateExpr = gen.generateExpressionWithColumns(nonPKColumns, 6);
