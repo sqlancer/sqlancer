@@ -27,8 +27,21 @@ public abstract class Query<C extends SQLancerDBConnection> implements Loggable 
      */
     public abstract boolean couldAffectSchema();
 
+    /**
+     * Executes the query against the database.
+     *
+     * @param globalState the global state containing the database connection.
+     * @param fills optional parameters to fill placeholders in the query.
+     * @return true if the query executed successfully, false otherwise.
+     * @throws Exception if an error occurs during execution.
+     */
     public abstract <G extends GlobalState<?, ?, C>> boolean execute(G globalState, String... fills) throws Exception;
 
+    /**
+     * Gets the set of expected errors for this query.
+     *
+     * @return the expected errors.
+     */
     public abstract ExpectedErrors getExpectedErrors();
 
     @Override
@@ -36,21 +49,48 @@ public abstract class Query<C extends SQLancerDBConnection> implements Loggable 
         return getQueryString();
     }
 
+    /**
+     * Executes the query and returns the result set.
+     *
+     * @param globalState the global state containing the database connection.
+     * @param fills optional parameters to fill placeholders in the query.
+     * @return the result set.
+     * @throws Exception if an error occurs during execution.
+     */
     public <G extends GlobalState<?, ?, C>> SQLancerResultSet executeAndGet(G globalState, String... fills)
             throws Exception {
         throw new AssertionError();
     }
 
+    /**
+     * Executes the query and logs the query string.
+     *
+     * @param globalState the global state containing the database connection.
+     * @return true if the query executed successfully, false otherwise.
+     * @throws Exception if an error occurs during execution.
+     */
     public <G extends GlobalState<?, ?, C>> boolean executeLogged(G globalState) throws Exception {
         logQueryString(globalState);
         return execute(globalState);
     }
 
+    /**
+     * Executes the query, logs the query string, and returns the result set.
+     *
+     * @param globalState the global state containing the database connection.
+     * @return the result set.
+     * @throws Exception if an error occurs during execution.
+     */
     public <G extends GlobalState<?, ?, C>> SQLancerResultSet executeAndGetLogged(G globalState) throws Exception {
         logQueryString(globalState);
         return executeAndGet(globalState);
     }
 
+    /**
+     * Logs the query string if logging is enabled.
+     *
+     * @param globalState the global state containing the logger and options.
+     */
     private <G extends GlobalState<?, ?, C>> void logQueryString(G globalState) {
         if (globalState.getOptions().logEachSelect()) {
             globalState.getLogger().writeCurrent(getQueryString());
