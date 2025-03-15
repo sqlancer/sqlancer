@@ -1,17 +1,18 @@
 package sqlancer.postgres.ast;
 
 import java.util.List;
+
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresWindowFunction implements PostgresExpression {
-    
+
     private final String functionName;
     private final List<PostgresExpression> arguments;
     private final WindowSpecification windowSpec;
     private final PostgresDataType returnType;
 
-    public PostgresWindowFunction(String functionName, List<PostgresExpression> arguments, 
-                                WindowSpecification windowSpec, PostgresDataType returnType) {
+    public PostgresWindowFunction(String functionName, List<PostgresExpression> arguments,
+            WindowSpecification windowSpec, PostgresDataType returnType) {
         this.functionName = functionName;
         this.arguments = arguments;
         this.windowSpec = windowSpec;
@@ -40,9 +41,8 @@ public class PostgresWindowFunction implements PostgresExpression {
         private final List<PostgresOrderByTerm> orderBy;
         private final WindowFrame frame;
 
-        public WindowSpecification(List<PostgresExpression> partitionBy, 
-                                 List<PostgresOrderByTerm> orderBy,
-                                 WindowFrame frame) {
+        public WindowSpecification(List<PostgresExpression> partitionBy, List<PostgresOrderByTerm> orderBy,
+                WindowFrame frame) {
             this.partitionBy = partitionBy;
             this.orderBy = orderBy;
             this.frame = frame;
@@ -63,8 +63,7 @@ public class PostgresWindowFunction implements PostgresExpression {
 
     public static class WindowFrame {
         public enum FrameType {
-            ROWS("ROWS"),
-            RANGE("RANGE");
+            ROWS("ROWS"), RANGE("RANGE");
 
             private final String sql;
 

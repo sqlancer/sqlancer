@@ -2,7 +2,6 @@ package sqlancer.postgres;
 
 import java.util.List;
 
-import sqlancer.postgres.ast.PostgresWindowFunction;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
@@ -27,6 +26,7 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
+import sqlancer.postgres.ast.PostgresWindowFunction;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public interface PostgresVisitor {
@@ -118,8 +118,7 @@ public interface PostgresVisitor {
             visit((PostgresTableReference) expression);
         } else if (expression instanceof PostgresWindowFunction) {
             visit((PostgresWindowFunction) expression);
-        }
-        else {
+        } else {
             throw new AssertionError(expression);
         }
     }

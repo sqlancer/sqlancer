@@ -1,7 +1,7 @@
 package sqlancer.postgres;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.BinaryOperation;
@@ -191,9 +191,9 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
 
     // @Override
     // public void visit(PostgresOrderByTerm op) {
-    //     visit(op.getExpr());
-    //     sb.append(" ");
-    //     sb.append(op.getOrder());
+    // visit(op.getExpr());
+    // sb.append(" ");
+    // sb.append(op.getOrder());
     // }
 
     @Override
@@ -201,7 +201,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         visit(term.getExpr());
         sb.append(term.isAscending() ? " ASC" : " DESC");
     }
-    
+
     @Override
     public void visit(PostgresFunction f) {
         sb.append(f.getFunctionName());
@@ -379,13 +379,13 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         // Fix: Use visitList instead of visit for a list of expressions
         visitList(windowFunction.getArguments());
         sb.append(") OVER (");
-        
+
         WindowSpecification spec = windowFunction.getWindowSpec();
         if (!spec.getPartitionBy().isEmpty()) {
             sb.append("PARTITION BY ");
             visitList(spec.getPartitionBy());
         }
-        
+
         if (!spec.getOrderBy().isEmpty()) {
             if (!spec.getPartitionBy().isEmpty()) {
                 sb.append(" ");
@@ -394,7 +394,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             // Fix: Create a method to handle order by terms specifically
             visitOrderByList(spec.getOrderBy());
         }
-        
+
         if (spec.getFrame() != null) {
             sb.append(" ");
             WindowFrame frame = spec.getFrame();
@@ -404,7 +404,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             sb.append(" AND ");
             visit(frame.getEndExpr());
         }
-        
+
         sb.append(")");
     }
 

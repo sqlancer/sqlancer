@@ -1,10 +1,10 @@
 package sqlancer.postgres.ast;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
@@ -23,7 +23,7 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
     private PostgresExpression distinctOnClause;
     private ForClause forClause;
     private List<PostgresExpression> windowFunctions = new ArrayList<>();
-    private Map<String, WindowDefinition> windowDefinitions = new HashMap<>();
+    private final Map<String, WindowDefinition> windowDefinitions = new HashMap<>();
 
     public enum ForClause {
         UPDATE("UPDATE"), NO_KEY_UPDATE("NO KEY UPDATE"), SHARE("SHARE"), KEY_SHARE("KEY SHARE");
@@ -48,9 +48,8 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
         private final List<PostgresOrderByTerm> orderBy;
         private final WindowFrame frame;
 
-        public WindowDefinition(List<PostgresExpression> partitionBy, 
-                              List<PostgresOrderByTerm> orderBy,
-                              WindowFrame frame) {
+        public WindowDefinition(List<PostgresExpression> partitionBy, List<PostgresOrderByTerm> orderBy,
+                WindowFrame frame) {
             this.partitionBy = partitionBy;
             this.orderBy = orderBy;
             this.frame = frame;
@@ -90,7 +89,6 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
     public Map<String, WindowDefinition> getWindowDefinitions() {
         return windowDefinitions;
     }
-
 
     public static class PostgresFromTable implements PostgresExpression {
         private final PostgresTable t;
