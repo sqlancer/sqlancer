@@ -1,8 +1,6 @@
 package sqlancer.postgres.ast;
 
 import java.util.List;
-
-import sqlancer.Randomly;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresWindowFunction implements PostgresExpression {
@@ -11,6 +9,31 @@ public class PostgresWindowFunction implements PostgresExpression {
     private final List<PostgresExpression> arguments;
     private final WindowSpecification windowSpec;
     private final PostgresDataType returnType;
+
+    public PostgresWindowFunction(String functionName, List<PostgresExpression> arguments, 
+                                WindowSpecification windowSpec, PostgresDataType returnType) {
+        this.functionName = functionName;
+        this.arguments = arguments;
+        this.windowSpec = windowSpec;
+        this.returnType = returnType;
+    }
+
+    public String getFunctionName() {
+        return functionName;
+    }
+
+    public List<PostgresExpression> getArguments() {
+        return arguments;
+    }
+
+    public WindowSpecification getWindowSpec() {
+        return windowSpec;
+    }
+
+    @Override
+    public PostgresDataType getExpressionType() {
+        return returnType;
+    }
 
     public static class WindowSpecification {
         private final List<PostgresExpression> partitionBy;
@@ -75,30 +98,5 @@ public class PostgresWindowFunction implements PostgresExpression {
         public PostgresExpression getEndExpr() {
             return endExpr;
         }
-    }
-
-    public PostgresWindowFunction(String functionName, List<PostgresExpression> arguments,
-                                WindowSpecification windowSpec, PostgresDataType returnType) {
-        this.functionName = functionName;
-        this.arguments = arguments;
-        this.windowSpec = windowSpec;
-        this.returnType = returnType;
-    }
-
-    public String getFunctionName() {
-        return functionName;
-    }
-
-    public List<PostgresExpression> getArguments() {
-        return arguments;
-    }
-
-    public WindowSpecification getWindowSpec() {
-        return windowSpec;
-    }
-
-    @Override
-    public PostgresDataType getExpressionType() {
-        return returnType;
     }
 }

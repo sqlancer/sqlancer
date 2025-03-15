@@ -6,6 +6,7 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
@@ -14,7 +15,8 @@ import sqlancer.postgres.ast.PostgresWindowFunction.WindowFrame;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowSpecification;
 
 public class PostgresWindowFunctionGenerator {
-    
+
+
     private static final List<String> WINDOW_FUNCTIONS = Arrays.asList(
         "row_number", "rank", "dense_rank", "percent_rank",
         "cume_dist", "ntile", "lag", "lead", "first_value",
@@ -23,7 +25,7 @@ public class PostgresWindowFunctionGenerator {
 
     public static PostgresWindowFunction generateWindowFunction(PostgresGlobalState globalState,
             List<PostgresExpression> availableExpr) {
-        
+
         String functionName = selectRandomWindowFunction();
         List<PostgresExpression> arguments = generateFunctionArguments(functionName, globalState, availableExpr);
         WindowSpecification windowSpec = generateWindowSpecification(globalState, availableExpr);
@@ -39,17 +41,18 @@ public class PostgresWindowFunctionGenerator {
     private static List<PostgresExpression> generateFunctionArguments(String functionName, 
             PostgresGlobalState globalState, List<PostgresExpression> availableExpr) {
         List<PostgresExpression> arguments = new ArrayList<>();
-        
+
         switch (functionName) {
             case "ntile":
-                arguments.add(PostgresExpressionGenerator.generateConstant(globalState.getRandomly()));
+
+                arguments.add(PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), PostgresDataType.INT));
                 break;
             case "lag":
             case "lead":
             case "nth_value":
                 arguments.add(Randomly.fromList(availableExpr));
                 if (Randomly.getBoolean()) {
-                    arguments.add(PostgresExpressionGenerator.generateConstant(globalState.getRandomly()));
+                    arguments.add(PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), PostgresDataType.INT));
                 }
                 break;
             case "first_value":
@@ -57,7 +60,7 @@ public class PostgresWindowFunctionGenerator {
                 arguments.add(Randomly.fromList(availableExpr));
                 break;
         }
-        
+
         return arguments;
     }
 
@@ -66,7 +69,7 @@ public class PostgresWindowFunctionGenerator {
         List<PostgresExpression> partitionBy = generatePartitionByClause(availableExpr);
         List<PostgresOrderByTerm> orderBy = generateOrderByClause(availableExpr);
         WindowFrame frame = generateWindowFrame(globalState);
-        
+
         return new WindowSpecification(partitionBy, orderBy, frame);
     }
 
@@ -94,7 +97,6 @@ public class PostgresWindowFunctionGenerator {
         }
         return orderBy;
     }
-
     private static WindowFrame generateWindowFrame(PostgresGlobalState globalState) {
         if (Randomly.getBooleanWithRatherLowProbability()) {
             WindowFrame.FrameType frameType = Randomly.fromOptions(WindowFrame.FrameType.values());
@@ -107,10 +109,20 @@ public class PostgresWindowFunctionGenerator {
 
     private static PostgresExpression generateFrameBound(PostgresGlobalState globalState) {
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            return PostgresConstant.createIntConstant(0); // CURRENT ROW
+            return generateCurrentRowBound();
         } else {
-            return PostgresExpressionGenerator.generateConstant(globalState.getRandomly(), PostgresDataType.INT);
+            return generateOffsetBound(globalState);
         }
+    }
+
+    private static PostgresExpression generateCurrentRowBound() {
+        // Use createIntConstant instead of generateConstant
+        return PostgresConstant.createIntConstant(0);
+    }
+
+    private static PostgresExpression generateOffsetBound(PostgresGlobalState globalState) {
+        // Use createIntConstant instead of generateConstant
+        return PostgresConstant.createIntConstant(globalState.getRandomly().getInteger());
     }
 
     private static PostgresDataType determineReturnType(String functionName) {

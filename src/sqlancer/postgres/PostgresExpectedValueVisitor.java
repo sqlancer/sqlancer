@@ -22,6 +22,8 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
+import sqlancer.IgnoreMeException;
+import sqlancer.postgres.ast.PostgresWindowFunction;
 
 public final class PostgresExpectedValueVisitor implements PostgresVisitor {
 
@@ -42,13 +44,13 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
 
     // @Override
     // public void visit(PostgresExpression expr) {
-    // nrTabs++;
-    // try {
-    // super.visit(expr);
-    // } catch (IgnoreMeException e) {
-    //
-    // }
-    // nrTabs--;
+    //     nrTabs++;
+    //     try {
+    //     super.visit(expr);
+    //     } catch (IgnoreMeException e) {
+        
+    //     }
+    //     nrTabs--;
     // }
 
     @Override
@@ -94,6 +96,12 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
     @Override
     public void visit(PostgresOrderByTerm op) {
 
+    }
+
+    
+    @Override
+    public void visit(PostgresWindowFunction windowFunction) {
+        throw new IgnoreMeException();
     }
 
     @Override

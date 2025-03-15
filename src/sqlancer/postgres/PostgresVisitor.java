@@ -2,6 +2,7 @@ package sqlancer.postgres;
 
 import java.util.List;
 
+import sqlancer.postgres.ast.PostgresWindowFunction;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
