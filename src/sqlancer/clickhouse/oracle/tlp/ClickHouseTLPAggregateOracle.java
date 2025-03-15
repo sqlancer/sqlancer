@@ -52,14 +52,22 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
         select.setFetchColumns(Arrays.asList(aggregate));
 
         String originalQuery = ClickHouseVisitor.asString(select);
-        originalQuery += " SETTINGS aggregate_functions_null_for_empty = 1, join_use_nulls = 1";
+        originalQuery += " SETTINGS aggregate_functions_null_for_empty = 1, join_use_nulls = 1, enable_optimize_predicate_expression = 0";
 
         select.setFetchColumns(Arrays.asList(new ClickHouseAliasOperation(aggregate, "aggr")));
 
         select.setWhereClause(predicate);
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setGroupByClause(IntStream.range(0, 1 + Randomly.smallNumber())
-                    .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList()));
+            // Generate GROUP BY expresions, avoidin primary key columns
+            List<ClickHouseExpression> groupByColumns;
+            if (!nonPKColumns.isEmpty()) {
+                groupByColumns = IntStream.range(0, 1 + Randomly.smallNumber())
+                        .mapToObj(i -> gen.generateExpressionWithColumns(nonPKColumns, 5)).collect(Collectors.toList());
+            } else {
+                groupByColumns = IntStream.range(0, 1 + Randomly.smallNumber())
+                        .mapToObj(i -> gen.generateExpressionWithColumns(columns, 5)).collect(Collectors.toList());
+            }
+            select.setGroupByClause(groupByColumns);
         }
         if (Randomly.getBoolean()) {
             select.setOrderByClauses(IntStream.range(0, 1 + Randomly.smallNumber())
@@ -73,7 +81,7 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
         select.setWhereClause(isNullPredicate);
         metamorphicText += ClickHouseVisitor.asString(select);
         metamorphicText += ")";
-        metamorphicText += " SETTINGS aggregate_functions_null_for_empty = 1, join_use_nulls = 1";
+        metamorphicText += " SETTINGS aggregate_functions_null_for_empty = 1, join_use_nulls = 1, enable_optimize_predicate_expression = 0";
 
         List<String> firstResult = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, errors, state);
         List<String> secondResult = ComparatorHelper.getResultSetFirstColumnAsString(metamorphicText, errors, state);
