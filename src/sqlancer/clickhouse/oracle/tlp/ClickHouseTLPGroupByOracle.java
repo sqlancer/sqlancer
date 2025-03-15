@@ -10,8 +10,8 @@ import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseVisitor;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
+import sqlancer.clickhouse.ast.ClickHouseExpression;
 
 public class ClickHouseTLPGroupByOracle extends ClickHouseTLPBase {
 
