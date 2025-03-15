@@ -1,6 +1,6 @@
-FROM ubuntu:21.04
+FROM ubuntu:24.04
 
-RUN apt-get update --yes && env DEBIAN_FRONTEND=noninteractive apt-get install openjdk-15-jdk maven --yes --no-install-recommends
+RUN apt-get update --yes && env DEBIAN_FRONTEND=noninteractive apt-get install openjdk-17-jdk maven --yes --no-install-recommends
 
 # assumes that the project has already been built
 COPY target/sqlancer-*.jar sqlancer.jar
