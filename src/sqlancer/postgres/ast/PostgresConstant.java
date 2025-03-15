@@ -1,6 +1,12 @@
 package sqlancer.postgres.ast;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -513,6 +519,63 @@ public abstract class PostgresConstant implements PostgresExpression {
         @Override
         public PostgresDataType getExpressionType() {
             return PostgresDataType.BIT;
+        }
+
+    }
+
+    public static PostgresConstant createJsonConstant(String text) {
+        return new JsonConstant(text);
+    }
+
+    public static class JsonConstant extends PostgresConstantBase {
+        private final Map<String, Object> json;
+
+        public JsonConstant(String text) {
+            Gson gson = new Gson();
+            Type type = new TypeToken<HashMap<String, Object>>() {
+            }.getType();
+            this.json = gson.fromJson(text, type);
+        }
+
+        @Override
+        public String getTextRepresentation() {
+            Gson gson = new Gson();
+            return gson.toJson(this.json);
+        }
+
+        @Override
+        public PostgresConstant cast(PostgresDataType type) {
+            switch (type) {
+            case BOOLEAN:
+                return PostgresConstant.createBooleanConstant(!this.json.isEmpty());
+            case INT:
+                return PostgresConstant.createTextConstant(this.getTextRepresentation()).cast(PostgresDataType.INT);
+            case TEXT:
+                return PostgresConstant.createTextConstant(this.getTextRepresentation());
+            case JSON:
+                return this;
+            default:
+                return null;
+            }
+
+        }
+
+        @Override
+        public PostgresConstant isEquals(PostgresConstant rightVal) {
+
+            // UnSupported operation in Pgv12
+            throw new IgnoreMeException();
+        }
+
+        @Override
+        protected PostgresConstant isLessThan(PostgresConstant rightVal) {
+            // UnSupported Operation in Pgv12
+            throw new IgnoreMeException();
+        }
+
+        @Override
+        public PostgresDataType getExpressionType() {
+            return PostgresDataType.JSON;
         }
 
     }

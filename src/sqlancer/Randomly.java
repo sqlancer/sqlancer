@@ -12,6 +12,8 @@ import java.util.function.Supplier;
 public final class Randomly {
 
     private static StringGenerationStrategy stringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED;
+    private static StringGenerationStrategy jsonKeyGenerationStrategy = StringGenerationStrategy.ALPHABET;
+    private static StringGenerationStrategy jsonValueGenerationStrategy = StringGenerationStrategy.ALPHANUMERIC;
     private static int maxStringLength = 10;
     private static boolean useCaching = true;
     private static int cacheSize = 100;
@@ -212,6 +214,21 @@ public final class Randomly {
         }
     }
 
+    public String getJson() {
+        int partitions = smallNumber();
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        for (int i = 0; i < partitions + 1; i++) {
+            json.append("\"").append(jsonKeyGenerationStrategy.getString(this)).append("\"").append(":").append("\"")
+                    .append(jsonValueGenerationStrategy.getString(this)).append("\"");
+            if (i < partitions) {
+                json.append(",");
+            }
+        }
+        json.append("}");
+        return json.toString();
+    }
+
     public enum StringGenerationStrategy {
 
         NUMERIC {
@@ -228,6 +245,13 @@ public final class Randomly {
 
             }
 
+        },
+        ALPHABET {
+            @Override
+            public String getString(Randomly r) {
+                return getStringOfAlphabet(r, FULL_ENGLISH_ALPHABET);
+
+            }
         },
         ALPHANUMERIC_SPECIALCHAR {
             @Override
@@ -313,6 +337,7 @@ public final class Randomly {
         private static final String ALPHANUMERIC_SPECIALCHAR_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.,~-+'*()[]{} ^*?%_\t\n\r|&\\";
         private static final String ALPHANUMERIC_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         private static final String NUMERIC_ALPHABET = "0123456789";
+        private static final String FULL_ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
         private static int getStringLength(Randomly r) {
             int chars;
