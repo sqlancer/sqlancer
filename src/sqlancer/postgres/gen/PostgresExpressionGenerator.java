@@ -52,7 +52,7 @@ import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
-import sqlancer.postgres.ast.PostgresOrderByTerm.PostgresOrder;
+// import sqlancer.postgres.ast.PostgresOrderByTerm.PostgresOrder;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression.POSIXRegex;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
@@ -67,6 +67,10 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSelect.SelectType;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
+import sqlancer.postgres.ast.PostgresWindowFunction;
+import sqlancer.postgres.ast.PostgresWindowFunction.WindowFrame;
+import sqlancer.postgres.ast.PostgresWindowFunction.WindowSpecification;
+
 
 public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression>,
         NoRECGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
@@ -92,7 +96,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     private final Map<String, Character> functionsAndTypes;
 
     private final List<Character> allowedFunctionTypes;
-
+    
     public PostgresExpressionGenerator(PostgresGlobalState globalState) {
         this.r = globalState.getRandomly();
         this.maxDepth = globalState.getOptions().getMaxExpressionDepth();
@@ -119,8 +123,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     public List<PostgresExpression> generateOrderBys() {
         List<PostgresExpression> orderBys = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber(); i++) {
-            orderBys.add(new PostgresOrderByTerm(PostgresColumnValue.create(Randomly.fromList(columns), null),
-                    PostgresOrder.getRandomOrder()));
+            PostgresExpression expr = PostgresColumnValue.create(Randomly.fromList(columns), null);
+            orderBys.add(expr);
         }
         return orderBys;
     }
@@ -422,6 +426,68 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             throw new AssertionError();
         }
     }
+    
+    private PostgresExpression generateWindowFunction(int depth, PostgresDataType returnType) {
+    List<PostgresExpression> arguments = generateWindowFunctionArguments(depth);
+    List<PostgresExpression> partitionBy = generatePartitionByExpressions(depth);
+    List<PostgresOrderByTerm> orderBy = generateOrderByExpressions(depth);
+    WindowFrame frame = generateWindowFrame();
+    
+    WindowSpecification windowSpec = new WindowSpecification(partitionBy, orderBy, frame);
+    String functionName = selectWindowFunctionName();
+    
+    return new PostgresWindowFunction(functionName, arguments, windowSpec, returnType);
+}
+
+    private List<PostgresExpression> generateWindowFunctionArguments(int depth) {
+        List<PostgresExpression> arguments = new ArrayList<>();
+        if (Randomly.getBoolean()) {
+            arguments.add(generateExpression(depth + 1));
+        }
+        return arguments;
+    }
+    private List<PostgresExpression> generatePartitionByExpressions(int depth) {
+        List<PostgresExpression> partitionBy = new ArrayList<>();
+        if (Randomly.getBoolean()) {
+            int count = Randomly.smallNumber();
+            for (int i = 0; i < count; i++) {
+                partitionBy.add(generateExpression(depth + 1));
+            }
+        }
+        return partitionBy;
+    }
+
+    private List<PostgresOrderByTerm> generateOrderByExpressions(int depth) {
+        List<PostgresOrderByTerm> orderBy = new ArrayList<>();
+        if (Randomly.getBoolean()) {
+            int count = Randomly.smallNumber();
+            for (int i = 0; i < count; i++) {
+                PostgresExpression expr = generateExpression(depth + 1);
+                // Call the second constructor in PostgresOrderByTerm, might be removed in the future to have only one constructor
+                orderBy.add(new PostgresOrderByTerm(expr, Randomly.getBoolean()));
+            }
+        }
+        return orderBy;
+    }
+
+    private WindowFrame generateWindowFrame() {
+        if (Randomly.getBoolean()) {
+            WindowFrame.FrameType frameType = Randomly.fromOptions(WindowFrame.FrameType.values());
+            PostgresExpression startExpr = generateConstant(globalState.getRandomly(), PostgresDataType.INT);
+            PostgresExpression endExpr = generateConstant(globalState.getRandomly(), PostgresDataType.INT);
+            return new WindowFrame(frameType, startExpr, endExpr);
+        }
+        return null;
+    }
+
+    private String selectWindowFunctionName() {
+        return Randomly.fromList(Arrays.asList(
+            "row_number", "rank", "dense_rank", "percent_rank",
+            "cume_dist", "ntile", "lag", "lead", "first_value",
+            "last_value", "nth_value"
+        ));
+    }
+
 
     private PostgresExpression generateConcat(int depth) {
         PostgresExpression left = generateExpression(depth + 1, PostgresDataType.TEXT);
@@ -447,7 +513,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum IntExpression {
-        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
+    UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION, WINDOW_FUNCTION
     }
 
     private PostgresExpression generateIntExpression(int depth) {
@@ -465,11 +531,12 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         case BINARY_ARITHMETIC_EXPRESSION:
             return new PostgresBinaryArithmeticOperation(generateExpression(depth + 1, PostgresDataType.INT),
                     generateExpression(depth + 1, PostgresDataType.INT), PostgresBinaryOperator.getRandom());
+        case WINDOW_FUNCTION:
+            return generateWindowFunction(depth + 1, PostgresDataType.INT);
         default:
             throw new AssertionError();
         }
     }
-
     private PostgresExpression createColumnOfType(PostgresDataType type) {
         List<PostgresColumn> columns = filterColumns(type);
         PostgresColumn fromList = Randomly.fromList(columns);
@@ -667,7 +734,25 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
 
     @Override
     public PostgresSelect generateSelect() {
-        return new PostgresSelect();
+        PostgresSelect select = new PostgresSelect();
+        
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            List<PostgresExpression> windowFunctions = generateWindowFunctions();
+            select.setWindowFunctions(windowFunctions);
+        }
+        
+        return select;
+    }
+
+    private List<PostgresExpression> generateWindowFunctions() {
+        List<PostgresExpression> windowFunctions = new ArrayList<>();
+        int numWindowFunctions = Randomly.smallNumber();
+        for (int i = 0; i < numWindowFunctions; i++) {
+            windowFunctions.add(generateWindowFunction(0, Randomly.fromList(Arrays.asList(
+                PostgresDataType.INT, PostgresDataType.FLOAT
+            ))));
+        }
+        return windowFunctions;
     }
 
     @Override
@@ -749,7 +834,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     public String generateExplainQuery(PostgresSelect select) {
         return "EXPLAIN " + select.asString();
     }
-
+    
     @Override
     public boolean mutate(PostgresSelect select) {
         List<Function<PostgresSelect, Boolean>> mutators = new ArrayList<>();
@@ -758,14 +843,32 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         mutators.add(this::mutateWhere);
         mutators.add(this::mutateGroupBy);
         mutators.add(this::mutateHaving);
+        mutators.add(this::mutateWindowFunction); // Add window function mutation
         if (!PostgresBugs.bug18643) {
             mutators.add(this::mutateAnd);
             mutators.add(this::mutateOr);
         }
-        // mutators.add(this::mutateLimit);
         mutators.add(this::mutateDistinct);
 
         return Randomly.fromList(mutators).apply(select);
+    }
+
+    private boolean mutateWindowFunction(PostgresSelect select) {
+        List<PostgresExpression> windowFunctions = select.getWindowFunctions();
+        if (windowFunctions == null || windowFunctions.isEmpty()) {
+            // Add a new window function
+            windowFunctions = new ArrayList<>();
+            windowFunctions.add(generateWindowFunction(0, PostgresDataType.INT));
+            select.setWindowFunctions(windowFunctions);
+            return false;
+        } else {
+            // Remove a random window function
+            windowFunctions.remove(Randomly.fromList(windowFunctions));
+            if (windowFunctions.isEmpty()) {
+                select.setWindowFunctions(null);
+            }
+            return true;
+        }
     }
 
     boolean mutateJoin(PostgresSelect select) {
