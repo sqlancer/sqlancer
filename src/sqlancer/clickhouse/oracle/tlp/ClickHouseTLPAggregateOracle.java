@@ -13,6 +13,8 @@ import sqlancer.clickhouse.ClickHouseProvider;
 import sqlancer.clickhouse.ClickHouseVisitor;
 import sqlancer.clickhouse.ast.ClickHouseAggregate;
 import sqlancer.clickhouse.ast.ClickHouseAliasOperation;
+import sqlancer.clickhouse.ast.ClickHouseColumnReference;
+import sqlancer.clickhouse.ast.ClickHouseExpression;
 
 public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
 
@@ -34,12 +36,23 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
                 ClickHouseAggregate.ClickHouseAggregateFunction.MAX,
                 ClickHouseAggregate.ClickHouseAggregateFunction.SUM);
 
-        ClickHouseAggregate aggregate = new ClickHouseAggregate(gen.generateExpressionWithColumns(columns, 6),
-                windowFunction);
+        // Generate expression for aggregate, avoiding primary key columns if possible
+        List<ClickHouseColumnReference> nonPKColumns = columns.stream()
+                .filter(col -> !col.getColumn().isAlias() && !col.getColumn().isMaterialized())
+                .collect(Collectors.toList());
+        
+        ClickHouseExpression aggregateExpr;
+        if (!nonPKColumns.isEmpty()) {
+            aggregateExpr = gen.generateExpressionWithColumns(nonPKColumns, 6);
+        } else {
+            aggregateExpr = gen.generateExpressionWithColumns(columns, 6);
+        }
+
+        ClickHouseAggregate aggregate = new ClickHouseAggregate(aggregateExpr, windowFunction);
         select.setFetchColumns(Arrays.asList(aggregate));
 
         String originalQuery = ClickHouseVisitor.asString(select);
-        originalQuery += " SETTINGS aggregate_functions_null_for_empty = 1";
+        originalQuery += " SETTINGS aggregate_functions_null_for_empty = 1, join_use_nulls = 1";
 
         select.setFetchColumns(Arrays.asList(new ClickHouseAliasOperation(aggregate, "aggr")));
 
@@ -60,9 +73,9 @@ public class ClickHouseTLPAggregateOracle extends ClickHouseTLPBase {
         select.setWhereClause(isNullPredicate);
         metamorphicText += ClickHouseVisitor.asString(select);
         metamorphicText += ")";
-        metamorphicText += " SETTINGS aggregate_functions_null_for_empty = 1";
-        List<String> firstResult = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, errors, state);
+        metamorphicText += " SETTINGS aggregate_functions_null_for_empty = 1, join_use_nulls = 1";
 
+        List<String> firstResult = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, errors, state);
         List<String> secondResult = ComparatorHelper.getResultSetFirstColumnAsString(metamorphicText, errors, state);
 
         state.getState().getLocalState()
