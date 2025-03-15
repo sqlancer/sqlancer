@@ -234,4 +234,78 @@ public class TestRandomly {
         return values;
     }
 
+
+    @Test
+    public void testGetPercentage() {
+        for (int i = 0; i < NR_MIN_RUNS; i++) {
+            double percentage = Randomly.getPercentage();
+            assertTrue(percentage >= 0.0);
+            assertTrue(percentage <= 1.0);
+        }
+    }
+
+    @Test
+    public void testGetChar() {
+        Randomly r = new Randomly();
+        boolean encounteredAlphabetic = false;
+        boolean encounteredNumeric = false;
+        boolean encounteredSpecial = false;
+        int i = 0;
+        do {
+            String c = r.getChar();
+            assertEquals(1, c.length());
+            if (Character.isAlphabetic(c.charAt(0))) {
+                encounteredAlphabetic = true;
+            } else if (Character.isDigit(c.charAt(0))) {
+                encounteredNumeric = true;
+            } else {
+                encounteredSpecial = true;
+            }
+        } while (!encounteredAlphabetic || !encounteredNumeric || !encounteredSpecial || i++ < NR_MIN_RUNS);
+    }
+
+    @Test
+    public void testGetAlphabeticChar() {
+        Randomly r = new Randomly();
+        for (int i = 0; i < NR_MIN_RUNS; i++) {
+            String c = r.getAlphabeticChar();
+            assertEquals(1, c.length());
+            assertTrue(Character.isAlphabetic(c.charAt(0)));
+        }
+    }
+
+
+    @Test
+    public void testGetBooleanWithSmallProbability() {
+        int trueCount = 0;
+        int totalRuns = NR_MIN_RUNS;
+        
+        for (int i = 0; i < totalRuns; i++) {
+            if (Randomly.getBooleanWithSmallProbability()) {
+                trueCount++;
+            }
+        }
+        
+        // we expect roughly 1% true values
+        double trueRatio = (double) trueCount / totalRuns;
+        assertTrue(trueRatio > 0.005);
+        assertTrue(trueRatio < 0.015); 
+        
+        // Verify that we get at least some true and some false values
+        boolean encounteredTrue = false;
+        boolean encounteredFalse = false;
+        int i = 0;
+        do {
+            boolean value = Randomly.getBooleanWithSmallProbability();
+            if (value) {
+                encounteredTrue = true;
+            } else {
+                encounteredFalse = true;
+            }
+        } while ((!encounteredTrue || !encounteredFalse) && i++ < NR_MIN_RUNS);
+        
+        assertTrue(encounteredTrue, "Never encounter a true value");
+        assertTrue(encounteredFalse, "Never encounter a false value");
+    }
+
 }
