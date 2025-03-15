@@ -5,11 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.ComparatorHelper;
-import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
 import sqlancer.clickhouse.ClickHouseVisitor;
-import sqlancer.clickhouse.ast.ClickHouseExpression;
-import sqlancer.clickhouse.ast.ClickHouseSelect;
 
 public class ClickHouseTLPWhereOracle extends ClickHouseTLPBase {
 
