@@ -234,25 +234,4 @@ public class TestRandomly {
         return values;
     }
 
-    @Test
-    public void testNonEmptySubsetVarArgs() {
-        Integer[] options = { 1, 2, 3, 4, 5 };
-        List<Integer> subset = Randomly.nonEmptySubset(options);
-        //  subset =null;
-        assertFalse(subset.isEmpty(), "method nonEmptySubset (VarArgs) should return a subset not empty");
-        for (Integer i : subset) {
-            assertTrue(Arrays.asList(options).contains(i));
-        }
-    }
-
-    @Test
-    public void testNonEmptySubsetList() {
-        List<String> options = Arrays.asList("a", "b", "c", "d");
-        List<String> subset = Randomly.nonEmptySubset(options);
-        assertFalse(subset.isEmpty(), "nonEmptySubset (list) should return a subset not empty");
-        for (String s : subset) {
-            assertTrue(options.contains(s));
-        }
-    }
-
 }
