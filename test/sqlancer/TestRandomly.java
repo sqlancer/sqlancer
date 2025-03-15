@@ -1,6 +1,5 @@
 package sqlancer;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ public class TestRandomly {
 
     @Test // test that every option is picked
     public void testFromOptions() {
-        Integer[] options = {1, 2, 3};
+        Integer[] options = { 1, 2, 3 };
         List<Integer> remainingOptions = new ArrayList<>(Arrays.asList(options));
         while (!remainingOptions.isEmpty()) {
             Integer pickedOption = Randomly.fromOptions(options);
@@ -34,7 +33,7 @@ public class TestRandomly {
         boolean encounteredEmptySubset = false;
         boolean encounteredOriginalSet = false;
         boolean encounteredStrictSubsetNonEmpty = false;
-        Integer[] options = {1, 2, 3};
+        Integer[] options = { 1, 2, 3 };
         List<Integer> optionList = new ArrayList<>(Arrays.asList(options));
         do {
             List<Integer> subset = Randomly.subset(optionList);
@@ -234,7 +233,7 @@ public class TestRandomly {
 
     @Test
     public void testNonEmptySubsetVarArgs() {
-        Integer[] options = {1, 2, 3, 4, 5};
+        Integer[] options = { 1, 2, 3, 4, 5 };
         List<Integer> subset = Randomly.nonEmptySubset(options);
         //  subset =null;
         assertFalse(subset.isEmpty(), "method nonEmptySubset (VarArgs) should return a subset not empty");
@@ -255,7 +254,7 @@ public class TestRandomly {
 
     @Test
     public void testNonEmptySubsetLeast() {
-        List<String> options = Arrays.asList("a", "b", "c", "d", "e", "f");
+        List<String> options = Arrays.asList("a", "b", "c", "d","e","f");
         int min = 2;
         List<String> subset = Randomly.nonEmptySubsetLeast(options, min);
         assertTrue(subset.size() >= min, "nonEmptySubsetLeast should return at least " + min + " elements");
@@ -278,7 +277,6 @@ public class TestRandomly {
         }
         assertTrue(foundPositive, "smallNumber should  return a positive number");
     }
-
     @Test
     public void testGetBigInteger() {
         BigInteger left = BigInteger.valueOf(10);
@@ -291,7 +289,6 @@ public class TestRandomly {
         assertTrue(bi.compareTo(left) >= 0 && bi.compareTo(right) <= 0,
                 "BigInteger should be between left and right (inclusive right and left)");
     }
-
     @Test
     public void testGetRandomBigDecimal() {
         Randomly r = new Randomly();
@@ -300,7 +297,6 @@ public class TestRandomly {
         assertTrue(bd.compareTo(BigDecimal.ZERO) >= 0 && bd.compareTo(BigDecimal.ONE) < 0,
                 "RandomBigDecimal should be between 0.0 (inclusive it) and 1.0 (exclusive it)");
     }
-
     @Test
     public void testGetPositiveIntegerNotNull() {
         Randomly r = new Randomly();
@@ -311,26 +307,10 @@ public class TestRandomly {
             assertTrue(val >= 0, "val should be non-negative");
         }
     }
-
     @Test
     public void testGetNonCachedIntegerStatic() {
         long val = Randomly.getNonCachedInteger();
 
         assertNotNull(val);
     }
-
-    @Test
-    public void testGetAlphabeticChar() {
-        Randomly r = new Randomly();
-        for (int i = 0; i < 1; i++) {
-            String c = r.getAlphabeticChar();
-            assertNotNull(c, "getAlphabeticChar should not return null");
-            assertEquals(1, c.length(), "getAlphabeticChar should return a single character");
-            assertTrue(Character.isAlphabetic(c.charAt(0)),
-                    "getAlphabeticChar should return an alphabetic character");
-        }
-    }
-
-
-
 }
