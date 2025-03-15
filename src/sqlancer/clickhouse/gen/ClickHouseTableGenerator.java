@@ -95,10 +95,18 @@ public class ClickHouseTableGenerator {
             }
 
             if (Randomly.getBooleanWithSmallProbability()) {
-                List<String> pkColumns = Randomly.nonEmptySubset(columnNames);
-                sb.append(" PRIMARY KEY (");
-                sb.append(String.join(", ", pkColumns));
-                sb.append(") ");
+                // filter columns that acceptable to be primary key
+                List<String> eligibleColumns = columnNames.stream()
+                        .filter(colName -> columns.stream().filter(col -> col.getName().equals(colName))
+                                .anyMatch(col -> !col.isAlias() && !col.isMaterialized()))
+                        .collect(Collectors.toList());
+
+                if (!eligibleColumns.isEmpty()) {
+                    List<String> pkColumns = Randomly.nonEmptySubset(eligibleColumns);
+                    sb.append(" PRIMARY KEY (");
+                    sb.append(String.join(", ", pkColumns));
+                    sb.append(") ");
+                }
             }
             if (Randomly.getBoolean()) {
                 sb.append(" SAMPLE BY ");
