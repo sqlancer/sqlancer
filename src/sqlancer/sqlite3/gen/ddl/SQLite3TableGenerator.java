@@ -157,7 +157,7 @@ public class SQLite3TableGenerator {
     }
 
     /**
-     * @see https://www.sqlite.org/foreignkeys.html
+     * @see <a href="https://www.sqlite.org/foreignkeys.html">Foreign Keys in SQLite</a>
      */
     private void addForeignKey() {
         assert globalState.getDbmsSpecificOptions().testForeignKeys;

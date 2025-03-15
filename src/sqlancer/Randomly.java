@@ -154,13 +154,15 @@ public final class Randomly {
         return extractNrRandomColumns(columns, nr);
     }
 
-    public static <T> List<T> subset(int nr, @SuppressWarnings("unchecked") T... values) {
+    @SafeVarargs
+    public static <T> List<T> subset(int nr, T... values) {
         List<T> list = new ArrayList<>();
         Collections.addAll(list, values);
         return extractNrRandomColumns(list, nr);
     }
 
-    public static <T> List<T> subset(@SuppressWarnings("unchecked") T... values) {
+    @SafeVarargs
+    public static <T> List<T> subset(T... values) {
         List<T> list = new ArrayList<>(Arrays.asList(values));
         return subset(list);
     }

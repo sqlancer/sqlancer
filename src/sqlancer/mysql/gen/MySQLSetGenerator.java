@@ -128,8 +128,8 @@ public class MySQLSetGenerator {
             this.scopes = scopes.clone();
         }
 
-        /*
-         * @see https://dev.mysql.com/doc/refman/8.0/en/switchable-optimizations.html
+        /**
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/switchable-optimizations.html">...</a>
          */
         private static String getOptimizerSwitchConfiguration(Randomly r) {
             StringBuilder sb = new StringBuilder();
