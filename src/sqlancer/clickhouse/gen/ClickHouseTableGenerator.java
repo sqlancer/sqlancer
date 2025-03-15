@@ -1,10 +1,8 @@
 package sqlancer.clickhouse.gen;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseErrors;
@@ -35,7 +33,7 @@ public class ClickHouseTableGenerator {
     }
 
     public static SQLQueryAdapter createTableStatement(String tableName,
-                                                       ClickHouseProvider.ClickHouseGlobalState globalState) {
+            ClickHouseProvider.ClickHouseGlobalState globalState) {
         ClickHouseTableGenerator chTableGenerator = new ClickHouseTableGenerator(tableName, globalState);
         chTableGenerator.start();
         ExpectedErrors errors = new ExpectedErrors();
@@ -91,7 +89,7 @@ public class ClickHouseTableGenerator {
                 sb.append(" ORDER BY ");
                 ClickHouseExpression orderByExpr = gen.generateExpressionWithColumns(
                         columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
-                 sb.append(ClickHouseToStringVisitor.asString(orderByExpr));
+                sb.append(ClickHouseToStringVisitor.asString(orderByExpr));
             } else {
                 sb.append(" ORDER BY tuple() ");
             }
