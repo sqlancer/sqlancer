@@ -53,10 +53,13 @@ public class MySQLDeleteGenerator {
             if (!orderBy.isEmpty()) {
                 sb.append(" ORDER BY ");
                 sb.append(orderBy.stream()
-                        .map(expr -> MySQLVisitor.asString(expr) + (Randomly.getBoolean() ? " ASC" : " DESC"))
-                        .collect(Collectors.joining(", ")));
+                        .map(expr -> {
+                            String order = MySQLVisitor.asString(expr);
+                            return order + (Randomly.getBoolean() ? " ASC" : " DESC");
+                        }).filter(expr -> !expr.isBlank()).collect(Collectors.joining(", ")));
             }
         }
+
 
         errors.addAll(Arrays.asList("doesn't have this option",
                 "Truncated incorrect DOUBLE value" /*
