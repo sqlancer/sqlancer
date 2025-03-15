@@ -1,6 +1,7 @@
 package sqlancer.postgres;
 
 import java.util.Optional;
+import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.visitor.BinaryOperation;
@@ -30,6 +31,9 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
+import sqlancer.postgres.ast.PostgresWindowFunction;
+import sqlancer.postgres.ast.PostgresWindowFunction.WindowFrame;
+import sqlancer.postgres.ast.PostgresWindowFunction.WindowSpecification;
 
 public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 
@@ -185,13 +189,19 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         }
     }
 
-    @Override
-    public void visit(PostgresOrderByTerm op) {
-        visit(op.getExpr());
-        sb.append(" ");
-        sb.append(op.getOrder());
-    }
+    // @Override
+    // public void visit(PostgresOrderByTerm op) {
+    //     visit(op.getExpr());
+    //     sb.append(" ");
+    //     sb.append(op.getOrder());
+    // }
 
+    @Override
+    public void visit(PostgresOrderByTerm term) {
+        visit(term.getExpr());
+        sb.append(term.isAscending() ? " ASC" : " DESC");
+    }
+    
     @Override
     public void visit(PostgresFunction f) {
         sb.append(f.getFunctionName());
@@ -366,13 +376,14 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     public void visit(PostgresWindowFunction windowFunction) {
         sb.append(windowFunction.getFunctionName());
         sb.append("(");
-        visit(windowFunction.getArguments());
+        // Fix: Use visitList instead of visit for a list of expressions
+        visitList(windowFunction.getArguments());
         sb.append(") OVER (");
         
         WindowSpecification spec = windowFunction.getWindowSpec();
         if (!spec.getPartitionBy().isEmpty()) {
             sb.append("PARTITION BY ");
-            visit(spec.getPartitionBy());
+            visitList(spec.getPartitionBy());
         }
         
         if (!spec.getOrderBy().isEmpty()) {
@@ -380,9 +391,10 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
                 sb.append(" ");
             }
             sb.append("ORDER BY ");
-            visit(spec.getOrderBy());
+            // Fix: Create a method to handle order by terms specifically
+            visitOrderByList(spec.getOrderBy());
         }
-
+        
         if (spec.getFrame() != null) {
             sb.append(" ");
             WindowFrame frame = spec.getFrame();
@@ -394,5 +406,27 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         }
         
         sb.append(")");
+    }
+
+    // this method handles lists of expressions
+    private void visitList(List<PostgresExpression> expressions) {
+        int i = 0;
+        for (PostgresExpression expr : expressions) {
+            if (i++ != 0) {
+                sb.append(", ");
+            }
+            visit(expr);
+        }
+    }
+
+    // this method handles lists of order by terms
+    private void visitOrderByList(List<PostgresOrderByTerm> orderBy) {
+        int i = 0;
+        for (PostgresOrderByTerm term : orderBy) {
+            if (i++ != 0) {
+                sb.append(", ");
+            }
+            visit(term);
+        }
     }
 }

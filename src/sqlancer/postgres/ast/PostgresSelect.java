@@ -2,6 +2,9 @@ package sqlancer.postgres.ast;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
@@ -10,6 +13,7 @@ import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
+import sqlancer.postgres.ast.PostgresWindowFunction.WindowFrame;
 
 public class PostgresSelect extends SelectBase<PostgresExpression>
         implements PostgresExpression, Select<PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
@@ -18,6 +22,8 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
     private List<PostgresJoin> joinClauses = Collections.emptyList();
     private PostgresExpression distinctOnClause;
     private ForClause forClause;
+    private List<PostgresExpression> windowFunctions = new ArrayList<>();
+    private Map<String, WindowDefinition> windowDefinitions = new HashMap<>();
 
     public enum ForClause {
         UPDATE("UPDATE"), NO_KEY_UPDATE("NO KEY UPDATE"), SHARE("SHARE"), KEY_SHARE("KEY SHARE");
@@ -69,7 +75,7 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
     }
 
     public void setWindowFunctions(List<PostgresExpression> windowFunctions) {
-        this.windowFunctions = windowFunctions != null ? windowFunctions : new ArrayList<>();
+        this.windowFunctions = windowFunctions;
     }
 
     // Add methods for window definitions
