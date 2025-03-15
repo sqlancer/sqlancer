@@ -9,8 +9,8 @@ import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPDistinctOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPGroupByOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
+import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
 import sqlancer.common.oracle.NoRECOracle;
-import sqlancer.common.oracle.TLPWhereOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 
@@ -18,11 +18,7 @@ public enum ClickHouseOracleFactory implements OracleFactory<ClickHouseGlobalSta
     TLPWhere {
         @Override
         public TestOracle<ClickHouseGlobalState> create(ClickHouseGlobalState globalState) throws SQLException {
-            ClickHouseExpressionGenerator gen = new ClickHouseExpressionGenerator(globalState);
-            ExpectedErrors expectedErrors = ExpectedErrors.newErrors()
-                    .with(ClickHouseErrors.getExpectedExpressionErrors()).build();
-
-            return new TLPWhereOracle<>(globalState, gen, expectedErrors);
+            return new ClickHouseTLPWhereOracle(globalState);
         }
     },
     TLPDistinct {
