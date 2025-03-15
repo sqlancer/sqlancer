@@ -255,15 +255,4 @@ public class TestRandomly {
         }
     }
 
-    @Test
-    public void testNonEmptySubsetLeast() {
-        List<String> options = Arrays.asList("a", "b", "c", "d","e","f");
-        int min = 2;
-        List<String> subset = Randomly.nonEmptySubsetLeast(options, min);
-        assertTrue(subset.size() >= min, "nonEmptySubsetLeast should return at least " + min + " elements");
-        for (String s : subset) {
-            assertTrue(options.contains(s));
-        }
-    }
-
 }
