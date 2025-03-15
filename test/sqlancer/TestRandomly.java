@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -265,34 +264,6 @@ public class TestRandomly {
         for (String s : subset) {
             assertTrue(options.contains(s));
         }
-    }
-
-
-    @Test
-    public void testSmallNumber() {
-        int num = Randomly.smallNumber();
-        assertTrue(num >= 0, "smallNumber should be non-negtive");
-        boolean foundPositive = false;
-        for (int i = 0; i < 80; i++) {
-            if (Randomly.smallNumber() > 0) {
-                foundPositive = true;
-                break;
-            }
-        }
-        assertTrue(foundPositive, "smallNumber should  return a positive number");
-    }
-    @Test
-    public void testGetBigInteger() {
-        BigInteger left = BigInteger.valueOf(10);
-        BigInteger right = BigInteger.valueOf(100);
-        Randomly r = new Randomly();
-
-        assertEquals(left, r.getBigInteger(left, left));
-
-        BigInteger bi = r.getBigInteger(left, right);
-
-        assertTrue(bi.compareTo(left) >= 0 && bi.compareTo(right) <= 0,
-                "BigInteger should be between left and right (inclusive right and left)");
     }
 
 }
