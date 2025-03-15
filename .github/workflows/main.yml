@@ -322,7 +322,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mariadb:11.3.2
+        image: mariadb:11.7.2
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:

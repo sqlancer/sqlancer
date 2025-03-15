@@ -56,7 +56,7 @@ public class CockroachDBTLPBase
 
     List<CockroachDBExpression> generateFetchColumns() {
         List<CockroachDBExpression> columns = new ArrayList<>();
-        if (Randomly.getBoolean() || targetTables.getColumns().size() == 0) {
+        if (Randomly.getBoolean() || targetTables.getColumns().isEmpty()) {
             columns.add(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false)));
         } else {
             columns.addAll(Randomly.nonEmptySubset(targetTables.getColumns()).stream()

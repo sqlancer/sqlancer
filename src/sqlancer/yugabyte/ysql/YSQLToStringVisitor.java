@@ -127,7 +127,7 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
             sb.append(" WHERE ");
             visit(s.getWhereClause());
         }
-        if (s.getGroupByExpressions().size() > 0) {
+        if (!s.getGroupByExpressions().isEmpty()) {
             sb.append(" GROUP BY ");
             visit(s.getGroupByExpressions());
         }

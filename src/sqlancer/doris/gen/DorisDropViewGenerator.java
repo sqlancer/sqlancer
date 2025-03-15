@@ -11,7 +11,7 @@ public final class DorisDropViewGenerator {
     }
 
     public static SQLQueryAdapter dropView(DorisGlobalState globalState) {
-        if (globalState.getSchema().getTables(t -> t.isView()).size() == 0) {
+        if (globalState.getSchema().getTables(t -> t.isView()).isEmpty()) {
             throw new IgnoreMeException();
         }
         StringBuilder sb = new StringBuilder("DROP VIEW ");

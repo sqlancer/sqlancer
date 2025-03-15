@@ -139,7 +139,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
             visit(whereClause);
             sb.append(")");
         }
-        if (s.getGroupByClause().size() > 0) {
+        if (!s.getGroupByClause().isEmpty()) {
             sb.append(" ");
             sb.append("GROUP BY ");
             visit(s.getGroupByClause());
