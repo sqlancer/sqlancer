@@ -71,7 +71,6 @@ import sqlancer.postgres.ast.PostgresWindowFunction;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowFrame;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowSpecification;
 
-
 public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression>,
         NoRECGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
         TLPWhereGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
@@ -96,7 +95,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     private final Map<String, Character> functionsAndTypes;
 
     private final List<Character> allowedFunctionTypes;
-    
+
     public PostgresExpressionGenerator(PostgresGlobalState globalState) {
         this.r = globalState.getRandomly();
         this.maxDepth = globalState.getOptions().getMaxExpressionDepth();
@@ -426,18 +425,18 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             throw new AssertionError();
         }
     }
-    
+
     private PostgresExpression generateWindowFunction(int depth, PostgresDataType returnType) {
-    List<PostgresExpression> arguments = generateWindowFunctionArguments(depth);
-    List<PostgresExpression> partitionBy = generatePartitionByExpressions(depth);
-    List<PostgresOrderByTerm> orderBy = generateOrderByExpressions(depth);
-    WindowFrame frame = generateWindowFrame();
-    
-    WindowSpecification windowSpec = new WindowSpecification(partitionBy, orderBy, frame);
-    String functionName = selectWindowFunctionName();
-    
-    return new PostgresWindowFunction(functionName, arguments, windowSpec, returnType);
-}
+        List<PostgresExpression> arguments = generateWindowFunctionArguments(depth);
+        List<PostgresExpression> partitionBy = generatePartitionByExpressions(depth);
+        List<PostgresOrderByTerm> orderBy = generateOrderByExpressions(depth);
+        WindowFrame frame = generateWindowFrame();
+
+        WindowSpecification windowSpec = new WindowSpecification(partitionBy, orderBy, frame);
+        String functionName = selectWindowFunctionName();
+
+        return new PostgresWindowFunction(functionName, arguments, windowSpec, returnType);
+    }
 
     private List<PostgresExpression> generateWindowFunctionArguments(int depth) {
         List<PostgresExpression> arguments = new ArrayList<>();
@@ -446,6 +445,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         }
         return arguments;
     }
+
     private List<PostgresExpression> generatePartitionByExpressions(int depth) {
         List<PostgresExpression> partitionBy = new ArrayList<>();
         if (Randomly.getBoolean()) {
@@ -463,7 +463,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             int count = Randomly.smallNumber();
             for (int i = 0; i < count; i++) {
                 PostgresExpression expr = generateExpression(depth + 1);
-                // Call the second constructor in PostgresOrderByTerm, might be removed in the future to have only one constructor
+                // Call the second constructor in PostgresOrderByTerm, might be removed in the future to have only one
+                // constructor
                 orderBy.add(new PostgresOrderByTerm(expr, Randomly.getBoolean()));
             }
         }
@@ -481,13 +482,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private String selectWindowFunctionName() {
-        return Randomly.fromList(Arrays.asList(
-            "row_number", "rank", "dense_rank", "percent_rank",
-            "cume_dist", "ntile", "lag", "lead", "first_value",
-            "last_value", "nth_value"
-        ));
+        return Randomly.fromList(Arrays.asList("row_number", "rank", "dense_rank", "percent_rank", "cume_dist", "ntile",
+                "lag", "lead", "first_value", "last_value", "nth_value"));
     }
-
 
     private PostgresExpression generateConcat(int depth) {
         PostgresExpression left = generateExpression(depth + 1, PostgresDataType.TEXT);
@@ -513,7 +510,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum IntExpression {
-    UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION, WINDOW_FUNCTION
+        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION, WINDOW_FUNCTION
     }
 
     private PostgresExpression generateIntExpression(int depth) {
@@ -537,6 +534,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             throw new AssertionError();
         }
     }
+
     private PostgresExpression createColumnOfType(PostgresDataType type) {
         List<PostgresColumn> columns = filterColumns(type);
         PostgresColumn fromList = Randomly.fromList(columns);
@@ -735,12 +733,12 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     @Override
     public PostgresSelect generateSelect() {
         PostgresSelect select = new PostgresSelect();
-        
+
         if (Randomly.getBooleanWithRatherLowProbability()) {
             List<PostgresExpression> windowFunctions = generateWindowFunctions();
             select.setWindowFunctions(windowFunctions);
         }
-        
+
         return select;
     }
 
@@ -748,9 +746,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         List<PostgresExpression> windowFunctions = new ArrayList<>();
         int numWindowFunctions = Randomly.smallNumber();
         for (int i = 0; i < numWindowFunctions; i++) {
-            windowFunctions.add(generateWindowFunction(0, Randomly.fromList(Arrays.asList(
-                PostgresDataType.INT, PostgresDataType.FLOAT
-            ))));
+            windowFunctions.add(generateWindowFunction(0,
+                    Randomly.fromList(Arrays.asList(PostgresDataType.INT, PostgresDataType.FLOAT))));
         }
         return windowFunctions;
     }
@@ -834,7 +831,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     public String generateExplainQuery(PostgresSelect select) {
         return "EXPLAIN " + select.asString();
     }
-    
+
     @Override
     public boolean mutate(PostgresSelect select) {
         List<Function<PostgresSelect, Boolean>> mutators = new ArrayList<>();
