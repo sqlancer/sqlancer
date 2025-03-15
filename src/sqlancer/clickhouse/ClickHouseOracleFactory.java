@@ -4,15 +4,13 @@ import java.sql.SQLException;
 
 import sqlancer.OracleFactory;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
-import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
+import sqlancer.clickhouse.oracle.ClickHouseNoRECOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPAggregateOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPDistinctOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPGroupByOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPHavingOracle;
 import sqlancer.clickhouse.oracle.tlp.ClickHouseTLPWhereOracle;
-import sqlancer.common.oracle.NoRECOracle;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.ExpectedErrors;
 
 public enum ClickHouseOracleFactory implements OracleFactory<ClickHouseGlobalState> {
     TLPWhere {
@@ -48,11 +46,7 @@ public enum ClickHouseOracleFactory implements OracleFactory<ClickHouseGlobalSta
     NoREC {
         @Override
         public TestOracle<ClickHouseGlobalState> create(ClickHouseGlobalState globalState) throws SQLException {
-            ClickHouseExpressionGenerator gen = new ClickHouseExpressionGenerator(globalState);
-            ExpectedErrors errors = ExpectedErrors.newErrors().with(ClickHouseErrors.getExpectedExpressionErrors())
-                    .with("canceling statement due to statement timeout").build();
-
-            return new NoRECOracle<>(globalState, gen, errors);
+            return new ClickHouseNoRECOracle(globalState);
         }
     }
 }
