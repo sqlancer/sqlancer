@@ -91,7 +91,7 @@ public class TestRandomly {
                 encounteredZero = true;
             } else if (Double.isInfinite(doubleVal)) {
                 encounteredInfinity = true;
-            } else if(Double.isNaN(doubleVal)) {
+            } else if (Double.isNaN(doubleVal)) {
                 encounteredNaN = true;
             } else if (doubleVal > 0) {
                 encounteredPositive = true;
@@ -100,7 +100,8 @@ public class TestRandomly {
             } else {
                 fail(String.valueOf(doubleVal));
             }
-        } while (!encounteredZero || !encounteredPositive || !encounteredNegative || !encounteredInfinity || !encounteredNaN);
+        } while (!encounteredZero || !encounteredPositive || !encounteredNegative || !encounteredInfinity
+                || !encounteredNaN);
     }
 
     @Test

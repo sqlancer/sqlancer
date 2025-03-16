@@ -417,8 +417,8 @@ public final class Randomly {
 
     public double getDouble() {
         if (smallBiasProbability()) {
-            return Randomly.fromOptions(0.0, -0.0, Double.NaN, Double.MAX_VALUE, -Double.MAX_VALUE, Double.POSITIVE_INFINITY,
-                    Double.NEGATIVE_INFINITY);
+            return Randomly.fromOptions(0.0, -0.0, Double.NaN, Double.MAX_VALUE, -Double.MAX_VALUE,
+                    Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
         } else if (cacheProbability()) {
             Double d = getFromDoubleCache();
             if (d != null) {
