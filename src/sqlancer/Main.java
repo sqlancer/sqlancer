@@ -562,134 +562,160 @@ public final class Main {
     }
 
     public static int executeMain(String... args) throws AssertionError {
-        List<DatabaseProvider<?, ?, ?>> providers = getDBMSProviders();
-        Map<String, DBMSExecutorFactory<?, ?, ?>> nameToProvider = new HashMap<>();
-        MainOptions options = new MainOptions();
-        Builder commandBuilder = JCommander.newBuilder().addObject(options);
-        for (DatabaseProvider<?, ?, ?> provider : providers) {
-            String name = provider.getDBMSName();
-            DBMSExecutorFactory<?, ?, ?> executorFactory = new DBMSExecutorFactory<>(provider, options);
-            commandBuilder = commandBuilder.addCommand(name, executorFactory.getCommand());
-            nameToProvider.put(name, executorFactory);
-        }
-        JCommander jc = commandBuilder.programName("SQLancer").build();
-        jc.parse(args);
+        Map<String, DBMSExecutorFactory<?, ?, ?>> nameToProvider = initializeProviders();
+        MainOptions options = initializeOptions();
 
-        if (jc.getParsedCommand() == null || options.isHelp()) {
-            jc.usage();
+        JCommander jc = parseArguments(args, nameToProvider, options);
+        if (jc == null || options.isHelp()) {
+            return handleHelp(jc, options);
+        }
+
+        initializeProgressMonitorIfNeeded(options);
+
+        DBMSExecutorFactory<?, ?, ?> executorFactory = nameToProvider.get(jc.getParsedCommand());
+        if (!performConnectionTest(executorFactory, options)) {
             return options.getErrorExitCode();
         }
 
-        Randomly.initialize(options);
-        if (options.printProgressInformation()) {
-            startProgressMonitor();
-            if (options.printProgressSummary()) {
-                Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        return executeDatabaseOperations(executorFactory, options);
+    }
 
-                    @Override
-                    public void run() {
-                        System.out.println("Overall execution statistics");
-                        System.out.println("============================");
-                        System.out.println(formatInteger(nrQueries.get()) + " queries");
-                        System.out.println(formatInteger(nrDatabases.get()) + " databases");
-                        System.out.println(
-                                formatInteger(nrSuccessfulActions.get()) + " successfully-executed statements");
-                        System.out.println(
-                                formatInteger(nrUnsuccessfulActions.get()) + " unsuccessfully-executed statements");
-                    }
-
-                    private String formatInteger(long intValue) {
-                        if (intValue > 1000) {
-                            return String.format("%,9dk", intValue / 1000);
-                        } else {
-                            return String.format("%,10d", intValue);
-                        }
-                    }
-                }));
-            }
+    private static Map<String, DBMSExecutorFactory<?, ?, ?>> initializeProviders() {
+        List<DatabaseProvider<?, ?, ?>> providers = getDBMSProviders();
+        Map<String, DBMSExecutorFactory<?, ?, ?>> nameToProvider = new HashMap<>();
+        MainOptions options = new MainOptions();
+        for (DatabaseProvider<?, ?, ?> provider : providers) {
+            String name = provider.getDBMSName();
+            nameToProvider.put(name, new DBMSExecutorFactory<>(provider, options));
         }
+        return nameToProvider;
+    }
 
+    private static MainOptions initializeOptions() {
+        return new MainOptions();
+    }
+
+    private static JCommander parseArguments(String[] args,
+            Map<String, DBMSExecutorFactory<?, ?, ?>> nameToProvider, MainOptions options) {
+        Builder commandBuilder = JCommander.newBuilder().addObject(options);
+        for (String name : nameToProvider.keySet()) {
+            commandBuilder.addCommand(name, nameToProvider.get(name).getCommand());
+        }
+        JCommander jc = commandBuilder.programName("SQLancer").build();
+        jc.parse(args);
+        return jc;
+    }
+
+    private static int handleHelp(JCommander jc, MainOptions options) {
+        jc.usage();
+        return options.getErrorExitCode();
+    }
+
+    private static void initializeProgressMonitorIfNeeded(MainOptions options) {
+        if (!options.printProgressInformation())
+            return;
+
+        startProgressMonitor();
+        if (options.printProgressSummary()) {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("Overall execution statistics");
+                System.out.println("============================");
+                System.out.println(formatInteger(nrQueries.get()) + " queries");
+                System.out.println(formatInteger(nrDatabases.get()) + " databases");
+                System.out.println(formatInteger(nrSuccessfulActions.get()) + " successfully-executed statements");
+                System.out.println(formatInteger(nrUnsuccessfulActions.get()) + " unsuccessfully-executed statements");
+            }));
+        }
+    }
+
+    private static boolean performConnectionTest(DBMSExecutorFactory<?, ?, ?> executorFactory, MainOptions options) {
+        if (!options.performConnectionTest())
+            return true;
+
+        try {
+            executorFactory.getDBMSExecutor(options.getDatabasePrefix() + "connectiontest", new Randomly())
+                    .testConnection();
+            return true;
+        } catch (Exception e) {
+            System.err.println("SQLancer failed creating a test database...");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private static int executeDatabaseOperations(DBMSExecutorFactory<?, ?, ?> executorFactory, MainOptions options) {
         ExecutorService execService = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
-        DBMSExecutorFactory<?, ?, ?> executorFactory = nameToProvider.get(jc.getParsedCommand());
-
-        if (options.performConnectionTest()) {
-            try {
-                executorFactory.getDBMSExecutor(options.getDatabasePrefix() + "connectiontest", new Randomly())
-                        .testConnection();
-            } catch (Exception e) {
-                System.err.println(
-                        "SQLancer failed creating a test database, indicating that SQLancer might have failed connecting to the DBMS. In order to change the username, password, host and port, you can use the --username, --password, --host and --port options.\n\n");
-                e.printStackTrace();
-                return options.getErrorExitCode();
-            }
-        }
-        final AtomicBoolean someOneFails = new AtomicBoolean(false);
+        AtomicBoolean someOneFails = new AtomicBoolean(false);
 
         for (int i = 0; i < options.getTotalNumberTries(); i++) {
             final String databaseName = options.getDatabasePrefix() + i;
-            final long seed;
-            if (options.getRandomSeed() == -1) {
-                seed = System.currentTimeMillis() + i;
-            } else {
-                seed = options.getRandomSeed() + i;
-            }
-            execService.execute(new Runnable() {
+            final long seed = (options.getRandomSeed() == -1) ? System.currentTimeMillis() + i
+                    : options.getRandomSeed() + i;
 
-                @Override
-                public void run() {
-                    Thread.currentThread().setName(databaseName);
-                    runThread(databaseName);
-                }
-
-                private void runThread(final String databaseName) {
-                    Randomly r = new Randomly(seed);
-                    try {
-                        int maxNrDbs = options.getMaxGeneratedDatabases();
-                        // run without a limit if maxNrDbs == -1
-                        for (int i = 0; i < maxNrDbs || maxNrDbs == -1; i++) {
-                            Boolean continueRunning = run(options, execService, executorFactory, r, databaseName);
-                            if (!continueRunning) {
-                                someOneFails.set(true);
-                                break;
-                            }
-                        }
-                    } finally {
-                        threadsShutdown.addAndGet(1);
-                        if (threadsShutdown.get() == options.getTotalNumberTries()) {
-                            execService.shutdown();
-                        }
-                    }
-                }
-
-                private boolean run(MainOptions options, ExecutorService execService,
-                        DBMSExecutorFactory<?, ?, ?> executorFactory, Randomly r, final String databaseName) {
-                    DBMSExecutor<?, ?, ?> executor = executorFactory.getDBMSExecutor(databaseName, r);
-                    try {
-                        executor.run();
-                        return true;
-                    } catch (IgnoreMeException e) {
-                        return true;
-                    } catch (Throwable reduce) {
-                        reduce.printStackTrace();
-                        executor.getStateToReproduce().exception = reduce.getMessage();
-                        executor.getLogger().logFileWriter = null;
-                        executor.getLogger().logException(reduce, executor.getStateToReproduce());
-                        return false;
-                    } finally {
-                        try {
-                            if (options.logEachSelect()) {
-                                if (executor.getLogger().currentFileWriter != null) {
-                                    executor.getLogger().currentFileWriter.close();
-                                }
-                                executor.getLogger().currentFileWriter = null;
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
+            execService.execute(
+                    () -> runDatabaseThread(databaseName, seed, executorFactory, options, execService, someOneFails));
         }
+
+        awaitTermination(execService, options);
+
+        return someOneFails.get() ? options.getErrorExitCode() : 0;
+    }
+
+    private static void runDatabaseThread(String databaseName, long seed,
+            DBMSExecutorFactory<?, ?, ?> executorFactory, MainOptions options,
+            ExecutorService execService, AtomicBoolean someOneFails) {
+
+        Thread.currentThread().setName(databaseName);
+        Randomly r = new Randomly(seed);
+
+        try {
+            int maxNrDbs = options.getMaxGeneratedDatabases();
+            for (int i = 0; i < maxNrDbs || maxNrDbs == -1; i++) {
+                if (!runExecutor(executorFactory, r, databaseName, options)) {
+                    someOneFails.set(true);
+                    break;
+                }
+            }
+        } finally {
+            threadsShutdown.addAndGet(1);
+            if (threadsShutdown.get() == options.getTotalNumberTries()) {
+                execService.shutdown();
+            }
+        }
+    }
+
+    private static boolean runExecutor(DBMSExecutorFactory<?, ?, ?> executorFactory, Randomly r,
+            String databaseName, MainOptions options) {
+
+        DBMSExecutor<?, ?, ?> executor = executorFactory.getDBMSExecutor(databaseName, r);
+        try {
+            executor.run();
+            return true;
+        } catch (IgnoreMeException e) {
+            return true;
+        } catch (Throwable reduce) {
+            reduce.printStackTrace();
+            executor.getStateToReproduce().exception = reduce.getMessage();
+            executor.getLogger().logFileWriter = null;
+            executor.getLogger().logException(reduce, executor.getStateToReproduce());
+            return false;
+        } finally {
+            closeLoggerIfNeeded(executor, options);
+        }
+    }
+
+    private static void closeLoggerIfNeeded(DBMSExecutor<?, ?, ?> executor, MainOptions options) {
+        if (options.logEachSelect() && executor.getLogger().currentFileWriter != null) {
+            try {
+                executor.getLogger().currentFileWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            executor.getLogger().currentFileWriter = null;
+        }
+    }
+
+    private static void awaitTermination(ExecutorService execService, MainOptions options) {
         try {
             if (options.getTimeoutSeconds() == -1) {
                 execService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -699,14 +725,24 @@ public final class Main {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
 
-        return someOneFails.get() ? options.getErrorExitCode() : 0;
+    private static String formatInteger(long intValue) {
+        if (intValue > 1000) {
+            return String.format("%,9dk", intValue / 1000);
+        } else {
+            return String.format("%,10d", intValue);
+        }
     }
 
     /**
-     * To register a new provider, it is necessary to implement the DatabaseProvider interface and add an additional
-     * configuration file, see https://docs.oracle.com/javase/9/docs/api/java/util/ServiceLoader.html. Currently, we use
-     * an @AutoService annotation to create the configuration file automatically. This allows SQLancer to pick up
+     * To register a new provider, it is necessary to implement the DatabaseProvider
+     * interface and add an additional
+     * configuration file, see
+     * https://docs.oracle.com/javase/9/docs/api/java/util/ServiceLoader.html.
+     * Currently, we use
+     * an @AutoService annotation to create the configuration file automatically.
+     * This allows SQLancer to pick up
      * providers in other JARs on the classpath.
      *
      * @return The list of service providers on the classpath
@@ -753,7 +789,8 @@ public final class Main {
     private static synchronized void startProgressMonitor() {
         if (progressMonitorStarted) {
             /*
-             * it might be already started if, for example, the main method is called multiple times in a test (see
+             * it might be already started if, for example, the main method is called
+             * multiple times in a test (see
              * https://github.com/sqlancer/sqlancer/issues/90).
              */
             return;
