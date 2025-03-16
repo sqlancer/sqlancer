@@ -19,7 +19,6 @@ public final class PostgresWindowFunctionGenerator {
     private static final List<String> WINDOW_FUNCTIONS = Arrays.asList("row_number", "rank", "dense_rank",
             "percent_rank", "cume_dist", "ntile", "lag", "lead", "first_value", "last_value", "nth_value");
 
-    // Private constructor to prevent instantiation
     private PostgresWindowFunctionGenerator() {
         throw new AssertionError("Utility class should not be instantiated");
     }
@@ -72,10 +71,15 @@ public final class PostgresWindowFunctionGenerator {
     private static WindowSpecification generateWindowSpecification(PostgresGlobalState globalState,
             List<PostgresExpression> availableExpr) {
         List<PostgresExpression> partitionBy = generatePartitionByClause(availableExpr);
-        List<PostgresOrderByTerm> orderBy = generateOrderByClause(availableExpr);
-        WindowFrame frame = generateWindowFrame(globalState);
+        PostgresExpressionGenerator exprGen = new PostgresExpressionGenerator(globalState);
+        List<PostgresExpression> orderBys = exprGen.generateOrderBys();
+        List<PostgresOrderByTerm> orderByTerms = new ArrayList<>();
+        for (PostgresExpression expr : orderBys) {
+            orderByTerms.add(new PostgresOrderByTerm(expr, Randomly.getBoolean()));
+        }
 
-        return new WindowSpecification(partitionBy, orderBy, frame);
+        WindowFrame frame = generateWindowFrame(globalState);
+        return new WindowSpecification(partitionBy, orderByTerms, frame);
     }
 
     private static List<PostgresExpression> generatePartitionByClause(List<PostgresExpression> availableExpr) {
@@ -87,17 +91,6 @@ public final class PostgresWindowFunctionGenerator {
             }
         }
         return partitionBy;
-    }
-
-    private static List<PostgresOrderByTerm> generateOrderByClause(List<PostgresExpression> availableExpr) {
-        List<PostgresOrderByTerm> orderBy = new ArrayList<>();
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            int count = Randomly.smallNumber();
-            for (int i = 0; i < count; i++) {
-                orderBy.add(new PostgresOrderByTerm(Randomly.fromList(availableExpr), Randomly.getBoolean()));
-            }
-        }
-        return orderBy;
     }
 
     private static WindowFrame generateWindowFrame(PostgresGlobalState globalState) {

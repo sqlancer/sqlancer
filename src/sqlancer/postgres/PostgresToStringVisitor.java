@@ -189,13 +189,6 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         }
     }
 
-    // @Override
-    // public void visit(PostgresOrderByTerm op) {
-    // visit(op.getExpr());
-    // sb.append(" ");
-    // sb.append(op.getOrder());
-    // }
-
     @Override
     public void visit(PostgresOrderByTerm term) {
         visit(term.getExpr());
@@ -373,17 +366,17 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void visit(PostgresWindowFunction windowFunction) {
         sb.append(windowFunction.getFunctionName());
         sb.append("(");
-        // Fix: Use visitList instead of visit for a list of expressions
-        visitList(windowFunction.getArguments());
+        visit(windowFunction.getArguments());
         sb.append(") OVER (");
 
         WindowSpecification spec = windowFunction.getWindowSpec();
         if (!spec.getPartitionBy().isEmpty()) {
             sb.append("PARTITION BY ");
-            visitList(spec.getPartitionBy());
+            visit(spec.getPartitionBy());
         }
 
         if (!spec.getOrderBy().isEmpty()) {
@@ -391,8 +384,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
                 sb.append(" ");
             }
             sb.append("ORDER BY ");
-            // Fix: Create a method to handle order by terms specifically
-            visitOrderByList(spec.getOrderBy());
+            visit((List<PostgresExpression>) (List<?>) spec.getOrderBy());
         }
 
         if (spec.getFrame() != null) {
@@ -406,27 +398,5 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         }
 
         sb.append(")");
-    }
-
-    // this method handles lists of expressions
-    private void visitList(List<PostgresExpression> expressions) {
-        int i = 0;
-        for (PostgresExpression expr : expressions) {
-            if (i++ != 0) {
-                sb.append(", ");
-            }
-            visit(expr);
-        }
-    }
-
-    // this method handles lists of order by terms
-    private void visitOrderByList(List<PostgresOrderByTerm> orderBy) {
-        int i = 0;
-        for (PostgresOrderByTerm term : orderBy) {
-            if (i++ != 0) {
-                sb.append(", ");
-            }
-            visit(term);
-        }
     }
 }
