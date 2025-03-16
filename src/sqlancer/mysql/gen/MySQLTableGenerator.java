@@ -48,9 +48,9 @@ public class MySQLTableGenerator {
         sb.append("CREATE");
 
         boolean isTemporary = false;
-        if(Randomly.getBoolean()){
+        if (Randomly.getBoolean()) {
             sb.append(" TEMPORARY");
-            isTemporary=true;
+            isTemporary = true;
         }
         sb.append(" TABLE");
         if (Randomly.getBoolean() && isTemporary) { // Temporary table automatically deletes once session ends.
@@ -64,8 +64,7 @@ public class MySQLTableGenerator {
                 sb.append(" LIKE ");
                 sb.append(schema.getRandomTable().getName());
                 return new SQLQueryAdapter(sb.toString(), true);
-            }
-            else{
+            } else {
                 sb.append(" AS SELECT * FROM ");
                 sb.append(schema.getRandomTable().getName());
                 sb.append(" WHERE 1=0");
