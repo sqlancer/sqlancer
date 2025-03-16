@@ -59,13 +59,14 @@ public class MySQLTableGenerator {
         sb.append(" ");
         sb.append(tableName);
         if (Randomly.getBoolean() && !schema.getDatabaseTables().isEmpty()) {
-            sb.append(" LIKE ");
+
             if (!isTemporary) {
+                sb.append(" LIKE ");
                 sb.append(schema.getRandomTable().getName());
                 return new SQLQueryAdapter(sb.toString(), true);
             }
             else{
-                sb.append("SELECT * FROM ");
+                sb.append(" AS SELECT * FROM ");
                 sb.append(schema.getRandomTable().getName());
                 sb.append(" WHERE 1=0");
                 return new SQLQueryAdapter(sb.toString(), true);
