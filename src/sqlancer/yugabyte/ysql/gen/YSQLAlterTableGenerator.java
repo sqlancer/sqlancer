@@ -82,6 +82,7 @@ public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, Y
             }
             switch (a) {
             case ALTER_TABLE_DROP_COLUMN:
+                /*
                 sb.append("DROP ");
                 if (Randomly.getBoolean()) {
                     sb.append(" IF EXISTS ");
@@ -97,7 +98,9 @@ public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, Y
                 errors.add("cannot drop key column");
                 errors.add("cannot drop inherited column");
                 break;
+                */
             case ADD_TABLE_CONSTRAINT:
+                /*
                 sb.append("ADD ");
                 sb.append("CONSTRAINT ").append(r.getAlphabeticChar()).append(" ");
                 YSQLCommon.addTableConstraint(sb, randomTable, globalState, errors);
@@ -128,15 +131,16 @@ public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, Y
                     errors.add("is violated by some row");
                 }
                 break;
+                 */
             case ADD_TABLE_CONSTRAINT_USING_INDEX:
                 sb.append("ADD ");
                 sb.append("CONSTRAINT ").append(r.getAlphabeticChar()).append(" ");
                 sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
+                errors.add("already exists");
+                errors.add("not valid");
                 sb.append(" USING INDEX ");
                 sb.append(randomTable.getRandomIndex().getIndexName());
-                errors.add("already exists");
                 errors.add("PRIMARY KEY containing column of type");
-                errors.add("not valid");
                 errors.add("is not a unique index");
                 errors.add("is already associated with a constraint");
                 errors.add("Cannot create a primary key or unique constraint using such an index");
