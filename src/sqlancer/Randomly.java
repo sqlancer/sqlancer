@@ -38,8 +38,18 @@ public final class Randomly {
         }
     }
 
+    private boolean hasNaN = false;
+
     private void addToCache(double val) {
         if (useCaching && cachedDoubles.size() < cacheSize && !cachedDoubles.contains(val)) {
+            if (Double.isNaN(val)) {
+                if (hasNaN) {
+                    return;
+                }
+                hasNaN = true;
+            } else if (cachedDoubles.contains(val)) {
+                return;
+            }
             cachedDoubles.add(val);
         }
     }
@@ -73,7 +83,8 @@ public final class Randomly {
         if (Randomly.getBoolean() && !cachedLongs.isEmpty()) {
             return (double) Randomly.fromList(cachedLongs);
         } else if (!cachedDoubles.isEmpty()) {
-            return Randomly.fromList(cachedDoubles);
+            Double doubleVal = Randomly.fromList(cachedDoubles);
+            return Double.isNaN(doubleVal) ? Double.NaN : doubleVal;
         } else {
             return null;
         }
