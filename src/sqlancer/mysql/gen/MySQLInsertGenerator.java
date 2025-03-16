@@ -41,8 +41,7 @@ public class MySQLInsertGenerator {
     private SQLQueryAdapter generateReplace() {
         sb.append("REPLACE");
         if (Randomly.getBoolean()) {
-            sb.append(" ");
-            sb.append(Randomly.fromOptions("LOW_PRIORITY", "DELAYED"));
+            sb.append(" LOW_PRIORITY");
         }
         return generateInto();
 
@@ -52,7 +51,7 @@ public class MySQLInsertGenerator {
         sb.append("INSERT");
         if (Randomly.getBoolean()) {
             sb.append(" ");
-            sb.append(Randomly.fromOptions("LOW_PRIORITY", "DELAYED", "HIGH_PRIORITY"));
+            sb.append(Randomly.fromOptions("LOW_PRIORITY", "HIGH_PRIORITY"));
         }
         if (Randomly.getBoolean()) {
             sb.append(" IGNORE");
