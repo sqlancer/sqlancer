@@ -77,6 +77,19 @@ public class ClickHouseTableGenerator {
         sb.append("(");
         sb.append(") ");
         if (engine == ClickHouseEngine.MergeTree) {
+            // First, determine eligible columns for primary key
+            List<String> eligibleColumns = columnNames.stream()
+                    .filter(colName -> columns.stream().filter(col -> col.getName().equals(colName))
+                            .anyMatch(col -> !col.isAlias() && !col.isMaterialized()))
+                    .collect(Collectors.toList());
+
+            // Generate primary key if we have eligible columns
+            final List<String> pkColumns;
+            if (!eligibleColumns.isEmpty() && Randomly.getBooleanWithSmallProbability()) {
+                pkColumns = Randomly.nonEmptySubset(eligibleColumns);
+            } else {
+                pkColumns = new ArrayList<>();
+            }
 
             if (Randomly.getBoolean()) {
                 sb.append(" PARTITION BY ");
@@ -85,29 +98,42 @@ public class ClickHouseTableGenerator {
                 sb.append(ClickHouseToStringVisitor.asString(partitionExpr));
             }
 
-            if (Randomly.getBoolean()) {
-                sb.append(" ORDER BY ");
-                ClickHouseExpression orderByExpr = gen.generateExpressionWithColumns(
-                        columns.stream().map(c -> c.asColumnReference(null)).collect(Collectors.toList()), 3);
-                sb.append(ClickHouseToStringVisitor.asString(orderByExpr));
+            // Always generate ORDER BY
+            sb.append(" ORDER BY ");
+            if (pkColumns.size() > 0) {
+                // If we have primary key columns, use them as prefix for ORDER BY
+                sb.append("(");
+                sb.append(String.join(", ", pkColumns));
+                // Optionally add more columns to ORDER BY
+                if (Randomly.getBoolean()) {
+                    List<String> additionalOrderColumns = eligibleColumns.stream()
+                            .filter(col -> !pkColumns.contains(col)).collect(Collectors.toList());
+                    if (!additionalOrderColumns.isEmpty()) {
+                        sb.append(", ");
+                        List<String> selectedAdditionalColumns = Randomly.nonEmptySubset(additionalOrderColumns);
+                        sb.append(String.join(", ", selectedAdditionalColumns));
+                    }
+                }
+                sb.append(")");
             } else {
-                sb.append(" ORDER BY tuple() ");
-            }
-
-            if (Randomly.getBooleanWithSmallProbability()) {
-                // filter columns that acceptable to be primary key
-                List<String> eligibleColumns = columnNames.stream()
-                        .filter(colName -> columns.stream().filter(col -> col.getName().equals(colName))
-                                .anyMatch(col -> !col.isAlias() && !col.isMaterialized()))
-                        .collect(Collectors.toList());
-
-                if (!eligibleColumns.isEmpty()) {
-                    List<String> pkColumns = Randomly.nonEmptySubset(eligibleColumns);
-                    sb.append(" PRIMARY KEY (");
-                    sb.append(String.join(", ", pkColumns));
-                    sb.append(") ");
+                // No primary key, use tuple() or random columns
+                if (Randomly.getBoolean()) {
+                    sb.append("tuple()");
+                } else {
+                    sb.append("(");
+                    List<String> selectedColumns = Randomly.nonEmptySubset(eligibleColumns);
+                    sb.append(String.join(", ", selectedColumns));
+                    sb.append(")");
                 }
             }
+
+            // Add PRIMARY KEY if we genrated one
+            if (pkColumns.size() > 0) {
+                sb.append(" PRIMARY KEY (");
+                sb.append(String.join(", ", pkColumns));
+                sb.append(")");
+            }
+
             if (Randomly.getBoolean()) {
                 sb.append(" SAMPLE BY ");
                 ClickHouseExpression sampleExpr = gen.generateExpressionWithColumns(
