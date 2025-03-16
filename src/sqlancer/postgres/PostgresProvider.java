@@ -41,7 +41,7 @@ import sqlancer.ExpandedProvider;
 // IN
 @AutoService(DatabaseProvider.class)
 public class PostgresProvider extends ExpandedProvider<PostgresGlobalState, PostgresOptions> {
-    
+
     public PostgresProvider() {
         super(PostgresGlobalState.class, PostgresOptions.class);
     }
