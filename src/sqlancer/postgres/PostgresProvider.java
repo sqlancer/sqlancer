@@ -109,9 +109,9 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
         RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-         * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
-         * configuration parameter
-         */), //
+                                                       * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+                                                       * configuration parameter
+                                                       */), //
         NOTIFY(PostgresNotifyGenerator::createNotify), //
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
@@ -134,57 +134,57 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         Randomly r = globalState.getRandomly();
         int nrPerformed;
         switch (a) {
-            case CREATE_INDEX:
-            case CLUSTER:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case CREATE_STATISTICS:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case DISCARD:
-            case DROP_INDEX:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case COMMIT:
-                nrPerformed = r.getInteger(0, 0);
-                break;
-            case ALTER_TABLE:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case REINDEX:
-            case RESET:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case DELETE:
-            case RESET_ROLE:
-            case SET:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case ANALYZE:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case VACUUM:
-            case SET_CONSTRAINTS:
-            case COMMENT_ON:
-            case NOTIFY:
-            case LISTEN:
-            case UNLISTEN:
-            case CREATE_SEQUENCE:
-            case DROP_STATISTICS:
-            case TRUNCATE:
-                nrPerformed = r.getInteger(0, 2);
-                break;
-            case CREATE_VIEW:
-                nrPerformed = r.getInteger(0, 2);
-                break;
-            case UPDATE:
-                nrPerformed = r.getInteger(0, 10);
-                break;
-            case INSERT:
-                nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-                break;
-            default:
-                throw new AssertionError(a);
+        case CREATE_INDEX:
+        case CLUSTER:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case CREATE_STATISTICS:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case DISCARD:
+        case DROP_INDEX:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case COMMIT:
+            nrPerformed = r.getInteger(0, 0);
+            break;
+        case ALTER_TABLE:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case REINDEX:
+        case RESET:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case DELETE:
+        case RESET_ROLE:
+        case SET:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case ANALYZE:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case VACUUM:
+        case SET_CONSTRAINTS:
+        case COMMENT_ON:
+        case NOTIFY:
+        case LISTEN:
+        case UNLISTEN:
+        case CREATE_SEQUENCE:
+        case DROP_STATISTICS:
+        case TRUNCATE:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case CREATE_VIEW:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case UPDATE:
+            nrPerformed = r.getInteger(0, 10);
+            break;
+        case INSERT:
+            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            break;
+        default:
+            throw new AssertionError(a);
         }
         return nrPerformed;
 
@@ -312,10 +312,10 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     protected void prepareTables(PostgresGlobalState globalState) throws Exception {
         StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 PostgresProvider::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
         se.executeStatements();
         globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
         globalState.executeStatement(new SQLQueryAdapter("SET SESSION statement_timeout = 5000;\n"));

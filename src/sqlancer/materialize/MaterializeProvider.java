@@ -86,26 +86,26 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
         Randomly r = globalState.getRandomly();
         int nrPerformed;
         switch (a) {
-            case CREATE_INDEX:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case DROP_INDEX:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case DELETE:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case CREATE_VIEW:
-                nrPerformed = r.getInteger(0, 2);
-                break;
-            case UPDATE:
-                nrPerformed = r.getInteger(0, 10);
-                break;
-            case INSERT:
-                nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-                break;
-            default:
-                throw new AssertionError(a);
+        case CREATE_INDEX:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case DROP_INDEX:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case DELETE:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case CREATE_VIEW:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case UPDATE:
+            nrPerformed = r.getInteger(0, 10);
+            break;
+        case INSERT:
+            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            break;
+        default:
+            throw new AssertionError(a);
         }
         return nrPerformed;
 
@@ -255,10 +255,10 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
     protected void prepareTables(MaterializeGlobalState globalState) throws Exception {
         StatementExecutor<MaterializeGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 MaterializeProvider::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
         se.executeStatements();
         globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
         globalState.executeStatement(new SQLQueryAdapter("SET SESSION statement_timeout = 5000;\n"));
