@@ -15,7 +15,6 @@ import sqlancer.common.gen.CERTGenerator;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
-import sqlancer.common.schema.AbstractTables;
 import sqlancer.postgres.PostgresBugs;
 import sqlancer.postgres.PostgresCompoundDataType;
 import sqlancer.postgres.PostgresGlobalState;
@@ -231,8 +230,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private PostgresDataType getMeaningfulType() {
-        // make it more likely that the expression does not only consist of constant
-        // expressions
+        // make it more likely that the expression does not only consist of constant expressions
         if (Randomly.getBooleanWithSmallProbability() || columns == null || columns.isEmpty()) {
             return PostgresDataType.getRandomType();
         } else {
@@ -425,7 +423,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         }
     }
 
-    private PostgresExpression generateWindowFunction(int depth, PostgresDataType returnType) {
+    public PostgresExpression generateWindowFunction(int depth, PostgresDataType returnType) {
         List<PostgresExpression> arguments = generateWindowFunctionArguments(depth);
         List<PostgresExpression> partitionBy = generatePartitionByExpressions(depth);
         List<PostgresOrderByTerm> orderBy = generateOrderByExpressions(depth);
@@ -508,8 +506,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         }
     }
 
+    // Removed WINDOW_FUNCTION option from the integer expression generation.
     private enum IntExpression {
-        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION, WINDOW_FUNCTION
+        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
     }
 
     private PostgresExpression generateIntExpression(int depth) {
@@ -527,8 +526,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         case BINARY_ARITHMETIC_EXPRESSION:
             return new PostgresBinaryArithmeticOperation(generateExpression(depth + 1, PostgresDataType.INT),
                     generateExpression(depth + 1, PostgresDataType.INT), PostgresBinaryOperator.getRandom());
-        case WINDOW_FUNCTION:
-            return generateWindowFunction(depth + 1, PostgresDataType.INT);
         default:
             throw new AssertionError();
         }
@@ -718,7 +715,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     @Override
-    public PostgresExpressionGenerator setTablesAndColumns(AbstractTables<PostgresTable, PostgresColumn> targetTables) {
+    public PostgresExpressionGenerator setTablesAndColumns(
+            sqlancer.common.schema.AbstractTables<PostgresTable, PostgresColumn> targetTables) {
         this.targetTables = targetTables.getTables();
         this.columns = targetTables.getColumns();
         return this;
@@ -806,7 +804,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             select.setFetchColumns(Arrays.asList(allColumns));
         }
         select.setWhereClause(whereCondition);
-        if (Randomly.getBooleanWithSmallProbability()) {
+        if (Randomly.getBooleanWithRatherLowProbability()) {
             select.setOrderByClauses(generateOrderBys());
         }
         select.setSelectType(SelectType.ALL);
@@ -839,7 +837,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         mutators.add(this::mutateWhere);
         mutators.add(this::mutateGroupBy);
         mutators.add(this::mutateHaving);
-        mutators.add(this::mutateWindowFunction); // Add window function mutation
+        mutators.add(this::mutateWindowFunction);
         if (!PostgresBugs.bug18643) {
             mutators.add(this::mutateAnd);
             mutators.add(this::mutateOr);
@@ -852,13 +850,11 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     private boolean mutateWindowFunction(PostgresSelect select) {
         List<PostgresExpression> windowFunctions = select.getWindowFunctions();
         if (windowFunctions == null || windowFunctions.isEmpty()) {
-            // Add a new window function
             windowFunctions = new ArrayList<>();
             windowFunctions.add(generateWindowFunction(0, PostgresDataType.INT));
             select.setWindowFunctions(windowFunctions);
             return false;
         } else {
-            // Remove a random window function
             windowFunctions.remove(Randomly.fromList(windowFunctions));
             if (windowFunctions.isEmpty()) {
                 select.setWindowFunctions(null);
