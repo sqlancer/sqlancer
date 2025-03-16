@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 public final class Randomly {
-
+    private boolean hasNaN;
     private static StringGenerationStrategy stringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED;
     private static int maxStringLength = 10;
     private static boolean useCaching = true;
@@ -37,8 +37,6 @@ public final class Randomly {
             cachedIntegers.add(val);
         }
     }
-
-    private boolean hasNaN = false;
 
     private void addToCache(double val) {
         if (useCaching && cachedDoubles.size() < cacheSize && !cachedDoubles.contains(val)) {
