@@ -61,8 +61,8 @@ public final class PostgresUpdateGenerator extends AbstractUpdateGenerator<Postg
 
     @Override
     protected void updateValue(PostgresColumn column) {
-        if (!Randomly.getBoolean()) {
-            PostgresExpression constant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(),
+        if (!Randomly.getBoolean() || column.getType() == PostgresDataType.JSON) {
+            PostgresExpression constant = PostgresExpressionGenerator.generateConstantDDL(globalState.getRandomly(),
                     column.getType());
             sb.append(PostgresVisitor.asString(constant));
         } else if (Randomly.getBoolean()) {

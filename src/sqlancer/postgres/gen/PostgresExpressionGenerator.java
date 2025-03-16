@@ -111,7 +111,13 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         this.rw = rw;
         return this;
     }
-
+    public static PostgresExpression generateConstantDDL(Randomly r, PostgresDataType dataType){
+//        return generateConstant(r,dataType == PostgresDataType.JSON ? PostgresDataType.JSON_DDL : dataType);
+        if(dataType == PostgresDataType.JSON){
+            return new PostgresConstant.JsonConstant(r.getJson());
+        }
+        return generateConstant(r,dataType);
+    }
     public PostgresExpression generateExpression(int depth) {
         return generateExpression(depth, PostgresDataType.getRandomType());
     }
@@ -343,7 +349,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             case RANGE:
                 return generateRangeExpression(depth);
             case JSON:
-                return generateConstant(r, dataType);
+                return generateJsonExpression(depth);
             default:
                 throw new AssertionError(dataType);
             }
@@ -360,6 +366,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         case RANGE:
         case REAL:
         case INET:
+        case JSON:
             return PostgresCompoundDataType.create(type);
         case TEXT: // TODO
         case BIT:
@@ -388,12 +395,10 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         switch (option) {
         case TEXT_EXTRACTION_OP:
             return new PostgresExtractorJsonOperation(
-                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.TEXT_EXTRACTOR,
-                    createColumnOfType(PostgresDataType.JSON), generateConstant(r, PostgresDataType.TEXT));
+                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.TEXT_EXTRACTOR,generateConstant(r, PostgresDataType.TEXT));
         case JSON_EXTRACTION_OP:
             return new PostgresExtractorJsonOperation(
-                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.JSON_EXTRACTOR,
-                    createColumnOfType(PostgresDataType.JSON), generateExpression(depth + 1, PostgresDataType.JSON));
+                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.JSON_EXTRACTOR,generateExpression(depth + 1, PostgresDataType.JSON));
         default:
             throw new AssertionError(option);
         }
@@ -418,7 +423,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum TextExpression {
-        CAST, FUNCTION, CONCAT, COLLATE, JSON
+        CAST, FUNCTION, CONCAT, COLLATE
     }
 
     private PostgresExpression generateTextExpression(int depth) {
@@ -443,8 +448,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             assert !expectedResult;
             return new PostgresCollate(generateExpression(depth + 1, PostgresDataType.TEXT), globalState == null
                     ? Randomly.fromOptions("C", "POSIX", "de_CH.utf8", "es_CR.utf8") : globalState.getRandomCollate());
-        case JSON:
-            return generateJsonExpression(depth);
         default:
             throw new AssertionError();
         }
@@ -544,6 +547,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             } else {
                 return PostgresConstant.createBooleanConstant(Randomly.getBoolean());
             }
+        case JSON:
         case TEXT:
             return PostgresConstant.createTextConstant(r.getString());
         case DECIMAL:
@@ -562,8 +566,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return PostgresConstant.createInetConstant(getRandomInet(r));
         case BIT:
             return PostgresConstant.createBitConstant(r.getInteger());
-        case JSON:
-            return PostgresConstant.createJsonConstant(r.getJson());
         default:
             throw new AssertionError(type);
         }

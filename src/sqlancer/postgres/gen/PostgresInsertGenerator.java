@@ -113,13 +113,18 @@ public final class PostgresInsertGenerator {
             }
             if (!Randomly.getBooleanWithSmallProbability() || !canBeDefault) {
                 PostgresExpression generateConstant;
-                if (Randomly.getBoolean()) {
-                    generateConstant = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(),
+                if (Randomly.getBoolean() || columns.get(i).getType() == PostgresSchema.PostgresDataType.JSON) {
+                    generateConstant = PostgresExpressionGenerator.generateConstantDDL(globalState.getRandomly(),
                             columns.get(i).getType());
                 } else {
                     generateConstant = new PostgresExpressionGenerator(globalState)
                             .generateExpression(columns.get(i).getType());
+
                 }
+                System.out.println("HERE");
+                System.out.println(generateConstant.toString());
+                System.out.println(PostgresVisitor.asString(generateConstant));
+                System.out.println("DONE");
                 sb.append(PostgresVisitor.asString(generateConstant));
             } else {
                 sb.append("DEFAULT");

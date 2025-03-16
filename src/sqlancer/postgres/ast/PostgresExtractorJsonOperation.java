@@ -1,23 +1,44 @@
 package sqlancer.postgres.ast;
 
 import sqlancer.Randomly;
-import sqlancer.common.ast.BinaryNode;
-import sqlancer.common.ast.BinaryOperatorNode;
+import sqlancer.common.ast.UnaryNode;
+import sqlancer.postgres.PostgresSchema;
 
-public class PostgresExtractorJsonOperation extends BinaryNode<PostgresExpression> implements PostgresExpression {
+public class PostgresExtractorJsonOperation extends UnaryNode<PostgresExpression> implements PostgresExpression {
 
     private final String op;
+    private final PostgresExtractorJsonOperator postgresExtractorJsonOperator;
 
-    public enum PostgresExtractorJsonOperator implements BinaryOperatorNode.Operator {
-        TEXT_EXTRACTOR("->>"), JSON_EXTRACTOR("->");
+    @Override
+    public PostgresSchema.PostgresDataType getExpressionType() {
+        return this.postgresExtractorJsonOperator.getType();
+    }
 
+    @Override
+    public PostgresConstant getExpectedValue() {
+        return PostgresExpression.super.getExpectedValue();
+    }
+
+    public enum PostgresExtractorJsonOperator {
+        TEXT_EXTRACTOR("->>"){
+            @Override
+            public PostgresSchema.PostgresDataType getType(){
+                return PostgresSchema.PostgresDataType.TEXT;
+            }
+        }, JSON_EXTRACTOR("->"){
+            @Override
+            public PostgresSchema.PostgresDataType getType(){
+                return PostgresSchema.PostgresDataType.JSON;
+            }
+        };
+
+        public abstract PostgresSchema.PostgresDataType getType();
         private final String textRepresentation;
 
         PostgresExtractorJsonOperator(String textRepresentation) {
             this.textRepresentation = textRepresentation;
         }
 
-        @Override
         public String getTextRepresentation() {
             return textRepresentation;
         }
@@ -25,18 +46,28 @@ public class PostgresExtractorJsonOperation extends BinaryNode<PostgresExpressio
         public static PostgresExtractorJsonOperator getRandom() {
             return Randomly.fromOptions(values());
         }
-
     }
 
-    public PostgresExtractorJsonOperation(PostgresExtractorJsonOperator op, PostgresExpression left,
-            PostgresExpression right) {
-        super(left, right);
+    public PostgresExtractorJsonOperation(PostgresExtractorJsonOperator op,
+            PostgresExpression expr) {
+        super(expr);
         this.op = op.getTextRepresentation();
+        this.postgresExtractorJsonOperator = op;
     }
 
     @Override
     public String getOperatorRepresentation() {
         return this.op;
+    }
+
+    @Override
+    public boolean omitBracketsWhenPrinting() {
+        return super.omitBracketsWhenPrinting();
+    }
+
+    @Override
+    public OperatorKind getOperatorKind() {
+        return null;
     }
 
 }
