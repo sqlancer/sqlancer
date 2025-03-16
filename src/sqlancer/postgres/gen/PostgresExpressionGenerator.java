@@ -52,7 +52,6 @@ import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
-// import sqlancer.postgres.ast.PostgresOrderByTerm.PostgresOrder;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression.POSIXRegex;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
