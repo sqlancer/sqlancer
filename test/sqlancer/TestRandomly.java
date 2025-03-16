@@ -108,6 +108,7 @@ public class TestRandomly {
         Randomly r = new Randomly();
         for (int i = 0; i < NR_MIN_RUNS; i++) {
             assertFalse(Double.isInfinite(r.getFiniteDouble()));
+            assertFalse(Double.isNaN(r.getFiniteDouble()));
         }
     }
 
