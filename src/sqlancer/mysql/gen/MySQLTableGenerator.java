@@ -46,30 +46,18 @@ public class MySQLTableGenerator {
         ExpectedErrors errors = new ExpectedErrors();
 
         sb.append("CREATE");
+        // TODO support temporary tables in the schema
 
-        boolean isTemporary = false;
-        if (Randomly.getBoolean()) {
-            sb.append(" TEMPORARY");
-            isTemporary = true;
-        }
         sb.append(" TABLE");
-        if (Randomly.getBoolean() && isTemporary) { // Temporary table automatically deletes once session ends.
+        if (Randomly.getBoolean()) {
             sb.append(" IF NOT EXISTS");
         }
         sb.append(" ");
         sb.append(tableName);
         if (Randomly.getBoolean() && !schema.getDatabaseTables().isEmpty()) {
-
-            if (!isTemporary) {
-                sb.append(" LIKE ");
-                sb.append(schema.getRandomTable().getName());
-                return new SQLQueryAdapter(sb.toString(), true);
-            } else {
-                sb.append(" AS SELECT * FROM ");
-                sb.append(schema.getRandomTable().getName());
-                sb.append(" WHERE 1=0");
-                return new SQLQueryAdapter(sb.toString(), true);
-            }
+            sb.append(" LIKE ");
+            sb.append(schema.getRandomTable().getName());
+            return new SQLQueryAdapter(sb.toString(), true);
         } else {
             sb.append("(");
             for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
