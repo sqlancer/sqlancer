@@ -12,11 +12,11 @@ import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
+import sqlancer.ExpandedProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -42,7 +42,7 @@ import sqlancer.yugabyte.ysql.gen.YSQLVacuumGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLViewGenerator;
 
 @AutoService(DatabaseProvider.class)
-public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOptions> {
+public class YSQLProvider extends ExpandedProvider<YSQLGlobalState, YSQLOptions> {
 
     // TODO Due to yugabyte problems with parallel DDL we need this lock object
     public static final Object DDL_LOCK = new Object();

@@ -12,11 +12,11 @@ import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
+import sqlancer.ExpandedProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -46,7 +46,7 @@ import sqlancer.postgres.gen.PostgresViewGenerator;
 // EXISTS
 // IN
 @AutoService(DatabaseProvider.class)
-public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, PostgresOptions> {
+public class PostgresProvider extends ExpandedProvider<PostgresGlobalState, PostgresOptions> {
 
     /**
      * Generate only data types and expressions that are understood by PQS.

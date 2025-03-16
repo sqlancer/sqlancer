@@ -15,11 +15,11 @@ import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
+import sqlancer.ExpandedProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -36,7 +36,7 @@ import sqlancer.materialize.gen.MaterializeViewGenerator;
 // EXISTS
 // IN
 @AutoService(DatabaseProvider.class)
-public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalState, MaterializeOptions> {
+public class MaterializeProvider extends ExpandedProvider<MaterializeGlobalState, MaterializeOptions> {
 
     /**
      * Generate only data types and expressions that are understood by PQS.
