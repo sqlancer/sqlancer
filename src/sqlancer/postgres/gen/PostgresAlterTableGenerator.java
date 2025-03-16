@@ -4,6 +4,7 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLAlterTableGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
@@ -12,14 +13,11 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 
-public class PostgresAlterTableGenerator {
+public class PostgresAlterTableGenerator extends SQLAlterTableGenerator<PostgresTable , PostgresGlobalState, PostgresAlterTableGenerator.Action> {
 
-    private PostgresTable randomTable;
-    private Randomly r;
     private static PostgresColumn randomColumn;
     private boolean generateOnlyKnown;
     private List<String> opClasses;
-    private PostgresGlobalState globalState;
 
     protected enum Action {
         // ALTER_TABLE_ADD_COLUMN, // [ COLUMN ] column data_type [ COLLATE collation ] [
@@ -53,9 +51,7 @@ public class PostgresAlterTableGenerator {
 
     public PostgresAlterTableGenerator(PostgresTable randomTable, PostgresGlobalState globalState,
             boolean generateOnlyKnown) {
-        this.randomTable = randomTable;
-        this.globalState = globalState;
-        this.r = globalState.getRandomly();
+        super(randomTable, globalState);
         this.generateOnlyKnown = generateOnlyKnown;
         this.opClasses = globalState.getOpClasses();
     }
@@ -75,6 +71,7 @@ public class PostgresAlterTableGenerator {
         }
     };
 
+    @Override
     public List<Action> getActions(ExpectedErrors errors) {
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonInsertUpdateErrors(errors);

@@ -8,7 +8,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 
 public class AbstractRelationalTable<C extends AbstractTableColumn<?, ?>, I extends TableIndex, G extends SQLGlobalState<?, ?>>
-        extends AbstractTable<C, I, G> {
+        extends AbstractTable<C, I, G>{
 
     public AbstractRelationalTable(String name, List<C> columns, List<I> indexes, boolean isView) {
         super(name, columns, indexes, isView);

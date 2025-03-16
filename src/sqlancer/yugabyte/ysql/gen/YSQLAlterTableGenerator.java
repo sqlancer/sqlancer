@@ -4,28 +4,27 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLAlterTableGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresSchema;
+import sqlancer.postgres.gen.PostgresAlterTableGenerator;
 import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
+import sqlancer.yugabyte.ysql.YSQLSchema;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
-public class YSQLAlterTableGenerator {
-
-    private final YSQLTable randomTable;
-    private final Randomly r;
-    private final YSQLGlobalState globalState;
-
+public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, YSQLGlobalState, YSQLAlterTableGenerator.Action> {
     public YSQLAlterTableGenerator(YSQLTable randomTable, YSQLGlobalState globalState) {
-        this.randomTable = randomTable;
-        this.globalState = globalState;
-        this.r = globalState.getRandomly();
+        super(randomTable, globalState);
     }
 
     public static SQLQueryAdapter create(YSQLTable randomTable, YSQLGlobalState globalState) {
         return new YSQLAlterTableGenerator(randomTable, globalState).generate();
     }
 
+    @Override
     public List<Action> getActions(ExpectedErrors errors) {
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonInsertUpdateErrors(errors);
