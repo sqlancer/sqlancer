@@ -111,12 +111,14 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         this.rw = rw;
         return this;
     }
-    public static PostgresExpression generateConstantDDL(Randomly r, PostgresDataType dataType){
-        if(dataType == PostgresDataType.JSON){
+
+    public static PostgresExpression generateConstantDDL(Randomly r, PostgresDataType dataType) {
+        if (dataType == PostgresDataType.JSON) {
             return new PostgresConstant.JsonConstant(r.getJson());
         }
-        return generateConstant(r,dataType);
+        return generateConstant(r, dataType);
     }
+
     public PostgresExpression generateExpression(int depth) {
         return generateExpression(depth, PostgresDataType.getRandomType());
     }
@@ -384,7 +386,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum JsonExpression {
-        JSON_EXTRACTION_OP,CAST;
+        JSON_EXTRACTION_OP, CAST;
     }
 
     private PostgresExpression generateJsonExpression(int depth) {
@@ -394,7 +396,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         switch (option) {
         case JSON_EXTRACTION_OP:
             return new PostgresExtractorJsonOperation(
-                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.JSON_EXTRACTOR,generateExpression(depth + 1, PostgresDataType.JSON),generateConstant(r,PostgresDataType.TEXT));
+                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.JSON_EXTRACTOR,
+                    generateExpression(depth + 1, PostgresDataType.JSON), generateConstant(r, PostgresDataType.TEXT));
         case CAST:
             return new PostgresCastOperation(generateExpression(depth + 1), getCompoundDataType(PostgresDataType.JSON));
         default:
@@ -448,7 +451,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
                     ? Randomly.fromOptions("C", "POSIX", "de_CH.utf8", "es_CR.utf8") : globalState.getRandomCollate());
         case JSON_TEXT:
             return new PostgresExtractorJsonOperation(
-                        PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.TEXT_EXTRACTOR,generateExpression(depth+1,PostgresDataType.JSON),generateConstant(r, PostgresDataType.TEXT));
+                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.TEXT_EXTRACTOR,
+                    generateExpression(depth + 1, PostgresDataType.JSON), generateConstant(r, PostgresDataType.TEXT));
         default:
             throw new AssertionError();
         }

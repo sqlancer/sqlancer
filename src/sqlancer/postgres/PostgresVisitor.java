@@ -4,9 +4,29 @@ import java.util.List;
 
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
-import sqlancer.postgres.ast.*;
+import sqlancer.postgres.ast.PostgresAggregate;
+import sqlancer.postgres.ast.PostgresBetweenOperation;
+import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
+import sqlancer.postgres.ast.PostgresCastOperation;
+import sqlancer.postgres.ast.PostgresCollate;
+import sqlancer.postgres.ast.PostgresColumnReference;
+import sqlancer.postgres.ast.PostgresColumnValue;
+import sqlancer.postgres.ast.PostgresConstant;
+import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.ast.PostgresExtractorJsonOperation;
+import sqlancer.postgres.ast.PostgresFunction;
+import sqlancer.postgres.ast.PostgresInOperation;
+import sqlancer.postgres.ast.PostgresLikeOperation;
+import sqlancer.postgres.ast.PostgresOrderByTerm;
+import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
+import sqlancer.postgres.ast.PostgresPostfixOperation;
+import sqlancer.postgres.ast.PostgresPostfixText;
+import sqlancer.postgres.ast.PostgresPrefixOperation;
+import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
+import sqlancer.postgres.ast.PostgresSimilarTo;
+import sqlancer.postgres.ast.PostgresTableReference;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public interface PostgresVisitor {

@@ -540,7 +540,7 @@ public abstract class PostgresConstant implements PostgresExpression {
         @Override
         public String getTextRepresentation() {
             Gson gson = new Gson();
-            return String.format("'%s'",gson.toJson(this.json));
+            return String.format("'%s'", gson.toJson(this.json));
         }
 
         @Override
