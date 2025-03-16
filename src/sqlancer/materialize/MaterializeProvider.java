@@ -13,14 +13,7 @@ import java.util.Arrays;
 
 import com.google.auto.service.AutoService;
 
-import sqlancer.AbstractAction;
-import sqlancer.DatabaseProvider;
-import sqlancer.IgnoreMeException;
-import sqlancer.MainOptions;
-import sqlancer.Randomly;
-import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
-import sqlancer.StatementExecutor;
+import sqlancer.*;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
@@ -32,27 +25,12 @@ import sqlancer.materialize.gen.MaterializeInsertGenerator;
 import sqlancer.materialize.gen.MaterializeTableGenerator;
 import sqlancer.materialize.gen.MaterializeUpdateGenerator;
 import sqlancer.materialize.gen.MaterializeViewGenerator;
+import sqlancer.ExpandedProvider;
 
 // EXISTS
 // IN
 @AutoService(DatabaseProvider.class)
-public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalState, MaterializeOptions> {
-
-    /**
-     * Generate only data types and expressions that are understood by PQS.
-     */
-    public static boolean generateOnlyKnown;
-
-    protected String entryURL;
-    protected String username;
-    protected String password;
-    protected String entryPath;
-    protected String host;
-    protected int port;
-    protected String testURL;
-    protected String databaseName;
-    protected String createDatabaseCommand;
-    protected String extensionsList;
+public class MaterializeProvider extends ExpandedProvider<MaterializeGlobalState, MaterializeOptions> {
 
     public MaterializeProvider() {
         super(MaterializeGlobalState.class, MaterializeOptions.class);
@@ -86,26 +64,26 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
         Randomly r = globalState.getRandomly();
         int nrPerformed;
         switch (a) {
-            case CREATE_INDEX:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case DROP_INDEX:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case DELETE:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case CREATE_VIEW:
-                nrPerformed = r.getInteger(0, 2);
-                break;
-            case UPDATE:
-                nrPerformed = r.getInteger(0, 10);
-                break;
-            case INSERT:
-                nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-                break;
-            default:
-                throw new AssertionError(a);
+        case CREATE_INDEX:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case DROP_INDEX:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case DELETE:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case CREATE_VIEW:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case UPDATE:
+            nrPerformed = r.getInteger(0, 10);
+            break;
+        case INSERT:
+            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            break;
+        default:
+            throw new AssertionError(a);
         }
         return nrPerformed;
 
@@ -255,10 +233,10 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
     protected void prepareTables(MaterializeGlobalState globalState) throws Exception {
         StatementExecutor<MaterializeGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 MaterializeProvider::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
         se.executeStatements();
         globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
         globalState.executeStatement(new SQLQueryAdapter("SET SESSION statement_timeout = 5000;\n"));

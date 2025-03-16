@@ -10,14 +10,7 @@ import java.util.Arrays;
 
 import com.google.auto.service.AutoService;
 
-import sqlancer.AbstractAction;
-import sqlancer.DatabaseProvider;
-import sqlancer.IgnoreMeException;
-import sqlancer.MainOptions;
-import sqlancer.Randomly;
-import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
-import sqlancer.StatementExecutor;
+import sqlancer.*;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
@@ -40,25 +33,13 @@ import sqlancer.yugabyte.ysql.gen.YSQLTruncateGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLUpdateGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLVacuumGenerator;
 import sqlancer.yugabyte.ysql.gen.YSQLViewGenerator;
+import sqlancer.ExpandedProvider;
 
 @AutoService(DatabaseProvider.class)
-public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOptions> {
+public class YSQLProvider extends ExpandedProvider<YSQLGlobalState, YSQLOptions> {
 
     // TODO Due to yugabyte problems with parallel DDL we need this lock object
     public static final Object DDL_LOCK = new Object();
-    /**
-     * Generate only data types and expressions that are understood by PQS.
-     */
-    public static boolean generateOnlyKnown;
-    protected String entryURL;
-    protected String username;
-    protected String password;
-    protected String entryPath;
-    protected String host;
-    protected int port;
-    protected String testURL;
-    protected String databaseName;
-    protected String createDatabaseCommand;
 
     public YSQLProvider() {
         super(YSQLGlobalState.class, YSQLOptions.class);
@@ -72,52 +53,52 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         Randomly r = globalState.getRandomly();
         int nrPerformed;
         switch (a) {
-            case CREATE_INDEX:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case DISCARD:
-            case DROP_INDEX:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case COMMIT:
-                nrPerformed = r.getInteger(0, 0);
-                break;
-            case ALTER_TABLE:
-                nrPerformed = r.getInteger(0, 5);
-                break;
-            case RESET:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case ANALYZE:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case TABLEGROUP:
-                nrPerformed = r.getInteger(0, 3);
-                break;
-            case DELETE:
-            case RESET_ROLE:
-            case VACUUM:
-            case SET_CONSTRAINTS:
-            case SET:
-            case COMMENT_ON:
-            case NOTIFY:
-            case LISTEN:
-            case UNLISTEN:
-            case CREATE_SEQUENCE:
-            case TRUNCATE:
-                nrPerformed = r.getInteger(0, 2);
-                break;
-            case CREATE_VIEW:
-                nrPerformed = r.getInteger(0, 2);
-                break;
-            case UPDATE:
-                nrPerformed = r.getInteger(0, 10);
-                break;
-            case INSERT:
-                nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-                break;
-            default:
-                throw new AssertionError(a);
+        case CREATE_INDEX:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case DISCARD:
+        case DROP_INDEX:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case COMMIT:
+            nrPerformed = r.getInteger(0, 0);
+            break;
+        case ALTER_TABLE:
+            nrPerformed = r.getInteger(0, 5);
+            break;
+        case RESET:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case ANALYZE:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case TABLEGROUP:
+            nrPerformed = r.getInteger(0, 3);
+            break;
+        case DELETE:
+        case RESET_ROLE:
+        case VACUUM:
+        case SET_CONSTRAINTS:
+        case SET:
+        case COMMENT_ON:
+        case NOTIFY:
+        case LISTEN:
+        case UNLISTEN:
+        case CREATE_SEQUENCE:
+        case TRUNCATE:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case CREATE_VIEW:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case UPDATE:
+            nrPerformed = r.getInteger(0, 10);
+            break;
+        case INSERT:
+            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            break;
+        default:
+            throw new AssertionError(a);
         }
         return nrPerformed;
 
@@ -279,10 +260,10 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
     protected void prepareTables(YSQLGlobalState globalState) throws Exception {
         StatementExecutor<YSQLGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 YSQLProvider::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
+                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+                        throw new IgnoreMeException();
+                    }
+                });
         se.executeStatements();
         globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
         globalState.executeStatement(new SQLQueryAdapter("SET SESSION statement_timeout = 15000;\n"));
@@ -349,9 +330,9 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(YSQLCommentGenerator::generate), //
         RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-         * https://www.postgres.org/docs/devel/sql-reset.html TODO: also
-         * configuration parameter
-         */), //
+                                                       * https://www.postgres.org/docs/devel/sql-reset.html TODO: also
+                                                       * configuration parameter
+                                                       */), //
         NOTIFY(YSQLNotifyGenerator::createNotify), //
         LISTEN((g) -> YSQLNotifyGenerator.createListen()), //
         UNLISTEN((g) -> YSQLNotifyGenerator.createUnlisten()), //
