@@ -13,6 +13,7 @@ import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.ast.PostgresExtractorJsonOperation;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
 import sqlancer.postgres.ast.PostgresLikeOperation;
@@ -72,6 +73,8 @@ public interface PostgresVisitor {
 
     void visit(PostgresLikeOperation op);
 
+    void visit(PostgresExtractorJsonOperation op);
+
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
             visit((PostgresConstant) expression);
@@ -113,6 +116,8 @@ public interface PostgresVisitor {
             visit((PostgresColumnReference) expression);
         } else if (expression instanceof PostgresTableReference) {
             visit((PostgresTableReference) expression);
+        } else if (expression instanceof PostgresExtractorJsonOperation) {
+            visit((PostgresExtractorJsonOperation) expression);
         } else {
             throw new AssertionError(expression);
         }

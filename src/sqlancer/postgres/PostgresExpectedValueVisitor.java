@@ -9,6 +9,7 @@ import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.ast.PostgresExtractorJsonOperation;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
 import sqlancer.postgres.ast.PostgresLikeOperation;
@@ -125,6 +126,13 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
         for (PostgresExpression right : op.getListElements()) {
             visit(right);
         }
+    }
+
+    @Override
+    public void visit(PostgresExtractorJsonOperation op) {
+        print(op);
+        visit(op.getLeft());
+        visit(op.getRight());
     }
 
     @Override

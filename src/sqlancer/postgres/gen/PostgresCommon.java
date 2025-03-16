@@ -287,6 +287,9 @@ public final class PostgresCommon {
         case INET:
             sb.append("inet");
             break;
+        case JSON:
+            sb.append("JSON");
+            break;
         default:
             throw new AssertionError(type);
         }

@@ -31,7 +31,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
     private final String databaseName;
 
     public enum PostgresDataType {
-        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
+        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET, JSON;
 
         public static PostgresDataType getRandomType() {
             List<PostgresDataType> dataTypes = new ArrayList<>(Arrays.asList(values()));
@@ -96,6 +96,9 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
                         case TEXT:
                             constant = PostgresConstant.createTextConstant(randomRowValues.getString(columnIndex));
                             break;
+                        case JSON:
+                            constant = PostgresConstant.createJsonConstant(randomRowValues.getString(columnIndex));
+                            break;
                         default:
                             throw new IgnoreMeException();
                         }
@@ -141,6 +144,8 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
             return PostgresDataType.BIT;
         case "inet":
             return PostgresDataType.INET;
+        case "json":
+            return PostgresDataType.JSON;
         default:
             throw new AssertionError(typeString);
         }

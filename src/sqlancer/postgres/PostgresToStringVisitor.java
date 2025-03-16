@@ -15,6 +15,7 @@ import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.ast.PostgresExtractorJsonOperation;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
 import sqlancer.postgres.ast.PostgresJoin;
@@ -261,6 +262,9 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             // sb.append(")");
             // }
             break;
+        case JSON:
+            sb.append("JSON");
+            break;
         default:
             throw new AssertionError(cast.getType());
         }
@@ -351,6 +355,15 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         sb.append('"');
         sb.append(")");
     }
+
+    @Override
+    public void visit(PostgresExtractorJsonOperation op) {
+        sb.append("(");
+        visit(op.getLeft());
+        sb.append(op.getOperatorRepresentation());
+        visit(op.getRight());
+        sb.append(")");
+    };
 
     @Override
     public void visit(PostgresBinaryLogicalOperation op) {
