@@ -100,7 +100,7 @@ public class ClickHouseTableGenerator {
 
             // Always generate ORDER BY
             sb.append(" ORDER BY ");
-            if (pkColumns.size() > 0) {
+            if (!pkColumns.isEmpty()) {
                 // If we have primary key columns, use them as prefix for ORDER BY
                 sb.append("(");
                 sb.append(String.join(", ", pkColumns));
@@ -128,7 +128,7 @@ public class ClickHouseTableGenerator {
             }
 
             // Add PRIMARY KEY if we genrated one
-            if (pkColumns.size() > 0) {
+            if (!pkColumns.isEmpty()) {
                 sb.append(" PRIMARY KEY (");
                 sb.append(String.join(", ", pkColumns));
                 sb.append(")");
