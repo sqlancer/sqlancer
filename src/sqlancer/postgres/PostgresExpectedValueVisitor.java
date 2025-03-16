@@ -107,9 +107,11 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
             visit(right);
         }
     }
-    @Override // Need Look
+    @Override
     public void visit(PostgresExtractorJsonOperation op){
-        visit(op.getExpression());
+        print(op);
+        visit(op.getLeft());
+        visit(op.getRight());
     }
 
     @Override

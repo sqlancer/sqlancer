@@ -121,10 +121,6 @@ public final class PostgresInsertGenerator {
                             .generateExpression(columns.get(i).getType());
 
                 }
-                System.out.println("HERE");
-                System.out.println(generateConstant.toString());
-                System.out.println(PostgresVisitor.asString(generateConstant));
-                System.out.println("DONE");
                 sb.append(PostgresVisitor.asString(generateConstant));
             } else {
                 sb.append("DEFAULT");

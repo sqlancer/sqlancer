@@ -112,7 +112,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         return this;
     }
     public static PostgresExpression generateConstantDDL(Randomly r, PostgresDataType dataType){
-//        return generateConstant(r,dataType == PostgresDataType.JSON ? PostgresDataType.JSON_DDL : dataType);
         if(dataType == PostgresDataType.JSON){
             return new PostgresConstant.JsonConstant(r.getJson());
         }
@@ -385,7 +384,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum JsonExpression {
-        TEXT_EXTRACTION_OP, JSON_EXTRACTION_OP;
+        JSON_EXTRACTION_OP,CAST;
     }
 
     private PostgresExpression generateJsonExpression(int depth) {
@@ -393,12 +392,11 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         List<JsonExpression> validOptions = new ArrayList<>(Arrays.asList(JsonExpression.values()));
         option = Randomly.fromList(validOptions);
         switch (option) {
-        case TEXT_EXTRACTION_OP:
-            return new PostgresExtractorJsonOperation(
-                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.TEXT_EXTRACTOR,generateConstant(r, PostgresDataType.TEXT));
         case JSON_EXTRACTION_OP:
             return new PostgresExtractorJsonOperation(
-                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.JSON_EXTRACTOR,generateExpression(depth + 1, PostgresDataType.JSON));
+                    PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.JSON_EXTRACTOR,generateExpression(depth + 1, PostgresDataType.JSON),generateConstant(r,PostgresDataType.TEXT));
+        case CAST:
+            return new PostgresCastOperation(generateExpression(depth + 1), getCompoundDataType(PostgresDataType.JSON));
         default:
             throw new AssertionError(option);
         }
@@ -423,7 +421,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum TextExpression {
-        CAST, FUNCTION, CONCAT, COLLATE
+        CAST, FUNCTION, CONCAT, COLLATE, JSON_TEXT
     }
 
     private PostgresExpression generateTextExpression(int depth) {
@@ -448,6 +446,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             assert !expectedResult;
             return new PostgresCollate(generateExpression(depth + 1, PostgresDataType.TEXT), globalState == null
                     ? Randomly.fromOptions("C", "POSIX", "de_CH.utf8", "es_CR.utf8") : globalState.getRandomCollate());
+        case JSON_TEXT:
+            return new PostgresExtractorJsonOperation(
+                        PostgresExtractorJsonOperation.PostgresExtractorJsonOperator.TEXT_EXTRACTOR,generateExpression(depth+1,PostgresDataType.JSON),generateConstant(r, PostgresDataType.TEXT));
         default:
             throw new AssertionError();
         }

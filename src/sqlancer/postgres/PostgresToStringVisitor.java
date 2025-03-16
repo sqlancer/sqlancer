@@ -334,6 +334,14 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         sb.append('"');
         sb.append(")");
     }
+    @Override
+    public void visit(PostgresExtractorJsonOperation op){
+        sb.append("(");
+        visit(op.getLeft());
+        sb.append(op.getOperatorRepresentation());
+        visit(op.getRight());
+        sb.append(")");
+    };
 
     @Override
     public void visit(PostgresBinaryLogicalOperation op) {
@@ -344,11 +352,5 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     public void visit(PostgresLikeOperation op) {
         super.visit((BinaryOperation<PostgresExpression>) op);
     }
-
-    @Override
-    public void visit(PostgresExtractorJsonOperation op){
-        System.out.println("JSON INSIDE");
-        System.out.println(op.toString());
-    };
 
 }
