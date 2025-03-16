@@ -1,14 +1,16 @@
 package sqlancer.postgres.gen;
 
 import sqlancer.Randomly;
+import sqlancer.SQLDiscardGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 
-public final class PostgresDiscardGenerator {
+public final class PostgresDiscardGenerator extends SQLDiscardGenerator {
 
     private PostgresDiscardGenerator() {
+        super();
     }
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
@@ -33,7 +35,4 @@ public final class PostgresDiscardGenerator {
         };
     }
 
-    private static boolean canDiscardTemporaryTables(String what) {
-        return what.contentEquals("TEMPORARY") || what.contentEquals("TEMP") || what.contentEquals("ALL");
-    }
 }
