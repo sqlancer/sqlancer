@@ -1,14 +1,16 @@
 package sqlancer.yugabyte.ysql.gen;
 
 import sqlancer.Randomly;
+import sqlancer.SQLDiscardGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable.TableType;
 
-public final class YSQLDiscardGenerator {
+public final class YSQLDiscardGenerator extends SQLDiscardGenerator {
 
     private YSQLDiscardGenerator() {
+        super();
     }
 
     public static SQLQueryAdapter create(YSQLGlobalState globalState) {
@@ -33,7 +35,4 @@ public final class YSQLDiscardGenerator {
         };
     }
 
-    private static boolean canDiscardTemporaryTables(String what) {
-        return what.contentEquals("TEMPORARY") || what.contentEquals("TEMP") || what.contentEquals("ALL");
-    }
 }
