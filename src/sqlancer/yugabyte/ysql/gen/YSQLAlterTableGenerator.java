@@ -7,12 +7,8 @@ import sqlancer.Randomly;
 import sqlancer.SQLAlterTableGenerator;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.postgres.PostgresGlobalState;
-import sqlancer.postgres.PostgresSchema;
-import sqlancer.postgres.gen.PostgresAlterTableGenerator;
 import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
-import sqlancer.yugabyte.ysql.YSQLSchema;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
 public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, YSQLGlobalState, YSQLAlterTableGenerator.Action> {
