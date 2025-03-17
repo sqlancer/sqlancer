@@ -77,19 +77,22 @@ public class TestRandomly {
                 || i++ < NR_MIN_RUNS);
     }
 
-    @Test // TODO: also generate and check for NaN
+    @Test
     public void testDouble() {
         Randomly r = new Randomly();
         boolean encounteredZero = false;
         boolean encounteredPositive = false;
         boolean encounteredNegative = false;
         boolean encounteredInfinity = false;
+        boolean encounteredNaN = false;
         do {
             double doubleVal = r.getDouble();
             if (doubleVal == 0) {
                 encounteredZero = true;
             } else if (Double.isInfinite(doubleVal)) {
                 encounteredInfinity = true;
+            } else if (Double.isNaN(doubleVal)) {
+                encounteredNaN = true;
             } else if (doubleVal > 0) {
                 encounteredPositive = true;
             } else if (doubleVal < 0) {
@@ -97,14 +100,17 @@ public class TestRandomly {
             } else {
                 fail(String.valueOf(doubleVal));
             }
-        } while (!encounteredZero || !encounteredPositive || !encounteredNegative || !encounteredInfinity);
+        } while (!encounteredZero || !encounteredPositive || !encounteredNegative || !encounteredInfinity
+                || !encounteredNaN);
     }
 
     @Test
     public void testFiniteDouble() {
         Randomly r = new Randomly();
         for (int i = 0; i < NR_MIN_RUNS; i++) {
-            assertFalse(Double.isInfinite(r.getFiniteDouble()));
+            double doubleVal = r.getFiniteDouble();
+            assertFalse(Double.isNaN(doubleVal));
+            assertFalse(Double.isInfinite(doubleVal));
         }
     }
 
