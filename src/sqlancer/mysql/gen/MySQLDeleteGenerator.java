@@ -52,14 +52,29 @@ public class MySQLDeleteGenerator {
                                                     */, "Truncated incorrect INTEGER value",
                 "Truncated incorrect DECIMAL value", "Data truncated for functional index"));
 
-        if(Randomly.getBoolean()) {
+        if (Randomly.getBoolean()) {
             HashSet<String> columnSet = new HashSet<>();
             sb.append(" ORDER BY ");
-            sb.append(randomTable.getRandomColumn().getName());
-            if (Randomly.getBoolean()) {
-                sb.append(" DESC");
-            }
 
+            int numColumns = 3; // TODO : Generate Columns Randomly
+
+            for (int i = 0; i < numColumns; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+
+                String columnName;
+                do {
+                    columnName = randomTable.getRandomColumn().getName();
+                } while (columnSet.contains(columnName));
+
+                columnSet.add(columnName);
+                sb.append(columnName);
+
+                if (Randomly.getBoolean()) {
+                    sb.append(" DESC");
+                }
+            }
         }
         return new SQLQueryAdapter(sb.toString(), errors);
     }
