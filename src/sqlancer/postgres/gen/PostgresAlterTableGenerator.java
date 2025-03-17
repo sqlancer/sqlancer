@@ -374,9 +374,6 @@ public class PostgresAlterTableGenerator extends SQLAlterTableGenerator<Postgres
         PostgresCommon.addTableConstraint(sb, randomTable, globalState, errors);
     }
 
-    @Override
-    public void addTableConstraintIndexHelper(ExpectedErrors errors){}
-
     private static void alterColumn(PostgresTable randomTable, StringBuilder sb) {
         sb.append("ALTER ");
         randomColumn = randomTable.getRandomColumn();

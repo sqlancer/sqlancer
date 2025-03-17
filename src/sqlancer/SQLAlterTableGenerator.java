@@ -3,8 +3,6 @@ package sqlancer;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractRelationalTable;
-import sqlancer.postgres.gen.PostgresAlterTableGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLCommon;
 
 import java.util.List;
 
@@ -162,7 +160,7 @@ private void addTableConstraint(StringBuilder sb, ExpectedErrors errors) {
         errors.add("is violated by some row");
     }
 }
-public abstract void addTableConstraintHelper(StringBuilder sb, ExpectedErrors errors);
+public void addTableConstraintHelper(StringBuilder sb, ExpectedErrors errors){}
 
 private void addTableConstraintIndex(StringBuilder sb, ExpectedErrors errors) {
     sb.append("ADD ");
