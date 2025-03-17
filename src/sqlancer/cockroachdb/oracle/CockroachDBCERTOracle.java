@@ -1,5 +1,7 @@
 package sqlancer.cockroachdb.oracle;
 
+import static sqlancer.cockroachdb.CockroachDBUtils.selectAndSetNewJoinType;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -141,20 +143,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         }
 
         JoinType newJoinType = CockroachDBJoin.JoinType.INNER;
-        if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invariant relation
-                                                                                           // between LEFT and RIGHT
-                                                                                           // join
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, JoinType.CROSS,
-                    JoinType.LEFT, JoinType.RIGHT);
-        } else if (join.getJoinType() == JoinType.FULL) {
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, JoinType.CROSS);
-        } else if (join.getJoinType() != JoinType.CROSS) {
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, join.getJoinType());
-        }
-        assert newJoinType != JoinType.NATURAL; // Natural Join is not supported for CERT
-        boolean increase = join.getJoinType().ordinal() < newJoinType.ordinal();
-        join.setJoinType(newJoinType);
-        return increase;
+        return selectAndSetNewJoinType(join, newJoinType);
     }
 
     @Override
