@@ -94,13 +94,16 @@ public abstract class SQLAlterTableGenerator<T extends AbstractRelationalTable<?
                 break;
             case "SET_LOGGED_UNCLOGGED":
                 setLoggedUnclogged(sb, errors);
+                break;
             case "NOT_OF":
                 notOf(sb, errors);
+                break;
             case "OWNER_TO":
                 ownerTo(sb);
+                break;
             case "REPLICA_IDENTITY":
                 replicaIdentity(sb, errors, randomTable);
-
+                break;
             default:
                 throw new AssertionError(a);
             }
