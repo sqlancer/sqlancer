@@ -433,4 +433,39 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         }
         sb.append(")");
     }
+
+    public void generateCaseStatement(T switchCondition, List<T> conditions, List<T> thenClauses,
+                                       T elseExpression, boolean isCockroachDB) {
+        if (isCockroachDB) {
+            sb.append("CASE ");
+        } else {
+            sb.append("(CASE ");
+            visit(switchCondition);
+        }
+
+        for (int i = 0; i < conditions.size(); i++) {
+            sb.append(" WHEN ");
+            visit(conditions.get(i));
+            sb.append(" THEN ");
+            visit(thenClauses.get(i));
+            if (isCockroachDB) {
+                sb.append(" ");
+            }
+        }
+
+        if (elseExpression != null) {
+            sb.append(" ELSE ");
+            visit(elseExpression);
+            if (isCockroachDB) {
+                sb.append(" ");
+            }
+        }
+
+        if (isCockroachDB) {
+            sb.append("END");
+        } else {
+            sb.append(" END )");
+        }
+    }
+
 }
