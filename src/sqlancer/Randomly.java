@@ -10,6 +10,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 public final class Randomly {
+    private boolean hasNaN;
     private static StringGenerationStrategy stringGenerationStrategy = StringGenerationStrategy.SOPHISTICATED;
     private static int maxStringLength = 10;
     private static boolean useCaching = true;
@@ -40,6 +41,11 @@ public final class Randomly {
     private void addToCache(double val) {
         if (useCaching && cachedDoubles.size() < cacheSize && !cachedDoubles.contains(val)) {
             if (Double.isNaN(val)) {
+                if (hasNaN) {
+                    return;
+                }
+                hasNaN = true;
+            } else if (cachedDoubles.contains(val)) {
                 return;
             }
             cachedDoubles.add(val);
@@ -76,7 +82,7 @@ public final class Randomly {
             return (double) Randomly.fromList(cachedLongs);
         } else if (!cachedDoubles.isEmpty()) {
             Double doubleVal = Randomly.fromList(cachedDoubles);
-            return doubleVal == null || Double.isNaN(doubleVal) ? 0.0 : doubleVal;
+            return doubleVal == null || Double.isNaN(doubleVal) ? Double.NaN : doubleVal;
         } else {
             return null;
         }
