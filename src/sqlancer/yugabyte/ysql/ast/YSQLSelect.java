@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
@@ -14,7 +15,7 @@ import sqlancer.yugabyte.ysql.YSQLVisitor;
 public class YSQLSelect extends SelectBase<YSQLExpression>
         implements YSQLExpression, Select<YSQLJoin, YSQLExpression, YSQLTable, YSQLColumn> {
 
-    private List<YSQLJoin> joinClauses = Collections.emptyList();
+    private List<JoinBase<YSQLExpression>> joinClauses = Collections.emptyList();
     private YSQLExpression distinctOnClause;
     private ForClause forClause;
 
@@ -28,16 +29,17 @@ public class YSQLSelect extends SelectBase<YSQLExpression>
     }
 
     @Override
-    public List<YSQLJoin> getJoinClauses() {
+    public List<JoinBase<YSQLExpression>> getJoinClauses() {
         return joinClauses;
     }
 
     @Override
-    public void setJoinClauses(List<YSQLJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<YSQLExpression>> joinStatements) {
         this.joinClauses = joinStatements;
 
     }
 
+    @Override
     public YSQLExpression getDistinctOnClause() {
         return distinctOnClause;
     }

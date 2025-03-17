@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -14,7 +15,7 @@ import sqlancer.postgres.PostgresVisitor;
 public class PostgresSelect extends SelectBase<PostgresExpression>
         implements PostgresExpression, Select<PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn> {
 
-    private List<PostgresJoin> joinClauses = Collections.emptyList();
+    private List<JoinBase<PostgresExpression>> joinClauses = Collections.emptyList();
     private PostgresExpression distinctOnClause;
     private ForClause forClause;
 
@@ -99,16 +100,17 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
     }
 
     @Override
-    public void setJoinClauses(List<PostgresJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<PostgresExpression>> joinStatements) {
         this.joinClauses = joinStatements;
 
     }
 
     @Override
-    public List<PostgresJoin> getJoinClauses() {
+    public List<JoinBase<PostgresExpression>> getJoinClauses() {
         return joinClauses;
     }
 
+    @Override
     public PostgresExpression getDistinctOnClause() {
         return distinctOnClause;
     }

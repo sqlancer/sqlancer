@@ -4,7 +4,7 @@ import java.util.List;
 
 import sqlancer.common.ast.SelectBase;
 
-public abstract class NewToStringVisitor<E> {
+public abstract class NewToStringVisitor<E extends Expression<?>> {
 
     protected final StringBuilder sb = new StringBuilder();
 
@@ -176,10 +176,22 @@ public abstract class NewToStringVisitor<E> {
         }
 
         visitSelectColumns(select);
+        visitFromClause(select);
+        visitJoinClauses(select);
+        visitWhereClause(select);
+        visitGroupByClause(select);
+        visitHavingClause(select);
+        visitOrderByClause(select);
+        visitLimitClause(select);
+        visitOffsetClause(select);
+    }
 
+    protected void visitFromClause(SelectBase<E> select) {
         sb.append(" FROM ");
         visit(select.getFromList());
+    }
 
+    protected void visitJoinClauses(SelectBase<E> select) {
         if (!select.getFromList().isEmpty() && !select.getJoinList().isEmpty()) {
             sb.append(", ");
         }
@@ -187,13 +199,6 @@ public abstract class NewToStringVisitor<E> {
         if (!select.getJoinList().isEmpty()) {
             visit(select.getJoinList());
         }
-
-        visitWhereClause(select);
-        visitGroupByClause(select);
-        visitHavingClause(select);
-        visitOrderByClause(select);
-        visitLimitClause(select);
-        visitOffsetClause(select);
     }
 
     protected void visitWhereClause(SelectBase<E> select) {

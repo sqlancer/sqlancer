@@ -20,6 +20,7 @@ import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBSubquery;
 import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
 import sqlancer.cnosdb.oracle.CnosDBNoRECOracle;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -73,6 +74,7 @@ public class CnosDBTLPBase extends TernaryLogicPartitioningOracleBase<CnosDBExpr
         return CnosDBNoRECOracle.getJoinStatements(state, columns, tables);
     }
 
+    @SuppressWarnings("unchecked")
     protected void generateSelectBase(List<CnosDBTable> tables, List<CnosDBJoin> joins) {
         List<CnosDBExpression> tableList = tables.stream().map(CnosDBFromTable::new).collect(Collectors.toList());
         gen = new CnosDBExpressionGenerator(state).setColumns(targetTables.getColumns());
@@ -81,7 +83,7 @@ public class CnosDBTLPBase extends TernaryLogicPartitioningOracleBase<CnosDBExpr
         select.setFetchColumns(generateFetchColumns());
         select.setFromList(tableList);
         select.setWhereClause(null);
-        select.setJoinClauses(joins);
+        select.setJoinClauses((List<JoinBase<CnosDBExpression>>) (List<?>) joins);
     }
 
     List<CnosDBExpression> generateFetchColumns() {

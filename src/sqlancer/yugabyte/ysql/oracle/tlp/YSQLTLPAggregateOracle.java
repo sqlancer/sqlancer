@@ -11,6 +11,7 @@ import org.postgresql.util.PSQLException;
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
@@ -22,7 +23,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLAggregate;
 import sqlancer.yugabyte.ysql.ast.YSQLAggregate.YSQLAggregateFunction;
 import sqlancer.yugabyte.ysql.ast.YSQLAlias;
 import sqlancer.yugabyte.ysql.ast.YSQLExpression;
-import sqlancer.yugabyte.ysql.ast.YSQLJoin;
 import sqlancer.yugabyte.ysql.ast.YSQLPostfixOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLPostfixOperation.PostfixOperator;
 import sqlancer.yugabyte.ysql.ast.YSQLPrefixOperation;
@@ -179,7 +179,7 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YS
     }
 
     private YSQLSelect getSelect(List<YSQLExpression> aggregates, List<YSQLExpression> from, YSQLExpression whereClause,
-            List<YSQLJoin> joinList) {
+            List<JoinBase<YSQLExpression>> joinList) {
         YSQLSelect leftSelect = new YSQLSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);

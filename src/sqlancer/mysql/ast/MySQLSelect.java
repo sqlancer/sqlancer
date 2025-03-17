@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
@@ -55,15 +56,16 @@ public class MySQLSelect extends SelectBase<MySQLExpression>
     }
 
     @Override
-    public void setJoinClauses(List<MySQLJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<MySQLExpression>> joinStatements) {
         List<MySQLExpression> expressions = joinStatements.stream().map(e -> (MySQLExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public List<MySQLJoin> getJoinClauses() {
-        return getJoinList().stream().map(e -> (MySQLJoin) e).collect(Collectors.toList());
+    public List<JoinBase<MySQLExpression>> getJoinClauses() {
+        return getJoinList().stream().map(e -> (JoinBase<MySQLExpression>) e).collect(Collectors.toList());
     }
 
     @Override

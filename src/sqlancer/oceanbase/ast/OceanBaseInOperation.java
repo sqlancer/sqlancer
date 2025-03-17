@@ -2,7 +2,9 @@ package sqlancer.oceanbase.ast;
 
 import java.util.List;
 
-public class OceanBaseInOperation implements OceanBaseExpression {
+import sqlancer.common.schema.AbstractInOperation;
+
+public class OceanBaseInOperation implements OceanBaseExpression, AbstractInOperation<OceanBaseExpression> {
 
     private final OceanBaseExpression expr;
     private final List<OceanBaseExpression> listElements;
@@ -14,10 +16,12 @@ public class OceanBaseInOperation implements OceanBaseExpression {
         this.isTrue = isTrue;
     }
 
+    @Override
     public OceanBaseExpression getExpr() {
         return expr;
     }
 
+    @Override
     public List<OceanBaseExpression> getListElements() {
         return listElements;
     }
@@ -50,6 +54,7 @@ public class OceanBaseInOperation implements OceanBaseExpression {
 
     }
 
+    @Override
     public boolean isTrue() {
         return isTrue;
     }

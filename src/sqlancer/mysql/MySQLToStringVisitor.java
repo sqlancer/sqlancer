@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
@@ -45,7 +47,24 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
             visit(s.getHint());
             sb.append("*/ ");
         }
-        switch (s.getFromOptions()) {
+        visitSelectOption(s);
+        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
+        if (s.getModifiers().size() > 0) {
+            sb.append(" ");
+        }
+        visitColumns(s);
+        visitFromClause(s);
+        visitJoinClauses(s);
+        visitWhereClause(s);
+        visitGroupByClause(s);
+        visitOrderByClause(s);
+        visitLimitClause(s);
+        visitOffsetClause(s);
+    }
+
+    @Override
+    public void visitSelectOption(SelectBase<MySQLExpression> s) {
+        switch (((MySQLSelect) s).getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");
             break;
@@ -58,10 +77,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
         default:
             throw new AssertionError();
         }
-        sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
-        if (s.getModifiers().size() > 0) {
-            sb.append(" ");
-        }
+    }
+
+    @Override
+    public void visitColumns(SelectBase<MySQLExpression> s) {
         if (s.getFetchColumns() == null) {
             sb.append("*");
         } else {
@@ -76,6 +95,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 sb.append(ref++);
             }
         }
+    }
+
+    @Override
+    public void visitFromClause(SelectBase<MySQLExpression> s) {
         sb.append(" FROM ");
         for (int i = 0; i < s.getFromList().size(); i++) {
             if (i != 0) {
@@ -83,15 +106,17 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
             }
             visit(s.getFromList().get(i));
         }
+    }
+
+    @Override
+    public void visitJoinClauses(SelectBase<MySQLExpression> s) {
         for (MySQLExpression j : s.getJoinList()) {
             visit(j);
         }
+    }
 
-        if (s.getWhereClause() != null) {
-            MySQLExpression whereClause = s.getWhereClause();
-            sb.append(" WHERE ");
-            visit(whereClause);
-        }
+    @Override
+    public void visitGroupByClause(SelectBase<MySQLExpression> s) {
         if (s.getGroupByExpressions() != null && s.getGroupByExpressions().size() > 0) {
             sb.append(" ");
             sb.append("GROUP BY ");
@@ -103,6 +128,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 visit(groupBys.get(i));
             }
         }
+    }
+
+    @Override
+    public void visitOrderByClause(SelectBase<MySQLExpression> s) {
         if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
             List<MySQLExpression> orderBys = s.getOrderByClauses();
@@ -112,15 +141,6 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
                 }
                 visit(s.getOrderByClauses().get(i));
             }
-        }
-        if (s.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(s.getLimitClause());
-        }
-
-        if (s.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(s.getOffsetClause());
         }
     }
 
@@ -135,36 +155,23 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     }
 
     @Override
+    protected MySQLExpression getJoinOnClause(JoinBase<MySQLExpression> join) {
+        return null;
+    }
+
+    @Override
+    protected MySQLExpression getJoinTableReference(JoinBase<MySQLExpression> join) {
+        return null;
+    }
+
+    @Override
     public void visit(MySQLColumnReference column) {
         sb.append(column.getColumn().getFullQualifiedName());
     }
 
     @Override
     public void visit(MySQLUnaryPostfixOperation op) {
-        sb.append("(");
-        visit(op.getExpression());
-        sb.append(")");
-        sb.append(" IS ");
-        if (op.isNegated()) {
-            sb.append("NOT ");
-        }
-        switch (op.getOperator()) {
-        case IS_FALSE:
-            sb.append("FALSE");
-            break;
-        case IS_NULL:
-            if (Randomly.getBoolean()) {
-                sb.append("UNKNOWN");
-            } else {
-                sb.append("NULL");
-            }
-            break;
-        case IS_TRUE:
-            sb.append("TRUE");
-            break;
-        default:
-            throw new AssertionError(op);
-        }
+        visitUnaryPostfixOperation(op);
     }
 
     @Override
@@ -182,15 +189,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLBinaryLogicalOperation op) {
-        sb.append("(");
-        visit(op.getLeft());
-        sb.append(")");
-        sb.append(" ");
-        sb.append(op.getTextRepresentation());
-        sb.append(" ");
-        sb.append("(");
-        visit(op.getRight());
-        sb.append(")");
+        visitBinaryLogicalOperation(op);
     }
 
     @Override
@@ -215,21 +214,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLInOperation op) {
-        sb.append("(");
-        visit(op.getExpr());
-        sb.append(")");
-        if (!op.isTrue()) {
-            sb.append(" NOT");
-        }
-        sb.append(" IN ");
-        sb.append("(");
-        for (int i = 0; i < op.getListElements().size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            visit(op.getListElements().get(i));
-        }
-        sb.append(")");
+        visitInOperation(op);
     }
 
     @Override
@@ -289,35 +274,10 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
 
     @Override
     public void visit(MySQLJoin join) {
-        sb.append(" ");
-        switch (join.getType()) {
-        case NATURAL:
-            sb.append("NATURAL ");
-            break;
-        case INNER:
-            sb.append("INNER ");
-            break;
-        case STRAIGHT:
-            sb.append("STRAIGHT_");
-            break;
-        case LEFT:
-            sb.append("LEFT ");
-            break;
-        case RIGHT:
-            sb.append("RIGHT ");
-            break;
-        case CROSS:
-            sb.append("CROSS ");
-            break;
-        default:
-            throw new AssertionError(join.getType());
-        }
+        visitBasicJoinType(join);
         sb.append("JOIN ");
         sb.append(join.getTable().getName());
-        if (join.getOnClause() != null) {
-            sb.append(" ON ");
-            visit(join.getOnClause());
-        }
+        visitOnClauses(join);
     }
 
     @Override

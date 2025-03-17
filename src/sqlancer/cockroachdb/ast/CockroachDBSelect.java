@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
 import sqlancer.cockroachdb.CockroachDBVisitor;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 
@@ -24,14 +25,14 @@ public class CockroachDBSelect extends SelectBase<CockroachDBExpression> impleme
     }
 
     @Override
-    public void setJoinClauses(List<CockroachDBJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<CockroachDBExpression>> joinStatements) {
         List<CockroachDBExpression> expressions = joinStatements.stream().map(e -> (CockroachDBExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
     @Override
-    public List<CockroachDBJoin> getJoinClauses() {
+    public List<JoinBase<CockroachDBExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (CockroachDBJoin) e).collect(Collectors.toList());
     }
 

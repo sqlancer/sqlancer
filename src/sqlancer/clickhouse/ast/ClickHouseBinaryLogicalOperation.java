@@ -3,7 +3,7 @@ package sqlancer.clickhouse.ast;
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
-public class ClickHouseBinaryLogicalOperation extends ClickHouseExpression {
+public class ClickHouseBinaryLogicalOperation implements ClickHouseExpression {
 
     private final ClickHouseExpression left;
     private final ClickHouseExpression right;

@@ -4,7 +4,7 @@ import com.clickhouse.client.ClickHouseDataType;
 
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
 
-public class ClickHouseCastOperation extends ClickHouseExpression {
+public class ClickHouseCastOperation implements ClickHouseExpression {
 
     private final ClickHouseExpression expression;
     private final ClickHouseLancerDataType type;

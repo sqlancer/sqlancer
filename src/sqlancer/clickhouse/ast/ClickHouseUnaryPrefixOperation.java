@@ -7,8 +7,7 @@ import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.visitor.UnaryOperation;
 
-public class ClickHouseUnaryPrefixOperation extends ClickHouseExpression
-        implements UnaryOperation<ClickHouseExpression> {
+public class ClickHouseUnaryPrefixOperation implements ClickHouseExpression, UnaryOperation<ClickHouseExpression> {
     private final ClickHouseUnaryPrefixOperation.ClickHouseUnaryPrefixOperator operation;
     private final ClickHouseExpression expression;
 

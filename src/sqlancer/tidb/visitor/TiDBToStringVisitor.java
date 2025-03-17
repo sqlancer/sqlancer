@@ -1,6 +1,7 @@
 package sqlancer.tidb.visitor;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.tidb.ast.TiDBAggregate;
 import sqlancer.tidb.ast.TiDBCase;
@@ -10,7 +11,6 @@ import sqlancer.tidb.ast.TiDBConstant;
 import sqlancer.tidb.ast.TiDBExpression;
 import sqlancer.tidb.ast.TiDBFunctionCall;
 import sqlancer.tidb.ast.TiDBJoin;
-import sqlancer.tidb.ast.TiDBJoin.JoinType;
 import sqlancer.tidb.ast.TiDBSelect;
 import sqlancer.tidb.ast.TiDBTableReference;
 import sqlancer.tidb.ast.TiDBText;
@@ -20,6 +20,16 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
     @Override
     public void visitSpecific(TiDBExpression expr) {
         TiDBVisitor.super.visit(expr);
+    }
+
+    @Override
+    protected TiDBExpression getJoinOnClause(JoinBase<TiDBExpression> join) {
+        return join.getOnClause();
+    }
+
+    @Override
+    protected TiDBExpression getJoinTableReference(JoinBase<TiDBExpression> join) {
+        return join.getTableReference();
     }
 
     @Override
@@ -62,22 +72,10 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
         if (!select.getJoinList().isEmpty()) {
             visit(select.getJoinList());
         }
-        if (select.getWhereClause() != null) {
-            sb.append(" WHERE ");
-            visit(select.getWhereClause());
-        }
-        if (!select.getGroupByExpressions().isEmpty()) {
-            sb.append(" GROUP BY ");
-            visit(select.getGroupByExpressions());
-        }
-        if (select.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(select.getHavingClause());
-        }
-        if (!select.getOrderByClauses().isEmpty()) {
-            sb.append(" ORDER BY ");
-            visit(select.getOrderByClauses());
-        }
+        visitWhereClause(select);
+        visitGroupByClause(select);
+        visitHavingClause(select);
+        visitOrderByClause(select);
     }
 
     @Override
@@ -138,7 +136,7 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
             throw new AssertionError();
         }
         visit(join.getRightTable());
-        if (join.getOnCondition() != null && join.getJoinType() != JoinType.NATURAL) {
+        if (join.getOnCondition() != null && join.getJoinType() != JoinBase.JoinType.NATURAL) {
             sb.append(" ON ");
             visit(join.getOnCondition());
         }

@@ -1,6 +1,6 @@
 package sqlancer.clickhouse.ast;
 
-public class ClickHouseAliasOperation extends ClickHouseExpression {
+public class ClickHouseAliasOperation implements ClickHouseExpression {
 
     private final ClickHouseExpression expression;
     private final String alias;

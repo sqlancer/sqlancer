@@ -1,25 +1,17 @@
 package sqlancer.hsqldb.ast;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBTable;
 
-public class HSQLDBJoin implements HSQLDBExpression, Join<HSQLDBExpression, HSQLDBTable, HSQLDBColumn> {
+public class HSQLDBJoin extends JoinBase<HSQLDBExpression>
+        implements HSQLDBExpression, Join<HSQLDBExpression, HSQLDBTable, HSQLDBColumn> {
 
     private final HSQLDBTableReference leftTable;
     private final HSQLDBTableReference rightTable;
-    private final JoinType joinType;
-    private HSQLDBExpression onCondition;
     private OuterType outerType;
-
-    public enum JoinType {
-        INNER, NATURAL, LEFT, RIGHT;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
 
     public enum OuterType {
         FULL, LEFT, RIGHT;
@@ -31,10 +23,9 @@ public class HSQLDBJoin implements HSQLDBExpression, Join<HSQLDBExpression, HSQL
 
     public HSQLDBJoin(HSQLDBTableReference leftTable, HSQLDBTableReference rightTable, JoinType joinType,
             HSQLDBExpression whereCondition) {
+        super(joinType, whereCondition);
         this.leftTable = leftTable;
         this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
     }
 
     public HSQLDBTableReference getLeftTable() {
@@ -46,11 +37,11 @@ public class HSQLDBJoin implements HSQLDBExpression, Join<HSQLDBExpression, HSQL
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     public HSQLDBExpression getOnCondition() {
-        return onCondition;
+        return onClause;
     }
 
     private void setOuterType(OuterType outerType) {
@@ -85,7 +76,7 @@ public class HSQLDBJoin implements HSQLDBExpression, Join<HSQLDBExpression, HSQL
 
     @Override
     public void setOnClause(HSQLDBExpression onClause) {
-        onCondition = onClause;
+        super.onClause = onClause;
     }
 
 }

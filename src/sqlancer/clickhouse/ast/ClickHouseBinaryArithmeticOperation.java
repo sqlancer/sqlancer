@@ -3,8 +3,8 @@ package sqlancer.clickhouse.ast;
 import sqlancer.Randomly;
 import sqlancer.common.visitor.BinaryOperation;
 
-public class ClickHouseBinaryArithmeticOperation extends ClickHouseExpression
-        implements BinaryOperation<ClickHouseExpression> {
+public class ClickHouseBinaryArithmeticOperation
+        implements ClickHouseExpression, BinaryOperation<ClickHouseExpression> {
 
     public enum ClickHouseBinaryArithmeticOperator {
         ADD("+"), //

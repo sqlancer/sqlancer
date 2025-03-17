@@ -4,17 +4,18 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
-import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
+import sqlancer.materialize.MaterializeSchema;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 import sqlancer.materialize.MaterializeVisitor;
 
 public class MaterializeSelect extends SelectBase<MaterializeExpression> implements MaterializeExpression,
-        Select<MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn> {
+        Select<MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeSchema.MaterializeColumn> {
 
-    private List<MaterializeJoin> joinClauses = Collections.emptyList();
+    private List<JoinBase<MaterializeExpression>> joinClauses = Collections.emptyList();
     private MaterializeExpression distinctOnClause;
     private ForClause forClause;
 
@@ -99,16 +100,16 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
     }
 
     @Override
-    public void setJoinClauses(List<MaterializeJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<MaterializeExpression>> joinStatements) {
         this.joinClauses = joinStatements;
-
     }
 
     @Override
-    public List<MaterializeJoin> getJoinClauses() {
+    public List<JoinBase<MaterializeExpression>> getJoinClauses() {
         return joinClauses;
     }
 
+    @Override
     public MaterializeExpression getDistinctOnClause() {
         return distinctOnClause;
     }
@@ -125,4 +126,5 @@ public class MaterializeSelect extends SelectBase<MaterializeExpression> impleme
     public String asString() {
         return MaterializeVisitor.asString(this);
     }
+
 }

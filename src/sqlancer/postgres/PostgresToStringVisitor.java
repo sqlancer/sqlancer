@@ -1,10 +1,10 @@
 package sqlancer.postgres;
 
-import java.util.Optional;
-
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.schema.AbstractCompoundDataType;
 import sqlancer.common.visitor.BinaryOperation;
-import sqlancer.common.visitor.SelectToStringVisitor;
+import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
@@ -17,8 +17,6 @@ import sqlancer.postgres.ast.PostgresConstant;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
-import sqlancer.postgres.ast.PostgresJoin;
-import sqlancer.postgres.ast.PostgresJoin.PostgresJoinType;
 import sqlancer.postgres.ast.PostgresLikeOperation;
 import sqlancer.postgres.ast.PostgresOrderByTerm;
 import sqlancer.postgres.ast.PostgresPOSIXRegularExpression;
@@ -31,51 +29,7 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
 
-public final class PostgresToStringVisitor
-        extends SelectToStringVisitor<PostgresExpression, PostgresSelect, PostgresJoin> implements PostgresVisitor {
-
-    @Override
-    protected PostgresExpression getDistinctOnClause(PostgresSelect select) {
-        return select.getDistinctOnClause();
-    }
-
-    @Override
-    protected void visitJoinClauses(PostgresSelect select) {
-        for (PostgresJoin join : select.getJoinClauses()) {
-            visitJoinClause(join);
-        }
-    }
-
-    @Override
-    protected void visitJoinType(PostgresJoin join) {
-        switch (join.getType()) {
-        case INNER:
-            if (Randomly.getBoolean()) {
-                sb.append("INNER ");
-            }
-            sb.append("JOIN");
-            break;
-        case LEFT:
-            sb.append("LEFT OUTER JOIN");
-            break;
-        case RIGHT:
-            sb.append("RIGHT OUTER JOIN");
-            break;
-        case FULL:
-            sb.append("FULL OUTER JOIN");
-            break;
-        case CROSS:
-            sb.append("CROSS JOIN");
-            break;
-        default:
-            throw new AssertionError(join.getType());
-        }
-    }
-
-    @Override
-    protected boolean shouldVisitOnClause(PostgresJoin join) {
-        return join.getType() != PostgresJoinType.CROSS;
-    }
+public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 
     @Override
     protected boolean hasDistinctOnSupport() {
@@ -154,12 +108,12 @@ public final class PostgresToStringVisitor
     }
 
     @Override
-    protected PostgresExpression getJoinOnClause(PostgresJoin join) {
+    protected PostgresExpression getJoinOnClause(JoinBase<PostgresExpression> join) {
         return join.getOnClause();
     }
 
     @Override
-    protected PostgresExpression getJoinTableReference(PostgresJoin join) {
+    protected PostgresExpression getJoinTableReference(JoinBase<PostgresExpression> join) {
         return join.getTableReference();
     }
 
@@ -186,68 +140,22 @@ public final class PostgresToStringVisitor
 
     @Override
     public void visit(PostgresCastOperation cast) {
-        if (Randomly.getBoolean()) {
-            sb.append("CAST(");
-            visit(cast.getExpression());
-            sb.append(" AS ");
-            appendType(cast);
-            sb.append(")");
-        } else {
-            sb.append("(");
-            visit(cast.getExpression());
-            sb.append(")::");
-            appendType(cast);
-        }
+        visitCastOperation(cast);
     }
 
-    private void appendType(PostgresCastOperation cast) {
-        PostgresCompoundDataType compoundType = cast.getCompoundType();
-        switch (compoundType.getDataType()) {
-        case BOOLEAN:
-            sb.append("BOOLEAN");
-            break;
-        case INT: // TODO support also other int types
-            sb.append("INT");
-            break;
-        case TEXT:
-            // TODO: append TEXT, CHAR
-            sb.append(Randomly.fromOptions("VARCHAR"));
-            break;
-        case REAL:
-            sb.append("FLOAT");
-            break;
-        case DECIMAL:
-            sb.append("DECIMAL");
-            break;
-        case FLOAT:
-            sb.append("REAL");
-            break;
-        case RANGE:
-            sb.append("int4range");
-            break;
-        case MONEY:
-            sb.append("MONEY");
-            break;
-        case INET:
-            sb.append("INET");
-            break;
-        case BIT:
-            sb.append("BIT");
-            // if (Randomly.getBoolean()) {
-            // sb.append("(");
-            // sb.append(Randomly.getNotCachedInteger(1, 100));
-            // sb.append(")");
-            // }
-            break;
-        default:
-            throw new AssertionError(cast.getType());
-        }
-        Optional<Integer> size = compoundType.getSize();
-        if (size.isPresent()) {
-            sb.append("(");
-            sb.append(size.get());
-            sb.append(")");
-        }
+    @Override
+    public void mapRealType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("FLOAT");
+    }
+
+    @Override
+    public void mapFloatType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("REAL");
+    }
+
+    @Override
+    public void mapByteaType(AbstractCompoundDataType<?> compoundType) {
+        throw new AssertionError(compoundType.getDataType());
     }
 
     @Override

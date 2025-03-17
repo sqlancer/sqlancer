@@ -22,11 +22,11 @@ import sqlancer.cockroachdb.ast.CockroachDBBinaryLogicalOperation.CockroachDBBin
 import sqlancer.cockroachdb.ast.CockroachDBColumnReference;
 import sqlancer.cockroachdb.ast.CockroachDBExpression;
 import sqlancer.cockroachdb.ast.CockroachDBJoin;
-import sqlancer.cockroachdb.ast.CockroachDBJoin.JoinType;
 import sqlancer.cockroachdb.ast.CockroachDBSelect;
 import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.common.DBMSCommon;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.oracle.CERTOracleBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -116,7 +116,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
             CockroachDBExpressionGenerator joinGen = new CockroachDBExpressionGenerator(globalState)
                     .setColumns(columns);
             joinExpressions.add(CockroachDBJoin.createJoin(leftTable, rightTable,
-                    CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL),
+                    CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL),
                     joinGen.generateExpression(CockroachDBDataType.BOOL.get())));
         }
         return joinExpressions;
@@ -144,12 +144,12 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invariant relation
                                                                                            // between LEFT and RIGHT
                                                                                            // join
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, JoinType.CROSS, JoinType.LEFT,
-                    JoinType.RIGHT);
+            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, JoinType.CROSS,
+                    JoinType.LEFT, JoinType.RIGHT);
         } else if (join.getJoinType() == JoinType.FULL) {
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, JoinType.CROSS);
+            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, JoinType.CROSS);
         } else if (join.getJoinType() != JoinType.CROSS) {
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept(JoinType.NATURAL, join.getJoinType());
+            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, join.getJoinType());
         }
         assert newJoinType != JoinType.NATURAL; // Natural Join is not supported for CERT
         boolean increase = join.getJoinType().ordinal() < newJoinType.ordinal();

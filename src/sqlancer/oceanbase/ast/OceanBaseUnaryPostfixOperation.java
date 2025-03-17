@@ -1,6 +1,9 @@
 package sqlancer.oceanbase.ast;
 
-public class OceanBaseUnaryPostfixOperation implements OceanBaseExpression {
+import sqlancer.common.schema.AbstractPostfixOperation;
+
+public class OceanBaseUnaryPostfixOperation
+        implements OceanBaseExpression, AbstractPostfixOperation<OceanBaseExpression> {
 
     private final OceanBaseExpression expression;
     private final UnaryPostfixOperator operator;
@@ -16,14 +19,17 @@ public class OceanBaseUnaryPostfixOperation implements OceanBaseExpression {
         this.setNegate(negate);
     }
 
+    @Override
     public OceanBaseExpression getExpression() {
         return expression;
     }
 
+    @Override
     public UnaryPostfixOperator getOperator() {
         return operator;
     }
 
+    @Override
     public boolean isNegated() {
         return negate;
     }

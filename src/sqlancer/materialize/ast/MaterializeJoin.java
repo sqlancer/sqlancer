@@ -1,43 +1,30 @@
 package sqlancer.materialize.ast;
 
-import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 
-public class MaterializeJoin
+public class MaterializeJoin extends JoinBase<MaterializeExpression>
         implements MaterializeExpression, Join<MaterializeExpression, MaterializeTable, MaterializeColumn> {
 
-    public enum MaterializeJoinType {
-        INNER, LEFT, RIGHT, FULL, CROSS;
-
-        public static MaterializeJoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
+    public MaterializeJoin(MaterializeExpression tableReference, MaterializeExpression onClause, JoinType type) {
+        super(tableReference, onClause, type);
     }
 
-    private MaterializeExpression onClause;
-    private final MaterializeExpression tableReference;
-    private final MaterializeJoinType type;
-
-    public MaterializeJoin(MaterializeExpression tableReference, MaterializeExpression onClause,
-            MaterializeJoinType type) {
-        this.tableReference = tableReference;
-        this.onClause = onClause;
-        this.type = type;
-    }
-
+    @Override
     public MaterializeExpression getTableReference() {
         return tableReference;
     }
 
+    @Override
     public MaterializeExpression getOnClause() {
         return onClause;
     }
 
-    public MaterializeJoinType getType() {
+    @Override
+    public JoinType getType() {
         return type;
     }
 

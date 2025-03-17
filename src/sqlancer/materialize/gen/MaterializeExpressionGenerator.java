@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
@@ -43,7 +44,6 @@ import sqlancer.materialize.ast.MaterializeFunction.MaterializeFunctionWithResul
 import sqlancer.materialize.ast.MaterializeFunctionWithUnknownResult;
 import sqlancer.materialize.ast.MaterializeInOperation;
 import sqlancer.materialize.ast.MaterializeJoin;
-import sqlancer.materialize.ast.MaterializeJoin.MaterializeJoinType;
 import sqlancer.materialize.ast.MaterializeLikeOperation;
 import sqlancer.materialize.ast.MaterializeOrderByTerm;
 import sqlancer.materialize.ast.MaterializeOrderByTerm.MaterializeOrder;
@@ -559,7 +559,7 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
             MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
             MaterializeTable table = Randomly.fromList(tables);
             tables.remove(table);
-            MaterializeJoinType options = MaterializeJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             MaterializeJoin j = new MaterializeJoin(new MaterializeFromTable(table, Randomly.getBoolean()), joinClause,
                     options);
             joinStatements.add(j);
@@ -570,7 +570,7 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
             MaterializeSubquery subquery = MaterializeTLPBase.createSubquery(globalState, String.format("sub%d", i),
                     subqueryTables);
             MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
-            MaterializeJoinType options = MaterializeJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             MaterializeJoin j = new MaterializeJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }

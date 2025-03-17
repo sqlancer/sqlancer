@@ -3,12 +3,13 @@ package sqlancer.mysql.ast;
 import java.util.List;
 
 import sqlancer.IgnoreMeException;
+import sqlancer.common.schema.AbstractInOperation;
 
 /**
  * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_in">Comparison Functions and
  *      Operators</a>
  */
-public class MySQLInOperation implements MySQLExpression {
+public class MySQLInOperation implements MySQLExpression, AbstractInOperation<MySQLExpression> {
 
     private final MySQLExpression expr;
     private final List<MySQLExpression> listElements;
@@ -20,10 +21,12 @@ public class MySQLInOperation implements MySQLExpression {
         this.isTrue = isTrue;
     }
 
+    @Override
     public MySQLExpression getExpr() {
         return expr;
     }
 
+    @Override
     public List<MySQLExpression> getListElements() {
         return listElements;
     }
@@ -65,6 +68,7 @@ public class MySQLInOperation implements MySQLExpression {
 
     }
 
+    @Override
     public boolean isTrue() {
         return isTrue;
     }

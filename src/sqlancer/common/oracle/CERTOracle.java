@@ -10,6 +10,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.DBMSCommon;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.common.ast.newast.Select;
@@ -45,6 +46,7 @@ public class CERTOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E
         this.queryPlanParser = queryPlanParser;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void check() throws SQLException {
         S schema = state.getSchema();
@@ -55,7 +57,7 @@ public class CERTOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E
 
         Z select = gen.generateSelect();
         select.setFetchColumns(fetchColumns);
-        select.setJoinClauses(gen.getRandomJoinClauses());
+        select.setJoinClauses((List<JoinBase<E>>) (List<?>) gen.getRandomJoinClauses());
         select.setFromList(gen.getTableRefs());
 
         if (Randomly.getBoolean()) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
 import sqlancer.doris.DorisSchema;
@@ -11,27 +12,17 @@ import sqlancer.doris.DorisSchema.DorisColumn;
 import sqlancer.doris.DorisSchema.DorisTable;
 import sqlancer.doris.gen.DorisNewExpressionGenerator;
 
-public class DorisJoin implements DorisExpression, Join<DorisExpression, DorisTable, DorisColumn> {
+public class DorisJoin extends JoinBase<DorisExpression>
+        implements DorisExpression, Join<DorisExpression, DorisTable, DorisColumn> {
 
     private final DorisTableReference leftTable;
     private final DorisTableReference rightTable;
-    private final JoinType joinType;
-    private DorisExpression onCondition;
-
-    public enum JoinType {
-        INNER, STRAIGHT, LEFT, RIGHT;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
 
     public DorisJoin(DorisTableReference leftTable, DorisTableReference rightTable, JoinType joinType,
             DorisExpression whereCondition) {
+        super(joinType, whereCondition);
         this.leftTable = leftTable;
         this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
     }
 
     public DorisTableReference getLeftTable() {
@@ -43,11 +34,11 @@ public class DorisJoin implements DorisExpression, Join<DorisExpression, DorisTa
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     public DorisExpression getOnCondition() {
-        return onCondition;
+        return onClause;
     }
 
     public static List<DorisJoin> getJoins(List<DorisTableReference> tableList, DorisGlobalState globalState) {
@@ -58,7 +49,7 @@ public class DorisJoin implements DorisExpression, Join<DorisExpression, DorisTa
             List<DorisColumn> columns = new ArrayList<>(leftTable.getTable().getColumns());
             columns.addAll(rightTable.getTable().getColumns());
             DorisNewExpressionGenerator joinGen = new DorisNewExpressionGenerator(globalState).setColumns(columns);
-            switch (DorisJoin.JoinType.getRandom()) {
+            switch (DorisJoin.JoinType.getRandomForDatabase("DORIS")) {
             case INNER:
                 joinExpressions.add(DorisJoin.createInnerJoin(leftTable, rightTable,
                         joinGen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
@@ -104,6 +95,6 @@ public class DorisJoin implements DorisExpression, Join<DorisExpression, DorisTa
 
     @Override
     public void setOnClause(DorisExpression onClause) {
-        onCondition = onClause;
+        super.onClause = onClause;
     }
 }

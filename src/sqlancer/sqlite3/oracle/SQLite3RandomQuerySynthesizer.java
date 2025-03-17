@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.sqlite3.ast.SQLite3Constant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
@@ -31,6 +32,7 @@ public final class SQLite3RandomQuerySynthesizer {
 
     // TODO join clauses
     // TODO union, intersect
+    @SuppressWarnings("unchecked")
     public static SQLite3Expression generate(SQLite3GlobalState globalState, int size) {
         Randomly r = globalState.getRandomly();
         SQLite3Schema s = globalState.getSchema();
@@ -96,7 +98,7 @@ public final class SQLite3RandomQuerySynthesizer {
         List<SQLite3Table> tables = targetTables.getTables();
         if (Randomly.getBooleanWithRatherLowProbability()) {
             // JOIN ... (might remove tables)
-            select.setJoinClauses(gen.getRandomJoinClauses(tables));
+            select.setJoinClauses((List<JoinBase<SQLite3Expression>>) (List<?>) gen.getRandomJoinClauses(tables));
         }
         // FROM ...
         select.setFromList(SQLite3Common.getTableRefs(tables, s));

@@ -19,7 +19,6 @@ import sqlancer.cnosdb.ast.CnosDBCastOperation;
 import sqlancer.cnosdb.ast.CnosDBColumnValue;
 import sqlancer.cnosdb.ast.CnosDBExpression;
 import sqlancer.cnosdb.ast.CnosDBJoin;
-import sqlancer.cnosdb.ast.CnosDBJoin.CnosDBJoinType;
 import sqlancer.cnosdb.ast.CnosDBPostfixText;
 import sqlancer.cnosdb.ast.CnosDBSelect;
 import sqlancer.cnosdb.ast.CnosDBSelect.CnosDBFromTable;
@@ -28,6 +27,8 @@ import sqlancer.cnosdb.client.CnosDBResultSet;
 import sqlancer.cnosdb.gen.CnosDBExpressionGenerator;
 import sqlancer.cnosdb.oracle.tlp.CnosDBTLPBase;
 import sqlancer.cnosdb.query.CnosDBSelectQuery;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.common.oracle.TestOracle;
 
@@ -48,7 +49,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
             CnosDBExpression joinClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
             CnosDBTable table = Randomly.fromList(tables);
             tables.remove(table);
-            CnosDBJoinType options = CnosDBJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             CnosDBJoin j = new CnosDBJoin(new CnosDBFromTable(table), joinClause, options);
             joinStatements.add(j);
         }
@@ -58,7 +59,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
             CnosDBSubquery subquery = CnosDBTLPBase.createSubquery(globalState, String.format("sub%d", i),
                     subqueryTables);
             CnosDBExpression joinClause = gen.generateExpression(CnosDBDataType.BOOLEAN);
-            CnosDBJoinType options = CnosDBJoinType.getRandom();
+            JoinType options = JoinType.getRandom();
             CnosDBJoin j = new CnosDBJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }
@@ -96,6 +97,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         return new CnosDBExpressionGenerator(state).setColumns(columns).generateExpression(CnosDBDataType.BOOLEAN);
     }
 
+    @SuppressWarnings("unchecked")
     private int getUnoptimizedQueryCount(List<CnosDBExpression> fromTables, CnosDBExpression randomWhereCondition,
             List<CnosDBJoin> joinStatements) throws Exception {
         CnosDBSelect select = new CnosDBSelect();
@@ -105,7 +107,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         select.setFetchColumns(List.of(asText));
         select.setFromList(fromTables);
         select.setSelectType(SelectType.ALL);
-        select.setJoinClauses(joinStatements);
+        select.setJoinClauses((List<JoinBase<CnosDBExpression>>) (List<?>) joinStatements);
         int secondCount = 0;
         unoptimizedQueryString = "SELECT SUM(count) FROM (" + CnosDBVisitor.asString(select) + ") as res";
         if (options.logEachSelect()) {
@@ -133,6 +135,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
         return secondCount;
     }
 
+    @SuppressWarnings("unchecked")
     private int getOptimizedQueryCount(List<CnosDBExpression> randomTables, List<CnosDBColumn> columns,
             CnosDBExpression randomWhereCondition, List<CnosDBJoin> joinStatements) {
         CnosDBSelect select = new CnosDBSelect();
@@ -144,7 +147,7 @@ public class CnosDBNoRECOracle extends CnosDBNoRECBase implements TestOracle<Cno
             select.setOrderByClauses(new CnosDBExpressionGenerator(state).setColumns(columns).generateOrderBy());
         }
         select.setSelectType(SelectType.ALL);
-        select.setJoinClauses(joinStatements);
+        select.setJoinClauses((List<JoinBase<CnosDBExpression>>) (List<?>) joinStatements);
         int firstCount = 0;
         optimizedQueryString = CnosDBVisitor.asString(select);
         if (options.logEachSelect()) {

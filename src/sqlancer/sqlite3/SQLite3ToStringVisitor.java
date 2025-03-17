@@ -3,6 +3,7 @@ package sqlancer.sqlite3;
 import java.util.Arrays;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
 import sqlancer.sqlite3.ast.SQLite3Aggregate.SQLite3AggregateFunction;
@@ -130,8 +131,8 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
                 visit(s.getFromList().get(i));
             }
         }
-        for (SQLite3Join j : s.getJoinClauses()) {
-            visit(j);
+        for (JoinBase<SQLite3Expression> j : s.getJoinClauses()) {
+            visit((SQLite3Join) j);
         }
 
         if (s.getWhereClause() != null) {
@@ -332,6 +333,16 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     @Override
     public String get() {
         return sb.toString();
+    }
+
+    @Override
+    protected SQLite3Expression getJoinOnClause(JoinBase<SQLite3Expression> join) {
+        return null;
+    }
+
+    @Override
+    protected SQLite3Expression getJoinTableReference(JoinBase<SQLite3Expression> join) {
+        return null;
     }
 
     @Override

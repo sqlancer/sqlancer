@@ -3,6 +3,7 @@ package sqlancer.tidb.ast;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
@@ -23,14 +24,14 @@ public class TiDBSelect extends SelectBase<TiDBExpression>
     }
 
     @Override
-    public void setJoinClauses(List<TiDBJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<TiDBExpression>> joinStatements) {
         List<TiDBExpression> expressions = joinStatements.stream().map(e -> (TiDBExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
     @Override
-    public List<TiDBJoin> getJoinClauses() {
+    public List<JoinBase<TiDBExpression>> getJoinClauses() {
         return getJoinList().stream().map(e -> (TiDBJoin) e).collect(Collectors.toList());
     }
 

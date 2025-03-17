@@ -1,10 +1,10 @@
 package sqlancer.materialize;
 
-import java.util.Optional;
-
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.schema.AbstractCompoundDataType;
 import sqlancer.common.visitor.BinaryOperation;
-import sqlancer.common.visitor.SelectToStringVisitor;
+import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.ast.MaterializeAggregate;
 import sqlancer.materialize.ast.MaterializeBetweenOperation;
@@ -15,8 +15,6 @@ import sqlancer.materialize.ast.MaterializeConstant;
 import sqlancer.materialize.ast.MaterializeExpression;
 import sqlancer.materialize.ast.MaterializeFunction;
 import sqlancer.materialize.ast.MaterializeInOperation;
-import sqlancer.materialize.ast.MaterializeJoin;
-import sqlancer.materialize.ast.MaterializeJoin.MaterializeJoinType;
 import sqlancer.materialize.ast.MaterializeLikeOperation;
 import sqlancer.materialize.ast.MaterializeOrderByTerm;
 import sqlancer.materialize.ast.MaterializePOSIXRegularExpression;
@@ -28,51 +26,8 @@ import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
 import sqlancer.materialize.ast.MaterializeSimilarTo;
 
-public final class MaterializeToStringVisitor extends
-        SelectToStringVisitor<MaterializeExpression, MaterializeSelect, MaterializeJoin> implements MaterializeVisitor {
-
-    @Override
-    protected MaterializeExpression getDistinctOnClause(MaterializeSelect select) {
-        return select.getDistinctOnClause();
-    }
-
-    @Override
-    protected void visitJoinClauses(MaterializeSelect select) {
-        for (MaterializeJoin join : select.getJoinClauses()) {
-            visitJoinClause(join);
-        }
-    }
-
-    @Override
-    protected void visitJoinType(MaterializeJoin join) {
-        switch (join.getType()) {
-        case INNER:
-            if (Randomly.getBoolean()) {
-                sb.append("INNER ");
-            }
-            sb.append("JOIN");
-            break;
-        case LEFT:
-            sb.append("LEFT OUTER JOIN");
-            break;
-        case RIGHT:
-            sb.append("RIGHT OUTER JOIN");
-            break;
-        case FULL:
-            sb.append("FULL OUTER JOIN");
-            break;
-        case CROSS:
-            sb.append("CROSS JOIN");
-            break;
-        default:
-            throw new AssertionError(join.getType());
-        }
-    }
-
-    @Override
-    protected boolean shouldVisitOnClause(MaterializeJoin join) {
-        return join.getType() != MaterializeJoinType.CROSS;
-    }
+public final class MaterializeToStringVisitor extends ToStringVisitor<MaterializeExpression>
+        implements MaterializeVisitor {
 
     @Override
     protected boolean hasDistinctOnSupport() {
@@ -135,12 +90,12 @@ public final class MaterializeToStringVisitor extends
     }
 
     @Override
-    protected MaterializeExpression getJoinOnClause(MaterializeJoin join) {
+    protected MaterializeExpression getJoinOnClause(JoinBase<MaterializeExpression> join) {
         return join.getOnClause();
     }
 
     @Override
-    protected MaterializeExpression getJoinTableReference(MaterializeJoin join) {
+    protected MaterializeExpression getJoinTableReference(JoinBase<MaterializeExpression> join) {
         return join.getTableReference();
     }
 
@@ -184,15 +139,13 @@ public final class MaterializeToStringVisitor extends
                 sb.append("CAST(CAST(");
                 visit(cast.getExpression());
                 sb.append(" AS INT) AS ");
-                appendType(cast);
-                sb.append(")");
             } else {
                 sb.append("CAST(");
                 visit(cast.getExpression());
                 sb.append(" AS ");
-                appendType(cast);
-                sb.append(")");
             }
+            appendType(cast);
+            sb.append(")");
         } else {
             if (cast.getCompoundType().getDataType() == MaterializeDataType.REAL
                     || cast.getCompoundType().getDataType() == MaterializeDataType.FLOAT) {
@@ -211,38 +164,37 @@ public final class MaterializeToStringVisitor extends
 
     private void appendType(MaterializeCastOperation cast) {
         MaterializeCompoundDataType compoundType = cast.getCompoundType();
-        switch (compoundType.getDataType()) {
-        case BOOLEAN:
-            sb.append("BOOLEAN");
-            break;
-        case INT: // TODO support also other int types
-            sb.append("INT");
-            break;
-        case TEXT:
-            // TODO: append TEXT, CHAR
-            sb.append(Randomly.fromOptions("VARCHAR"));
-            break;
-        case REAL:
-            sb.append("FLOAT");
-            break;
-        case DECIMAL:
-            sb.append("DECIMAL");
-            break;
-        case FLOAT:
-            sb.append("REAL");
-            break;
-        case BIT:
-            sb.append("INT");
-            break;
-        default:
-            throw new AssertionError(cast.getType());
-        }
-        Optional<Integer> size = compoundType.getSize();
-        if (size.isPresent()) {
-            sb.append("(");
-            sb.append(size.get());
-            sb.append(")");
-        }
+        appendCastType(compoundType);
+    }
+
+    @Override
+    public void mapRealType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("FLOAT");
+    }
+
+    @Override
+    public void mapFloatType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("REAL");
+    }
+
+    @Override
+    public void mapBitType(AbstractCompoundDataType<?> compoundType) {
+        sb.append("INT");
+    }
+
+    @Override
+    public void mapMoneyType(AbstractCompoundDataType<?> compoundType) {
+        throw new AssertionError(compoundType.getDataType());
+    }
+
+    @Override
+    public void mapInetType(AbstractCompoundDataType<?> compoundType) {
+        throw new AssertionError(compoundType.getDataType());
+    }
+
+    @Override
+    public void mapByteaType(AbstractCompoundDataType<?> compoundType) {
+        throw new AssertionError(compoundType.getDataType());
     }
 
     @Override

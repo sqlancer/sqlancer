@@ -1,32 +1,30 @@
 package sqlancer.yugabyte.ysql.ast;
 
-import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
-public class YSQLJoin implements YSQLExpression, Join<YSQLExpression, YSQLTable, YSQLColumn> {
+public class YSQLJoin extends JoinBase<YSQLExpression>
+        implements YSQLExpression, Join<YSQLExpression, YSQLTable, YSQLColumn> {
 
-    private final YSQLExpression tableReference;
-    private YSQLExpression onClause;
-    private final YSQLJoinType type;
-
-    public YSQLJoin(YSQLExpression tableReference, YSQLExpression onClause, YSQLJoinType type) {
-        this.tableReference = tableReference;
-        this.onClause = onClause;
-        this.type = type;
+    public YSQLJoin(YSQLExpression tableReference, YSQLExpression onClause, JoinBase.JoinType type) {
+        super(tableReference, onClause, type);
     }
 
+    @Override
     public YSQLExpression getTableReference() {
         return tableReference;
     }
 
+    @Override
     public YSQLExpression getOnClause() {
         return onClause;
     }
 
-    public YSQLJoinType getType() {
+    @Override
+    public JoinType getType() {
         return type;
     }
 
@@ -38,15 +36,6 @@ public class YSQLJoin implements YSQLExpression, Join<YSQLExpression, YSQLTable,
     @Override
     public YSQLConstant getExpectedValue() {
         throw new AssertionError();
-    }
-
-    public enum YSQLJoinType {
-        INNER, LEFT, RIGHT, FULL, CROSS;
-
-        public static YSQLJoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
     }
 
     @Override

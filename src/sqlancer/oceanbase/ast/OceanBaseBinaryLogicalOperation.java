@@ -1,8 +1,10 @@
 package sqlancer.oceanbase.ast;
 
 import sqlancer.Randomly;
+import sqlancer.common.schema.AbstractBinaryLogicalOperation;
 
-public class OceanBaseBinaryLogicalOperation implements OceanBaseExpression {
+public class OceanBaseBinaryLogicalOperation
+        implements OceanBaseExpression, AbstractBinaryLogicalOperation<OceanBaseExpression> {
 
     private final OceanBaseExpression left;
     private final OceanBaseExpression right;
@@ -82,6 +84,7 @@ public class OceanBaseBinaryLogicalOperation implements OceanBaseExpression {
         this.textRepresentation = op.getTextRepresentation();
     }
 
+    @Override
     public OceanBaseExpression getLeft() {
         return left;
     }
@@ -90,10 +93,12 @@ public class OceanBaseBinaryLogicalOperation implements OceanBaseExpression {
         return op;
     }
 
+    @Override
     public OceanBaseExpression getRight() {
         return right;
     }
 
+    @Override
     public String getTextRepresentation() {
         return textRepresentation;
     }

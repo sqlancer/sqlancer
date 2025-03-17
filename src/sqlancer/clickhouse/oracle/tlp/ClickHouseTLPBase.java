@@ -17,10 +17,11 @@ import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ClickHouseVisitor;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
-import sqlancer.clickhouse.ast.ClickHouseExpression.ClickHouseJoin;
+import sqlancer.clickhouse.ast.ClickHouseJoin;
 import sqlancer.clickhouse.ast.ClickHouseSelect;
 import sqlancer.clickhouse.ast.ClickHouseTableReference;
 import sqlancer.clickhouse.gen.ClickHouseExpressionGenerator;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -38,6 +39,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
         ClickHouseErrors.addExpectedExpressionErrors(errors);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void check() throws SQLException {
         gen = new ClickHouseExpressionGenerator(state);
@@ -54,7 +56,7 @@ public class ClickHouseTLPBase extends TernaryLogicPartitioningOracleBase<ClickH
             List<ClickHouseJoin> joinStatements = gen.getRandomJoinClauses(table, tables);
             columns.addAll(joinStatements.stream().flatMap(j -> j.getRightTable().getColumnReferences().stream())
                     .collect(Collectors.toList()));
-            select.setJoinClauses(joinStatements);
+            select.setJoinClauses((List<JoinBase<ClickHouseExpression>>) (List<?>) joinStatements);
         }
         gen.addColumns(columns);
         int small = Randomly.smallNumber();
