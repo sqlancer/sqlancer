@@ -12,6 +12,9 @@ public class MainOptions {
     public static final int NO_SET_PORT = -1;
     public static final int NO_REDUCE_LIMIT = -1;
     public static final MainOptions DEFAULT_OPTIONS = new MainOptions();
+    public enum ReducerType {
+        NONE, STATEMENT, AST, CREDUCE
+    }
 
     @Parameter(names = { "--help", "-h" }, description = "Lists all supported options and commands", help = true)
     private boolean help; // NOPMD
@@ -123,23 +126,14 @@ public class MainOptions {
     @Parameter(names = "--database-prefix", description = "The prefix used for each database created")
     private String databasePrefix = "database"; // NOPMD
 
-    @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
-    private boolean useReducer = false; // NOPMD
+    @Parameter(names = "--reducer-type", description = "Reducer strategy (NONE|STATEMENT|AST|CREDUCE|PERSES)")
+    private ReducerType reducerType = ReducerType.NONE; // NOPMD
 
-    @Parameter(names = "--reduce-ast", description = "EXPERIMENTAL perform AST reduction after statement reduction")
-    private boolean reduceAST = false; // NOPMD
+    @Parameter(names = "--reducer-max-steps", description = "EXPERIMENTAL Maximum steps the reducer will do")
+    private long maxReduceSteps = NO_REDUCE_LIMIT; // NOPMD
 
-    @Parameter(names = "--statement-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the statement reducer will do")
-    private long maxStatementReduceSteps = NO_REDUCE_LIMIT; // NOPMD
-
-    @Parameter(names = "--statement-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the AST-based reducer will do")
-    private long maxASTReduceTime = NO_REDUCE_LIMIT; // NOPMD
-
-    @Parameter(names = "--ast-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the AST-based reducer will do")
-    private long maxASTReduceSteps = NO_REDUCE_LIMIT; // NOPMD
-
-    @Parameter(names = "--ast-reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the statement reducer will do")
-    private long maxStatementReduceTime = NO_REDUCE_LIMIT; // NOPMD
+    @Parameter(names = "--reducer-max-time", description = "EXPERIMENTAL Maximum time duration (secs) the reducer will do")
+    private long maxReduceTime = NO_REDUCE_LIMIT; // NOPMD
 
     @Parameter(names = "--validate-result-size-only", description = "Should validate result size only and skip comparing content of the result set ", arity = 1)
     private boolean validateResultSizeOnly = false; // NOPMD
@@ -304,28 +298,16 @@ public class MainOptions {
         return useConnectionTest;
     }
 
-    public boolean useReducer() {
-        return useReducer;
+    public ReducerType getReducerType() {
+        return reducerType;
     }
 
-    public boolean reduceAST() {
-        return reduceAST;
+    public long getMaxReduceSteps() {
+        return maxReduceSteps;
     }
 
-    public long getMaxStatementReduceSteps() {
-        return maxStatementReduceSteps;
-    }
-
-    public long getMaxStatementReduceTime() {
-        return maxStatementReduceTime;
-    }
-
-    public long getMaxASTReduceSteps() {
-        return maxASTReduceSteps;
-    }
-
-    public long getMaxASTReduceTime() {
-        return maxASTReduceTime;
+    public long getMaxReduceTime() {
+        return maxReduceTime;
     }
 
     public boolean validateResultSizeOnly() {
