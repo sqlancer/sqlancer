@@ -434,8 +434,8 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         sb.append(")");
     }
 
-    public void generateCaseStatement(T switchCondition, List<T> conditions, List<T> thenClauses,
-                                       T elseExpression, boolean isCockroachDB) {
+    public void generateCaseStatement(T switchCondition, List<T> conditions, List<T> thenClauses, T elseExpression,
+            boolean isCockroachDB) {
         if (isCockroachDB) {
             sb.append("CASE ");
         } else {
