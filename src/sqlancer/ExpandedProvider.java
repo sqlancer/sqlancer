@@ -27,6 +27,8 @@ public abstract class ExpandedProvider<G extends SQLGlobalState<O, ? extends Abs
         int nrPerformed;
         switch (action.name()) { // Use action.name() to handle both enums
         case "CREATE_INDEX":
+            nrPerformed = r.getInteger(0, 3);
+            break;
         case "CLUSTER":
             nrPerformed = r.getInteger(0, 3);
             break;
@@ -48,6 +50,8 @@ public abstract class ExpandedProvider<G extends SQLGlobalState<O, ? extends Abs
             nrPerformed = r.getInteger(0, 3);
             break;
         case "DELETE":
+            nrPerformed = r.getInteger(0, 5);
+            break;
         case "RESET_ROLE":
         case "SET":
             nrPerformed = r.getInteger(0, 5);

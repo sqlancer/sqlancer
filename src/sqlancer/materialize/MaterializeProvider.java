@@ -66,35 +66,6 @@ public class MaterializeProvider extends ExpandedProvider<MaterializeGlobalState
         }
     }
 
-    protected static int mapActions(MaterializeGlobalState globalState, Action a) {
-        Randomly r = globalState.getRandomly();
-        int nrPerformed;
-        switch (a) {
-        case CREATE_INDEX:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case DROP_INDEX:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case DELETE:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case CREATE_VIEW:
-            nrPerformed = r.getInteger(0, 2);
-            break;
-        case UPDATE:
-            nrPerformed = r.getInteger(0, 10);
-            break;
-        case INSERT:
-            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-            break;
-        default:
-            throw new AssertionError(a);
-        }
-        return nrPerformed;
-
-    }
-
     @Override
     public void generateDatabase(MaterializeGlobalState globalState) throws Exception {
         readFunctions(globalState);
