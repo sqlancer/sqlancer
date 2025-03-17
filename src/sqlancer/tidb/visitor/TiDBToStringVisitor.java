@@ -96,15 +96,15 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
             sb.append("INNER ");
             sb.append("JOIN ");
             break;
+        case STRAIGHT:
+            sb.append("STRAIGHT_JOIN ");
+            break;
         case RIGHT:
             sb.append("RIGHT ");
             if (Randomly.getBoolean()) {
                 sb.append(" OUTER ");
             }
             sb.append("JOIN ");
-            break;
-        case STRAIGHT:
-            sb.append("STRAIGHT_JOIN ");
             break;
         case LEFT:
             sb.append("LEFT ");
