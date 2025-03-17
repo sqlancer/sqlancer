@@ -92,8 +92,11 @@ public abstract class SQLAlterTableGenerator<T extends AbstractRelationalTable<?
             case "SET_WITH_OIDS":
                 setWithOIDS(sb);
                 break;
-            case "SET_LOGGED_UNCLOGGED":
-                setLoggedUnclogged(sb, errors);
+            case "SET_WITHOUT_OIDS":
+                setWithoutOIDS(sb);
+                break;
+            case "SET_LOGGED_UNLOGGED":
+                setLoggedUnlogged(sb, errors);
                 break;
             case "NOT_OF":
                 notOf(sb, errors);
@@ -221,7 +224,10 @@ public abstract class SQLAlterTableGenerator<T extends AbstractRelationalTable<?
     public void setWithOIDS(StringBuilder sb) {
     }
 
-    public void setLoggedUnclogged(StringBuilder sb, ExpectedErrors errors) {
+    public void setWithoutOIDS(StringBuilder sb) {
+    }
+
+    public void setLoggedUnlogged(StringBuilder sb, ExpectedErrors errors) {
     }
 
     public void notOf(StringBuilder sb, ExpectedErrors errors) {

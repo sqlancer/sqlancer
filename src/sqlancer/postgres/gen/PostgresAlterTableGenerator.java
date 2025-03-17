@@ -362,11 +362,16 @@ public class PostgresAlterTableGenerator
 
     @Override
     public void setWithOIDS(StringBuilder sb) {
+        sb.append("SET WITH OIDS");
+    }
+
+    @Override
+    public void setWithoutOIDS(StringBuilder sb) {
         sb.append("SET WITHOUT OIDS");
     }
 
     @Override
-    public void setLoggedUnclogged(StringBuilder sb, ExpectedErrors errors) {
+    public void setLoggedUnlogged(StringBuilder sb, ExpectedErrors errors) {
         sb.append("SET ");
         sb.append(Randomly.fromOptions("LOGGED", "UNLOGGED"));
         errors.add("because it is temporary");
