@@ -1,8 +1,8 @@
 package sqlancer.cockroachdb.oracle;
 
 import static sqlancer.cockroachdb.CockroachDBUtils.selectAndSetNewJoinType;
+import static sqlancer.common.oracle.TestOracleUtils.logQueryIfEnabled;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -234,16 +234,8 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         String explainQuery = "EXPLAIN " + selectStr;
 
         // Log the query
-        if (globalState.getOptions().logEachSelect()) {
-            globalState.getLogger().writeCurrent(explainQuery);
-            try {
-                globalState.getLogger().getCurrentFileWriter().flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        logQueryIfEnabled(globalState, explainQuery);
 
-        // Get the row count
         SQLQueryAdapter q = new SQLQueryAdapter(explainQuery, errors);
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs != null) {

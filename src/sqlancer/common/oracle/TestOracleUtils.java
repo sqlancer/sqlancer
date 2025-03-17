@@ -1,7 +1,10 @@
 package sqlancer.common.oracle;
 
+import java.io.IOException;
+
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.SQLGlobalState;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.gen.PartitionGenerator;
 import sqlancer.common.schema.AbstractSchema;
@@ -51,5 +54,17 @@ public final class TestOracleUtils {
             throw new IllegalStateException();
         }
         return new PredicateVariants<>(predicate, negatedPredicate, isNullPredicate);
+    }
+
+    public static void logQueryIfEnabled(SQLGlobalState<?, ?> globalState, String explainQuery) {
+        // Log the query
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(explainQuery);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
