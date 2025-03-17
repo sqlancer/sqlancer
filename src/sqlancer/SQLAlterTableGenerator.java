@@ -62,20 +62,46 @@ public abstract class SQLAlterTableGenerator<T extends AbstractRelationalTable<?
                     sb.append("NO FORCE ROW LEVEL SECURITY");
                     break;
                 case "ALTER_COLUMN_TYPE":
+                    alterColumnType(sb, errors, randomTable);
+                    break;
                 case "ALTER_COLUMN_SET_DROP_DEFAULT":
+                    alterColumnSetDropDefault(sb, errors, randomTable);
+                    break;
                 case "ALTER_COLUMN_SET_DROP_NULL":
+                    alterColumnSetDropNull(sb, errors, randomTable);
+                    break;
                 case "ALTER_COLUMN_SET_STATISTICS":
+                    alterColumnSetStatistics(sb, errors, randomTable);
+                    break;
                 case "ALTER_COLUMN_SET_ATTRIBUTE_OPTION":
+                    alterColumnSetAttributeOption(sb, randomTable);
+                    break;
                 case "ALTER_COLUMN_RESET_ATTRIBUTE_OPTION":
+                    alterColumnResetAttributeOption(sb, randomTable);
+                    break;
                 case "ALTER_COLUMN_SET_STORAGE":
+                    alterColumnSetStorage(sb, errors, randomTable);
+                    break;
                 case "VALIDATE_CONSTRAINT":
+                    validateConstraint(sb, errors);
+                    break;
                 case "CLUSTER_ON":
+                    clusterOn(sb, errors);
+                    break;
                 case "SET_WITHOUT_CLUSTER":
+                    setWithoutCluster(sb, errors);
+                    break;
                 case "SET_WITH_OIDS":
+                    setWithOIDS(sb);
+                    break;
                 case "SET_LOGGED_UNCLOGGED":
+                    setLoggedUnclogged(sb, errors);
                 case "NOT_OF":
+                    notOf(sb, errors);
                 case "OWNER_TO":
+                    ownerTo(sb);
                 case "REPLICA_IDENTITY":
+                    replicaIdentity(sb, errors, randomTable);
 
                 default:
                     throw new AssertionError(a);
@@ -155,6 +181,20 @@ private void addTableConstraintIndex(StringBuilder sb, ExpectedErrors errors) {
     errors.add("insufficient columns in PRIMARY KEY constraint definition");
     errors.add("which is part of the partition key");
 }
-public abstract void addTableConstraintIndexHelper(ExpectedErrors errors);
-
+public void addTableConstraintIndexHelper(ExpectedErrors errors){}
+public void alterColumnType(StringBuilder sb, ExpectedErrors errors, T randomTable){}
+public void alterColumnSetDropDefault(StringBuilder sb, ExpectedErrors errors, T randomTable){}
+public void alterColumnSetDropNull(StringBuilder sb, ExpectedErrors errors, T randomTable){}
+public void alterColumnSetStatistics(StringBuilder sb, ExpectedErrors errors, T randomTable){}
+public void alterColumnSetAttributeOption(StringBuilder sb, T randomTable){}
+public void alterColumnResetAttributeOption(StringBuilder sb, T randomTable){}
+public void alterColumnSetStorage(StringBuilder sb, ExpectedErrors errors, T randomTable){}
+public void validateConstraint(StringBuilder sb, ExpectedErrors errors){}
+public void clusterOn(StringBuilder sb, ExpectedErrors errors){}
+public void setWithoutCluster(StringBuilder sb, ExpectedErrors errors){}
+public void setWithOIDS(StringBuilder sb){}
+public void setLoggedUnclogged(StringBuilder sb, ExpectedErrors errors){}
+public void notOf(StringBuilder sb, ExpectedErrors errors){}
+public void ownerTo(StringBuilder sb) {}
+public void replicaIdentity(StringBuilder sb, ExpectedErrors errors, T randomTable){}
 }

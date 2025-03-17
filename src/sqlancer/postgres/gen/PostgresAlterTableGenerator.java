@@ -383,4 +383,183 @@ public class PostgresAlterTableGenerator extends SQLAlterTableGenerator<Postgres
         sb.append(" ");
     }
 
+    @Override
+    public void alterColumnType(StringBuilder sb, ExpectedErrors errors, PostgresTable randomTable) {
+        alterColumn(randomTable, sb);
+        if (Randomly.getBoolean()) {
+            sb.append(" SET DATA");
+        }
+        sb.append(" TYPE ");
+        PostgresDataType randomType = PostgresDataType.getRandomType();
+        PostgresCommon.appendDataType(randomType, sb, false, generateOnlyKnown, opClasses);
+        // TODO [ COLLATE collation ] [ USING expression ]
+        errors.add("cannot alter type of a column used by a view or rule");
+        errors.add("cannot convert infinity to numeric");
+        errors.add("is duplicated");
+        errors.add("cannot be cast automatically");
+        errors.add("is an identity column");
+        errors.add("identity column type must be smallint, integer, or bigint");
+        errors.add("out of range");
+        errors.add("cannot alter type of column named in partition key");
+        errors.add("cannot alter type of column referenced in partition key expression");
+        errors.add("because it is part of the partition key of relation");
+        errors.add("argument of CHECK must be type boolean");
+        errors.add("operator does not exist");
+        errors.add("must be type");
+        errors.add("You might need to add explicit type casts");
+        errors.add("cannot cast type");
+        errors.add("foreign key constrain");
+        errors.add("division by zero");
+        errors.add("value too long for type character varying");
+        errors.add("cannot drop index");
+        errors.add("cannot alter inherited column");
+        errors.add("must be changed in child tables too");
+        errors.add("could not determine which collation to use for index expression");
+        errors.add("bit string too long for type bit varying");
+        errors.add("cannot alter type of a column used by a generated column");
+    }
+
+    @Override
+    public void alterColumnSetDropDefault(StringBuilder sb, ExpectedErrors errors, PostgresTable randomTable) {
+        alterColumn(randomTable, sb);
+        if (Randomly.getBoolean()) {
+            sb.append("DROP DEFAULT");
+        } else {
+            sb.append("SET DEFAULT ");
+            sb.append(PostgresVisitor.asString(
+                    PostgresExpressionGenerator.generateExpression(globalState, randomColumn.getType())));
+            errors.add("is out of range");
+            errors.add("but default expression is of type");
+            errors.add("cannot cast");
+        }
+        errors.add("is a generated column");
+        errors.add("is an identity column");
+    }
+
+    @Override
+    public void alterColumnSetDropNull(StringBuilder sb, ExpectedErrors errors, PostgresTable randomTable) {
+        alterColumn(randomTable, sb);
+        if (Randomly.getBoolean()) {
+            sb.append("SET NOT NULL");
+            errors.add("contains null values");
+        } else {
+            sb.append("DROP NOT NULL");
+            errors.add("is in a primary key");
+            errors.add("is an identity column");
+        }
+    }
+
+    @Override
+    public void alterColumnSetStatistics(StringBuilder sb, ExpectedErrors errors, PostgresTable randomTable) {
+        alterColumn(randomTable, sb);
+        sb.append("SET STATISTICS ");
+        sb.append(r.getInteger(0, 10000));
+    }
+
+    @Override
+    public void alterColumnSetAttributeOption(StringBuilder sb, PostgresTable randomTable) {
+        alterColumn(randomTable, sb);
+        sb.append(" SET(");
+        List<Attribute> subset = Randomly.nonEmptySubset(Attribute.values());
+        int j = 0;
+        for (Attribute attr : subset) {
+            if (j++ != 0) {
+                sb.append(", ");
+            }
+            sb.append(attr.val);
+            sb.append("=");
+            sb.append(Randomly.fromOptions(-1, -0.8, -0.5, -0.2, -0.1, -0.00001, -0.0000000001, 0, 0.000000001,
+                    0.0001, 0.1, 1));
+        }
+        sb.append(")");
+    }
+
+    @Override
+    public void alterColumnResetAttributeOption(StringBuilder sb, PostgresTable randomTable) {
+        alterColumn(randomTable, sb);
+        sb.append(" RESET(");
+        List<Attribute> subset = Randomly.nonEmptySubset(Attribute.values());
+        int j = 0;
+        for (Attribute attr : subset) {
+            if (j++ != 0) {
+                sb.append(", ");
+            }
+            sb.append(attr.val);
+        }
+        sb.append(")");
+    }
+
+    @Override
+    public void alterColumnSetStorage(StringBuilder sb, ExpectedErrors errors, PostgresTable randomTable) {
+        alterColumn(randomTable, sb);
+        sb.append("SET STORAGE ");
+        sb.append(Randomly.fromOptions("PLAIN", "EXTERNAL", "EXTENDED", "MAIN"));
+        errors.add("can only have storage");
+        errors.add("is an identity column");
+    }
+
+    @Override
+    public void validateConstraint(StringBuilder sb, ExpectedErrors errors) {
+        sb.append("VALIDATE CONSTRAINT asdf");
+        errors.add("does not exist");
+        // FIXME select constraint
+    }
+
+    @Override
+    public void clusterOn(StringBuilder sb, ExpectedErrors errors) {
+        sb.append("CLUSTER ON ");
+        sb.append(randomTable.getRandomIndex().getIndexName());
+        errors.add("cannot cluster on");
+        errors.add("cannot mark index clustered in partitioned table");
+        errors.add("not valid");
+    }
+
+    @Override
+    public void setWithoutCluster(StringBuilder sb, ExpectedErrors errors) {
+        sb.append("SET WITHOUT CLUSTER");
+        errors.add("cannot mark index clustered in partitioned table");
+    }
+
+    @Override
+    public void setWithOIDS(StringBuilder sb) {
+        sb.append("SET WITHOUT OIDS");
+    }
+
+    @Override
+    public void setLoggedUnclogged(StringBuilder sb, ExpectedErrors errors) {
+        sb.append("SET ");
+        sb.append(Randomly.fromOptions("LOGGED", "UNLOGGED"));
+        errors.add("because it is temporary");
+        errors.add("to logged because it references unlogged table");
+        errors.add("to unlogged because it references logged table");
+    }
+
+    @Override
+    public void notOf(StringBuilder sb, ExpectedErrors errors) {
+        errors.add("is not a typed table");
+        sb.append("NOT OF");
+    }
+
+    @Override
+    public void ownerTo(StringBuilder sb) {
+        sb.append("OWNER TO ");
+        // TODO: new_owner
+        sb.append(Randomly.fromOptions("CURRENT_USER", "SESSION_USER"));
+    }
+
+    @Override
+    public void replicaIdentity(StringBuilder sb, ExpectedErrors errors, PostgresTable randomTable) {
+        sb.append("REPLICA IDENTITY ");
+        if (Randomly.getBoolean() || randomTable.getIndexes().isEmpty()) {
+            sb.append(Randomly.fromOptions("DEFAULT", "FULL", "NOTHING"));
+        } else {
+            sb.append("USING INDEX ");
+            sb.append(randomTable.getRandomIndex().getIndexName());
+            errors.add("cannot be used as replica identity");
+            errors.add("cannot use non-unique index");
+            errors.add("cannot use expression index");
+            errors.add("cannot use partial index");
+            errors.add("cannot use invalid index");
+        }
+    }
 }
