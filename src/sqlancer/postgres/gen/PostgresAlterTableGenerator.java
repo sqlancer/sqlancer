@@ -111,7 +111,7 @@ public class PostgresAlterTableGenerator extends SQLAlterTableGenerator<Postgres
         }
         return action;
     }
-
+/*
     public SQLQueryAdapter generate() {
         ExpectedErrors errors = new ExpectedErrors();
         int i = 0;
@@ -367,6 +367,7 @@ public class PostgresAlterTableGenerator extends SQLAlterTableGenerator<Postgres
 
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
+ */
 
     @Override
     public void addTableConstraintHelper(StringBuilder sb, ExpectedErrors errors) {

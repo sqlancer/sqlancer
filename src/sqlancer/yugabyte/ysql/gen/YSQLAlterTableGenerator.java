@@ -62,7 +62,7 @@ public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, Y
         }
         return action;
     }
-
+/*
     public SQLQueryAdapter generate() {
         ExpectedErrors errors = new ExpectedErrors();
         int i = 0;
@@ -166,6 +166,7 @@ public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, Y
 
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
+ */
 
     @Override
     public void addTableConstraintHelper(StringBuilder sb, ExpectedErrors errors) {
