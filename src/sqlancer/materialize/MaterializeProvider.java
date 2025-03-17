@@ -15,11 +15,11 @@ import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
+import sqlancer.ExpandedProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -36,23 +36,7 @@ import sqlancer.materialize.gen.MaterializeViewGenerator;
 // EXISTS
 // IN
 @AutoService(DatabaseProvider.class)
-public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalState, MaterializeOptions> {
-
-    /**
-     * Generate only data types and expressions that are understood by PQS.
-     */
-    public static boolean generateOnlyKnown;
-
-    protected String entryURL;
-    protected String username;
-    protected String password;
-    protected String entryPath;
-    protected String host;
-    protected int port;
-    protected String testURL;
-    protected String databaseName;
-    protected String createDatabaseCommand;
-    protected String extensionsList;
+public class MaterializeProvider extends ExpandedProvider<MaterializeGlobalState, MaterializeOptions> {
 
     public MaterializeProvider() {
         super(MaterializeGlobalState.class, MaterializeOptions.class);
@@ -80,35 +64,6 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
         public SQLQueryAdapter getQuery(MaterializeGlobalState state) throws Exception {
             return sqlQueryProvider.getQuery(state);
         }
-    }
-
-    protected static int mapActions(MaterializeGlobalState globalState, Action a) {
-        Randomly r = globalState.getRandomly();
-        int nrPerformed;
-        switch (a) {
-        case CREATE_INDEX:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case DROP_INDEX:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case DELETE:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case CREATE_VIEW:
-            nrPerformed = r.getInteger(0, 2);
-            break;
-        case UPDATE:
-            nrPerformed = r.getInteger(0, 10);
-            break;
-        case INSERT:
-            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-            break;
-        default:
-            throw new AssertionError(a);
-        }
-        return nrPerformed;
-
     }
 
     @Override
