@@ -111,6 +111,8 @@ public abstract class SQLAlterTableGenerator<T extends AbstractRelationalTable<?
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
+
+
 private void alterTableDropColumn(StringBuilder sb, ExpectedErrors errors) {
     sb.append("DROP ");
     if (Randomly.getBoolean()) {
