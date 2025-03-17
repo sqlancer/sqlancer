@@ -96,13 +96,6 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
             sb.append("INNER ");
             sb.append("JOIN ");
             break;
-        case LEFT:
-            sb.append("LEFT ");
-            if (Randomly.getBoolean()) {
-                sb.append(" OUTER ");
-            }
-            sb.append("JOIN ");
-            break;
         case RIGHT:
             sb.append("RIGHT ");
             if (Randomly.getBoolean()) {
@@ -112,6 +105,13 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
             break;
         case STRAIGHT:
             sb.append("STRAIGHT_JOIN ");
+            break;
+        case LEFT:
+            sb.append("LEFT ");
+            if (Randomly.getBoolean()) {
+                sb.append(" OUTER ");
+            }
+            sb.append("JOIN ");
             break;
         case NATURAL:
             sb.append("NATURAL ");
@@ -166,18 +166,12 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 
     @Override
     public void visit(TiDBCase op) {
-        sb.append("(CASE ");
-        visit(op.getSwitchCondition());
-        for (int i = 0; i < op.getConditions().size(); i++) {
-            sb.append(" WHEN ");
-            visit(op.getConditions().get(i));
-            sb.append(" THEN ");
-            visit(op.getExpressions().get(i));
-        }
-        if (op.getElseExpr() != null) {
-            sb.append(" ELSE ");
-            visit(op.getElseExpr());
-        }
-        sb.append(" END )");
+        generateCaseStatement(
+                op.getSwitchCondition(),
+                op.getConditions(),
+                op.getExpressions(),
+                op.getElseExpr(),
+                false
+        );
     }
 }
