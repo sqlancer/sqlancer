@@ -48,22 +48,6 @@ import sqlancer.postgres.gen.PostgresViewGenerator;
 @AutoService(DatabaseProvider.class)
 public class PostgresProvider extends ExpandedProvider<PostgresGlobalState, PostgresOptions> {
 
-    /**
-     * Generate only data types and expressions that are understood by PQS.
-     */
-    public static boolean generateOnlyKnown;
-
-    protected String entryURL;
-    protected String username;
-    protected String password;
-    protected String entryPath;
-    protected String host;
-    protected int port;
-    protected String testURL;
-    protected String databaseName;
-    protected String createDatabaseCommand;
-    protected String extensionsList;
-
     public PostgresProvider() {
         super(PostgresGlobalState.class, PostgresOptions.class);
     }

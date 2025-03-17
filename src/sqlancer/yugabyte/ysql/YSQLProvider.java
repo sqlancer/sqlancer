@@ -46,19 +46,6 @@ public class YSQLProvider extends ExpandedProvider<YSQLGlobalState, YSQLOptions>
 
     // TODO Due to yugabyte problems with parallel DDL we need this lock object
     public static final Object DDL_LOCK = new Object();
-    /**
-     * Generate only data types and expressions that are understood by PQS.
-     */
-    public static boolean generateOnlyKnown;
-    protected String entryURL;
-    protected String username;
-    protected String password;
-    protected String entryPath;
-    protected String host;
-    protected int port;
-    protected String testURL;
-    protected String databaseName;
-    protected String createDatabaseCommand;
 
     public YSQLProvider() {
         super(YSQLGlobalState.class, YSQLOptions.class);

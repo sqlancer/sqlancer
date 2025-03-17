@@ -38,22 +38,6 @@ import sqlancer.materialize.gen.MaterializeViewGenerator;
 @AutoService(DatabaseProvider.class)
 public class MaterializeProvider extends ExpandedProvider<MaterializeGlobalState, MaterializeOptions> {
 
-    /**
-     * Generate only data types and expressions that are understood by PQS.
-     */
-    public static boolean generateOnlyKnown;
-
-    protected String entryURL;
-    protected String username;
-    protected String password;
-    protected String entryPath;
-    protected String host;
-    protected int port;
-    protected String testURL;
-    protected String databaseName;
-    protected String createDatabaseCommand;
-    protected String extensionsList;
-
     public MaterializeProvider() {
         super(MaterializeGlobalState.class, MaterializeOptions.class);
     }
