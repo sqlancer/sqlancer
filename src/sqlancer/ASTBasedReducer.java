@@ -137,6 +137,11 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                 }
             } catch (Throwable ignoredException) {
 
+                newGlobalState.getLogger().logError(
+                    "Exception while checking if bug still triggers. State: " + newGlobalState.getState(),
+                    ignoredException
+                );
+  
             }
         }
         return false;
