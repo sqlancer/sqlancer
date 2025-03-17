@@ -114,66 +114,6 @@ public class PostgresProvider extends ExpandedProvider<PostgresGlobalState, Post
         }
     }
 
-    protected static int mapActions(PostgresGlobalState globalState, Action a) {
-        Randomly r = globalState.getRandomly();
-        int nrPerformed;
-        switch (a) {
-        case CREATE_INDEX:
-        case CLUSTER:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case CREATE_STATISTICS:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case DISCARD:
-        case DROP_INDEX:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case COMMIT:
-            nrPerformed = r.getInteger(0, 0);
-            break;
-        case ALTER_TABLE:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case REINDEX:
-        case RESET:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case DELETE:
-        case RESET_ROLE:
-        case SET:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case ANALYZE:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case VACUUM:
-        case SET_CONSTRAINTS:
-        case COMMENT_ON:
-        case NOTIFY:
-        case LISTEN:
-        case UNLISTEN:
-        case CREATE_SEQUENCE:
-        case DROP_STATISTICS:
-        case TRUNCATE:
-            nrPerformed = r.getInteger(0, 2);
-            break;
-        case CREATE_VIEW:
-            nrPerformed = r.getInteger(0, 2);
-            break;
-        case UPDATE:
-            nrPerformed = r.getInteger(0, 10);
-            break;
-        case INSERT:
-            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-            break;
-        default:
-            throw new AssertionError(a);
-        }
-        return nrPerformed;
-
-    }
-
     @Override
     public void generateDatabase(PostgresGlobalState globalState) throws Exception {
         readFunctions(globalState);
