@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseColumn;
@@ -44,6 +45,10 @@ public class OceanBaseSelect extends SelectBase<OceanBaseExpression>
         return this.groupBys;
     }
 
+    @Override
+    public void setJoinClauses(List<JoinBase<OceanBaseExpression>> joinStatements) {
+    }
+
     public void setModifiers(List<String> modifiers) {
         this.modifiers = modifiers;
     }
@@ -66,11 +71,7 @@ public class OceanBaseSelect extends SelectBase<OceanBaseExpression>
     }
 
     @Override
-    public void setJoinClauses(List<OceanBaseJoin> joinStatements) {
-    }
-
-    @Override
-    public List<OceanBaseJoin> getJoinClauses() {
+    public List<JoinBase<OceanBaseExpression>> getJoinClauses() {
         return List.of();
     }
 

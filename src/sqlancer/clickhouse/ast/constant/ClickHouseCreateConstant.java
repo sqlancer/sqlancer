@@ -7,7 +7,7 @@ import com.clickhouse.client.ClickHouseDataType;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
 
-public abstract class ClickHouseCreateConstant extends ClickHouseExpression {
+public abstract class ClickHouseCreateConstant implements ClickHouseExpression {
 
     public static ClickHouseConstant createStringConstant(String text) {
         return new ClickHouseStringConstant(text);

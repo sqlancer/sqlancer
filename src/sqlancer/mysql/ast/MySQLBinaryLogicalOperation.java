@@ -1,8 +1,9 @@
 package sqlancer.mysql.ast;
 
 import sqlancer.Randomly;
+import sqlancer.common.schema.AbstractBinaryLogicalOperation;
 
-public class MySQLBinaryLogicalOperation implements MySQLExpression {
+public class MySQLBinaryLogicalOperation implements MySQLExpression, AbstractBinaryLogicalOperation<MySQLExpression> {
 
     private final MySQLExpression left;
     private final MySQLExpression right;
@@ -81,6 +82,7 @@ public class MySQLBinaryLogicalOperation implements MySQLExpression {
         this.textRepresentation = op.getTextRepresentation();
     }
 
+    @Override
     public MySQLExpression getLeft() {
         return left;
     }
@@ -89,10 +91,12 @@ public class MySQLBinaryLogicalOperation implements MySQLExpression {
         return op;
     }
 
+    @Override
     public MySQLExpression getRight() {
         return right;
     }
 
+    @Override
     public String getTextRepresentation() {
         return textRepresentation;
     }

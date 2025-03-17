@@ -12,11 +12,11 @@ import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
+import sqlancer.ExpandedProvider;
 import sqlancer.IgnoreMeException;
 import sqlancer.MainOptions;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
 import sqlancer.StatementExecutor;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
@@ -46,23 +46,7 @@ import sqlancer.postgres.gen.PostgresViewGenerator;
 // EXISTS
 // IN
 @AutoService(DatabaseProvider.class)
-public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, PostgresOptions> {
-
-    /**
-     * Generate only data types and expressions that are understood by PQS.
-     */
-    public static boolean generateOnlyKnown;
-
-    protected String entryURL;
-    protected String username;
-    protected String password;
-    protected String entryPath;
-    protected String host;
-    protected int port;
-    protected String testURL;
-    protected String databaseName;
-    protected String createDatabaseCommand;
-    protected String extensionsList;
+public class PostgresProvider extends ExpandedProvider<PostgresGlobalState, PostgresOptions> {
 
     public PostgresProvider() {
         super(PostgresGlobalState.class, PostgresOptions.class);
@@ -128,66 +112,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         public SQLQueryAdapter getQuery(PostgresGlobalState state) throws Exception {
             return sqlQueryProvider.getQuery(state);
         }
-    }
-
-    protected static int mapActions(PostgresGlobalState globalState, Action a) {
-        Randomly r = globalState.getRandomly();
-        int nrPerformed;
-        switch (a) {
-        case CREATE_INDEX:
-        case CLUSTER:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case CREATE_STATISTICS:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case DISCARD:
-        case DROP_INDEX:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case COMMIT:
-            nrPerformed = r.getInteger(0, 0);
-            break;
-        case ALTER_TABLE:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case REINDEX:
-        case RESET:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case DELETE:
-        case RESET_ROLE:
-        case SET:
-            nrPerformed = r.getInteger(0, 5);
-            break;
-        case ANALYZE:
-            nrPerformed = r.getInteger(0, 3);
-            break;
-        case VACUUM:
-        case SET_CONSTRAINTS:
-        case COMMENT_ON:
-        case NOTIFY:
-        case LISTEN:
-        case UNLISTEN:
-        case CREATE_SEQUENCE:
-        case DROP_STATISTICS:
-        case TRUNCATE:
-            nrPerformed = r.getInteger(0, 2);
-            break;
-        case CREATE_VIEW:
-            nrPerformed = r.getInteger(0, 2);
-            break;
-        case UPDATE:
-            nrPerformed = r.getInteger(0, 10);
-            break;
-        case INSERT:
-            nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
-            break;
-        default:
-            throw new AssertionError(a);
-        }
-        return nrPerformed;
-
     }
 
     @Override

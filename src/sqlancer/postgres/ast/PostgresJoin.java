@@ -1,10 +1,10 @@
 package sqlancer.postgres.ast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -12,49 +12,21 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
-public class PostgresJoin implements PostgresExpression, Join<PostgresExpression, PostgresTable, PostgresColumn> {
+public class PostgresJoin extends JoinBase<PostgresExpression>
+        implements PostgresExpression, Join<PostgresExpression, PostgresTable, PostgresColumn> {
 
-    public enum PostgresJoinType {
-        INNER, LEFT, RIGHT, FULL, CROSS;
-
-        public static PostgresJoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
-        public static PostgresJoinType getRandomExcept(PostgresJoinType... exclude) {
-            PostgresJoinType[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
-                    .toArray(PostgresJoinType[]::new);
-            return Randomly.fromOptions(values);
-        }
-
+    public PostgresJoin(PostgresExpression tableReference, PostgresExpression onClause, JoinType type) {
+        super(tableReference, onClause, type);
     }
 
-    private final PostgresExpression tableReference;
-    private PostgresExpression onClause;
-    private PostgresJoinType type;
-    private final PostgresExpression leftTable;
-    private final PostgresExpression rightTable;
-
-    public PostgresJoin(PostgresExpression tableReference, PostgresExpression onClause, PostgresJoinType type) {
-        this.tableReference = tableReference;
-        this.onClause = onClause;
-        this.type = type;
-        this.leftTable = null;
-        this.rightTable = null;
-    }
-
-    public PostgresJoin(PostgresExpression leftTable, PostgresExpression rightTable, PostgresJoinType joinType,
+    public PostgresJoin(PostgresExpression leftTable, PostgresExpression rightTable, JoinType joinType,
             PostgresExpression whereCondition) {
-        this.leftTable = leftTable;
-        this.rightTable = rightTable;
-        this.type = joinType;
-        this.onClause = whereCondition;
-        this.tableReference = null;
+        super(null, whereCondition, joinType, leftTable, rightTable);
     }
 
-    public static PostgresJoin createJoin(PostgresExpression left, PostgresExpression right, PostgresJoinType type,
+    public static PostgresJoin createJoin(PostgresExpression left, PostgresExpression right, JoinType type,
             PostgresExpression onClause) {
-        if (type == PostgresJoinType.CROSS) {
+        if (type == JoinType.CROSS) {
             return new PostgresJoin(left, right, type, null);
         } else {
             return new PostgresJoin(left, right, type, onClause);
@@ -73,7 +45,7 @@ public class PostgresJoin implements PostgresExpression, Join<PostgresExpression
             columns.addAll(left.getTable().getColumns());
             columns.addAll(right.getTable().getColumns());
             PostgresExpressionGenerator joinGen = new PostgresExpressionGenerator(globalState).setColumns(columns);
-            joinExpressions.add(PostgresJoin.createJoin(left, right, PostgresJoinType.getRandom(),
+            joinExpressions.add(PostgresJoin.createJoin(left, right, JoinType.getRandomForDatabase("POSTGRES"),
                     joinGen.generateExpression(0, PostgresDataType.BOOLEAN)));
         }
         return joinExpressions;
@@ -84,10 +56,11 @@ public class PostgresJoin implements PostgresExpression, Join<PostgresExpression
         this.onClause = clause;
     }
 
-    public void setType(PostgresJoinType type) {
+    public void setType(JoinType type) {
         this.type = type;
     }
 
+    @Override
     public PostgresExpression getTableReference() {
         return tableReference;
     }
@@ -100,11 +73,13 @@ public class PostgresJoin implements PostgresExpression, Join<PostgresExpression
         return rightTable;
     }
 
+    @Override
     public PostgresExpression getOnClause() {
         return onClause;
     }
 
-    public PostgresJoinType getType() {
+    @Override
+    public JoinType getType() {
         return type;
     }
 

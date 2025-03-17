@@ -1,6 +1,8 @@
 package sqlancer.mysql.ast;
 
-public class MySQLUnaryPostfixOperation implements MySQLExpression {
+import sqlancer.common.schema.AbstractPostfixOperation;
+
+public class MySQLUnaryPostfixOperation implements MySQLExpression, AbstractPostfixOperation<MySQLExpression> {
 
     private final MySQLExpression expression;
     private final UnaryPostfixOperator operator;
@@ -16,14 +18,17 @@ public class MySQLUnaryPostfixOperation implements MySQLExpression {
         this.setNegate(negate);
     }
 
+    @Override
     public MySQLExpression getExpression() {
         return expression;
     }
 
+    @Override
     public UnaryPostfixOperator getOperator() {
         return operator;
     }
 
+    @Override
     public boolean isNegated() {
         return negate;
     }

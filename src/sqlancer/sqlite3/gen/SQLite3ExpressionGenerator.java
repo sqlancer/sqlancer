@@ -151,7 +151,7 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         if (!globalState.getDbmsSpecificOptions().testJoins) {
             return joinStatements;
         }
-        List<SQLite3Join.JoinType> options = new ArrayList<>(Arrays.asList(SQLite3Join.JoinType.values()));
+        List<SQLite3Join.JoinType> options = new ArrayList<>(Arrays.asList(SQLite3Join.JoinType.getValues("SQLITE3")));
         if (Randomly.getBoolean() && tables.size() > 1) {
             int nrSQLite3JoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
             // Natural join is incompatible with other joins

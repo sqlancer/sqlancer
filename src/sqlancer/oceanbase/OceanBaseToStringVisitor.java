@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.oceanbase.OceanBaseSchema.OceanBaseDataType;
 import sqlancer.oceanbase.ast.OceanBaseAggregate;
@@ -44,7 +45,6 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
             visit(s.getHint(), 0);
             sb.append(" */ ");
         }
-
         switch (s.getFromOptions()) {
         case DISTINCT:
             sb.append("DISTINCT ");
@@ -79,7 +79,6 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
         for (OceanBaseExpression j : s.getJoinList()) {
             visit(j);
         }
-
         if (s.getWhereClause() != null) {
             OceanBaseExpression whereClause = s.getWhereClause();
             sb.append(" WHERE ");
@@ -96,10 +95,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
                 visit(groupBys.get(i));
             }
         }
-        if (s.getHavingClause() != null) {
-            sb.append(" HAVING ");
-            visit(s.getHavingClause());
-        }
+        visitHavingClause(s);
         if (!s.getOrderByClauses().isEmpty()) {
             sb.append(" ORDER BY ");
             List<OceanBaseExpression> orderBys = s.getOrderByClauses();
@@ -110,15 +106,8 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
                 visit(s.getOrderByClauses().get(i));
             }
         }
-        if (s.getLimitClause() != null) {
-            sb.append(" LIMIT ");
-            visit(s.getLimitClause());
-        }
-
-        if (s.getOffsetClause() != null) {
-            sb.append(" OFFSET ");
-            visit(s.getOffsetClause());
-        }
+        visitLimitClause(s);
+        visitOffsetClause(s);
     }
 
     @Override
@@ -129,6 +118,16 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
     @Override
     public String get() {
         return sb.toString();
+    }
+
+    @Override
+    protected OceanBaseExpression getJoinOnClause(JoinBase<OceanBaseExpression> join) {
+        return null;
+    }
+
+    @Override
+    protected OceanBaseExpression getJoinTableReference(JoinBase<OceanBaseExpression> join) {
+        return null;
     }
 
     @Override
@@ -149,30 +148,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visit(OceanBaseUnaryPostfixOperation op) {
-        sb.append("(");
-        visit(op.getExpression());
-        sb.append(")");
-        sb.append(" IS ");
-        if (op.isNegated()) {
-            sb.append("NOT ");
-        }
-        switch (op.getOperator()) {
-        case IS_FALSE:
-            sb.append("FALSE");
-            break;
-        case IS_NULL:
-            if (Randomly.getBoolean()) {
-                sb.append("UNKNOWN");
-            } else {
-                sb.append("NULL");
-            }
-            break;
-        case IS_TRUE:
-            sb.append("TRUE");
-            break;
-        default:
-            throw new AssertionError(op);
-        }
+        visitUnaryPostfixOperation(op);
     }
 
     @Override
@@ -190,15 +166,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visit(OceanBaseBinaryLogicalOperation op) {
-        sb.append("(");
-        visit(op.getLeft());
-        sb.append(")");
-        sb.append(" ");
-        sb.append(op.getTextRepresentation());
-        sb.append(" ");
-        sb.append("(");
-        visit(op.getRight());
-        sb.append(")");
+        visitBinaryLogicalOperation(op);
     }
 
     @Override
@@ -223,21 +191,7 @@ public class OceanBaseToStringVisitor extends ToStringVisitor<OceanBaseExpressio
 
     @Override
     public void visit(OceanBaseInOperation op) {
-        sb.append("(");
-        visit(op.getExpr());
-        sb.append(")");
-        if (!op.isTrue()) {
-            sb.append(" NOT");
-        }
-        sb.append(" IN ");
-        sb.append("(");
-        for (int i = 0; i < op.getListElements().size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            visit(op.getListElements().get(i));
-        }
-        sb.append(")");
+        visitInOperation(op);
     }
 
     @Override

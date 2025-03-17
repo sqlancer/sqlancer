@@ -2,7 +2,7 @@ package sqlancer.clickhouse.ast;
 
 import sqlancer.Randomly;
 
-public class ClickHouseBinaryFunctionOperation extends ClickHouseExpression {
+public class ClickHouseBinaryFunctionOperation implements ClickHouseExpression {
 
     public enum ClickHouseBinaryFunctionOperator {
         INT_DIV("intDiv"), GCD("gcd"), LCM("lcm"), MAX2("max2"), MIN2("min2"), POW("pow");

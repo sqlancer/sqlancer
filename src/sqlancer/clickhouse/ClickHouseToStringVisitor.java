@@ -10,10 +10,13 @@ import sqlancer.clickhouse.ast.ClickHouseCastOperation;
 import sqlancer.clickhouse.ast.ClickHouseColumnReference;
 import sqlancer.clickhouse.ast.ClickHouseConstant;
 import sqlancer.clickhouse.ast.ClickHouseExpression;
+import sqlancer.clickhouse.ast.ClickHouseJoin;
 import sqlancer.clickhouse.ast.ClickHouseSelect;
 import sqlancer.clickhouse.ast.ClickHouseTableReference;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPostfixOperation;
 import sqlancer.clickhouse.ast.ClickHouseUnaryPrefixOperation;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.visitor.ToStringVisitor;
 
 public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpression> implements ClickHouseVisitor {
@@ -21,6 +24,16 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
     @Override
     public void visitSpecific(ClickHouseExpression expr) {
         ClickHouseVisitor.super.visit(expr);
+    }
+
+    @Override
+    protected ClickHouseExpression getJoinOnClause(JoinBase<ClickHouseExpression> join) {
+        return null;
+    }
+
+    @Override
+    protected ClickHouseExpression getJoinTableReference(JoinBase<ClickHouseExpression> join) {
+        return null;
     }
 
     @Override
@@ -79,10 +92,10 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
             sb.append(" FROM ");
             visit(fromList);
         }
-        List<ClickHouseExpression.ClickHouseJoin> joins = select.getJoinClauses();
+        List<JoinBase<ClickHouseExpression>> joins = select.getJoinClauses();
         if (!joins.isEmpty()) {
-            for (ClickHouseExpression.ClickHouseJoin join : joins) {
-                visit(join);
+            for (JoinBase<ClickHouseExpression> join : joins) {
+                visit((ClickHouseJoin) join);
             }
         }
         if (select.getWhereClause() != null) {
@@ -134,27 +147,27 @@ public class ClickHouseToStringVisitor extends ToStringVisitor<ClickHouseExpress
     }
 
     @Override
-    public void visit(ClickHouseExpression.ClickHouseJoin join) {
-        ClickHouseExpression.ClickHouseJoin.JoinType type = join.getType();
-        if (type == ClickHouseExpression.ClickHouseJoin.JoinType.CROSS) {
+    public void visit(ClickHouseJoin join) {
+        JoinType type = join.getType();
+        if (type == JoinType.CROSS) {
             sb.append(" JOIN ");
             visit(join.getRightTable());
-        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.INNER) {
+        } else if (type == JoinType.INNER) {
             sb.append(" INNER JOIN ");
             visit(join.getRightTable());
-        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.LEFT_OUTER) {
+        } else if (type == JoinType.LEFT_OUTER) {
             sb.append(" LEFT OUTER JOIN ");
             visit(join.getRightTable());
-        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.RIGHT_OUTER) {
+        } else if (type == JoinType.RIGHT_OUTER) {
             sb.append(" RIGHT OUTER JOIN ");
             visit(join.getRightTable());
-        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.FULL_OUTER) {
+        } else if (type == JoinType.FULL_OUTER) {
             sb.append(" FULL OUTER JOIN ");
             visit(join.getRightTable());
-        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.LEFT_ANTI) {
+        } else if (type == JoinType.LEFT_ANTI) {
             sb.append(" LEFT ANTI JOIN ");
             visit(join.getRightTable());
-        } else if (type == ClickHouseExpression.ClickHouseJoin.JoinType.RIGHT_ANTI) {
+        } else if (type == JoinType.RIGHT_ANTI) {
             sb.append(" RIGHT ANTI JOIN ");
             visit(join.getRightTable());
         } else {

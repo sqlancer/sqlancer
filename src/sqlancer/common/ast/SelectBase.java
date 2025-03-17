@@ -4,8 +4,9 @@ import java.util.Collections;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.newast.Expression;
 
-public class SelectBase<T> {
+public class SelectBase<T extends Expression<?>> {
 
     List<T> fetchColumns;
     List<T> groupByExpressions = Collections.emptyList();
@@ -132,6 +133,14 @@ public class SelectBase<T> {
 
     public boolean isDistinct() {
         return selectOption == SelectType.DISTINCT;
+    }
+
+    public List<JoinBase<T>> getJoinClauses() {
+        return null;
+    }
+
+    public T getDistinctOnClause() {
+        return null;
     }
 
     public enum SelectType {

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.doris.DorisSchema.DorisColumn;
@@ -47,15 +48,16 @@ public class DorisSelect extends SelectBase<DorisExpression>
     }
 
     @Override
-    public void setJoinClauses(List<DorisJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<DorisExpression>> joinStatements) {
         List<DorisExpression> expressions = joinStatements.stream().map(e -> (DorisExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public List<DorisJoin> getJoinClauses() {
-        return getJoinList().stream().map(e -> (DorisJoin) e).collect(Collectors.toList());
+    public List<JoinBase<DorisExpression>> getJoinClauses() {
+        return getJoinList().stream().map(e -> (JoinBase<DorisExpression>) e).collect(Collectors.toList());
     }
 
     @Override

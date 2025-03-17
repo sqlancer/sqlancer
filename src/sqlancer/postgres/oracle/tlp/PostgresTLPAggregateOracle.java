@@ -11,6 +11,7 @@ import org.postgresql.util.PSQLException;
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
@@ -21,7 +22,6 @@ import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresAggregate.PostgresAggregateFunction;
 import sqlancer.postgres.ast.PostgresAlias;
 import sqlancer.postgres.ast.PostgresExpression;
-import sqlancer.postgres.ast.PostgresJoin;
 import sqlancer.postgres.ast.PostgresPostfixOperation;
 import sqlancer.postgres.ast.PostgresPostfixOperation.PostfixOperator;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
@@ -180,7 +180,7 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
     }
 
     private PostgresSelect getSelect(List<PostgresExpression> aggregates, List<PostgresExpression> from,
-            PostgresExpression whereClause, List<PostgresJoin> joinList) {
+            PostgresExpression whereClause, List<JoinBase<PostgresExpression>> joinList) {
         PostgresSelect leftSelect = new PostgresSelect();
         leftSelect.setFetchColumns(aggregates);
         leftSelect.setFromList(from);

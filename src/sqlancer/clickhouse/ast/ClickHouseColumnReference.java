@@ -2,7 +2,7 @@ package sqlancer.clickhouse.ast;
 
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 
-public class ClickHouseColumnReference extends ClickHouseExpression {
+public class ClickHouseColumnReference implements ClickHouseExpression {
 
     private final ClickHouseColumn column;
     private final String columnAlias;

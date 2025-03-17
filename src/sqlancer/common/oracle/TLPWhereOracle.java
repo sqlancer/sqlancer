@@ -8,6 +8,7 @@ import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.common.ast.newast.Select;
@@ -72,6 +73,7 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         this.errors = expectedErrors;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void check() throws SQLException {
         reproducer = null;
@@ -83,7 +85,7 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
 
         boolean shouldCreateDummy = true;
         select.setFetchColumns(gen.generateFetchColumns(shouldCreateDummy));
-        select.setJoinClauses(gen.getRandomJoinClauses());
+        select.setJoinClauses((List<JoinBase<E>>) (List<?>) gen.getRandomJoinClauses());
         select.setFromList(gen.getTableRefs());
         select.setWhereClause(null);
 

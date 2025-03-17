@@ -1,40 +1,21 @@
 package sqlancer.cockroachdb.ast;
 
-import java.util.Arrays;
-
-import sqlancer.Randomly;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBTable;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 
-public class CockroachDBJoin
+public class CockroachDBJoin extends JoinBase<CockroachDBExpression>
         implements CockroachDBExpression, Join<CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
 
     private final CockroachDBExpression leftTable;
     private final CockroachDBExpression rightTable;
-    private JoinType joinType;
-    private CockroachDBExpression onCondition;
 
-    public enum JoinType {
-        INNER, LEFT, RIGHT, FULL, CROSS, NATURAL;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
-        public static JoinType getRandomExcept(JoinType... exclude) {
-            JoinType[] values = Arrays.stream(values()).filter(m -> !Arrays.asList(exclude).contains(m))
-                    .toArray(JoinType[]::new);
-            return Randomly.fromOptions(values);
-        }
-    }
-
-    public CockroachDBJoin(CockroachDBExpression leftTable, CockroachDBExpression rightTable, JoinType joinType,
-            CockroachDBExpression whereCondition) {
+    public CockroachDBJoin(CockroachDBExpression leftTable, CockroachDBExpression rightTable,
+            CockroachDBExpression whereCondition, JoinType joinType) {
+        super(joinType, whereCondition);
         this.leftTable = leftTable;
         this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
     }
 
     public CockroachDBExpression getLeftTable() {
@@ -46,28 +27,29 @@ public class CockroachDBJoin
     }
 
     public void setJoinType(JoinType joinType) {
-        this.joinType = joinType;
+        type = joinType;
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     @Override
-    public void setOnClause(CockroachDBExpression onCondition) {
-        this.onCondition = onCondition;
+    public void setOnClause(CockroachDBExpression onClause) {
+        this.onClause = onClause;
     }
 
-    public CockroachDBExpression getOnCondition() {
-        return onCondition;
+    @Override
+    public CockroachDBExpression getOnClause() {
+        return onClause;
     }
 
     public static CockroachDBJoin createJoin(CockroachDBExpression left, CockroachDBExpression right, JoinType type,
             CockroachDBExpression onClause) {
         if (type.compareTo(JoinType.CROSS) >= 0) {
-            return new CockroachDBJoin(left, right, type, null);
+            return new CockroachDBJoin(left, right, null, type);
         } else {
-            return new CockroachDBJoin(left, right, type, onClause);
+            return new CockroachDBJoin(left, right, onClause, type);
         }
     }
 }

@@ -3,6 +3,7 @@ package sqlancer.mariadb.ast;
 import java.util.ArrayList;
 import java.util.List;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
@@ -17,7 +18,7 @@ public class MariaDBSelectStatement extends SelectBase<MariaDBExpression>
 
     private List<MariaDBExpression> groupBys = new ArrayList<>();
     private List<MariaDBExpression> columns = new ArrayList<>();
-    private List<MariaDBJoin> joinClauses = new ArrayList<>();
+    private List<JoinBase<MariaDBExpression>> joinClauses = new ArrayList<>();
     private MariaDBSelectType selectType = MariaDBSelectType.ALL;
     private MariaDBExpression whereCondition;
 
@@ -58,12 +59,12 @@ public class MariaDBSelectStatement extends SelectBase<MariaDBExpression>
     }
 
     @Override
-    public List<MariaDBJoin> getJoinClauses() {
+    public List<JoinBase<MariaDBExpression>> getJoinClauses() {
         return joinClauses;
     }
 
     @Override
-    public void setJoinClauses(List<MariaDBJoin> joinClauses) {
+    public void setJoinClauses(List<JoinBase<MariaDBExpression>> joinClauses) {
         this.joinClauses = joinClauses;
     }
 

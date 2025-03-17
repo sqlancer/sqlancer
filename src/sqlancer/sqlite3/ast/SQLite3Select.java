@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column.SQLite3CollateSequence;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3Select
+public class SQLite3Select extends SelectBase<SQLite3Expression>
         implements SQLite3Expression, Select<SQLite3Join, SQLite3Expression, SQLite3Table, SQLite3Column> {
 
     private SelectType fromOptions = SelectType.ALL;
@@ -21,7 +23,7 @@ public class SQLite3Select
     private List<SQLite3Expression> orderByClause = Collections.emptyList();
     private SQLite3Expression offsetClause;
     private List<SQLite3Expression> fetchColumns = Collections.emptyList();
-    private List<SQLite3Join> joinStatements = Collections.emptyList();
+    private List<JoinBase<SQLite3Expression>> joinStatements = Collections.emptyList();
     private SQLite3Expression havingClause;
 
     public SQLite3Select() {
@@ -37,8 +39,10 @@ public class SQLite3Select
         offsetClause = other.offsetClause;
         fetchColumns = new ArrayList<>(other.fetchColumns);
         joinStatements = new ArrayList<>();
-        for (SQLite3Join j : other.joinStatements) {
-            joinStatements.add(new SQLite3Join(j));
+        for (JoinBase<SQLite3Expression> j : other.joinStatements) {
+            if (j instanceof SQLite3Join) {
+                joinStatements.add(new SQLite3Join((SQLite3Join) j));
+            }
         }
         havingClause = other.havingClause;
     }
@@ -130,12 +134,12 @@ public class SQLite3Select
     }
 
     @Override
-    public void setJoinClauses(List<SQLite3Join> joinStatements) {
+    public void setJoinClauses(List<JoinBase<SQLite3Expression>> joinStatements) {
         this.joinStatements = joinStatements;
     }
 
     @Override
-    public List<SQLite3Join> getJoinClauses() {
+    public List<JoinBase<SQLite3Expression>> getJoinClauses() {
         return joinStatements;
     }
 

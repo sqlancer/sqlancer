@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.datafusion.DataFusionProvider.DataFusionGlobalState;
 import sqlancer.datafusion.DataFusionSchema;
@@ -14,20 +15,18 @@ import sqlancer.datafusion.gen.DataFusionExpressionGenerator;
 /*
     NOT IMPLEMENTED YET
  */
-public class DataFusionJoin
+public class DataFusionJoin extends JoinBase<DataFusionExpression>
         implements DataFusionExpression, Join<DataFusionExpression, DataFusionTable, DataFusionColumn> {
 
     private final DataFusionTableReference leftTable;
     private final DataFusionTableReference rightTable;
-    private final JoinType joinType;
-    private DataFusionExpression onCondition;
 
     public DataFusionJoin(DataFusionTableReference leftTable, DataFusionTableReference rightTable, JoinType joinType,
             DataFusionExpression whereCondition) {
+        super(joinType, whereCondition);
         this.leftTable = leftTable;
         this.rightTable = rightTable;
-        this.joinType = joinType;
-        this.onCondition = whereCondition;
+
     }
 
     public static List<DataFusionJoin> getJoins(List<DataFusionTableReference> tableList,
@@ -42,7 +41,7 @@ public class DataFusionJoin
             // TODO(datafusion) this `joinGen` can generate super chaotic exprsions, maybe we should make it more like a
             // normal join expression
             DataFusionExpressionGenerator joinGen = new DataFusionExpressionGenerator(globalState).setColumns(columns);
-            switch (DataFusionJoin.JoinType.getRandom()) {
+            switch (DataFusionJoin.JoinType.getRandomForDatabase("DATAFUSION")) {
             case INNER:
                 joinExpressions.add(DataFusionJoin.createInnerJoin(leftTable, rightTable,
                         joinGen.generateExpression(DataFusionSchema.DataFusionDataType.BOOLEAN)));
@@ -68,24 +67,15 @@ public class DataFusionJoin
     }
 
     public JoinType getJoinType() {
-        return joinType;
+        return type;
     }
 
     public DataFusionExpression getOnCondition() {
-        return onCondition;
-    }
-
-    public enum JoinType {
-        INNER;
-        // NATURAL, LEFT, RIGHT;
-
-        public static JoinType getRandom() {
-            return Randomly.fromOptions(values());
-        }
+        return onClause;
     }
 
     @Override
     public void setOnClause(DataFusionExpression onClause) {
-        onCondition = onClause;
+        super.onClause = onClause;
     }
 }

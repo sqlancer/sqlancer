@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.datafusion.DataFusionSchema.DataFusionColumn;
@@ -30,15 +31,16 @@ public class DataFusionSelect extends SelectBase<DataFusionExpression> implement
     }
 
     @Override
-    public void setJoinClauses(List<DataFusionJoin> joinStatements) {
+    public void setJoinClauses(List<JoinBase<DataFusionExpression>> joinStatements) {
         List<DataFusionExpression> expressions = joinStatements.stream().map(e -> (DataFusionExpression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public List<DataFusionJoin> getJoinClauses() {
-        return getJoinList().stream().map(e -> (DataFusionJoin) e).collect(Collectors.toList());
+    public List<JoinBase<DataFusionExpression>> getJoinClauses() {
+        return getJoinList().stream().map(e -> (JoinBase<DataFusionExpression>) e).collect(Collectors.toList());
     }
 
     @Override

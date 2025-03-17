@@ -2,6 +2,7 @@ package sqlancer.common.ast.newast;
 
 import java.util.List;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
 
@@ -36,9 +37,9 @@ public interface Select<J extends Join<E, T, C>, E extends Expression<C>, T exte
 
     List<E> getFetchColumns();
 
-    void setJoinClauses(List<J> joinStatements);
+    void setJoinClauses(List<JoinBase<E>> joinStatements);
 
-    List<J> getJoinClauses();
+    List<JoinBase<E>> getJoinClauses();
 
     void setHavingClause(E havingClause);
 

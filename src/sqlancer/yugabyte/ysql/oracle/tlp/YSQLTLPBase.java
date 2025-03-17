@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -54,7 +56,7 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
             YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
             YSQLTable table = Randomly.fromList(tables);
             tables.remove(table);
-            YSQLJoin.YSQLJoinType options = YSQLJoin.YSQLJoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("YSQL");
             YSQLJoin j = new YSQLJoin(new YSQLSelect.YSQLFromTable(table, Randomly.getBoolean()), joinClause, options);
             joinStatements.add(j);
         }
@@ -64,13 +66,14 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
             YSQLSelect.YSQLSubquery subquery = YSQLExpressionGenerator.createSubquery(globalState,
                     String.format("sub%d", i), subqueryTables);
             YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
-            YSQLJoin.YSQLJoinType options = YSQLJoin.YSQLJoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("YSQL");
             YSQLJoin j = new YSQLJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }
         return joinStatements;
     }
 
+    @SuppressWarnings("unchecked")
     protected void generateSelectBase(List<YSQLTable> tables, List<YSQLJoin> joins) {
         List<YSQLExpression> tableList = tables.stream()
                 .map(t -> new YSQLSelect.YSQLFromTable(t, Randomly.getBoolean())).collect(Collectors.toList());
@@ -80,7 +83,7 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
         select.setFetchColumns(generateFetchColumns());
         select.setFromList(tableList);
         select.setWhereClause(null);
-        select.setJoinClauses(joins);
+        select.setJoinClauses((List<JoinBase<YSQLExpression>>) (List<?>) joins);
         if (Randomly.getBoolean()) {
             select.setForClause(YSQLSelect.ForClause.getRandom());
         }

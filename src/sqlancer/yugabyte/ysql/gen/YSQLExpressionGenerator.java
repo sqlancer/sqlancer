@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
@@ -627,7 +628,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
             YSQLTable table = Randomly.fromList(tables);
             tables.remove(table);
-            YSQLJoin.YSQLJoinType options = YSQLJoin.YSQLJoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("YSQL");
             YSQLJoin j = new YSQLJoin(new YSQLSelect.YSQLFromTable(table, Randomly.getBoolean()), joinClause, options);
             joinStatements.add(j);
         }
@@ -636,7 +637,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             YSQLTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
             YSQLSelect.YSQLSubquery subquery = createSubquery(globalState, String.format("sub%d", i), subqueryTables);
             YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
-            YSQLJoin.YSQLJoinType options = YSQLJoin.YSQLJoinType.getRandom();
+            JoinType options = JoinType.getRandomForDatabase("YSQL");
             YSQLJoin j = new YSQLJoin(subquery, joinClause, options);
             joinStatements.add(j);
         }

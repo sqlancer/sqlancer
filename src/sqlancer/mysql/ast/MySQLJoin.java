@@ -5,42 +5,38 @@ import java.util.Arrays;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
-public class MySQLJoin implements MySQLExpression, Join<MySQLExpression, MySQLTable, MySQLColumn> {
-
-    public enum JoinType {
-        NATURAL, INNER, STRAIGHT, LEFT, RIGHT, CROSS;
-    }
+public class MySQLJoin extends JoinBase<MySQLExpression>
+        implements MySQLExpression, Join<MySQLExpression, MySQLTable, MySQLColumn> {
 
     private final MySQLTable table;
-    private MySQLExpression onClause;
-    private JoinType type;
 
     public MySQLJoin(MySQLJoin other) {
+        super(null, other.onClause, other.type);
         this.table = other.table;
-        this.onClause = other.onClause;
-        this.type = other.type;
     }
 
     public MySQLJoin(MySQLTable table, MySQLExpression onClause, JoinType type) {
+        super(null, onClause, type);
         this.table = table;
-        this.onClause = onClause;
-        this.type = type;
     }
 
     public MySQLTable getTable() {
         return table;
     }
 
+    @Override
     public MySQLExpression getOnClause() {
         return onClause;
     }
 
+    @Override
     public JoinType getType() {
         return type;
     }

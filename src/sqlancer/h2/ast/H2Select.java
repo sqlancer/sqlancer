@@ -3,6 +3,7 @@ package sqlancer.h2.ast;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.h2.H2Schema.H2Column;
@@ -18,15 +19,16 @@ public class H2Select extends SelectBase<H2Expression>
     }
 
     @Override
-    public void setJoinClauses(List<H2Join> joinStatements) {
+    public void setJoinClauses(List<JoinBase<H2Expression>> joinStatements) {
         List<H2Expression> expressions = joinStatements.stream().map(e -> (H2Expression) e)
                 .collect(Collectors.toList());
         setJoinList(expressions);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public List<H2Join> getJoinClauses() {
-        return getJoinList().stream().map(e -> (H2Join) e).collect(Collectors.toList());
+    public List<JoinBase<H2Expression>> getJoinClauses() {
+        return getJoinList().stream().map(e -> (JoinBase<H2Expression>) e).collect(Collectors.toList());
     }
 
     @Override

@@ -1,32 +1,32 @@
 package sqlancer.mariadb.ast;
 
-public abstract class MariaDBVisitor {
+public interface MariaDBVisitor {
 
-    public abstract void visit(MariaDBConstant c);
+    void visit(MariaDBConstant c);
 
-    public abstract void visit(MariaDBPostfixUnaryOperation op);
+    void visit(MariaDBPostfixUnaryOperation op);
 
-    public abstract void visit(MariaDBColumnName c);
+    void visit(MariaDBColumnName c);
 
-    public abstract void visit(MariaDBSelectStatement s);
+    void visit(MariaDBSelectStatement s);
 
-    public abstract void visit(MariaDBText t);
+    void visit(MariaDBText t);
 
-    public abstract void visit(MariaDBAggregate aggr);
+    void visit(MariaDBAggregate aggr);
 
-    public abstract void visit(MariaDBBinaryOperator comp);
+    void visit(MariaDBBinaryOperator comp);
 
-    public abstract void visit(MariaDBUnaryPrefixOperation op);
+    void visit(MariaDBUnaryPrefixOperation op);
 
-    public abstract void visit(MariaDBFunction func);
+    void visit(MariaDBFunction func);
 
-    public abstract void visit(MariaDBInOperation op);
+    void visit(MariaDBInOperation op);
 
-    public abstract void visit(MariaDBJoin join);
+    void visit(MariaDBJoin join);
 
-    public abstract void visit(MariaDBTableReference join);
+    void visit(MariaDBTableReference join);
 
-    public void visit(MariaDBExpression expr) {
+    default void visit(MariaDBExpression expr) {
         if (expr instanceof MariaDBConstant) {
             visit((MariaDBConstant) expr);
         } else if (expr instanceof MariaDBColumnName) {
@@ -56,7 +56,7 @@ public abstract class MariaDBVisitor {
         }
     }
 
-    public static String asString(MariaDBExpression expr) {
+    static String asString(MariaDBExpression expr) {
         MariaDBStringVisitor v = new MariaDBStringVisitor();
         v.visit(expr);
         return v.getString();

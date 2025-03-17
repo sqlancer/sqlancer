@@ -7,8 +7,8 @@ import sqlancer.Randomly;
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 import sqlancer.common.visitor.BinaryOperation;
 
-public class ClickHouseBinaryComparisonOperation extends ClickHouseExpression
-        implements BinaryOperation<ClickHouseExpression> {
+public class ClickHouseBinaryComparisonOperation
+        implements ClickHouseExpression, BinaryOperation<ClickHouseExpression> {
 
     private final ClickHouseBinaryComparisonOperator operation;
     private final ClickHouseExpression left;
