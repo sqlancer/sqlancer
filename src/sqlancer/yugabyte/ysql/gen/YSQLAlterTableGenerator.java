@@ -11,7 +11,8 @@ import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
-public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, YSQLGlobalState, YSQLAlterTableGenerator.Action> {
+public class YSQLAlterTableGenerator
+        extends SQLAlterTableGenerator<YSQLTable, YSQLGlobalState, YSQLAlterTableGenerator.Action> {
     public YSQLAlterTableGenerator(YSQLTable randomTable, YSQLGlobalState globalState) {
         super(randomTable, globalState);
     }
@@ -58,111 +59,50 @@ public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, Y
         }
         return action;
     }
-/*
-    public SQLQueryAdapter generate() {
-        ExpectedErrors errors = new ExpectedErrors();
-        int i = 0;
-        List<Action> action = getActions(errors);
-        StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLE ");
-        if (Randomly.getBoolean()) {
-            sb.append(" ONLY");
-            errors.add("cannot use ONLY for foreign key on partitioned table");
-        }
-        sb.append(" ");
-        sb.append(randomTable.getName());
-        sb.append(" ");
-        for (Action a : action) {
-            if (i++ != 0) {
-                sb.append(", ");
-            }
-            switch (a) {
-                case ALTER_TABLE_DROP_COLUMN:
-                sb.append("DROP ");
-                if (Randomly.getBoolean()) {
-                    sb.append(" IF EXISTS ");
-                }
-                sb.append(randomTable.getRandomColumn().getName());
-                errors.add("because other objects depend on it");
-                if (Randomly.getBoolean()) {
-                    sb.append(" ");
-                    sb.append(Randomly.fromOptions("RESTRICT", "CASCADE"));
-                }
-                errors.add("does not exist");
-                errors.add("cannot drop column");
-                errors.add("cannot drop key column");
-                errors.add("cannot drop inherited column");
-                break;
-                case ADD_TABLE_CONSTRAINT:
-                sb.append("ADD ");
-                sb.append("CONSTRAINT ").append(r.getAlphabeticChar()).append(" ");
-                YSQLCommon.addTableConstraint(sb, randomTable, globalState, errors);
-                errors.add("already exists");
-                errors.add("multiple primary keys for table");
-                errors.add("could not create unique index");
-                errors.add("contains null values");
-                errors.add("cannot cast type");
-                errors.add("unsupported PRIMARY KEY constraint with partition key definition");
-                errors.add("unsupported UNIQUE constraint with partition key definition");
-                errors.add("insufficient columns in UNIQUE constraint definition");
-                errors.add("which is part of the partition key");
-                errors.add("out of range");
-                errors.add("there is no unique constraint matching given keys for referenced table");
-                errors.add("constraints on temporary tables may reference only temporary tables");
-                errors.add("constraints on unlogged tables may reference only permanent or unlogged tables");
-                errors.add("constraints on permanent tables may reference only permanent tables");
-                errors.add("cannot reference partitioned table");
-                errors.add("cannot be implemented");
-                errors.add("violates foreign key constraint");
-                errors.add("unsupported ON COMMIT and foreign key combination");
-                errors.add("USING INDEX is not supported on partitioned tables");
-                if (Randomly.getBoolean()) {
-                    sb.append(" NOT VALID");
-                    errors.add("cannot be marked NOT VALID");
-                    errors.add("cannot add NOT VALID foreign key on partitioned table");
-                } else {
-                    errors.add("is violated by some row");
-                }
-                break;
-            case ADD_TABLE_CONSTRAINT_USING_INDEX:
-                sb.append("ADD ");
-                sb.append("CONSTRAINT ").append(r.getAlphabeticChar()).append(" ");
-                sb.append(Randomly.fromOptions("UNIQUE", "PRIMARY KEY"));
-                errors.add("already exists");
-                errors.add("not valid");
-                sb.append(" USING INDEX ");
-                sb.append(randomTable.getRandomIndex().getIndexName());
-                errors.add("PRIMARY KEY containing column of type");
-                errors.add("is not a unique index");
-                errors.add("is already associated with a constraint");
-                errors.add("Cannot create a primary key or unique constraint using such an index");
-                errors.add("multiple primary keys for table");
-                errors.add("appears twice in unique constraint");
-                errors.add("appears twice in primary key constraint");
-                errors.add("contains null values");
-                errors.add("insufficient columns in PRIMARY KEY constraint definition");
-                errors.add("which is part of the partition key");
-                break;
-            case DISABLE_ROW_LEVEL_SECURITY:
-                sb.append("DISABLE ROW LEVEL SECURITY");
-                break;
-            case ENABLE_ROW_LEVEL_SECURITY:
-                sb.append("ENABLE ROW LEVEL SECURITY");
-                break;
-            case FORCE_ROW_LEVEL_SECURITY:
-                sb.append("FORCE ROW LEVEL SECURITY");
-                break;
-            case NO_FORCE_ROW_LEVEL_SECURITY:
-                sb.append("NO FORCE ROW LEVEL SECURITY");
-                break;
-            default:
-                throw new AssertionError(a);
-            }
-        }
-
-        return new SQLQueryAdapter(sb.toString(), errors, true);
-    }
- */
+    /*
+     * public SQLQueryAdapter generate() { ExpectedErrors errors = new ExpectedErrors(); int i = 0; List<Action> action
+     * = getActions(errors); StringBuilder sb = new StringBuilder(); sb.append("ALTER TABLE "); if
+     * (Randomly.getBoolean()) { sb.append(" ONLY"); errors.add("cannot use ONLY for foreign key on partitioned table");
+     * } sb.append(" "); sb.append(randomTable.getName()); sb.append(" "); for (Action a : action) { if (i++ != 0) {
+     * sb.append(", "); } switch (a) { case ALTER_TABLE_DROP_COLUMN: sb.append("DROP "); if (Randomly.getBoolean()) {
+     * sb.append(" IF EXISTS "); } sb.append(randomTable.getRandomColumn().getName());
+     * errors.add("because other objects depend on it"); if (Randomly.getBoolean()) { sb.append(" ");
+     * sb.append(Randomly.fromOptions("RESTRICT", "CASCADE")); } errors.add("does not exist");
+     * errors.add("cannot drop column"); errors.add("cannot drop key column");
+     * errors.add("cannot drop inherited column"); break; case ADD_TABLE_CONSTRAINT: sb.append("ADD ");
+     * sb.append("CONSTRAINT ").append(r.getAlphabeticChar()).append(" "); YSQLCommon.addTableConstraint(sb,
+     * randomTable, globalState, errors); errors.add("already exists"); errors.add("multiple primary keys for table");
+     * errors.add("could not create unique index"); errors.add("contains null values"); errors.add("cannot cast type");
+     * errors.add("unsupported PRIMARY KEY constraint with partition key definition");
+     * errors.add("unsupported UNIQUE constraint with partition key definition");
+     * errors.add("insufficient columns in UNIQUE constraint definition");
+     * errors.add("which is part of the partition key"); errors.add("out of range");
+     * errors.add("there is no unique constraint matching given keys for referenced table");
+     * errors.add("constraints on temporary tables may reference only temporary tables");
+     * errors.add("constraints on unlogged tables may reference only permanent or unlogged tables");
+     * errors.add("constraints on permanent tables may reference only permanent tables");
+     * errors.add("cannot reference partitioned table"); errors.add("cannot be implemented");
+     * errors.add("violates foreign key constraint"); errors.add("unsupported ON COMMIT and foreign key combination");
+     * errors.add("USING INDEX is not supported on partitioned tables"); if (Randomly.getBoolean()) {
+     * sb.append(" NOT VALID"); errors.add("cannot be marked NOT VALID");
+     * errors.add("cannot add NOT VALID foreign key on partitioned table"); } else {
+     * errors.add("is violated by some row"); } break; case ADD_TABLE_CONSTRAINT_USING_INDEX: sb.append("ADD ");
+     * sb.append("CONSTRAINT ").append(r.getAlphabeticChar()).append(" "); sb.append(Randomly.fromOptions("UNIQUE",
+     * "PRIMARY KEY")); errors.add("already exists"); errors.add("not valid"); sb.append(" USING INDEX ");
+     * sb.append(randomTable.getRandomIndex().getIndexName()); errors.add("PRIMARY KEY containing column of type");
+     * errors.add("is not a unique index"); errors.add("is already associated with a constraint");
+     * errors.add("Cannot create a primary key or unique constraint using such an index");
+     * errors.add("multiple primary keys for table"); errors.add("appears twice in unique constraint");
+     * errors.add("appears twice in primary key constraint"); errors.add("contains null values");
+     * errors.add("insufficient columns in PRIMARY KEY constraint definition");
+     * errors.add("which is part of the partition key"); break; case DISABLE_ROW_LEVEL_SECURITY:
+     * sb.append("DISABLE ROW LEVEL SECURITY"); break; case ENABLE_ROW_LEVEL_SECURITY:
+     * sb.append("ENABLE ROW LEVEL SECURITY"); break; case FORCE_ROW_LEVEL_SECURITY:
+     * sb.append("FORCE ROW LEVEL SECURITY"); break; case NO_FORCE_ROW_LEVEL_SECURITY:
+     * sb.append("NO FORCE ROW LEVEL SECURITY"); break; default: throw new AssertionError(a); } }
+     *
+     * return new SQLQueryAdapter(sb.toString(), errors, true); }
+     */
 
     @Override
     public void addTableConstraintHelper(StringBuilder sb, ExpectedErrors errors) {
@@ -173,7 +113,6 @@ public class YSQLAlterTableGenerator extends SQLAlterTableGenerator<YSQLTable, Y
     public void addTableConstraintIndexHelper(ExpectedErrors errors) {
         errors.add("PRIMARY KEY containing column of type");
     }
-
 
     protected enum Action {
         // ALTER_TABLE_ADD_COLUMN, // [ COLUMN ] column data_type [ COLLATE collation ] [
