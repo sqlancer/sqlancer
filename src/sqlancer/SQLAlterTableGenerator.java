@@ -6,7 +6,6 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractRelationalTable;
 
-
 public abstract class SQLAlterTableGenerator<T extends AbstractRelationalTable<?, ?, ?>, G extends ExpandedGlobalState<?, ?>, A extends Enum<A>> {
 
     protected final T randomTable;
