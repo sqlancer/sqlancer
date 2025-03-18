@@ -8,14 +8,14 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.ast.JoinBase.JoinType;
-import sqlancer.materialize.ast.MaterializeExpression;
-import sqlancer.materialize.ast.MaterializeJoin;
-import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
-import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
 import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 import sqlancer.materialize.MaterializeSchema.MaterializeTables;
+import sqlancer.materialize.ast.MaterializeExpression;
+import sqlancer.materialize.ast.MaterializeJoin;
+import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
+import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
 import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 
 public final class MaterializeUtils {

@@ -5,12 +5,12 @@ import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase.JoinType;
-import sqlancer.yugabyte.ysql.ast.YSQLExpression;
-import sqlancer.yugabyte.ysql.ast.YSQLJoin;
-import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTables;
+import sqlancer.yugabyte.ysql.ast.YSQLExpression;
+import sqlancer.yugabyte.ysql.ast.YSQLJoin;
+import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 import sqlancer.yugabyte.ysql.gen.YSQLExpressionGenerator;
 
 /**
