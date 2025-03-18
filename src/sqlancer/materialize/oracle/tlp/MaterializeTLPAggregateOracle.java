@@ -1,5 +1,6 @@
 package sqlancer.materialize.oracle.tlp;
 
+import static sqlancer.common.oracle.TestOracleUtils.executeAndCompareQueries;
 import static sqlancer.common.oracle.TestOracleUtils.executeQuery;
 
 import java.sql.SQLException;
@@ -7,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import sqlancer.ComparatorHelper;
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
@@ -67,21 +66,7 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
         firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
         secondResult = getAggregateResult(metamorphicQuery);
-
-        String queryFormatString = "-- %s;\n-- result: %s";
-        String firstQueryString = String.format(queryFormatString, originalQuery, firstResult);
-        String secondQueryString = String.format(queryFormatString, metamorphicQuery, secondResult);
-        state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
-        if (firstResult == null && secondResult != null || firstResult != null && secondResult == null
-                || firstResult != null && !firstResult.contentEquals(secondResult)
-                        && !ComparatorHelper.isEqualDouble(firstResult, secondResult)) {
-            if (secondResult != null && secondResult.contains("Inf")) {
-                throw new IgnoreMeException(); // FIXME: average computation
-            }
-            String assertionMessage = String.format("the results mismatch!\n%s\n%s", firstQueryString,
-                    secondQueryString);
-            throw new AssertionError(assertionMessage);
-        }
+        executeAndCompareQueries(state, originalQuery, firstResult, metamorphicQuery, secondResult);
     }
 
     private String createMetamorphicUnionQuery(MaterializeSelect select, MaterializeAggregate aggregate,

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import org.postgresql.util.PSQLException;
 
+import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLGlobalState;
@@ -97,5 +98,34 @@ public final class TestOracleUtils {
         }
 
         return resultString;
+    }
+
+    @SuppressWarnings("PMD.UseObjectForClearerAPI")
+    public static void executeAndCompareQueries(SQLGlobalState<?, ?> state, String originalQuery, String firstResult,
+            String metamorphicQuery, String secondResult) throws SQLException {
+
+        // Format and log the queries and their results
+        String queryFormatString = "-- %s;\n-- result: %s";
+        String firstQueryString = String.format(queryFormatString, originalQuery, firstResult);
+        String secondQueryString = String.format(queryFormatString, metamorphicQuery, secondResult);
+        state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
+
+        // Compare the results
+        boolean resultsDiffer = firstResult == null && secondResult != null
+                || firstResult != null && secondResult == null
+                || firstResult != null && !firstResult.contentEquals(secondResult)
+                        && !ComparatorHelper.isEqualDouble(firstResult, secondResult);
+
+        if (resultsDiffer) {
+            // Special handling for infinity values
+            if (secondResult != null && secondResult.contains("Inf")) {
+                throw new IgnoreMeException(); // FIXME: average computation
+            }
+
+            // Results don't match - throw assertion error
+            String assertionMessage = String.format("the results mismatch!\n%s\n%s", firstQueryString,
+                    secondQueryString);
+            throw new AssertionError(assertionMessage);
+        }
     }
 }
