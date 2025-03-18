@@ -27,18 +27,12 @@ public class DorisQueryPartitioningGroupByTester extends DorisQueryPartitioningB
         select.setGroupByExpressions(select.getFetchColumns());
         select.setWhereClause(null);
         String originalQueryString = DorisToStringVisitor.asString(select);
-
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
-
-        select.setWhereClause(predicate);
-        String firstQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = DorisToStringVisitor.asString(select);
+        List<String> queryStrings = getQueryStrings(select);
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(firstQueryString,
-                secondQueryString, thirdQueryString, combinedString, true, state, errors);
+
+        List<String> secondResultSet = ComparatorHelper.getCombinedResultSetNoDuplicates(queryStrings.get(0),
+                queryStrings.get(1), queryStrings.get(2), combinedString, true, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state, ComparatorHelper::canonicalizeResultValue);
     }
