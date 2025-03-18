@@ -57,9 +57,44 @@ public class YCQLInsertGenerator extends AbstractInsertGenerator<YCQLColumn> {
     }
 
     @Override
-    protected void insertValue(YCQLColumn columnYCQL) {
-        // TODO: select a more meaningful value
-        sb.append(YCQLToStringVisitor.asString(new YCQLExpressionGenerator(globalState).generateConstant()));
+protected void insertValue(YCQLColumn columnYCQL) {
+    // Generate a meaningful value based on - column's data type
+    switch (columnYCQL.getType()) {
+        case INT:
+            // Generate a random integer within - reasonable range
+            sb.append(globalState.getRandomly().getInteger(-1000, 1000));
+            break;
+        case TEXT:
+        case VARCHAR:
+            // Generate a random string of length - 10
+            sb.append("'").append(globalState.getRandomly().getString(10)).append("'");
+            break;
+        case BOOLEAN:
+            // Generate a random boolean value
+            sb.append(globalState.getRandomly().getBoolean());
+            break;
+        case FLOAT:
+        case DOUBLE:
+            // Generate a random floating-point number
+            sb.append(globalState.getRandomly().getDouble());
+            break;
+        case UUID:
+            // Generate a random UUID
+            sb.append("uuid()");
+            break;
+        case TIMESTAMP:
+            // Generate a random timestamp
+            sb.append("'").append(globalState.getRandomly().getTimestamp()).append("'");
+            break;
+        case BLOB:
+            // Generate a random binary value (e.g., a hex string)
+            sb.append("0x").append(globalState.getRandomly().getHexString(10));
+            break;
+        default:
+            // Fallback to a random constant if the type is unknown
+            sb.append(YCQLToStringVisitor.asString(new YCQLExpressionGenerator(globalState).generateConstant()));
+            break;
     }
+}
 
 }
