@@ -163,9 +163,27 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<H2Expressi
         XMLSTARTDOC(0), //
         XMLTEXT(1), //
         TRANSLATE(3), //
+        
         // TODO: time and date function
-        // systems functions
+        CURRENT_DATE(0), //
+        CURRENT_TIME(0), //
+        CURRENT_TIMESTAMP(0), //
+        DATEADD(3), //
+        DATEDIFF(3), //
+        EXTRACT(2), //
+        NOW(0), //
+
         // TODO: array functions
+        ARRAY_LENGTH(1),
+        ARRAY_GET(2),  // 
+        ARRAY_CONTAINS(2),  // 
+        ARRAY_APPEND(2),  // 
+        ARRAY_REMOVE(2),  // 
+        ARRAY_SLICE(3),  // 
+        ARRAY_POSITION(2),  // 
+        ARRAY_SORT(1),
+
+        // System functions
         CASEWHEN(3), //
         COALESCE(1, true), //
         CURRENT_SCHEMA(0), //
@@ -183,7 +201,13 @@ public class H2ExpressionGenerator extends UntypedExpressionGenerator<H2Expressi
         SESSION_ID(0), //
         TRUNCATE_VALUE(3), //
         USER(0);
+
         // TODO JSON functions
+        JSON_ARRAY(1, true), //
+        JSON_OBJECT(1, true), //
+        JSON_VALUE(2), //
+        JSON_QUERY(2), //
+        JSON_EXISTS(2), //
 
         private int nrArgs;
         private boolean isVariadic;
