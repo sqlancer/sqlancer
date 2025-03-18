@@ -1,5 +1,7 @@
 package sqlancer.materialize.gen;
 
+import static sqlancer.materialize.MaterializeUtils.getJoinStatements;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,7 +12,6 @@ import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.ast.SelectBase.SelectType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
@@ -23,7 +24,6 @@ import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeRowValue;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
-import sqlancer.materialize.MaterializeSchema.MaterializeTables;
 import sqlancer.materialize.ast.MaterializeAggregate;
 import sqlancer.materialize.ast.MaterializeAggregate.MaterializeAggregateFunction;
 import sqlancer.materialize.ast.MaterializeBetweenOperation;
@@ -56,8 +56,6 @@ import sqlancer.materialize.ast.MaterializePrefixOperation;
 import sqlancer.materialize.ast.MaterializePrefixOperation.PrefixOperator;
 import sqlancer.materialize.ast.MaterializeSelect;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
-import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
-import sqlancer.materialize.oracle.tlp.MaterializeTLPBase;
 
 public class MaterializeExpressionGenerator implements ExpressionGenerator<MaterializeExpression>,
         NoRECGenerator<MaterializeSelect, MaterializeJoin, MaterializeExpression, MaterializeTable, MaterializeColumn>,
@@ -553,29 +551,7 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
 
     @Override
     public List<MaterializeJoin> getRandomJoinClauses() {
-        List<MaterializeJoin> joinStatements = new ArrayList<>();
-        MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(globalState).setColumns(columns);
-        for (int i = 1; i < tables.size(); i++) {
-            MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
-            MaterializeTable table = Randomly.fromList(tables);
-            tables.remove(table);
-            JoinType options = JoinType.getRandom();
-            MaterializeJoin j = new MaterializeJoin(new MaterializeFromTable(table, Randomly.getBoolean()), joinClause,
-                    options);
-            joinStatements.add(j);
-        }
-        // JOIN subqueries
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            MaterializeTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
-            MaterializeSubquery subquery = MaterializeTLPBase.createSubquery(globalState, String.format("sub%d", i),
-                    subqueryTables);
-            MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
-            JoinType options = JoinType.getRandom();
-            MaterializeJoin j = new MaterializeJoin(subquery, joinClause, options);
-            joinStatements.add(j);
-        }
-
-        return joinStatements;
+        return getJoinStatements(globalState, columns, tables);
     }
 
     @Override
