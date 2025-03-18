@@ -1,12 +1,18 @@
 package sqlancer.common.oracle;
 
 import java.io.IOException;
+import java.sql.SQLException;
+
+import org.postgresql.util.PSQLException;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.gen.PartitionGenerator;
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
@@ -66,5 +72,30 @@ public final class TestOracleUtils {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static String executeQuery(SQLGlobalState<?, ?> state, String queryString, ExpectedErrors errors)
+            throws SQLException {
+
+        // Log the query if enabled
+        logQueryIfEnabled(state, queryString);
+
+        // Execute the query
+        String resultString;
+        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
+        try (SQLancerResultSet result = q.executeAndGet(state)) {
+            if (result == null) {
+                throw new IgnoreMeException();
+            }
+            if (!result.next()) {
+                resultString = null;
+            } else {
+                resultString = result.getString(1);
+            }
+        } catch (PSQLException e) {
+            throw new AssertionError(queryString, e);
+        }
+
+        return resultString;
     }
 }

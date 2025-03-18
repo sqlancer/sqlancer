@@ -1,20 +1,17 @@
 package sqlancer.materialize.oracle.tlp;
 
-import java.io.IOException;
+import static sqlancer.common.oracle.TestOracleUtils.executeQuery;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.postgresql.util.PSQLException;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.materialize.MaterializeGlobalState;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeVisitor;
@@ -105,32 +102,7 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
     }
 
     private String getAggregateResult(String queryString) throws SQLException {
-        // log TLP Aggregate SELECT queries on the current log file
-        if (state.getOptions().logEachSelect()) {
-            // TODO: refactor me
-            state.getLogger().writeCurrent(queryString);
-            try {
-                state.getLogger().getCurrentFileWriter().flush();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        String resultString;
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
-        try (SQLancerResultSet result = q.executeAndGet(state)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            if (!result.next()) {
-                resultString = null;
-            } else {
-                resultString = result.getString(1);
-            }
-        } catch (PSQLException e) {
-            throw new AssertionError(queryString, e);
-        }
-        return resultString;
+        return executeQuery(state, queryString, errors);
     }
 
     private List<MaterializeExpression> mapped(MaterializeAggregate aggregate) {
