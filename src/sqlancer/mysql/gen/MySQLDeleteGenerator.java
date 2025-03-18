@@ -1,7 +1,7 @@
 package sqlancer.mysql.gen;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
@@ -53,28 +53,10 @@ public class MySQLDeleteGenerator {
                 "Truncated incorrect DECIMAL value", "Data truncated for functional index"));
 
         if (Randomly.getBoolean()) {
-            HashSet<String> columnSet = new HashSet<>();
             sb.append(" ORDER BY ");
-
-            int numColumns = 1; // TODO : Generate Columns Randomly
-
-            for (int i = 0; i < numColumns; i++) {
-                if (i > 0) {
-                    sb.append(", ");
-                }
-
-                String columnName;
-                do {
-                    columnName = randomTable.getRandomColumn().getName();
-                } while (columnSet.contains(columnName));
-
-                columnSet.add(columnName);
-                sb.append(columnName);
-
-                if (Randomly.getBoolean()) {
-                    sb.append(" DESC");
-                }
-            }
+            sb.append(randomTable.getRandomNonEmptyColumnSubset().stream()
+                    .map(c -> c.getName() + (Randomly.getBoolean() ? " DESC" : " ASC"))
+                    .collect(Collectors.joining(", ")));
         }
         return new SQLQueryAdapter(sb.toString(), errors);
     }
