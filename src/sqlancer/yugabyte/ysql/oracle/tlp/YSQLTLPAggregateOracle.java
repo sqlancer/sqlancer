@@ -1,7 +1,6 @@
 package sqlancer.yugabyte.ysql.oracle.tlp;
 
 import static sqlancer.common.oracle.TestOracleUtils.executeAndCompareQueries;
-import static sqlancer.common.oracle.TestOracleUtils.executeQuery;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,8 +26,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 
 public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YSQLGlobalState> {
 
-    private String firstResult;
-    private String secondResult;
     private String originalQuery;
     private String metamorphicQuery;
 
@@ -60,10 +57,8 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YS
             select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = YSQLVisitor.asString(select);
-        firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
-        secondResult = getAggregateResult(metamorphicQuery);
-        executeAndCompareQueries(state, originalQuery, firstResult, metamorphicQuery, secondResult);
+        executeAndCompareQueries(state, originalQuery, metamorphicQuery, errors);
 
     }
 
@@ -81,10 +76,6 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YS
                 + " UNION ALL " + YSQLVisitor.asString(rightSelect);
         metamorphicQuery += ") as asdf";
         return metamorphicQuery;
-    }
-
-    private String getAggregateResult(String queryString) throws SQLException {
-        return executeQuery(state, queryString, errors);
     }
 
     private List<YSQLExpression> mapped(YSQLAggregate aggregate) {

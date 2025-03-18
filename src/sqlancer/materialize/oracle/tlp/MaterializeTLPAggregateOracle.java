@@ -1,7 +1,6 @@
 package sqlancer.materialize.oracle.tlp;
 
 import static sqlancer.common.oracle.TestOracleUtils.executeAndCompareQueries;
-import static sqlancer.common.oracle.TestOracleUtils.executeQuery;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,8 +27,6 @@ import sqlancer.materialize.gen.MaterializeCommon;
 public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements TestOracle<MaterializeGlobalState> {
     private String generatedQueryString;
 
-    private String firstResult;
-    private String secondResult;
     private String originalQuery;
     private String metamorphicQuery;
 
@@ -63,10 +60,8 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
         }
         originalQuery = MaterializeVisitor.asString(select);
         generatedQueryString = originalQuery;
-        firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
-        secondResult = getAggregateResult(metamorphicQuery);
-        executeAndCompareQueries(state, originalQuery, firstResult, metamorphicQuery, secondResult);
+        executeAndCompareQueries(state, originalQuery, metamorphicQuery, errors);
     }
 
     private String createMetamorphicUnionQuery(MaterializeSelect select, MaterializeAggregate aggregate,
@@ -84,10 +79,6 @@ public class MaterializeTLPAggregateOracle extends MaterializeTLPBase implements
                 + MaterializeVisitor.asString(middleSelect) + " UNION ALL " + MaterializeVisitor.asString(rightSelect);
         metamorphicQuery += ") as asdf";
         return metamorphicQuery;
-    }
-
-    private String getAggregateResult(String queryString) throws SQLException {
-        return executeQuery(state, queryString, errors);
     }
 
     private List<MaterializeExpression> mapped(MaterializeAggregate aggregate) {

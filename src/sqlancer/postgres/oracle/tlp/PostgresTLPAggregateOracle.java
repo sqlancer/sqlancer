@@ -1,7 +1,6 @@
 package sqlancer.postgres.oracle.tlp;
 
 import static sqlancer.common.oracle.TestOracleUtils.executeAndCompareQueries;
-import static sqlancer.common.oracle.TestOracleUtils.executeQuery;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,8 +26,6 @@ import sqlancer.postgres.gen.PostgresCommon;
 
 public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestOracle<PostgresGlobalState> {
 
-    private String firstResult;
-    private String secondResult;
     private String originalQuery;
     private String metamorphicQuery;
 
@@ -60,11 +57,8 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
             select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = PostgresVisitor.asString(select);
-        firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
-        secondResult = getAggregateResult(metamorphicQuery);
-
-        executeAndCompareQueries(state, originalQuery, firstResult, metamorphicQuery, secondResult);
+        executeAndCompareQueries(state, originalQuery, metamorphicQuery, errors);
     }
 
     private String createMetamorphicUnionQuery(PostgresSelect select, PostgresAggregate aggregate,
@@ -82,10 +76,6 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
                 + PostgresVisitor.asString(middleSelect) + " UNION ALL " + PostgresVisitor.asString(rightSelect);
         metamorphicQuery += ") as asdf";
         return metamorphicQuery;
-    }
-
-    private String getAggregateResult(String queryString) throws SQLException {
-        return executeQuery(state, queryString, errors);
     }
 
     private List<PostgresExpression> mapped(PostgresAggregate aggregate) {

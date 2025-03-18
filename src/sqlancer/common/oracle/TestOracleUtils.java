@@ -75,7 +75,7 @@ public final class TestOracleUtils {
         }
     }
 
-    public static String executeQuery(SQLGlobalState<?, ?> state, String queryString, ExpectedErrors errors)
+    public static String getAggregateResult(SQLGlobalState<?, ?> state, String queryString, ExpectedErrors errors)
             throws SQLException {
 
         // Log the query if enabled
@@ -100,9 +100,12 @@ public final class TestOracleUtils {
         return resultString;
     }
 
-    @SuppressWarnings("PMD.UseObjectForClearerAPI")
-    public static void executeAndCompareQueries(SQLGlobalState<?, ?> state, String originalQuery, String firstResult,
-            String metamorphicQuery, String secondResult) throws SQLException {
+    public static void executeAndCompareQueries(SQLGlobalState<?, ?> state, String originalQuery,
+            String metamorphicQuery, ExpectedErrors errors) throws SQLException {
+
+        // Execute both queries
+        String firstResult = getAggregateResult(state, originalQuery, errors);
+        String secondResult = getAggregateResult(state, metamorphicQuery, errors);
 
         // Format and log the queries and their results
         String queryFormatString = "-- %s;\n-- result: %s";
