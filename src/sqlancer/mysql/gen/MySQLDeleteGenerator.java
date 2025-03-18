@@ -52,7 +52,7 @@ public class MySQLDeleteGenerator {
                                                     */, "Truncated incorrect INTEGER value",
                 "Truncated incorrect DECIMAL value", "Data truncated for functional index"));
 
-        if (Randomly.getBoolean()) {
+        if (Randomly.getBoolean() && !randomTable.getColumns().isEmpty()) {
             sb.append(" ORDER BY ");
             sb.append(randomTable.getRandomNonEmptyColumnSubset().stream()
                     .map(c -> c.getName() + (Randomly.getBoolean() ? " DESC" : " ASC"))
