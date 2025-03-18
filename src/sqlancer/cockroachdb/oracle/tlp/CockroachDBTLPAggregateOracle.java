@@ -1,12 +1,12 @@
 package sqlancer.cockroachdb.oracle.tlp;
 
+import static sqlancer.common.oracle.TestOracleUtils.getAggregateResult;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.postgresql.util.PSQLException;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.IgnoreMeException;
@@ -31,8 +31,6 @@ import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnar
 import sqlancer.cockroachdb.gen.CockroachDBExpressionGenerator;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 
 public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlobalState> {
 
@@ -78,9 +76,9 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
             select.setOrderByClauses(gen.getOrderingTerms());
         }
         originalQuery = CockroachDBVisitor.asString(select);
-        firstResult = getAggregateResult(originalQuery);
+        firstResult = getAggregateResult(state, originalQuery, errors, false);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, from);
-        secondResult = getAggregateResult(metamorphicQuery);
+        secondResult = getAggregateResult(state, metamorphicQuery, errors, false);
 
         state.getState().getLocalState().log(
                 "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult + "\n-- " + secondResult);
@@ -111,24 +109,6 @@ public class CockroachDBTLPAggregateOracle implements TestOracle<CockroachDBGlob
                 + CockroachDBVisitor.asString(middleSelect) + " UNION ALL " + CockroachDBVisitor.asString(rightSelect);
         metamorphicQuery += ")";
         return metamorphicQuery;
-    }
-
-    private String getAggregateResult(String queryString) throws SQLException {
-        String resultString;
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
-        try (SQLancerResultSet result = q.executeAndGet(state)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            if (!result.next()) {
-                resultString = null;
-            } else {
-                resultString = result.getString(1);
-            }
-        } catch (PSQLException e) {
-            throw new AssertionError(queryString, e);
-        }
-        return resultString;
     }
 
     private List<CockroachDBExpression> mapped(CockroachDBAggregate aggregate) {

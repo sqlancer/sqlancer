@@ -75,11 +75,13 @@ public final class TestOracleUtils {
         }
     }
 
-    public static String getAggregateResult(SQLGlobalState<?, ?> state, String queryString, ExpectedErrors errors)
-            throws SQLException {
+    public static String getAggregateResult(SQLGlobalState<?, ?> state, String queryString, ExpectedErrors errors,
+            Boolean isEnabled) throws SQLException {
 
         // Log the query if enabled
-        logQueryIfEnabled(state, queryString);
+        if (isEnabled) {
+            logQueryIfEnabled(state, queryString);
+        }
 
         // Execute the query
         String resultString;
@@ -93,8 +95,14 @@ public final class TestOracleUtils {
             } else {
                 resultString = result.getString(1);
             }
-        } catch (PSQLException e) {
-            throw new AssertionError(queryString, e);
+        } catch (SQLException e) {
+            if (isEnabled || e instanceof PSQLException) {
+                throw new AssertionError(queryString, e);
+            } else if (!e.getMessage().contains("Not implemented type")) {
+                throw new AssertionError(queryString, e);
+            } else {
+                throw new IgnoreMeException();
+            }
         }
 
         return resultString;
@@ -104,8 +112,8 @@ public final class TestOracleUtils {
             String metamorphicQuery, ExpectedErrors errors) throws SQLException {
 
         // Execute both queries
-        String firstResult = getAggregateResult(state, originalQuery, errors);
-        String secondResult = getAggregateResult(state, metamorphicQuery, errors);
+        String firstResult = getAggregateResult(state, originalQuery, errors, true);
+        String secondResult = getAggregateResult(state, metamorphicQuery, errors, true);
 
         // Format and log the queries and their results
         String queryFormatString = "-- %s;\n-- result: %s";
