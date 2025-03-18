@@ -5,8 +5,8 @@ import sqlancer.postgres.PostgresSchema.PostgresDataType;
 
 public class PostgresOrderByTerm implements PostgresExpression {
 
-    private final PostgresOrder order;
     private final PostgresExpression expr;
+    private final PostgresOrder order;
 
     public enum PostgresOrder {
         ASC, DESC;
@@ -17,16 +17,32 @@ public class PostgresOrderByTerm implements PostgresExpression {
     }
 
     public PostgresOrderByTerm(PostgresExpression expr, PostgresOrder order) {
+        if (expr == null) {
+            throw new IllegalArgumentException("Expression cannot be null");
+        }
         this.expr = expr;
         this.order = order;
+    }
+
+    // Constructor for window functions, might be removed in the future to have only one constructor
+    public PostgresOrderByTerm(PostgresExpression expr, boolean ascending) {
+        if (expr == null) {
+            throw new IllegalArgumentException("Expression cannot be null");
+        }
+        this.expr = expr;
+        this.order = ascending ? PostgresOrder.ASC : PostgresOrder.DESC;
+    }
+
+    public PostgresExpression getExpr() {
+        return expr;
     }
 
     public PostgresOrder getOrder() {
         return order;
     }
 
-    public PostgresExpression getExpr() {
-        return expr;
+    public boolean isAscending() {
+        return order == PostgresOrder.ASC;
     }
 
     @Override
@@ -39,4 +55,8 @@ public class PostgresOrderByTerm implements PostgresExpression {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s %s", expr, order);
+    }
 }
