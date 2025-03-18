@@ -12,11 +12,11 @@ import sqlancer.materialize.ast.MaterializeExpression;
 import sqlancer.materialize.ast.MaterializeJoin;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeFromTable;
 import sqlancer.materialize.ast.MaterializeSelect.MaterializeSubquery;
-import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeDataType;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 import sqlancer.materialize.MaterializeSchema.MaterializeTables;
+import sqlancer.materialize.gen.MaterializeExpressionGenerator;
 
 public final class MaterializeUtils {
 
