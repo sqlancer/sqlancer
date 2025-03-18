@@ -1,5 +1,7 @@
 package sqlancer.yugabyte.ysql.gen;
 
+import static sqlancer.yugabyte.ysql.YSQLUtils.getJoinStatements;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,7 +12,6 @@ import java.util.stream.Stream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
@@ -622,26 +623,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
 
     @Override
     public List<YSQLJoin> getRandomJoinClauses() {
-        List<YSQLJoin> joinStatements = new ArrayList<>();
-        YSQLExpressionGenerator gen = new YSQLExpressionGenerator(globalState).setColumns(columns);
-        for (int i = 1; i < tables.size(); i++) {
-            YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
-            YSQLTable table = Randomly.fromList(tables);
-            tables.remove(table);
-            JoinType options = JoinType.getRandomForDatabase("YSQL");
-            YSQLJoin j = new YSQLJoin(new YSQLSelect.YSQLFromTable(table, Randomly.getBoolean()), joinClause, options);
-            joinStatements.add(j);
-        }
-        // JOIN subqueries
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            YSQLTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
-            YSQLSelect.YSQLSubquery subquery = createSubquery(globalState, String.format("sub%d", i), subqueryTables);
-            YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
-            JoinType options = JoinType.getRandomForDatabase("YSQL");
-            YSQLJoin j = new YSQLJoin(subquery, joinClause, options);
-            joinStatements.add(j);
-        }
-        return joinStatements;
+        return getJoinStatements(globalState, columns, tables);
     }
 
     @Override
