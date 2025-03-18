@@ -1,5 +1,7 @@
 package sqlancer.citus.oracle.tlp;
 
+import static sqlancer.postgres.PostgresUtils.createSubquery;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
