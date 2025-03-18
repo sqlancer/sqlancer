@@ -10,6 +10,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractRowValue;
+import sqlancer.common.schema.AbstractTableColumn;
 
 public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, R extends AbstractRowValue<?, ?, ?>, E, C extends SQLancerDBConnection>
         implements TestOracle<S> {
@@ -135,4 +136,20 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
      */
     protected abstract String getExpectedValues(E expr);
 
+    protected StringBuilder appendColumn(StringBuilder sb, Boolean isNull, String textRepresentation, int index,
+            AbstractTableColumn<?, ?> c) {
+        if (index > 0) {
+            sb.append(" AND ");
+        }
+        sb.append("result.");
+        sb.append(c.getTable().getName());
+        sb.append(c.getName());
+        if (isNull) {
+            sb.append(" IS NULL");
+        } else {
+            sb.append(" = ");
+            sb.append(textRepresentation);
+        }
+        return sb;
+    }
 }

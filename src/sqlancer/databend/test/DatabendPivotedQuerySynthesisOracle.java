@@ -93,18 +93,8 @@ public class DatabendPivotedQuerySynthesisOracle
         sb.append(") as result WHERE ");
         int i = 0;
         for (DatabendColumn c : fetchColumns) {
-            if (i++ != 0) {
-                sb.append(" AND ");
-            }
-            sb.append("result.");
-            sb.append(c.getTable().getName());
-            sb.append(c.getName());
-            if (pivotRow.getValues().get(c).isNull()) {
-                sb.append(" IS NULL ");
-            } else {
-                sb.append(" = ");
-                sb.append(pivotRow.getValues().get(c).toString());
-            }
+            sb = appendColumn(sb, pivotRow.getValues().get(c).isNull(), pivotRow.getValues().get(c).toString(), i, c);
+            i++;
         }
         String resultingQueryString = sb.toString();
         return new SQLQueryAdapter(resultingQueryString, errors);
