@@ -55,9 +55,12 @@ public class MySQLDeleteGenerator {
                 "Truncated incorrect DECIMAL value", "Data truncated for functional index"));
 
         if (Randomly.getBoolean() && !randomTable.getColumns().isEmpty()) {
-            sb.append(" ORDER BY ");
+
             List<MySQLExpression> orderBys = gen.generateOrderBys();
-            sb.append(orderBys.stream().map(exp -> MySQLVisitor.asString(exp)).collect(Collectors.joining(" , ")));
+            if(!orderBys.isEmpty()) {
+                sb.append(" ORDER BY ");
+                sb.append(orderBys.stream().map(exp -> MySQLVisitor.asString(exp)).collect(Collectors.joining(" , ")));
+            }
         }
         return new SQLQueryAdapter(sb.toString(), errors);
     }
