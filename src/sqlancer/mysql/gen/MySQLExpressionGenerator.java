@@ -17,7 +17,6 @@ import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
-import sqlancer.mysql.MySQLVisitor;
 import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
@@ -204,11 +203,6 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         List<MySQLExpression> expressions = super.generateOrderBys();
         List<MySQLExpression> newOrderBys = new ArrayList<>();
         for (MySQLExpression expr : expressions) {
-            String exprString = MySQLVisitor.asString(expr);
-            if (exprString.matches("-?\\d+(\\.\\d+)?")) {
-                continue;
-            }
-
             if (Randomly.getBoolean()) {
                 MySQLOrderByTerm newExpr = new MySQLOrderByTerm(expr, MySQLOrder.getRandomOrder());
                 newOrderBys.add(newExpr);
