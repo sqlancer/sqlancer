@@ -284,7 +284,6 @@ public class TestRandomly {
             }
         }
 
-        // we expect roughly 1% true values
         double trueRatio = (double) trueCount / totalRuns;
         assertTrue(trueRatio > 0.005);
         assertTrue(trueRatio < 0.015);
