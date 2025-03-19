@@ -234,7 +234,6 @@ public class TestRandomly {
         return values;
     }
 
-
     @Test
     public void testGetPercentage() {
         for (int i = 0; i < NR_MIN_RUNS; i++) {
@@ -274,38 +273,22 @@ public class TestRandomly {
         }
     }
 
-
     @Test
     public void testGetBooleanWithSmallProbability() {
         int trueCount = 0;
         int totalRuns = NR_MIN_RUNS;
-        
+
         for (int i = 0; i < totalRuns; i++) {
             if (Randomly.getBooleanWithSmallProbability()) {
                 trueCount++;
             }
         }
-        
+
         // we expect roughly 1% true values
         double trueRatio = (double) trueCount / totalRuns;
         assertTrue(trueRatio > 0.005);
-        assertTrue(trueRatio < 0.015); 
-        
-        // Verify that we get at least some true and some false values
-        boolean encounteredTrue = false;
-        boolean encounteredFalse = false;
-        int i = 0;
-        do {
-            boolean value = Randomly.getBooleanWithSmallProbability();
-            if (value) {
-                encounteredTrue = true;
-            } else {
-                encounteredFalse = true;
-            }
-        } while ((!encounteredTrue || !encounteredFalse) && i++ < NR_MIN_RUNS);
-        
-        assertTrue(encounteredTrue, "Never encounter a true value");
-        assertTrue(encounteredFalse, "Never encounter a false value");
+        assertTrue(trueRatio < 0.015);
+
     }
 
 }
