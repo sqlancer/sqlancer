@@ -50,8 +50,19 @@ public enum TiDBOracleFactory implements OracleFactory<TiDBProvider.TiDBGlobalSt
             TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState);
             ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(TiDBErrors.getExpressionErrors()).build();
             CERTOracle.CheckedFunction<SQLancerResultSet, Optional<Long>> rowCountParser = (rs) -> {
-                String content = rs.getString(2);
-                return Optional.of((long) Double.parseDouble(content));
+                try {
+                    String content = rs.getString(2);
+                    if (content == null || content.trim().isEmpty()) {
+                        return Optional.empty();
+                    }
+                    String numStr = content.replaceAll("[^0-9.-]", "");
+                    if (!numStr.isEmpty()) {
+                        return Optional.of((long) Double.parseDouble(numStr));
+                    }
+                } catch (Exception e) {
+
+                }
+                return Optional.empty();
             };
             CERTOracle.CheckedFunction<SQLancerResultSet, Optional<String>> queryPlanParser = (rs) -> {
                 String operation = rs.getString(1).split("_")[0]; // Extract operation names for query plans

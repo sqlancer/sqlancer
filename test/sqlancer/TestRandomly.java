@@ -6,7 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -232,6 +235,103 @@ public class TestRandomly {
             values.add(String.valueOf(Randomly.getBoolean()));
         }
         return values;
+    }
+
+    @Test
+    public void testNonEmptySubsetVarArgs() {
+        Integer[] options = { 1, 2, 3, 4, 5 };
+        List<Integer> subset = Randomly.nonEmptySubset(options);
+        // subset =null;
+        assertFalse(subset.isEmpty(), "method nonEmptySubset (VarArgs) should return a subset not empty");
+        for (Integer i : subset) {
+            assertTrue(Arrays.asList(options).contains(i));
+        }
+    }
+
+    @Test
+    public void testNonEmptySubsetList() {
+        List<String> options = Arrays.asList("a", "b", "c", "d");
+        List<String> subset = Randomly.nonEmptySubset(options);
+        assertFalse(subset.isEmpty(), "nonEmptySubset (list) should return a subset not empty");
+        for (String s : subset) {
+            assertTrue(options.contains(s));
+        }
+    }
+
+    @Test
+    public void testNonEmptySubsetLeast() {
+        List<String> options = Arrays.asList("a", "b", "c", "d", "e", "f");
+        int min = 2;
+        List<String> subset = Randomly.nonEmptySubsetLeast(options, min);
+        assertTrue(subset.size() >= min, "nonEmptySubsetLeast should return at least " + min + " elements");
+        for (String s : subset) {
+            assertTrue(options.contains(s));
+        }
+    }
+
+    @Test
+    public void testSmallNumber() {
+        int num = Randomly.smallNumber();
+        assertTrue(num >= 0, "smallNumber should be non-negtive");
+        boolean foundPositive = false;
+        for (int i = 0; i < 80; i++) {
+            if (Randomly.smallNumber() > 0) {
+                foundPositive = true;
+                break;
+            }
+        }
+        assertTrue(foundPositive, "smallNumber should  return a positive number");
+    }
+
+    @Test
+    public void testGetBigInteger() {
+        BigInteger left = BigInteger.valueOf(10);
+        BigInteger right = BigInteger.valueOf(100);
+        Randomly r = new Randomly();
+
+        assertEquals(left, r.getBigInteger(left, left));
+        BigInteger bi = r.getBigInteger(left, right);
+
+        assertTrue(bi.compareTo(left) >= 0 && bi.compareTo(right) <= 0,
+                "BigInteger should be between left and right (inclusive right and left)");
+    }
+
+    @Test
+    public void testGetRandomBigDecimal() {
+        Randomly r = new Randomly();
+        BigDecimal bd = r.getRandomBigDecimal();
+
+        assertTrue(bd.compareTo(BigDecimal.ZERO) >= 0 && bd.compareTo(BigDecimal.ONE) < 0,
+                "RandomBigDecimal should be between 0.0 (inclusive it) and 1.0 (exclusive it)");
+    }
+
+    @Test
+    public void testGetPositiveIntegerNotNull() {
+        Randomly r = new Randomly();
+        for (int i = 0; i < 100; i++) {
+            long val = r.getPositiveIntegerNotNull();
+
+            assertNotEquals(0, val, "val should not return zero");
+            assertTrue(val >= 0, "val should be non-negative");
+        }
+    }
+
+    @Test
+    public void testGetNonCachedIntegerStatic() {
+        long val = Randomly.getNonCachedInteger();
+
+        assertNotNull(val);
+    }
+
+    @Test
+    public void testGetAlphabeticChar() {
+        Randomly r = new Randomly();
+        for (int i = 0; i < 1; i++) {
+            String c = r.getAlphabeticChar();
+            assertNotNull(c, "getAlphabeticChar should not return null");
+            assertEquals(1, c.length(), "getAlphabeticChar should return a single character");
+            assertTrue(Character.isAlphabetic(c.charAt(0)), "getAlphabeticChar should return an alphabetic character");
+        }
     }
 
 }
