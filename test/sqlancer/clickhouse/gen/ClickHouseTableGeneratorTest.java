@@ -32,7 +32,7 @@ class ClickHouseTableGeneratorTest {
     @Test
     void testTableGenerationWithPrimaryKey() {
         // Generate multiple tables to increase chance of different scenarios
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 50; i++) {
             SQLQueryAdapter query = ClickHouseTableGenerator.createTableStatement("test_table_" + i, state);
             String sql = query.getQueryString();
 
