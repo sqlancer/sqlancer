@@ -1,6 +1,7 @@
 package sqlancer.mysql.gen;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -10,6 +11,7 @@ import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLVisitor;
+import sqlancer.mysql.ast.MySQLExpression;
 
 public class MySQLDeleteGenerator {
 
@@ -54,9 +56,8 @@ public class MySQLDeleteGenerator {
 
         if (Randomly.getBoolean() && !randomTable.getColumns().isEmpty()) {
             sb.append(" ORDER BY ");
-            sb.append(randomTable.getRandomNonEmptyColumnSubset().stream()
-                    .map(c -> c.getName() + (Randomly.getBoolean() ? " DESC" : " ASC"))
-                    .collect(Collectors.joining(", ")));
+            List<MySQLExpression> orderBys = gen.generateOrderBys();
+            sb.append(orderBys.stream().map(exp -> MySQLVisitor.asString(exp)).collect(Collectors.joining(" , ")));
         }
         return new SQLQueryAdapter(sb.toString(), errors);
     }
