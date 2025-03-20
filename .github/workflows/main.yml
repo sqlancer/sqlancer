@@ -3,7 +3,7 @@ name: ci
 on:
   push:
     branches:
-      - issue1116-TiDB
+      - main
     paths:
       - 'src/**'
       - 'test/**'
@@ -11,7 +11,7 @@ on:
       - 'pom.xml'
   pull_request:
     branches:
-      - issue1116-TiDB
+      - main
     paths:
       - 'src/**'
       - 'test/**'
