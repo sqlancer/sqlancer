@@ -38,6 +38,7 @@ public class TestRandomly {
         boolean encounteredStrictSubsetNonEmpty = false;
         Integer[] options = { 1, 2, 3 };
         List<Integer> optionList = new ArrayList<>(Arrays.asList(options));
+        int i = 0;
         do {
             List<Integer> subset = Randomly.subset(optionList);
             assertEquals(optionList.size(), 3); // check that the original set hasn't been modified
@@ -49,7 +50,13 @@ public class TestRandomly {
             } else {
                 encounteredStrictSubsetNonEmpty = true;
             }
-        } while (!encounteredEmptySubset || !encounteredOriginalSet || !encounteredStrictSubsetNonEmpty);
+        } while (!encounteredEmptySubset || !encounteredOriginalSet || !encounteredStrictSubsetNonEmpty
+                || i++ < NR_MIN_RUNS);
+
+        assertTrue(encounteredEmptySubset, "Empty subset was not encountered");
+        assertTrue(encounteredOriginalSet, "Original set was not encountered");
+        assertTrue(encounteredStrictSubsetNonEmpty, "Strict subset was not encountered");
+
     }
 
     @Test
@@ -75,6 +82,10 @@ public class TestRandomly {
             }
         } while (!encounteredInteger || !encounteredAscii || !encounteredNonAscii || !encounteredSpace
                 || i++ < NR_MIN_RUNS);
+        assertTrue(encounteredInteger, "Integer was not encountered");
+        assertTrue(encounteredAscii, "Ascii was not encountered");
+        assertTrue(encounteredNonAscii, "Non ascii was not encountered");
+        assertTrue(encounteredSpace, "Space was not encountered");
     }
 
     @Test // TODO: also generate and check for NaN
@@ -84,6 +95,7 @@ public class TestRandomly {
         boolean encounteredPositive = false;
         boolean encounteredNegative = false;
         boolean encounteredInfinity = false;
+        int i = 0;
         do {
             double doubleVal = r.getDouble();
             if (doubleVal == 0) {
@@ -97,7 +109,12 @@ public class TestRandomly {
             } else {
                 fail(String.valueOf(doubleVal));
             }
-        } while (!encounteredZero || !encounteredPositive || !encounteredNegative || !encounteredInfinity);
+        } while (!encounteredZero || !encounteredPositive || !encounteredNegative || !encounteredInfinity
+                || i++ < NR_MIN_RUNS);
+        assertTrue(encounteredZero, "Zero was not encountered");
+        assertTrue(encounteredPositive, "Positive was not encountered");
+        assertTrue(encounteredNegative, "Negative was not encountered");
+        assertTrue(encounteredInfinity, "Infinity was not encountered");
     }
 
     @Test
@@ -123,6 +140,8 @@ public class TestRandomly {
                 encounteredNegative = true;
             }
         } while (!encounteredPositive || !encounteredNegative || i++ < NR_MIN_RUNS);
+        assertTrue(encounteredPositive, "Positive integer was not encountered");
+        assertTrue(encounteredNegative, "Negative integer was not encountered");
     }
 
     @Test
@@ -140,6 +159,8 @@ public class TestRandomly {
                 encounteredMaxValue = true;
             }
         } while (!encounteredZero || !encounteredMaxValue || i++ < NR_MIN_RUNS);
+        assertTrue(encounteredZero, "Zero was not encountered");
+        assertTrue(encounteredMaxValue, "Max value was not encountered");
     }
 
     @Test
@@ -159,6 +180,9 @@ public class TestRandomly {
                 encounteredMax = true;
             }
         } while (!encounteredAllZeroes || !encounteredMax || !encounteredZeroLength || i++ < NR_MIN_RUNS);
+        assertTrue(encounteredAllZeroes, "All zeroes were not encountered");
+        assertTrue(encounteredMax, "Max value was not encountered");
+        assertTrue(encounteredZeroLength, "Zero length was not encountered");
     }
 
     @Test
@@ -232,6 +256,65 @@ public class TestRandomly {
             values.add(String.valueOf(Randomly.getBoolean()));
         }
         return values;
+    }
+
+    @Test
+    public void testGetPercentage() {
+        for (int i = 0; i < NR_MIN_RUNS; i++) {
+            double percentage = Randomly.getPercentage();
+            assertTrue(percentage >= 0.0);
+            assertTrue(percentage <= 1.0);
+        }
+    }
+
+    @Test
+    public void testGetChar() {
+        Randomly r = new Randomly();
+        boolean encounteredAlphabetic = false;
+        boolean encounteredNumeric = false;
+        boolean encounteredSpecial = false;
+        int i = 0;
+        do {
+            String c = r.getChar();
+            assertEquals(1, c.length());
+            if (Character.isAlphabetic(c.charAt(0))) {
+                encounteredAlphabetic = true;
+            } else if (Character.isDigit(c.charAt(0))) {
+                encounteredNumeric = true;
+            } else {
+                encounteredSpecial = true;
+            }
+        } while (!encounteredAlphabetic || !encounteredNumeric || !encounteredSpecial || i++ < NR_MIN_RUNS);
+        assertTrue(encounteredAlphabetic, "Never encounter an alphabetic character.");
+        assertTrue(encounteredNumeric, "Never encounter a numeric character.");
+        assertTrue(encounteredSpecial, "Never encounter a special character.");
+    }
+
+    @Test
+    public void testGetAlphabeticChar() {
+        Randomly r = new Randomly();
+        for (int i = 0; i < NR_MIN_RUNS; i++) {
+            String c = r.getAlphabeticChar();
+            assertEquals(1, c.length());
+            assertTrue(Character.isAlphabetic(c.charAt(0)));
+        }
+    }
+
+    @Test
+    public void testGetBooleanWithSmallProbability() {
+        int trueCount = 0;
+        int totalRuns = NR_MIN_RUNS;
+
+        for (int i = 0; i < totalRuns; i++) {
+            if (Randomly.getBooleanWithSmallProbability()) {
+                trueCount++;
+            }
+        }
+
+        double trueRatio = (double) trueCount / totalRuns;
+        assertTrue(trueRatio > 0.005);
+        assertTrue(trueRatio < 0.015);
+
     }
 
 }
