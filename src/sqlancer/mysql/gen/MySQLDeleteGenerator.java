@@ -2,6 +2,7 @@ package sqlancer.mysql.gen;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -52,7 +53,8 @@ public class MySQLDeleteGenerator {
                 "Truncated incorrect DOUBLE value" /*
                                                     * ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997
                                                     */, "Truncated incorrect INTEGER value",
-                "Truncated incorrect DECIMAL value", "Data truncated for functional index"));
+                "Truncated incorrect DECIMAL value", "Data truncated for functional index",
+                "Unknown column in order clause"));
 
         if (Randomly.getBoolean() && !randomTable.getColumns().isEmpty()) {
             sb.append(" ORDER BY ");
