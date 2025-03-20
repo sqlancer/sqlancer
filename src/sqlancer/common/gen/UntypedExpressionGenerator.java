@@ -6,7 +6,6 @@ import java.util.List;
 import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Expression;
-import sqlancer.common.ast.newast.Select;
 
 public abstract class UntypedExpressionGenerator<E extends Expression<?>, C> implements ExpressionGenerator<E> {
 

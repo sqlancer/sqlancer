@@ -299,10 +299,6 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
             this.isVariadic = isVariadic;
         }
 
-        public static DBFunction getRandom() {
-            return Randomly.fromOptions(values());
-        }
-
         public int getNrArgs() {
             if (isVariadic) {
                 return Randomly.smallNumber() + nrArgs;
@@ -311,6 +307,9 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
             }
         }
 
+        public static DBFunction getRandom() {
+            return Randomly.fromOptions(values());
+        }
     }
 
     public enum DuckDBUnaryPostfixOperator implements Operator {
