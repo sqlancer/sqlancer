@@ -225,13 +225,17 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
     }
 
     public static DuckDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
+        return fromConnection(con, databaseName, null);
+    }
+
+    public static DuckDBSchema fromConnection(SQLConnection con, String databaseName, DuckDBProvider.DuckDBGlobalState globalState) throws SQLException {
         List<DuckDBTable> databaseTables = new ArrayList<>();
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             if (DBMSCommon.matchesIndexName(tableName)) {
                 continue; // TODO: unexpected?
             }
-            List<DuckDBColumn> databaseColumns = getTableColumns(con, tableName);
+            List<DuckDBColumn> databaseColumns = getTableColumns(con, tableName, globalState);
             boolean isView = tableName.startsWith("v");
             DuckDBTable t = new DuckDBTable(tableName, databaseColumns, isView);
             for (DuckDBColumn c : databaseColumns) {
@@ -256,6 +260,10 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
     }
 
     private static List<DuckDBColumn> getTableColumns(SQLConnection con, String tableName) throws SQLException {
+        return getTableColumns(con, tableName, null);
+    }
+
+    private static List<DuckDBColumn> getTableColumns(SQLConnection con, String tableName, DuckDBProvider.DuckDBGlobalState globalState) throws SQLException {
         List<DuckDBColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String.format("SELECT * FROM pragma_table_info('%s');", tableName))) {
@@ -272,8 +280,10 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         if (columns.stream().noneMatch(c -> c.isPrimaryKey()) && !AbstractSchema.matchesViewName(tableName)) {
             // https://github.com/cwida/duckdb/issues/589
             // https://github.com/cwida/duckdb/issues/588
-            // TODO: implement an option to enable/disable rowids
-            columns.add(new DuckDBColumn("rowid", new DuckDBCompositeDataType(DuckDBDataType.INT, 4), false, false));
+            // Only add rowid if the testRowid option is enabled
+            if (globalState.getDbmsSpecificOptions().testRowid) {
+                columns.add(new DuckDBColumn("rowid", new DuckDBCompositeDataType(DuckDBDataType.INT, 4), false, false));
+            }
         }
         return columns;
     }

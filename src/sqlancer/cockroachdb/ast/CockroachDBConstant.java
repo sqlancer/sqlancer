@@ -238,8 +238,7 @@ public class CockroachDBConstant implements CockroachDBExpression {
     }
 
     public static CockroachDBExpression createTimetz(long integer) {
-        return new CockroachDBTimeRelatedConstant("TIMETZ", integer, "yyyy-MM-dd'T'HH:mm:ss"); // TODO: support the
-                                                                                               // complete format
+        return new CockroachDBTimeRelatedConstant("TIMETZ", integer, "yyyy-MM-dd'T'HH:mm:ssXXX");
     }
 
     public static CockroachDBExpression createTimestamptzConstant(long integer) {
