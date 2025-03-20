@@ -285,18 +285,40 @@ private void applyPragmaSettings(DuckDBGlobalState globalState) throws SQLExcept
     }
 
     @Override
-    public SQLConnection createDatabase(SQLite3GlobalState globalState) throws SQLException {
-        File dir = new File("." + File.separator + "databases");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-        File dataBase = new File(dir, globalState.getDatabaseName() + ".db");
-        if (dataBase.exists() && ((SQLite3GlobalState) globalState).getDbmsSpecificOptions().deleteIfExists) {
-            dataBase.delete();
-        }
-        String url = "jdbc:sqlite:" + dataBase.getAbsolutePath();
-        return new SQLConnection(DriverManager.getConnection(url));
+   @Override
+public SQLConnection createDatabase(DuckDBGlobalState globalState) throws SQLException {
+    File dir = new File("." + File.separator + "databases");
+    if (!dir.exists()) {
+        dir.mkdir();
     }
+
+    // Get database file name
+    String dbFileName = globalState.getDatabaseName() + ".db";
+    File databaseFile = new File(dir, dbFileName);
+
+    // Handle deleteIfExists flag
+    if (databaseFile.exists() && globalState.getDbmsSpecificOptions().deleteIfExists) {
+        databaseFile.delete();
+    }
+
+    // Construct the DuckDB connection URL
+    String url = "jdbc:duckdb:" + databaseFile.getAbsolutePath();
+    
+    // Ensure credentials are not set (DuckDB does not support them)
+    MainOptions options = globalState.getOptions();
+    if (!(options.isDefaultUsername() && options.isDefaultPassword())) {
+        throw new AssertionError("DuckDB doesn't support credentials (username/password)");
+    }
+
+    // Establish connection
+    Connection conn = DriverManager.getConnection(url);
+    Statement stmt = conn.createStatement();
+    stmt.execute("PRAGMA checkpoint_threshold='1 byte';");
+    stmt.close();
+    
+    return new SQLConnection(conn);
+}
+
 
     @Override
     public String getDBMSName() {
