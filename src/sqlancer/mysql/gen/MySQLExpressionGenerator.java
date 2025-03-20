@@ -310,22 +310,6 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         return increase;
     }
 
-    boolean mutateHaving(MySQLSelect select) {
-        if (select.getGroupByExpressions().size() == 0) {
-            select.setGroupByExpressions(select.getFetchColumns());
-            select.setHavingClause(generateExpression());
-            return false;
-        } else {
-            if (select.getHavingClause() == null) {
-                select.setHavingClause(generateExpression());
-                return false;
-            } else {
-                select.setHavingClause(null);
-                return true;
-            }
-        }
-    }
-
     boolean mutateAnd(MySQLSelect select) {
         if (select.getWhereClause() == null) {
             select.setWhereClause(generateExpression());
