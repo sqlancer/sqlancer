@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.presto.PrestoPair;
 import sqlancer.presto.PrestoSchema;
+import sqlancer.presto.PrestoUtils;
 import sqlancer.presto.gen.PrestoTypedExpressionGenerator;
 
 public interface PrestoFunction extends PrestoExpression {
@@ -28,20 +30,13 @@ public interface PrestoFunction extends PrestoExpression {
         }
         // -1 - unlimited number of arguments
         if (getNumberOfArguments() == -1) {
-            PrestoSchema.PrestoDataType dataType = argumentTypes[0];
-            // TODO: consider upper
-            long no = Randomly.getNotCachedInteger(2, 10);
-            for (int i = 0; i < no; i++) {
-                PrestoSchema.PrestoCompositeDataType type;
+            PrestoPair<List<PrestoSchema.PrestoCompositeDataType>, PrestoSchema.PrestoCompositeDataType> result = PrestoUtils
+                    .prepareVariadicArgumentTypes(argumentTypes[0], savedArrayType);
 
-                if (dataType == PrestoSchema.PrestoDataType.ARRAY) {
-                    if (savedArrayType == null) {
-                        savedArrayType = dataType.get();
-                    }
-                    type = savedArrayType;
-                } else {
-                    type = PrestoSchema.PrestoCompositeDataType.fromDataType(dataType);
-                }
+            List<PrestoSchema.PrestoCompositeDataType> typeList = result.getFirstValue();
+            savedArrayType = result.getSecondValue();
+
+            for (PrestoSchema.PrestoCompositeDataType type : typeList) {
                 arguments.add(gen.generateExpression(type, depth + 1));
             }
         } else {

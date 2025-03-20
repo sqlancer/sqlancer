@@ -211,10 +211,16 @@ public final class PrestoTypedExpressionGenerator extends
             savedArrayType = returnType;
         }
         if (function.getNumberOfArguments() == -1) {
-            PrestoPair<List<PrestoExpression>, PrestoCompositeDataType> result = PrestoUtils
-                    .generateVariadicArguments(this, argumentTypes[0], savedArrayType, depth);
-            arguments = result.getFirstValue();
+            PrestoPair<List<PrestoSchema.PrestoCompositeDataType>, PrestoSchema.PrestoCompositeDataType> result = PrestoUtils
+                    .prepareVariadicArgumentTypes(argumentTypes[0], savedArrayType);
+
+            List<PrestoSchema.PrestoCompositeDataType> typeList = result.getFirstValue();
             savedArrayType = result.getSecondValue();
+
+            // Generate expressions outside the helper function
+            for (PrestoSchema.PrestoCompositeDataType type : typeList) {
+                arguments.add(generateExpression(type, depth + 1));
+            }
         } else {
             for (PrestoSchema.PrestoDataType arg : argumentTypes) {
                 PrestoSchema.PrestoCompositeDataType dataType;
