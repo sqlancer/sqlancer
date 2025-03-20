@@ -60,11 +60,18 @@ public final class DatabendRandomQuerySynthesizer {
 
         List<DatabendExpression> noExprColumns = new ArrayList<>(columnOfLeafNode);
 
-        if (Randomly.getBoolean() && !noExprColumns.isEmpty() && !isDistinct) {
-            select.setOrderByClauses(Randomly.nonEmptySubset(noExprColumns));
-            // TODO (for SELECT DISTINCT, ORDER BY expressions must appear in select list)
-            // isDistinct
-            // 需要orderby输入每个select list，可以用数字代替比如：1,2,3...
+        if (Randomly.getBoolean() && !noExprColumns.isEmpty()) {
+            if (isDistinct) {
+                // For SELECT DISTINCT, ORDER BY expressions must appear in the select list
+                List<DatabendColumn> orderByColumns = Randomly.nonEmptySubset(noExprColumns);
+                // Set ORDER BY clauses to reference the select list by position
+                List<DatabendExpression> orderByExpressions = orderByColumns.stream()
+                    .map(column -> new DatabendColumnName(column, null))
+                    .collect(Collectors.toList());
+                select.setOrderByClauses(orderByExpressions);
+            } else {
+                select.setOrderByClauses(Randomly.nonEmptySubset(noExprColumns));
+            }
         }
 
         if (Randomly.getBoolean()) { // 可能产生新的column叶子结点
