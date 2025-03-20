@@ -79,8 +79,8 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
             // fall through
         case UPDATE:
             return r.getInteger(0, globalState.getDbmsSpecificOptions().maxNumUpdates + 1);
-        case VACUUM: // seems to be ignored
-        case ANALYZE: // seems to be ignored
+        case VACUUM:
+        case ANALYZE:
         case EXPLAIN:
             return r.getInteger(0, 2);
         case DELETE:
@@ -103,15 +103,17 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
 
     @Override
     public void generateDatabase(DuckDBGlobalState globalState) throws Exception {
-        for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
-            boolean success;
-            do {
-                SQLQueryAdapter qt = new DuckDBTableGenerator().getQuery(globalState);
-                success = globalState.executeStatement(qt);
-            } while (!success);
+        if (globalState.getDbmsSpecificOptions().generateDatabase) {
+            for (int i = 0; i < Randomly.fromOptions(1, 2); i++) {
+                boolean success;
+                do {
+                    SQLQueryAdapter qt = new DuckDBTableGenerator().getQuery(globalState);
+                    success = globalState.executeStatement(qt);
+                } while (!success);
+            }
         }
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-            throw new IgnoreMeException(); // TODO
+            throw new IgnoreMeException("No tables generated in the database");
         }
         StatementExecutor<DuckDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 DuckDBProvider::mapActions, (q) -> {
@@ -160,5 +162,4 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
     public String getDBMSName() {
         return "duckdb";
     }
-
 }

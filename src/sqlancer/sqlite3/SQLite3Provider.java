@@ -179,48 +179,49 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     }
 
     @Override
-    public void generateDatabase(SQLite3GlobalState globalState) throws Exception {
-        Randomly r = new Randomly(SQLite3SpecialStringGenerator::generate);
-        globalState.setRandomly(r);
-        if (globalState.getDbmsSpecificOptions().generateDatabase) {
-
-            addSensiblePragmaDefaults(globalState);
-            int nrTablesToCreate = 1;
-            if (Randomly.getBoolean()) {
-                nrTablesToCreate++;
-            }
-            while (Randomly.getBooleanWithSmallProbability()) {
-                nrTablesToCreate++;
-            }
-            int i = 0;
-
-            do {
-                SQLQueryAdapter tableQuery = getTableQuery(globalState, i++);
-                globalState.executeStatement(tableQuery);
-            } while (globalState.getSchema().getDatabaseTables().size() < nrTablesToCreate);
-            assert globalState.getSchema().getTables().getTables().size() == nrTablesToCreate;
-            checkTablesForGeneratedColumnLoops(globalState);
-            if (globalState.getDbmsSpecificOptions().testDBStats && Randomly.getBooleanWithSmallProbability()) {
-                SQLQueryAdapter tableQuery = new SQLQueryAdapter(
-                        "CREATE VIRTUAL TABLE IF NOT EXISTS stat USING dbstat(main)");
-                globalState.executeStatement(tableQuery);
-            }
-            StatementExecutor<SQLite3GlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
-                    SQLite3Provider::mapActions, (q) -> {
-                        if (q.couldAffectSchema() && globalState.getSchema().getDatabaseTables().isEmpty()) {
-                            throw new IgnoreMeException();
-                        }
-                    });
-            se.executeStatements();
-
-            SQLQueryAdapter query = SQLite3TransactionGenerator.generateCommit(globalState);
-            globalState.executeStatement(query);
-
-            // also do an abort for DEFERRABLE INITIALLY DEFERRED
-            query = SQLite3TransactionGenerator.generateRollbackTransaction(globalState);
-            globalState.executeStatement(query);
-        }
+@Override
+public void generateDatabase(DuckDBGlobalState globalState) throws Exception {
+    if (!globalState.getDbmsSpecificOptions().generateDatabase) {
+        return;
     }
+
+    // Set up PRAGMA settings if needed (DuckDB might need specific configurations)
+    applyPragmaSettings(globalState);
+
+    // Determine number of tables dynamically
+    int nrTablesToCreate = 1;
+    while (Randomly.getBooleanWithSmallProbability()) {
+        nrTablesToCreate++;
+    }
+
+    int i = 0;
+    do {
+        SQLQueryAdapter tableQuery = new DuckDBTableGenerator().getQuery(globalState);
+        globalState.executeStatement(tableQuery);
+    } while (globalState.getSchema().getDatabaseTables().size() < nrTablesToCreate);
+
+    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+        throw new IgnoreMeException();
+    }
+
+    // Execute statements similar to SQLite3's approach
+    StatementExecutor<DuckDBGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+            DuckDBProvider::mapActions, (q) -> {
+                if (q.couldAffectSchema() && globalState.getSchema().getDatabaseTables().isEmpty()) {
+                    throw new IgnoreMeException();
+                }
+            });
+    se.executeStatements();
+}
+
+/**
+ * Apply PRAGMA settings for DuckDB (if needed)
+ */
+private void applyPragmaSettings(DuckDBGlobalState globalState) throws SQLException {
+    SQLQueryAdapter pragmaQuery = new SQLQueryAdapter("PRAGMA checkpoint_threshold='1 byte';");
+    globalState.executeStatement(pragmaQuery);
+}
+
 
     private void checkTablesForGeneratedColumnLoops(SQLite3GlobalState globalState) throws Exception {
         for (SQLite3Table table : globalState.getSchema().getDatabaseTables()) {
@@ -284,18 +285,40 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     }
 
     @Override
-    public SQLConnection createDatabase(SQLite3GlobalState globalState) throws SQLException {
-        File dir = new File("." + File.separator + "databases");
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-        File dataBase = new File(dir, globalState.getDatabaseName() + ".db");
-        if (dataBase.exists() && ((SQLite3GlobalState) globalState).getDbmsSpecificOptions().deleteIfExists) {
-            dataBase.delete();
-        }
-        String url = "jdbc:sqlite:" + dataBase.getAbsolutePath();
-        return new SQLConnection(DriverManager.getConnection(url));
+   @Override
+public SQLConnection createDatabase(DuckDBGlobalState globalState) throws SQLException {
+    File dir = new File("." + File.separator + "databases");
+    if (!dir.exists()) {
+        dir.mkdir();
     }
+
+    // Get database file name
+    String dbFileName = globalState.getDatabaseName() + ".db";
+    File databaseFile = new File(dir, dbFileName);
+
+    // Handle deleteIfExists flag
+    if (databaseFile.exists() && globalState.getDbmsSpecificOptions().deleteIfExists) {
+        databaseFile.delete();
+    }
+
+    // Construct the DuckDB connection URL
+    String url = "jdbc:duckdb:" + databaseFile.getAbsolutePath();
+    
+    // Ensure credentials are not set (DuckDB does not support them)
+    MainOptions options = globalState.getOptions();
+    if (!(options.isDefaultUsername() && options.isDefaultPassword())) {
+        throw new AssertionError("DuckDB doesn't support credentials (username/password)");
+    }
+
+    // Establish connection
+    Connection conn = DriverManager.getConnection(url);
+    Statement stmt = conn.createStatement();
+    stmt.execute("PRAGMA checkpoint_threshold='1 byte';");
+    stmt.close();
+    
+    return new SQLConnection(conn);
+}
+
 
     @Override
     public String getDBMSName() {
