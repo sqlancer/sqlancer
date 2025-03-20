@@ -54,7 +54,7 @@ public class MySQLDeleteGenerator {
                                                     * ignore as a workaround for https://bugs.mysql.com/bug.php?id=95997
                                                     */, "Truncated incorrect INTEGER value",
                 "Truncated incorrect DECIMAL value", "Data truncated for functional index",
-                "Unknown column in order clause"));
+                "Unknown column in 'order clause'"));
 
         if (Randomly.getBoolean() && !randomTable.getColumns().isEmpty()) {
             sb.append(" ORDER BY ");
