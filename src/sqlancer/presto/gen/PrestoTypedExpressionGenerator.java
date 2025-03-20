@@ -15,12 +15,14 @@ import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.presto.PrestoGlobalState;
+import sqlancer.presto.PrestoPair;
 import sqlancer.presto.PrestoSchema;
 import sqlancer.presto.PrestoSchema.PrestoColumn;
 import sqlancer.presto.PrestoSchema.PrestoCompositeDataType;
 import sqlancer.presto.PrestoSchema.PrestoDataType;
 import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.PrestoToStringVisitor;
+import sqlancer.presto.PrestoUtils;
 import sqlancer.presto.ast.PrestoAggregateFunction;
 import sqlancer.presto.ast.PrestoAtTimeZoneOperator;
 import sqlancer.presto.ast.PrestoBetweenOperation;
@@ -209,22 +211,10 @@ public final class PrestoTypedExpressionGenerator extends
             savedArrayType = returnType;
         }
         if (function.getNumberOfArguments() == -1) {
-            PrestoSchema.PrestoDataType dataType = argumentTypes[0];
-            // TODO: consider upper
-            long no = Randomly.getNotCachedInteger(2, 10);
-            for (int i = 0; i < no; i++) {
-                PrestoSchema.PrestoCompositeDataType type;
-
-                if (dataType == PrestoSchema.PrestoDataType.ARRAY) {
-                    if (savedArrayType == null) {
-                        savedArrayType = dataType.get();
-                    }
-                    type = savedArrayType;
-                } else {
-                    type = PrestoSchema.PrestoCompositeDataType.fromDataType(dataType);
-                }
-                arguments.add(generateExpression(type, depth + 1));
-            }
+            PrestoPair<List<PrestoExpression>, PrestoCompositeDataType> result = PrestoUtils
+                    .generateVariadicArguments(this, argumentTypes[0], savedArrayType, depth);
+            arguments = result.getFirstValue();
+            savedArrayType = result.getSecondValue();
         } else {
             for (PrestoSchema.PrestoDataType arg : argumentTypes) {
                 PrestoSchema.PrestoCompositeDataType dataType;
