@@ -435,8 +435,8 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
     }
 
     public void generateCaseStatement(T switchCondition, List<T> conditions, List<T> thenClauses, T elseExpression,
-            boolean isCockroachDB) {
-        if (isCockroachDB) {
+            boolean hasSpace) {
+        if (hasSpace) {
             sb.append("CASE ");
         } else {
             sb.append("(CASE ");
@@ -448,7 +448,7 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
             visit(conditions.get(i));
             sb.append(" THEN ");
             visit(thenClauses.get(i));
-            if (isCockroachDB) {
+            if (hasSpace) {
                 sb.append(" ");
             }
         }
@@ -456,12 +456,12 @@ public abstract class ToStringVisitor<T extends Expression<?>> extends NodeVisit
         if (elseExpression != null) {
             sb.append(" ELSE ");
             visit(elseExpression);
-            if (isCockroachDB) {
+            if (hasSpace) {
                 sb.append(" ");
             }
         }
 
-        if (isCockroachDB) {
+        if (hasSpace) {
             sb.append("END");
         } else {
             sb.append(" END )");
