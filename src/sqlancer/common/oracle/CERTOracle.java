@@ -1,6 +1,7 @@
 package sqlancer.common.oracle;
 
-import java.io.IOException;
+import static sqlancer.common.oracle.TestOracleUtils.logQueryIfEnabled;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,14 +97,7 @@ public class CERTOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E
         Optional<Long> row = Optional.empty();
 
         // Log the query
-        if (globalState.getOptions().logEachSelect()) {
-            globalState.getLogger().writeCurrent(explainQuery);
-            try {
-                globalState.getLogger().getCurrentFileWriter().flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        logQueryIfEnabled(globalState, explainQuery);
 
         // Get the row count
         SQLQueryAdapter q = new SQLQueryAdapter(explainQuery, errors);

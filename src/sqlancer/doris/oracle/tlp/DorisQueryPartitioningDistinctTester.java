@@ -25,12 +25,10 @@ public class DorisQueryPartitioningDistinctTester extends DorisQueryPartitioning
         String originalQueryString = DorisToStringVisitor.asString(select);
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
-        select.setWhereClause(predicate);
-        String firstQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(negatedPredicate);
-        String secondQueryString = DorisToStringVisitor.asString(select);
-        select.setWhereClause(isNullPredicate);
-        String thirdQueryString = DorisToStringVisitor.asString(select);
+        List<String> queryStrings = getQueryStrings(select);
+        String firstQueryString = queryStrings.get(0);
+        String secondQueryString = queryStrings.get(1);
+        String thirdQueryString = queryStrings.get(2);
         List<String> combinedString = new ArrayList<>();
 
         String unionString = "SELECT DISTINCT * FROM (" + firstQueryString + " UNION ALL " + secondQueryString

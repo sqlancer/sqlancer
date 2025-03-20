@@ -1,6 +1,8 @@
 package sqlancer.cockroachdb.oracle;
 
-import java.io.IOException;
+import static sqlancer.cockroachdb.CockroachDBUtils.selectAndSetNewJoinType;
+import static sqlancer.common.oracle.TestOracleUtils.logQueryIfEnabled;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -141,20 +143,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         }
 
         JoinType newJoinType = CockroachDBJoin.JoinType.INNER;
-        if (join.getJoinType() == JoinType.LEFT || join.getJoinType() == JoinType.RIGHT) { // No invariant relation
-                                                                                           // between LEFT and RIGHT
-                                                                                           // join
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, JoinType.CROSS,
-                    JoinType.LEFT, JoinType.RIGHT);
-        } else if (join.getJoinType() == JoinType.FULL) {
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, JoinType.CROSS);
-        } else if (join.getJoinType() != JoinType.CROSS) {
-            newJoinType = CockroachDBJoin.JoinType.getRandomExcept("COCKROACHDB", JoinType.NATURAL, join.getJoinType());
-        }
-        assert newJoinType != JoinType.NATURAL; // Natural Join is not supported for CERT
-        boolean increase = join.getJoinType().ordinal() < newJoinType.ordinal();
-        join.setJoinType(newJoinType);
-        return increase;
+        return selectAndSetNewJoinType(join, newJoinType);
     }
 
     @Override
@@ -245,16 +234,8 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
         String explainQuery = "EXPLAIN " + selectStr;
 
         // Log the query
-        if (globalState.getOptions().logEachSelect()) {
-            globalState.getLogger().writeCurrent(explainQuery);
-            try {
-                globalState.getLogger().getCurrentFileWriter().flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        logQueryIfEnabled(globalState, explainQuery);
 
-        // Get the row count
         SQLQueryAdapter q = new SQLQueryAdapter(explainQuery, errors);
         try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
             if (rs != null) {

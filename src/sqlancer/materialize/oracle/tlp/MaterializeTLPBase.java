@@ -1,5 +1,7 @@
 package sqlancer.materialize.oracle.tlp;
 
+import static sqlancer.materialize.MaterializeUtils.getJoinStatements;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,7 +10,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
-import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -51,33 +52,6 @@ public class MaterializeTLPBase
         List<MaterializeTable> tables = targetTables.getTables();
         List<MaterializeJoin> joins = getJoinStatements(state, targetTables.getColumns(), tables);
         generateSelectBase(tables, joins);
-    }
-
-    protected List<MaterializeJoin> getJoinStatements(MaterializeGlobalState globalState,
-            List<MaterializeColumn> columns, List<MaterializeTable> tables) {
-        List<MaterializeJoin> joinStatements = new ArrayList<>();
-        MaterializeExpressionGenerator gen = new MaterializeExpressionGenerator(globalState).setColumns(columns);
-        for (int i = 1; i < tables.size(); i++) {
-            MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
-            MaterializeTable table = Randomly.fromList(tables);
-            tables.remove(table);
-            JoinType options = JoinType.getRandom();
-            MaterializeJoin j = new MaterializeJoin(new MaterializeFromTable(table, Randomly.getBoolean()), joinClause,
-                    options);
-            joinStatements.add(j);
-        }
-        // JOIN subqueries
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            MaterializeTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
-            MaterializeSubquery subquery = MaterializeTLPBase.createSubquery(globalState, String.format("sub%d", i),
-                    subqueryTables);
-            MaterializeExpression joinClause = gen.generateExpression(MaterializeDataType.BOOLEAN);
-            JoinType options = JoinType.getRandom();
-            MaterializeJoin j = new MaterializeJoin(subquery, joinClause, options);
-            joinStatements.add(j);
-        }
-
-        return joinStatements;
     }
 
     @SuppressWarnings("unchecked")

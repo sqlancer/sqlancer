@@ -1,20 +1,15 @@
 package sqlancer.postgres.oracle.tlp;
 
-import java.io.IOException;
+import static sqlancer.common.oracle.TestOracleUtils.executeAndCompareQueries;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.postgresql.util.PSQLException;
-
-import sqlancer.ComparatorHelper;
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresVisitor;
@@ -31,8 +26,6 @@ import sqlancer.postgres.gen.PostgresCommon;
 
 public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestOracle<PostgresGlobalState> {
 
-    private String firstResult;
-    private String secondResult;
     private String originalQuery;
     private String metamorphicQuery;
 
@@ -64,24 +57,8 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
             select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = PostgresVisitor.asString(select);
-        firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
-        secondResult = getAggregateResult(metamorphicQuery);
-
-        String queryFormatString = "-- %s;\n-- result: %s";
-        String firstQueryString = String.format(queryFormatString, originalQuery, firstResult);
-        String secondQueryString = String.format(queryFormatString, metamorphicQuery, secondResult);
-        state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
-        if (firstResult == null && secondResult != null || firstResult != null && secondResult == null
-                || firstResult != null && !firstResult.contentEquals(secondResult)
-                        && !ComparatorHelper.isEqualDouble(firstResult, secondResult)) {
-            if (secondResult != null && secondResult.contains("Inf")) {
-                throw new IgnoreMeException(); // FIXME: average computation
-            }
-            String assertionMessage = String.format("the results mismatch!\n%s\n%s", firstQueryString,
-                    secondQueryString);
-            throw new AssertionError(assertionMessage);
-        }
+        executeAndCompareQueries(state, originalQuery, metamorphicQuery, errors);
     }
 
     private String createMetamorphicUnionQuery(PostgresSelect select, PostgresAggregate aggregate,
@@ -99,35 +76,6 @@ public class PostgresTLPAggregateOracle extends PostgresTLPBase implements TestO
                 + PostgresVisitor.asString(middleSelect) + " UNION ALL " + PostgresVisitor.asString(rightSelect);
         metamorphicQuery += ") as asdf";
         return metamorphicQuery;
-    }
-
-    private String getAggregateResult(String queryString) throws SQLException {
-        // log TLP Aggregate SELECT queries on the current log file
-        if (state.getOptions().logEachSelect()) {
-            // TODO: refactor me
-            state.getLogger().writeCurrent(queryString);
-            try {
-                state.getLogger().getCurrentFileWriter().flush();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        String resultString;
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
-        try (SQLancerResultSet result = q.executeAndGet(state)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            if (!result.next()) {
-                resultString = null;
-            } else {
-                resultString = result.getString(1);
-            }
-        } catch (PSQLException e) {
-            throw new AssertionError(queryString, e);
-        }
-        return resultString;
     }
 
     private List<PostgresExpression> mapped(PostgresAggregate aggregate) {

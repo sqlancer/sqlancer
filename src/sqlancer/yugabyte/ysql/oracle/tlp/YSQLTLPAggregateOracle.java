@@ -1,20 +1,15 @@
 package sqlancer.yugabyte.ysql.oracle.tlp;
 
-import java.io.IOException;
+import static sqlancer.common.oracle.TestOracleUtils.executeAndCompareQueries;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.postgresql.util.PSQLException;
-
-import sqlancer.ComparatorHelper;
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
@@ -31,8 +26,6 @@ import sqlancer.yugabyte.ysql.ast.YSQLSelect;
 
 public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YSQLGlobalState> {
 
-    private String firstResult;
-    private String secondResult;
     private String originalQuery;
     private String metamorphicQuery;
 
@@ -64,24 +57,9 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YS
             select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = YSQLVisitor.asString(select);
-        firstResult = getAggregateResult(originalQuery);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
-        secondResult = getAggregateResult(metamorphicQuery);
+        executeAndCompareQueries(state, originalQuery, metamorphicQuery, errors);
 
-        String queryFormatString = "-- %s;\n-- result: %s";
-        String firstQueryString = String.format(queryFormatString, originalQuery, firstResult);
-        String secondQueryString = String.format(queryFormatString, metamorphicQuery, secondResult);
-        state.getState().getLocalState().log(String.format("%s\n%s", firstQueryString, secondQueryString));
-        if (firstResult == null && secondResult != null || firstResult != null && secondResult == null
-                || firstResult != null && !firstResult.contentEquals(secondResult)
-                        && !ComparatorHelper.isEqualDouble(firstResult, secondResult)) {
-            if (secondResult != null && secondResult.contains("Inf")) {
-                throw new IgnoreMeException(); // FIXME: average computation
-            }
-            String assertionMessage = String.format("the results mismatch!\n%s\n%s", firstQueryString,
-                    secondQueryString);
-            throw new AssertionError(assertionMessage);
-        }
     }
 
     private String createMetamorphicUnionQuery(YSQLSelect select, YSQLAggregate aggregate, List<YSQLExpression> from) {
@@ -98,35 +76,6 @@ public class YSQLTLPAggregateOracle extends YSQLTLPBase implements TestOracle<YS
                 + " UNION ALL " + YSQLVisitor.asString(rightSelect);
         metamorphicQuery += ") as asdf";
         return metamorphicQuery;
-    }
-
-    private String getAggregateResult(String queryString) throws SQLException {
-        // log TLP Aggregate SELECT queries on the current log file
-        if (state.getOptions().logEachSelect()) {
-            // TODO: refactor me
-            state.getLogger().writeCurrent(queryString);
-            try {
-                state.getLogger().getCurrentFileWriter().flush();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        String resultString;
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
-        try (SQLancerResultSet result = q.executeAndGet(state)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            if (!result.next()) {
-                resultString = null;
-            } else {
-                resultString = result.getString(1);
-            }
-        } catch (PSQLException e) {
-            throw new AssertionError(queryString, e);
-        }
-        return resultString;
     }
 
     private List<YSQLExpression> mapped(YSQLAggregate aggregate) {

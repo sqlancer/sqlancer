@@ -1,5 +1,7 @@
 package sqlancer.duckdb.test;
 
+import static sqlancer.common.oracle.TestOracleUtils.getAggregateResult;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,8 +12,6 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewFunctionNode;
 import sqlancer.common.oracle.TestOracle;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.DuckDBSchema.DuckDBCompositeDataType;
@@ -58,9 +58,9 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
             select.setOrderByClauses(gen.generateOrderBys());
         }
         originalQuery = DuckDBToStringVisitor.asString(select);
-        firstResult = getAggregateResult(originalQuery);
+        firstResult = getAggregateResult(state, originalQuery, errors, false);
         metamorphicQuery = createMetamorphicUnionQuery(select, aggregate, select.getFromList());
-        secondResult = getAggregateResult(metamorphicQuery);
+        secondResult = getAggregateResult(state, metamorphicQuery, errors, false);
 
         state.getState().getLocalState().log(
                 "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult + "\n-- " + secondResult);
@@ -93,28 +93,6 @@ public class DuckDBQueryPartitioningAggregateTester extends DuckDBQueryPartition
                 + DuckDBToStringVisitor.asString(rightSelect);
         metamorphicQuery += ") as asdf";
         return metamorphicQuery;
-    }
-
-    private String getAggregateResult(String queryString) throws SQLException {
-        String resultString;
-        SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors);
-        try (SQLancerResultSet result = q.executeAndGet(state)) {
-            if (result == null) {
-                throw new IgnoreMeException();
-            }
-            if (!result.next()) {
-                resultString = null;
-            } else {
-                resultString = result.getString(1);
-            }
-            return resultString;
-        } catch (SQLException e) {
-            if (!e.getMessage().contains("Not implemented type")) {
-                throw new AssertionError(queryString, e);
-            } else {
-                throw new IgnoreMeException();
-            }
-        }
     }
 
     private List<DuckDBExpression> mapped(DuckDBFunction<DuckDBAggregateFunction> aggregate) {

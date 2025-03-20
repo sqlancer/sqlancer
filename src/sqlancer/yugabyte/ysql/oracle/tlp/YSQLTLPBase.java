@@ -1,5 +1,7 @@
 package sqlancer.yugabyte.ysql.oracle.tlp;
 
+import static sqlancer.yugabyte.ysql.YSQLUtils.getJoinStatements;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,7 +10,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.JoinBase;
-import sqlancer.common.ast.JoinBase.JoinType;
 import sqlancer.common.gen.ExpressionGenerator;
 import sqlancer.common.oracle.TernaryLogicPartitioningOracleBase;
 import sqlancer.common.oracle.TestOracle;
@@ -16,7 +17,6 @@ import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
-import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTables;
 import sqlancer.yugabyte.ysql.ast.YSQLColumnValue;
@@ -46,31 +46,6 @@ public class YSQLTLPBase extends TernaryLogicPartitioningOracleBase<YSQLExpressi
         List<YSQLTable> tables = targetTables.getTables();
         List<YSQLJoin> joins = getJoinStatements(state, targetTables.getColumns(), tables);
         generateSelectBase(tables, joins);
-    }
-
-    public static List<YSQLJoin> getJoinStatements(YSQLGlobalState globalState, List<YSQLColumn> columns,
-            List<YSQLTable> tables) {
-        List<YSQLJoin> joinStatements = new ArrayList<>();
-        YSQLExpressionGenerator gen = new YSQLExpressionGenerator(globalState).setColumns(columns);
-        for (int i = 1; i < tables.size(); i++) {
-            YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
-            YSQLTable table = Randomly.fromList(tables);
-            tables.remove(table);
-            JoinType options = JoinType.getRandomForDatabase("YSQL");
-            YSQLJoin j = new YSQLJoin(new YSQLSelect.YSQLFromTable(table, Randomly.getBoolean()), joinClause, options);
-            joinStatements.add(j);
-        }
-        // JOIN subqueries
-        for (int i = 0; i < Randomly.smallNumber(); i++) {
-            YSQLTables subqueryTables = globalState.getSchema().getRandomTableNonEmptyTables();
-            YSQLSelect.YSQLSubquery subquery = YSQLExpressionGenerator.createSubquery(globalState,
-                    String.format("sub%d", i), subqueryTables);
-            YSQLExpression joinClause = gen.generateExpression(YSQLDataType.BOOLEAN);
-            JoinType options = JoinType.getRandomForDatabase("YSQL");
-            YSQLJoin j = new YSQLJoin(subquery, joinClause, options);
-            joinStatements.add(j);
-        }
-        return joinStatements;
     }
 
     @SuppressWarnings("unchecked")

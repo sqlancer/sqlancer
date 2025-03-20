@@ -1,5 +1,7 @@
 package sqlancer.postgres.gen;
 
+import static sqlancer.postgres.PostgresUtils.createSubquery;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,7 +64,6 @@ import sqlancer.postgres.ast.PostgresPostfixText;
 import sqlancer.postgres.ast.PostgresPrefixOperation;
 import sqlancer.postgres.ast.PostgresPrefixOperation.PrefixOperator;
 import sqlancer.postgres.ast.PostgresSelect;
-import sqlancer.postgres.ast.PostgresSelect.ForClause;
 import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
@@ -607,35 +608,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     public PostgresExpressionGenerator allowAggregates(boolean value) {
         allowAggregateFunctions = value;
         return this;
-    }
-
-    public static PostgresSubquery createSubquery(PostgresGlobalState globalState, String name, PostgresTables tables) {
-        List<PostgresExpression> columns = new ArrayList<>();
-        PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
-        for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-            columns.add(gen.generateExpression(0));
-        }
-        PostgresSelect select = new PostgresSelect();
-        select.setFromList(tables.getTables().stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
-                .collect(Collectors.toList()));
-        select.setFetchColumns(columns);
-        if (Randomly.getBoolean()) {
-            select.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
-        }
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBys());
-        }
-        if (Randomly.getBoolean()) {
-            select.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
-            if (Randomly.getBoolean()) {
-                select.setOffsetClause(
-                        PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
-            }
-        }
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setForClause(ForClause.getRandom());
-        }
-        return new PostgresSubquery(select, name);
     }
 
     @Override

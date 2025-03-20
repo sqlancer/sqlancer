@@ -23,6 +23,7 @@ import sqlancer.doris.ast.DorisJoin;
 import sqlancer.doris.ast.DorisSelect;
 import sqlancer.doris.ast.DorisTableReference;
 import sqlancer.doris.gen.DorisNewExpressionGenerator;
+import sqlancer.doris.visitor.DorisToStringVisitor;
 
 public class DorisQueryPartitioningBase extends TernaryLogicPartitioningOracleBase<DorisExpression, DorisGlobalState>
         implements TestOracle<DorisGlobalState> {
@@ -77,6 +78,21 @@ public class DorisQueryPartitioningBase extends TernaryLogicPartitioningOracleBa
     @Override
     protected ExpressionGenerator<DorisExpression> getGen() {
         return gen;
+    }
+
+    protected List<String> getQueryStrings(DorisSelect select) throws SQLException {
+        List<String> queryStrings = new ArrayList<>();
+        select.setWhereClause(predicate);
+        String firstQueryString = DorisToStringVisitor.asString(select);
+        queryStrings.add(firstQueryString);
+        select.setWhereClause(negatedPredicate);
+        String secondQueryString = DorisToStringVisitor.asString(select);
+        queryStrings.add(secondQueryString);
+        select.setWhereClause(isNullPredicate);
+        String thirdQueryString = DorisToStringVisitor.asString(select);
+        queryStrings.add(thirdQueryString);
+
+        return queryStrings;
     }
 
 }
