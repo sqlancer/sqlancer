@@ -166,7 +166,6 @@ public class TiDBToStringVisitor extends ToStringVisitor<TiDBExpression> impleme
 
     @Override
     public void visit(TiDBCase op) {
-        generateCaseStatement(op.getSwitchCondition(), op.getConditions(), op.getExpressions(), op.getElseExpr(),
-                true);
+        generateCaseStatement(op.getSwitchCondition(), op.getConditions(), op.getExpressions(), op.getElseExpr(), true);
     }
 }
