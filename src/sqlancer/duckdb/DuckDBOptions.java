@@ -80,9 +80,14 @@ public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
     @Parameter(names = "--oracle")
     public List<DuckDBOracleFactory> oracles = Arrays.asList(DuckDBOracleFactory.QUERY_PARTITIONING);
 
+    /**
+     * New flag to determine whether a new database should be generated.
+     */
+    @Parameter(names = "--generate-database", description = "Generate a new database before running tests", arity = 1)
+    public boolean generateDatabase = true;
+
     @Override
     public List<DuckDBOracleFactory> getTestOracleFactory() {
         return oracles;
     }
-
 }
