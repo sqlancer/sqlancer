@@ -297,22 +297,6 @@ public class TiDBExpressionGenerator extends UntypedExpressionGenerator<TiDBExpr
         return increase;
     }
 
-    boolean mutateHaving(TiDBSelect select) {
-        if (select.getGroupByExpressions().size() == 0) {
-            select.setGroupByExpressions(select.getFetchColumns());
-            select.setHavingClause(generateExpression());
-            return false;
-        } else {
-            if (select.getHavingClause() == null) {
-                select.setHavingClause(generateExpression());
-                return false;
-            } else {
-                select.setHavingClause(null);
-                return true;
-            }
-        }
-    }
-
     boolean mutateAnd(TiDBSelect select) {
         if (select.getWhereClause() == null) {
             select.setWhereClause(generateExpression());
