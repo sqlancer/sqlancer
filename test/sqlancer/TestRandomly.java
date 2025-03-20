@@ -261,6 +261,9 @@ public class TestRandomly {
                 encounteredSpecial = true;
             }
         } while (!encounteredAlphabetic || !encounteredNumeric || !encounteredSpecial || i++ < NR_MIN_RUNS);
+        assertTrue(encounteredAlphabetic, "Never encounter an alphabetic character.");
+        assertTrue(encounteredNumeric, "Never encounter a numeric character.");
+        assertTrue(encounteredSpecial, "Did not encounter a special character.");
     }
 
     @Test
