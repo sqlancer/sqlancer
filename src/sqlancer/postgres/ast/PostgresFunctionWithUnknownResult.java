@@ -19,11 +19,11 @@ public enum PostgresFunctionWithUnknownResult {
     TEXT("text", PostgresDataType.TEXT, PostgresDataType.INET),
     INET_SAME_FAMILY("inet_same_family", PostgresDataType.BOOLEAN, PostgresDataType.INET, PostgresDataType.INET),
 
-    // https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE
+    // https://www.postgresql.org/docs/13/functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE
     // PG_RELOAD_CONF("pg_reload_conf", PostgresDataType.BOOLEAN), // too much output
     // PG_ROTATE_LOGFILE("pg_rotate_logfile", PostgresDataType.BOOLEAN), prints warning
 
-    // https://www.postgresql.org/docs/devel/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE
+    // https://www.postgresql.org/docs/13/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE
     CURRENT_DATABASE("current_database", PostgresDataType.TEXT), // name
     // CURRENT_QUERY("current_query", PostgresDataType.TEXT), // can generate false positives
     CURRENT_SCHEMA("current_schema", PostgresDataType.TEXT), // name
@@ -87,7 +87,7 @@ public enum PostgresFunctionWithUnknownResult {
     TO_HEX("to_hex", PostgresDataType.INT, PostgresDataType.TEXT),
     TRANSLATE("translate", PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.TEXT, PostgresDataType.TEXT),
     // mathematical functions
-    // https://www.postgresql.org/docs/9.5/functions-math.html
+    // https://www.postgresql.org/docs/13/functions-math.html
     ABS("abs", PostgresDataType.REAL, PostgresDataType.REAL),
     CBRT("cbrt", PostgresDataType.REAL, PostgresDataType.REAL), CEILING("ceiling", PostgresDataType.REAL), //
     DEGREES("degrees", PostgresDataType.REAL), EXP("exp", PostgresDataType.REAL), LN("ln", PostgresDataType.REAL),
@@ -98,7 +98,7 @@ public enum PostgresFunctionWithUnknownResult {
     FLOOR("floor", PostgresDataType.REAL),
 
     // trigonometric functions - complete
-    // https://www.postgresql.org/docs/12/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE
+    // https://www.postgresql.org/docs/13/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE
     ACOS("acos", PostgresDataType.REAL), //
     ACOSD("acosd", PostgresDataType.REAL), //
     ASIN("asin", PostgresDataType.REAL), //
@@ -117,7 +117,7 @@ public enum PostgresFunctionWithUnknownResult {
     TAND("tand", PostgresDataType.REAL), //
 
     // hyperbolic functions - complete
-    // https://www.postgresql.org/docs/12/functions-math.html#FUNCTIONS-MATH-HYP-TABLE
+    // https://www.postgresql.org/docs/13/functions-math.html#FUNCTIONS-MATH-HYP-TABLE
     SINH("sinh", PostgresDataType.REAL), //
     COSH("cosh", PostgresDataType.REAL), //
     TANH("tanh", PostgresDataType.REAL), //
@@ -125,12 +125,12 @@ public enum PostgresFunctionWithUnknownResult {
     ACOSH("acosh", PostgresDataType.REAL), //
     ATANH("atanh", PostgresDataType.REAL), //
 
-    // https://www.postgresql.org/docs/devel/functions-binarystring.html
+    // https://www.postgresql.org/docs/13/functions-binarystring.html
     GET_BIT("get_bit", PostgresDataType.INT, PostgresDataType.TEXT, PostgresDataType.INT),
     GET_BYTE("get_byte", PostgresDataType.INT, PostgresDataType.TEXT, PostgresDataType.INT),
 
     // range functions
-    // https://www.postgresql.org/docs/devel/functions-range.html#RANGE-FUNCTIONS-TABLE
+    // https://www.postgresql.org/docs/13/functions-range.html#RANGE-FUNCTIONS-TABLE
     RANGE_LOWER("lower", PostgresDataType.INT, PostgresDataType.RANGE), //
     RANGE_UPPER("upper", PostgresDataType.INT, PostgresDataType.RANGE), //
     RANGE_ISEMPTY("isempty", PostgresDataType.BOOLEAN, PostgresDataType.RANGE), //
@@ -140,7 +140,7 @@ public enum PostgresFunctionWithUnknownResult {
     RANGE_UPPER_INF("upper_inf", PostgresDataType.BOOLEAN, PostgresDataType.RANGE), //
     RANGE_MERGE("range_merge", PostgresDataType.RANGE, PostgresDataType.RANGE, PostgresDataType.RANGE), //
 
-    // https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE
+    // https://www.postgresql.org/docs/13/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE
     GET_COLUMN_SIZE("get_column_size", PostgresDataType.INT, PostgresDataType.TEXT);
     // PG_DATABASE_SIZE("pg_database_size", PostgresDataType.INT, PostgresDataType.INT);
     // PG_SIZE_BYTES("pg_size_bytes", PostgresDataType.INT, PostgresDataType.TEXT);

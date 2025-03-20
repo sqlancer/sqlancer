@@ -467,7 +467,7 @@ jobs:
       - name: Set up PostgreSQL
         uses: harmon758/postgresql-action@v1.0.0
         with:
-          postgresql version: '12'
+          postgresql version: '13'
           postgresql user: 'sqlancer'
           postgresql password: 'sqlancer'
           postgresql db: 'test'
