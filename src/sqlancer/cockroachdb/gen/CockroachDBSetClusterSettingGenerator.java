@@ -18,7 +18,7 @@ public final class CockroachDBSetClusterSettingGenerator {
         BACKPRESSURE_RANGE_SIZE_MULTIPLIER(" kv.range.backpressure_range_size_multiplier",
                 (g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
         RANGE_DESCRIPTOR_CACHE_SIZE("kv.range_descriptor_cache.size",
-                (g) -> Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)),
+                (g) -> Randomly.getNotCachedInteger(64, 100000)),
         SQL_QUERY_CACHE_ENABLED("sql.query_cache.enabled", CockroachDBSetSessionGenerator::onOff),
         SQL_STATS_HISTOGRAM_COLLECTION_ENABLED("sql.stats.histogram_collection.enabled",
                 CockroachDBSetSessionGenerator::onOff),
