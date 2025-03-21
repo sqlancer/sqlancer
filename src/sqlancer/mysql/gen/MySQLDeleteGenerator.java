@@ -2,7 +2,6 @@ package sqlancer.mysql.gen;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
@@ -61,7 +60,7 @@ public class MySQLDeleteGenerator {
             sb.append(" ORDER BY ");
             List<MySQLExpression> orderBys = gen.generateOrderBys();
             sb.append(orderBys.stream().map(exp -> MySQLVisitor.asString(exp)).collect(Collectors.joining(" , ")));
-            if(!errorsIncluded) {
+            if (!errorsIncluded) {
                 MySQLErrors.addExpressionErrors(errors);
             }
         }
