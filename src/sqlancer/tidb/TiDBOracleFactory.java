@@ -55,10 +55,12 @@ public enum TiDBOracleFactory implements OracleFactory<TiDBProvider.TiDBGlobalSt
                     if (content == null || content.trim().isEmpty()) {
                         return Optional.empty();
                     }
-
-                    String numStr = content.replaceAll("[^0-9.-]", "");
-                    if (!numStr.isEmpty()) {
-                        return Optional.of((long) Double.parseDouble(numStr));
+                    // Look specifically for "rows:" pattern
+                    if (content.contains("rows")) {
+                        String numStr = content.replaceAll("[^0-9.-]", "");
+                        if (!numStr.isEmpty()) {
+                            return Optional.of((long) Double.parseDouble(numStr));
+                        }
                     }
                 } catch (Exception e) {
                     // Ignore parsing erors
