@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.SQLPair;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
@@ -15,7 +16,6 @@ import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.presto.PrestoGlobalState;
-import sqlancer.presto.PrestoPair;
 import sqlancer.presto.PrestoSchema;
 import sqlancer.presto.PrestoSchema.PrestoColumn;
 import sqlancer.presto.PrestoSchema.PrestoCompositeDataType;
@@ -211,7 +211,7 @@ public final class PrestoTypedExpressionGenerator extends
             savedArrayType = returnType;
         }
         if (function.getNumberOfArguments() == -1) {
-            PrestoPair<List<PrestoSchema.PrestoCompositeDataType>, PrestoSchema.PrestoCompositeDataType> result = PrestoUtils
+            SQLPair<List<PrestoCompositeDataType>, PrestoCompositeDataType> result = PrestoUtils
                     .prepareVariadicArgumentTypes(argumentTypes[0], savedArrayType);
 
             List<PrestoSchema.PrestoCompositeDataType> typeList = result.getFirstValue();

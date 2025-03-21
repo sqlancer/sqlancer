@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.SQLPair;
 
 public final class PrestoUtils {
 
     private PrestoUtils() {
     }
 
-    public static PrestoPair<List<PrestoSchema.PrestoCompositeDataType>, PrestoSchema.PrestoCompositeDataType> prepareVariadicArgumentTypes(
+    public static SQLPair<List<PrestoSchema.PrestoCompositeDataType>, PrestoSchema.PrestoCompositeDataType> prepareVariadicArgumentTypes(
             PrestoSchema.PrestoDataType dataType, PrestoSchema.PrestoCompositeDataType savedArrayType) {
 
         List<PrestoSchema.PrestoCompositeDataType> typeList = new ArrayList<>();
@@ -32,6 +33,6 @@ public final class PrestoUtils {
             typeList.add(type);
         }
 
-        return new PrestoPair<>(typeList, currentArrayType);
+        return new SQLPair<>(typeList, currentArrayType);
     }
 }

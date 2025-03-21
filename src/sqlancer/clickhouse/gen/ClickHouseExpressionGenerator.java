@@ -255,8 +255,8 @@ public class ClickHouseExpressionGenerator
 
     private void generateRandomJoins(List<ClickHouseTable> tables, List<ClickHouseJoin> joinStatements,
             List<ClickHouseTableReference> leftTables) {
-        int nrJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
-        for (int i = 0; i < nrJoinClauses; i++) {
+        int numberOfJoinClauses = (int) Randomly.getNotCachedInteger(0, tables.size());
+        for (int i = 0; i < numberOfJoinClauses; i++) {
             ClickHouseTableReference leftTable = leftTables
                     .get((int) Randomly.getNotCachedInteger(0, leftTables.size() - 1));
             ClickHouseTableReference rightTable = new ClickHouseTableReference(Randomly.fromList(tables), "right_" + i);

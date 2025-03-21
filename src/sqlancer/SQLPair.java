@@ -1,10 +1,10 @@
-package sqlancer.presto;
+package sqlancer;
 
-public class PrestoPair<T, U> {
+public class SQLPair<T, U> {
     private final T first;
     private final U second;
 
-    public PrestoPair(T first, U second) {
+    public SQLPair(T first, U second) {
         this.first = first;
         this.second = second;
     }

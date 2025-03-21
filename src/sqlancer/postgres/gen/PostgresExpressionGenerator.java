@@ -678,7 +678,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     @Override
     public List<PostgresExpression> generateFetchColumns(boolean shouldCreateDummy) {
         if (shouldCreateDummy && Randomly.getBooleanWithRatherLowProbability()) {
-            return List.of(new PostgresColumnValue(PostgresColumn.createDummy("*"), null));
+            return Arrays.asList(new PostgresColumnValue(PostgresColumn.createDummy("*"), null));
         }
         allowAggregateFunctions = true;
         List<PostgresExpression> fetchColumns = new ArrayList<>();
@@ -696,9 +696,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         PostgresColumnValue allColumns = new PostgresColumnValue(PostgresColumn.createDummy("*"), null);
         if (shouldUseAggregate) {
             select.setFetchColumns(
-                    List.of(new PostgresAggregate(List.of(allColumns), PostgresAggregateFunction.COUNT)));
+                    Arrays.asList(new PostgresAggregate(List.of(allColumns), PostgresAggregateFunction.COUNT)));
         } else {
-            select.setFetchColumns(List.of(allColumns));
+            select.setFetchColumns(Arrays.asList(allColumns));
         }
         select.setWhereClause(whereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {
@@ -713,7 +713,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         PostgresCastOperation isTrue = new PostgresCastOperation(whereCondition,
                 PostgresCompoundDataType.create(PostgresDataType.INT));
         PostgresPostfixText asText = new PostgresPostfixText(isTrue, " as count", null, PostgresDataType.INT);
-        select.setFetchColumns(List.of(asText));
+        select.setFetchColumns(Arrays.asList(asText));
         select.setWhereClause(null);
         select.setOrderByClauses(List.of());
         select.setSelectType(SelectType.ALL);
