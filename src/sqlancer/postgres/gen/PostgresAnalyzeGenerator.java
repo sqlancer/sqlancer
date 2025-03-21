@@ -36,7 +36,8 @@ public final class PostgresAnalyzeGenerator {
             }
         }
         // FIXME: bug in postgres?
-        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("deadlock", "tuple to be updated was already modified by an operation triggered by the current command"));
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("deadlock",
+                "tuple to be updated was already modified by an operation triggered by the current command"));
     }
 
 }
