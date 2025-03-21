@@ -406,7 +406,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8.0.41
+        image: mysql:8.0.36
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
