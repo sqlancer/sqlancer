@@ -11,6 +11,7 @@ import sqlancer.common.oracle.TLPWhereOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
+import sqlancer.sqlite3.oracle.SQLite3CODDTestOracle;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
 import sqlancer.sqlite3.oracle.SQLite3PivotedQuerySynthesisOracle;
 import sqlancer.sqlite3.oracle.tlp.SQLite3TLPAggregateOracle;
@@ -95,6 +96,17 @@ public enum SQLite3OracleFactory implements OracleFactory<SQLite3GlobalState> {
             oracles.add(HAVING.create(globalState));
             oracles.add(AGGREGATE.create(globalState));
             return new CompositeTestOracle<SQLite3GlobalState>(oracles, globalState);
+        }
+    },
+    CODDTest {
+        @Override
+        public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
+            return new SQLite3CODDTestOracle(globalState);
+        }
+
+        @Override
+        public boolean requiresAllTablesToContainRows() {
+            return true;
         }
     };
 
