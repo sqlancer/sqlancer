@@ -569,9 +569,10 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     public static PostgresExpression generateConstant(Randomly r, PostgresDataType type) {
-        if (Randomly.getBooleanWithSmallProbability()) {
-            return PostgresConstant.createNullConstant();
-        }
+        // if (Randomly.getBooleanWithSmallProbability()) {
+        // return PostgresConstant.createNullConstant();
+        // }
+
         // if (Randomly.getBooleanWithSmallProbability()) {
         // return PostgresConstant.createTextConstant(r.getString());
         // }
