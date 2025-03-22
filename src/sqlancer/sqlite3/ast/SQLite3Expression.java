@@ -1671,6 +1671,9 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
         }
     }
 
+    // The ExpressionBag is not a built-in SQL feature, 
+    // but rather a utility class used in CODDTest's oracle construction
+    // to substitute expressions with their corresponding constant values.
     public static class SQLite3ExpressionBag extends SQLite3Expression {
         private SQLite3Expression innerExpr;
 
