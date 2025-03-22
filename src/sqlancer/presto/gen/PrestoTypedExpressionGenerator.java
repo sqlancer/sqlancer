@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.SQLPair;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
@@ -21,6 +22,7 @@ import sqlancer.presto.PrestoSchema.PrestoCompositeDataType;
 import sqlancer.presto.PrestoSchema.PrestoDataType;
 import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.PrestoToStringVisitor;
+import sqlancer.presto.PrestoUtils;
 import sqlancer.presto.ast.PrestoAggregateFunction;
 import sqlancer.presto.ast.PrestoAtTimeZoneOperator;
 import sqlancer.presto.ast.PrestoBetweenOperation;
@@ -209,20 +211,14 @@ public final class PrestoTypedExpressionGenerator extends
             savedArrayType = returnType;
         }
         if (function.getNumberOfArguments() == -1) {
-            PrestoSchema.PrestoDataType dataType = argumentTypes[0];
-            // TODO: consider upper
-            long no = Randomly.getNotCachedInteger(2, 10);
-            for (int i = 0; i < no; i++) {
-                PrestoSchema.PrestoCompositeDataType type;
+            SQLPair<List<PrestoCompositeDataType>, PrestoCompositeDataType> result = PrestoUtils
+                    .prepareVariadicArgumentTypes(argumentTypes[0], savedArrayType);
 
-                if (dataType == PrestoSchema.PrestoDataType.ARRAY) {
-                    if (savedArrayType == null) {
-                        savedArrayType = dataType.get();
-                    }
-                    type = savedArrayType;
-                } else {
-                    type = PrestoSchema.PrestoCompositeDataType.fromDataType(dataType);
-                }
+            List<PrestoSchema.PrestoCompositeDataType> typeList = result.getFirstValue();
+            savedArrayType = result.getSecondValue();
+
+            // Generate expressions outside the helper function
+            for (PrestoSchema.PrestoCompositeDataType type : typeList) {
                 arguments.add(generateExpression(type, depth + 1));
             }
         } else {

@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.ast.SelectBase;
+import sqlancer.common.ast.newast.Expression;
 
-public abstract class UntypedExpressionGenerator<E, C> implements ExpressionGenerator<E> {
+public abstract class UntypedExpressionGenerator<E extends Expression<?>, C> implements ExpressionGenerator<E> {
 
     protected List<C> columns;
     protected boolean allowAggregates;
@@ -68,4 +70,19 @@ public abstract class UntypedExpressionGenerator<E, C> implements ExpressionGene
         return generateExpression();
     }
 
+    public <S extends SelectBase<E>> boolean mutateHaving(S select) {
+        if (select.getGroupByExpressions().size() == 0) {
+            select.setGroupByExpressions(select.getFetchColumns());
+            select.setHavingClause(generateHavingClause());
+            return false;
+        } else {
+            if (select.getHavingClause() == null) {
+                select.setHavingClause(generateHavingClause());
+                return false;
+            } else {
+                select.setHavingClause(null);
+                return true;
+            }
+        }
+    }
 }

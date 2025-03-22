@@ -208,23 +208,7 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
 
         if (Randomly.getBooleanWithRatherLowProbability() || depth > maxDepth) {
             // generic expression
-            if (Randomly.getBoolean() || depth > maxDepth) {
-                if (Randomly.getBooleanWithRatherLowProbability()) {
-                    return generateConstant(r, dataType);
-                } else {
-                    if (filterColumns(dataType).isEmpty()) {
-                        return generateConstant(r, dataType);
-                    } else {
-                        return createColumnOfType(dataType);
-                    }
-                }
-            } else {
-                if (Randomly.getBoolean()) {
-                    return generateCastExpression(depth + 1, dataType);
-                } else {
-                    return generateFunctionWithUnknownResult(depth, dataType);
-                }
-            }
+            return generateGenericExpression(depth, dataType);
         } else {
             switch (dataType) {
             case BOOLEAN:
@@ -241,6 +225,30 @@ public class CnosDBExpressionGenerator implements ExpressionGenerator<CnosDBExpr
                 return generateTimeStampExpression(depth);
             default:
                 throw new AssertionError(dataType);
+            }
+        }
+    }
+
+    private CnosDBExpression generateGenericExpression(int depth, CnosDBDataType dataType) {
+        if (Randomly.getBoolean() || depth > maxDepth) {
+            return generateGenericConstant(dataType);
+        } else {
+            if (Randomly.getBoolean()) {
+                return generateCastExpression(depth + 1, dataType);
+            } else {
+                return generateFunctionWithUnknownResult(depth, dataType);
+            }
+        }
+    }
+
+    private CnosDBExpression generateGenericConstant(CnosDBDataType dataType) {
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            return generateConstant(r, dataType);
+        } else {
+            if (filterColumns(dataType).isEmpty()) {
+                return generateConstant(r, dataType);
+            } else {
+                return createColumnOfType(dataType);
             }
         }
     }
