@@ -122,8 +122,8 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             sb.append("RESET ");
 
             // List of configuration parameters
-            String[] configParameters = { "work_mem", "statement_timeout", "timezone", "log_statement",
-                    "random_page_cost", "synchronous_commit", "search_path", "client_encoding", "lock_timeout" };
+            String[] configParameters = { "statement_timeout", "timezone", "log_statement", "random_page_cost",
+                    "synchronous_commit", "search_path", "client_encoding", "lock_timeout" };
             String parameter = "ALL";
             if (Randomly.getBoolean()) {
                 parameter = Randomly.fromOptions(configParameters);
