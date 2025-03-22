@@ -41,7 +41,7 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClasure;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClause;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
@@ -202,8 +202,8 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             SQLite3Table temporaryTable =  this.genTemporaryTable(auxiliaryQuery, this.tempTableName);
             originalQuery = this.genSelectExpression(temporaryTable, null);
             SQLite3TableAndColumnRef tableAndColumnRef = new SQLite3TableAndColumnRef(temporaryTable);
-            SQLite3WithClasure withClasure = new SQLite3WithClasure(tableAndColumnRef, new SQLite3Select(auxiliaryQuery));
-            originalQuery.setWithClasure(withClasure);
+            SQLite3WithClause withClause = new SQLite3WithClause(tableAndColumnRef, new SQLite3Select(auxiliaryQuery));
+            originalQuery.setWithClause(withClause);
             originalQueryString = SQLite3Visitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
             // folded query
@@ -212,13 +212,13 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                 // common table expression
                 // folded query: WITH table AS VALUES ()
                 SQLite3Values values = new SQLite3Values(auxiliaryQueryResult, temporaryTable.getColumns());
-                originalQuery.updateWithClasureRight(values);
+                originalQuery.updateWithClauseRight(values);
                 foldedQueryString = SQLite3Visitor.asString(originalQuery);
                 foldedResult = getQueryResult(foldedQueryString, state);
             } else if (Randomly.getBoolean() && this.testDerivedTable()) {
                 // derived table
                 // folded query: SELECT FROM () AS table
-                originalQuery.setWithClasure(null);
+                originalQuery.setWithClause(null);
                 SQLite3TableReference tempTableRef = new SQLite3TableReference(temporaryTable);
                 SQLite3Alias alias = new SQLite3Alias(new SQLite3Select(auxiliaryQuery), tempTableRef);
                 originalQuery.replaceFromTable(this.tempTableName, alias);
@@ -229,7 +229,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                 // folded query: CREATE the table and INSERT INTO table subquery
                 try {
                     this.createTemporaryTable(auxiliaryQuery, this.tempTableName);
-                    originalQuery.setWithClasure(null);
+                    originalQuery.setWithClause(null);
                     foldedQueryString = SQLite3Visitor.asString(originalQuery);
                     foldedResult = getQueryResult(foldedQueryString, state);
                 } finally {
