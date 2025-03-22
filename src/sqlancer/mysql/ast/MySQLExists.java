@@ -4,6 +4,7 @@ public class MySQLExists implements MySQLExpression {
 
     private final MySQLExpression expr;
     private final MySQLConstant expected;
+    private boolean negated = false;
 
     public MySQLExists(MySQLExpression expr, MySQLConstant expectedValue) {
         this.expr = expr;
@@ -18,8 +19,21 @@ public class MySQLExists implements MySQLExpression {
         }
     }
 
+    public MySQLExists(MySQLExpression expr, boolean isNegated) {
+        this.expr = expr;
+        negated = isNegated;
+        this.expected = expr.getExpectedValue();
+        if (expected == null) {
+            throw new AssertionError();
+        }
+    }
+
     public MySQLExpression getExpr() {
         return expr;
+    }
+
+    public boolean isNegated() {
+        return negated;
     }
 
     @Override

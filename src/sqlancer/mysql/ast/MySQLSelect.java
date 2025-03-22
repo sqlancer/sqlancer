@@ -43,7 +43,7 @@ public class MySQLSelect extends SelectBase<MySQLExpression>
 
     @Override
     public MySQLConstant getExpectedValue() {
-        return null;
+        return MySQLConstant.createNullConstant();
     }
 
     public void setHint(MySQLText hint) {

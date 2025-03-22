@@ -44,6 +44,8 @@ public final class DuckDBIndexGenerator {
         if (globalState.getDbmsSpecificOptions().testRowid) {
             errors.add("cannot create an index on the rowid");
         }
+
+        errors.add("Data contains duplicates on indexed column(s)"); // added by CODDTest
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 

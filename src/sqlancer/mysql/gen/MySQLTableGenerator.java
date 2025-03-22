@@ -352,6 +352,9 @@ public class MySQLTableGenerator {
             sb.append(Randomly.fromOptions("DOUBLE", "FLOAT"));
             optionallyAddPrecisionAndScale(sb);
             break;
+        case BOOL:
+            sb.append(Randomly.fromOptions("BOOL", "BOOLEAN"));
+            break;
         default:
             throw new AssertionError();
         }

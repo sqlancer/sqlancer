@@ -27,7 +27,7 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
     private static final int NR_SCHEMA_READ_TRIES = 10;
 
     public enum MySQLDataType {
-        INT, VARCHAR, FLOAT, DOUBLE, DECIMAL;
+        INT, VARCHAR, FLOAT, DOUBLE, DECIMAL, BOOL;
 
         public static MySQLDataType getRandom(MySQLGlobalState globalState) {
             if (globalState.usesPQS()) {
@@ -45,10 +45,72 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
             case DECIMAL:
                 return true;
             case VARCHAR:
+            case BOOL:
                 return false;
             default:
                 throw new AssertionError(this);
             }
+        }
+
+    }
+
+    public static class MySQLCompositeDataType {
+
+        private final MySQLDataType dataType;
+
+        // This variable is used to indicate the return value type of the query.
+        // Sometimes this type is hard to be mapped to a primitive type.
+        private String typeName = "";
+
+        public MySQLCompositeDataType(MySQLDataType dataType) {
+            this.dataType = dataType;
+            this.typeName = dataType.name();
+        }
+
+        public MySQLCompositeDataType(String typeName) {
+            typeName = typeName.split(" ")[0];
+            // char, varchar, binary, varbinary, blob, tinyblob, mediumblob, longblob
+            // text, tinytext, mediumtext, longtext
+            if (typeName.toLowerCase().contains("char") ||
+                typeName.toLowerCase().contains("binary") ||
+                typeName.toLowerCase().contains("blob") ||
+                typeName.toLowerCase().contains("text")) {
+                dataType = MySQLDataType.VARCHAR;
+                if (typeName.toLowerCase().contains("binary")) {
+                    typeName = "BINARY";
+                } else {
+                    typeName = "CHAR";
+                }
+            } 
+            // bit, int, integer, tinyint, smallint, mediumint, bigint
+            // decimal
+            else if (typeName.toLowerCase().contains("int") ||
+                     typeName.toLowerCase().contains("bit") ||
+                     typeName.toLowerCase().contains("decimal")) {
+                dataType = MySQLDataType.INT;
+                if (typeName.toLowerCase().contains("int")) {
+                    typeName = "SIGNED";
+                } 
+            } else if (typeName.toLowerCase().contains("float")) {
+                dataType = MySQLDataType.FLOAT;
+            } else if (typeName.toLowerCase().contains("double")) {
+                dataType = MySQLDataType.DOUBLE;
+                typeName = "double";
+            } else if (typeName.toLowerCase().contains("bool")) {
+                dataType = MySQLDataType.BOOL;
+            } else {
+                throw new AssertionError(typeName);
+            }
+            this.typeName = typeName;
+        }
+
+
+        public String toString() {
+            return this.typeName;
+        }
+
+        public MySQLDataType getPrimitiveDataType() {
+            return dataType;
         }
 
     }

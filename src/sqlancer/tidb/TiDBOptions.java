@@ -29,6 +29,9 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     @Parameter(names = { "--tiflash" }, description = "Enable TiFlash")
     public boolean tiflash;
 
+    @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on expression, subquery, or random")
+    public String coddTestModel = "random";
+
     @Override
     public List<TiDBOracleFactory> getTestOracleFactory() {
         return oracle;

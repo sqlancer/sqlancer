@@ -1,5 +1,6 @@
 package sqlancer.cockroachdb.ast;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -10,6 +11,11 @@ import sqlancer.cockroachdb.CockroachDBVisitor;
 public class CockroachDBConstant implements CockroachDBExpression {
 
     private CockroachDBConstant() {
+    }
+
+    // only for CODDTest. in comparison, the float value always has different precision
+    public String toStringForComparison() {
+        return toString();
     }
 
     public static class CockroachDBNullConstant extends CockroachDBConstant {
@@ -38,6 +44,53 @@ public class CockroachDBConstant implements CockroachDBExpression {
             return value;
         }
 
+        @Override
+        public String toStringForComparison() {
+            BigDecimal decimal = new BigDecimal(value);
+            return decimal.toPlainString();
+        }
+
+    }
+
+    public static class CockroachDBBigDecimalConstant extends CockroachDBConstant {
+
+        private final BigDecimal val;
+
+        public CockroachDBBigDecimalConstant(BigDecimal val) {
+            this.val = val;
+        }
+
+        public BigDecimal getValue() {
+            return this.val;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(val);
+        }
+
+        @Override
+        public String toStringForComparison() {
+            String valString = val.toPlainString();
+            if (valString.contains(".")){
+                if (valString.indexOf(".") > 7) {
+                    return valString.substring(0, valString.indexOf("."));
+                }
+                if (valString.length() < 5) {
+                    if (valString.equals("0.0")) {
+                        return "0";
+                    }
+                    else
+                        return valString;
+                }
+                else {
+                    return valString.substring(0, 5);
+                }
+            }
+            else {
+                return valString;
+            }
+        }
     }
 
     public static class CockroachDBDoubleConstant extends CockroachDBConstant {
@@ -58,10 +111,39 @@ public class CockroachDBConstant implements CockroachDBExpression {
                 return "FLOAT '+Inf'";
             } else if (value == Double.NEGATIVE_INFINITY) {
                 return "FLOAT '-Inf'";
+            } else if (Double.isNaN(value)) {
+                return "FLOAT 'NaN'";
             }
             return String.valueOf(value);
         }
 
+        @Override
+        public String toStringForComparison() {
+            if (value == Double.POSITIVE_INFINITY) {
+                return "FLOAT '+Inf'";
+            } else if (value == Double.NEGATIVE_INFINITY) {
+                return "FLOAT '-Inf'";
+            } else if (Double.isNaN(value)) {
+                return "Nan";
+            }
+            BigDecimal decimal = new BigDecimal(value);
+            String stringDoubleValue = decimal.toPlainString();
+            if (stringDoubleValue.contains(".") && stringDoubleValue.indexOf(".") > 7){
+                return stringDoubleValue.substring(0, stringDoubleValue.indexOf("."));
+            }
+            if (!stringDoubleValue.contains(".")) {
+                return stringDoubleValue;
+            }
+            if (stringDoubleValue.equals("0.0")) {
+                return "0";
+            }
+            if (stringDoubleValue.length() < 5) {
+                return stringDoubleValue;
+            }
+            else {
+                return stringDoubleValue.substring(0, 5);
+            }
+        }
     }
 
     public static class CockroachDBTextConstant extends CockroachDBConstant {
@@ -207,6 +289,11 @@ public class CockroachDBConstant implements CockroachDBExpression {
 
     public static CockroachDBIntConstant createIntConstant(long val) {
         return new CockroachDBIntConstant(val);
+    }
+
+
+    public static CockroachDBBigDecimalConstant createDecimalConstant(BigDecimal val) {
+        return new CockroachDBBigDecimalConstant(val);
     }
 
     public static CockroachDBNullConstant createNullConstant() {

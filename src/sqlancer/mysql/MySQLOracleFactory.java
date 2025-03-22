@@ -13,6 +13,7 @@ import sqlancer.mysql.gen.MySQLExpressionGenerator;
 import sqlancer.mysql.oracle.MySQLDQPOracle;
 import sqlancer.mysql.oracle.MySQLFuzzer;
 import sqlancer.mysql.oracle.MySQLPivotedQuerySynthesisOracle;
+import sqlancer.mysql.oracle.MySQLCODDTestOracle;
 
 public enum MySQLOracleFactory implements OracleFactory<MySQLGlobalState> {
 
@@ -74,6 +75,12 @@ public enum MySQLOracleFactory implements OracleFactory<MySQLGlobalState> {
         @Override
         public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
             return new MySQLDQPOracle(globalState);
+        }
+    },
+    CODDTest {
+        @Override
+        public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
+            return new MySQLCODDTestOracle(globalState);
         }
     };
 }

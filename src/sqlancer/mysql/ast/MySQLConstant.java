@@ -413,6 +413,10 @@ public abstract class MySQLConstant implements MySQLExpression {
         return new MySQLIntConstant(value, String.valueOf(value));
     }
 
+    public static MySQLConstant createDoubleConstant(double value) {
+        return new MySQLDoubleConstant(value);
+    }
+
     @Override
     public MySQLConstant getExpectedValue() {
         return this;

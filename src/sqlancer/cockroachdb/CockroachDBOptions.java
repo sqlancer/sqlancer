@@ -30,6 +30,9 @@ public class CockroachDBOptions implements DBMSSpecificOptions<CockroachDBOracle
     @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
     public int maxNumIndexes = 20;
 
+    @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on expression, subquery, or random")
+    public String coddTestModel = "random";
+
     @Override
     public List<CockroachDBOracleFactory> getTestOracleFactory() {
         return Arrays.asList(oracle);

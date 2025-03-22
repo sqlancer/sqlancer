@@ -14,6 +14,12 @@ public class CockroachDBSelect extends SelectBase<CockroachDBExpression> impleme
 
     private boolean isDistinct;
 
+    public CockroachDBSelect() {}
+    public CockroachDBSelect(CockroachDBSelect other) {
+        super(other);
+        this.isDistinct = other.isDistinct;
+    }
+
     public boolean isDistinct() {
         return isDistinct;
     }

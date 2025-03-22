@@ -54,6 +54,9 @@ public final class MySQLErrors {
         errors.add("cannot be null");
         errors.add("Incorrect decimal value");
 
+        errors.add("Incorrect FLOAT value");
+        errors.add("Incorrect DOUBLE value");
+
         return errors;
     }
 
