@@ -156,7 +156,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
             visit(whereClause);
             sb.append(")");
         }
-        if (!s.getGroupByClause().isEmpty()) {
+        if (s.getGroupByClause().size() > 0) {
             sb.append(" ");
             sb.append("GROUP BY ");
             visit(s.getGroupByClause());
@@ -539,7 +539,11 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
         sb.append("(VALUES ");
         for (int i = 0; i < size; i++) {
             sb.append("(");
+            Boolean isFirstColumn = true;
             for (String name : columnNames) {
+                if (!isFirstColumn) {
+                    sb.append(", ");
+                }
                 if (vs.get(name).get(i).getDataType() == SQLite3DataType.NULL) {
                     visit(vs.get(name).get(i));
                 } else {
@@ -563,15 +567,13 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
                         throw new IgnoreMeException();
                     }
                 }
-                
+                isFirstColumn = true;
+            }
+            sb.append(")");
+            if (i < size - 1) {
                 sb.append(", ");
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("), ");
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
     }
 
@@ -600,13 +602,11 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
             sb.append("(");
             for (int j = 0; j < columnRefs.size(); ++j) {
                 visit(columnRefs.get(j));
-                sb.append(" IS NULL AND ");
+                sb.append(" IS NULL");
+                if (j < columnRefs.size() - 1) {
+                    sb.append(" AND ");
+                }
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
             sb.append(")");
             return;
         }
@@ -622,13 +622,11 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
                     sb.append(" = ");
                     sb.append(vs.get(columnNames.get(j)).get(i).toString());
                 }
-                sb.append(" AND ");
+                if (j < columnNames.size() - 1) {
+                    sb.append(" AND ");
+                }
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
-            sb.append("THEN ");
+            sb.append(" THEN ");
             visit(summary.get(i));
             sb.append(" ");
         }

@@ -1631,12 +1631,14 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
             StringBuilder sb = new StringBuilder();
             sb.append(table.getName());
             sb.append("(");
+            Boolean isFirstColumn = true;
             for (SQLite3Column c : this.table.getColumns()) {
+                if (!isFirstColumn) {
+                    sb.append(", ");
+                }
                 sb.append(c.getName());
-                sb.append(", ");
+                isFirstColumn = false;
             }
-            sb.deleteCharAt(sb.length() - 1);
-            sb.deleteCharAt(sb.length() - 1);
             sb.append(")");
             return sb.toString();
         }
@@ -1670,6 +1672,7 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
             return null;
         }
     }
+
 
     // The ExpressionBag is not a built-in SQL feature, 
     // but rather a utility class used in CODDTest's oracle construction
