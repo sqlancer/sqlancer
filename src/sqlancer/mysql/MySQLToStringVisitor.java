@@ -9,12 +9,12 @@ import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLCompositeDataType;
-import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLAlias;
 import sqlancer.mysql.ast.MySQLAllOperator;
 import sqlancer.mysql.ast.MySQLAnyOperator;
+import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -78,7 +78,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
             throw new AssertionError();
         }
         sb.append(s.getModifiers().stream().collect(Collectors.joining(" ")));
-        if (s.getModifiers().size() > 0) {
+        if (!s.getModifiers().isEmpty()) {
             sb.append(" ");
         }
         if (s.getFetchColumns() == null) {
@@ -113,7 +113,7 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
             sb.append(" WHERE ");
             visit(whereClause);
         }
-        if (s.getGroupByExpressions() != null && s.getGroupByExpressions().size() > 0) {
+        if (s.getGroupByExpressions() != null && !s.getGroupByExpressions().isEmpty()) {
             sb.append(" ");
             sb.append("GROUP BY ");
             List<MySQLExpression> groupBys = s.getGroupByExpressions();
@@ -553,15 +553,28 @@ public class MySQLToStringVisitor extends ToStringVisitor<MySQLExpression> imple
     }
 
     @Override
-    public void visit(MySQLAggregate aggr) {
-        sb.append(aggr.getFunction());
-        sb.append("(");
-        visit(aggr.getArgs());
-        sb.append(")");
+    public void visit(MySQLCompositeDataType type) {
+        sb.append(type.toString());
     }
 
     @Override
-    public void visit(MySQLCompositeDataType type) {
-        sb.append(type.toString());
+    public void visit(MySQLAggregate aggr) {
+        MySQLAggregateFunction func = aggr.getFunc();
+        String option = func.getOption();
+        List<MySQLExpression> exprs = aggr.getExprs();
+
+        sb.append(func.getName());
+        sb.append("(");
+        if (option != null) {
+            sb.append(option);
+            sb.append(" ");
+        }
+        for (int i = 0; i < exprs.size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            visit(exprs.get(i));
+        }
+        sb.append(")");
     }
 }

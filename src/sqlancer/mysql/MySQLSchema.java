@@ -95,6 +95,7 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
                 dataType = MySQLDataType.FLOAT;
             } else if (typeName.toLowerCase().contains("double")) {
                 dataType = MySQLDataType.DOUBLE;
+                typeName = "double";
             } else if (typeName.toLowerCase().contains("bool")) {
                 dataType = MySQLDataType.BOOL;
             } else {

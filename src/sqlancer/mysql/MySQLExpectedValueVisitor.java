@@ -241,5 +241,4 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
-
 }

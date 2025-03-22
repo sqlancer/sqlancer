@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.arrow.driver.jdbc.shaded.org.apache.arrow.flatbuf.Bool;
-
 import sqlancer.IgnoreMeException;
 import sqlancer.Main;
 import sqlancer.Randomly;

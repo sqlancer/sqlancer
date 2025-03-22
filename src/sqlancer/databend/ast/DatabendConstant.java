@@ -48,6 +48,13 @@ public abstract class DatabendConstant implements DatabendExpression {
         throw new UnsupportedOperationException(this.toString());
     }
 
+    protected Timestamp truncateTimestamp(long val) {
+        // Databend supports `date` and `timestamp` type where the year cannot exceed `9999`,
+        // the value is truncated to ensure generate legitimate `date` and `timestamp` value.
+        long t = val % 253380000000000L;
+        return new Timestamp(t);
+    }
+
     public abstract DatabendConstant isEquals(DatabendConstant rightVal);
 
     public abstract DatabendConstant isLessThan(DatabendConstant rightVal);
@@ -123,6 +130,10 @@ public abstract class DatabendConstant implements DatabendExpression {
                 return this;
             case VARCHAR:
                 return new DatabendStringConstant(String.valueOf(value));
+            case DATE:
+                return new DatabendDateConstant(value);
+            case TIMESTAMP:
+                return new DatabendTimestampConstant(value);
             default:
                 return null;
             }
@@ -318,7 +329,7 @@ public abstract class DatabendConstant implements DatabendExpression {
         public String textRepr;
 
         public DatabendDateConstant(long val) {
-            Timestamp timestamp = new Timestamp(val);
+            Timestamp timestamp = truncateTimestamp(val);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             textRepr = dateFormat.format(timestamp);
         }
@@ -353,7 +364,7 @@ public abstract class DatabendConstant implements DatabendExpression {
         public String textRepr;
 
         public DatabendTimestampConstant(long val) {
-            Timestamp timestamp = new Timestamp(val);
+            Timestamp timestamp = truncateTimestamp(val);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             textRepr = dateFormat.format(timestamp);
         }

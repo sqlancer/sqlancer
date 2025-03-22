@@ -1,6 +1,6 @@
 # Development
 
-## Working with Eclipse
+## Working with Eclipse [[Video Guide]](https://www.youtube.com/watch?v=KsuGrOLKb9Q)
 
 Developing SQLancer using Eclipse is expected to work well. You can import SQLancer with a single step:
 
@@ -45,6 +45,43 @@ If the test case is executed using MySQL, which is a permissive DBMS, the `SELEC
 For a permissive DBMS, implementing the expression generator is easier, since the expression generator does not need to care about the type of the expression, since the DBMS will apply any necessary conversions implicitly. For MySQL, the main `generateExpression` method thus does not accept any type as an argument (see [MySQLExpressionGenerator](https://github.com/sqlancer/sqlancer/blob/86647df8aa2dd8d167b5c3ce3297290f5b0b2bcd/src/sqlancer/mysql/gen/MySQLExpressionGenerator.java#L54)). This method can  be called when a expression is required for, for example, a `WHERE` clause. In principle, this approach can also be used for strict DBMS, by adding errors such as `argument of WHERE must be type boolean` to the list of expected errors. However, using such an "untyped" expression generator for a strict DBMS will result in many semantically invalid queries being generated.
 
 For a strict DBMS, the better approach is typically to attempt to generate expressions of the expected type. For PostgreSQL, the expression generator thus expects an additional type argument (see [PostgreSQLExpressionGenerator](https://github.com/sqlancer/sqlancer/blob/86647df8aa2dd8d167b5c3ce3297290f5b0b2bcd/src/sqlancer/postgres/gen/PostgresExpressionGenerator.java#L251)). This type is propagated recursively. For example, if we require a predicate for the `WHERE` clause, we pass boolean as a type. The expression generator then calls a method `generateBooleanExpression` that attempts to produce a boolean expression, by, for example, generating a comparison (e.g., `<=`). For the comparison's operands, a random type is then selected and propagated. For example, if an integer type is selected, then `generateExpression` is called with this type once for the left operand, and once for the right operand. Note that this process does not guarantee that the expression will indeed have the expected type. It might happen, for example, that the expression generator attempts to produce an integer value, but that it produces a double value instead, namely when an integer overflow occurs, which, depending on the DBMS, implicitly converts the result to a floating-point value.
+
+#### Supported DBMS
+
+Since SQL dialects differ widely, each DBMS to be tested requires a separate implementation.
+
+| DBMS                         | Status      | Expression Generation        | Description                                                                                                                                                                                     |
+| ---------------------------- | ----------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SQLite                       | Working     | Untyped                      | This implementation is currently affected by a significant performance regression that still needs to be investigated                                                                           |
+| MySQL                        | Working     | Untyped                      | Running this implementation likely uncovers additional, unreported bugs.                                                                                                                        |
+| PostgreSQL                   | Working     | Typed                        |                                                                                                                                                                                                 |
+| Citus (PostgreSQL Extension) | Working     | Typed                        | This implementation extends the PostgreSQL implementation of SQLancer, and was contributed by the Citus team.                                                                                   |
+| MariaDB                      | Preliminary | Untyped                      | The implementation of this DBMS is very preliminary, since we stopped extending it after all but one of our bug reports were addressed. Running it likely uncovers additional, unreported bugs. |
+| CockroachDB                  | Working     | Typed                        |                                                                                                                                                                                                 |
+| TiDB                         | Working     | Untyped                      |                                                                                                                                                                                                 |
+| DuckDB                       | Working     | Untyped, Generic             |                                                                                                                                                                                                 |
+| ClickHouse                   | Preliminary | Untyped, Generic             | Implementing the different table engines was not convenient, which is why only a very preliminary implementation exists.                                                                        |
+| TDEngine                     | Removed     | Untyped                      | We removed the TDEngine implementation since all but one of our bug reports were still unaddressed five months after we reported them.                                                          |
+| OceanBase                    | Working     | Untyped                      |                                                                                                                                                                                                 |
+| YugabyteDB                   | Working     | Typed (YSQL), Untyped (YCQL) | YSQL implementation based on Postgres code. YCQL implementation is primitive for now and uses Cassandra JDBC driver as a proxy interface.                                                       |
+| Databend                     | Working     | Typed                        |                                                                                                                                                                                                 |
+| QuestDB                      | Working     | Untyped, Generic             | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords.                                                                          |
+| CnosDB                       | Working     | Typed                        | The implementation of CnosDB currently uses Restful API.                                                                                                                                        |
+| Materialize                  | Working     | Typed                        |                                                                                                                                                                                                 |
+| Apache Doris                 | Preliminary | Typed                        | This is a preliminary implementation, which only contains the common logic of Doris. We have found some errors through it, and hope to improve it in the future.                                |
+| Presto                       | Preliminary | Typed                        | This is a preliminary implementation, only basic types supported.                                                                                                                               |
+| DataFusion                   | Preliminary | Typed                        | Only basic SQL features are supported.                                                                                                                                                          |
+
+#### Previously Supported DBMS
+
+Some DBMS were once supported but subsequently removed.
+
+| DBMS       | Pull Request                                    | Description                                                                                                                                              |
+| ---------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ArangoDB   | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because ArangoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.  |
+| Cosmos     | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because Cosmos is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.    |
+| MongoDB    | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because MongoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.   |
+| StoneDB    | [#963](https://github.com/sqlancer/sqlancer/pull/963) | This implementation was removed because development of StoneDB stopped.
 
 ### Unfixed Bugs
 
@@ -109,3 +146,4 @@ Please pay attention to good commit messages (in particular subject lines). As b
 3. Use the imperative mood in the subject line. For example, write "Refactor the handling of indexes" rather than "Refactoring" or "Refactor**ed** the handling of indexes".
 
 Please also pay attention to a clean commit history. Rather than merging with the main branch, use `git rebase` to rebase your commits on the main branch. Sometimes, it might happen that you discover an issue only after having already created a commit, for example, when an issue is found by `mvn verify` in the CI checks. Do not introduce a separate commit for such issues. If the issue was introduced by the last commit, you can fix the issue, and use `git commit --amend` to change the latest commit. If the change was introduced by one of the previous commits, you can use `git rebase -i` to change the respective commit. If you already have a number of such commits, you can use `git squash` to "collapse" multiple commits into one. For more information, you might want to read [How (and Why!) to Keep Your Git Commit History Clean](https://about.gitlab.com/blog/2018/06/07/keeping-git-commit-history-clean/) written by Kushal Pandya.
+

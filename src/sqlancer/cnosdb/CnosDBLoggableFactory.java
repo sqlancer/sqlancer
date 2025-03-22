@@ -19,7 +19,7 @@ public class CnosDBLoggableFactory extends LoggableFactory {
         if (!input.endsWith(";")) {
             completeString += ";";
         }
-        if (suffix != null && suffix.length() != 0) {
+        if (suffix != null && !suffix.isEmpty()) {
             completeString += suffix;
         }
         return new LoggedString(completeString);

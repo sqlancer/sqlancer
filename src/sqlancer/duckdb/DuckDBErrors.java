@@ -57,20 +57,6 @@ public final class DuckDBErrors {
         errors.add("Cannot subtract infinite timestamps");
         errors.add("Timestamp difference is out of bounds");
 
-        if (DuckDBBugs.bug13933) {
-            errors.add("INTERNAL Error: Unimplemented type for normalify");
-            errors.add(
-                    "FATAL Error: Failed: database has been invalidated because of a previous fatal error. The database must be restarted prior to being used again");
-        }
-
-        // added by CODDTest
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("must appear in the GROUP BY clause or must be part of an aggregate function");
-        errors.add("GROUP BY term out of range - should be between");
-        errors.add("Binder Error: Aggregate with only constant parameters has to be bound in the root subquery");
-        errors.add("COLLATE can only be applied to varchar columns");
-
-
         return errors;
     }
 
