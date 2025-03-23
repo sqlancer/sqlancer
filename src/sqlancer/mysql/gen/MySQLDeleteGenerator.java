@@ -43,12 +43,12 @@ public class MySQLDeleteGenerator {
         // TODO: support partitions
         sb.append(" FROM ");
         sb.append(randomTable.getName());
-        boolean errorsIncluded = false;
+        boolean includeExpressionErrors = false;
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             sb.append(MySQLVisitor.asString(gen.generateExpression()));
             MySQLErrors.addExpressionErrors(errors);
-            errorsIncluded = true;
+            includeExpressionErrors = true;
         }
         errors.addAll(Arrays.asList("doesn't have this option",
                 "Truncated incorrect DOUBLE value" /*
@@ -60,7 +60,8 @@ public class MySQLDeleteGenerator {
             sb.append(" ORDER BY ");
             List<MySQLExpression> orderBys = gen.generateOrderBys();
             sb.append(orderBys.stream().map(exp -> MySQLVisitor.asString(exp)).collect(Collectors.joining(" , ")));
-            if (!errorsIncluded) {
+            if (!includeExpressionErrors) {
+                includeExpressionErrors = true;
                 MySQLErrors.addExpressionErrors(errors);
             }
         }

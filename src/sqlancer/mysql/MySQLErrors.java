@@ -32,8 +32,7 @@ public final class MySQLErrors {
                                                                        // "00000000000000000000-0"
         }
 
-        errors.add(Pattern.compile("Unknown column '.*' in 'order clause'"));
-        errors.add(Pattern.compile("Unknown column '\\d+' in 'order clause'"));
+        errors.add(Pattern.compile("Unknown column '.*\\d+' in 'order clause'"));
 
         return errors;
     }
