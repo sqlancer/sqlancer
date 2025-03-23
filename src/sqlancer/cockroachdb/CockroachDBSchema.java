@@ -41,6 +41,8 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
 
         private CockroachDBCompositeDataType elementType;
 
+        private String typeName = "";
+
         public CockroachDBCompositeDataType(CockroachDBDataType dataType) {
             this.dataType = dataType;
             this.size = -1;
@@ -58,6 +60,53 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
             this.dataType = dataType;
             this.size = -1;
             this.elementType = elementType;
+        }
+
+               
+        public CockroachDBCompositeDataType(String typeName) {
+            switch (typeName) {
+            case "smallint":
+            case "integer":
+            case "bigint":
+            this.dataType = CockroachDBDataType.INT;
+            break;
+            case "boolean":
+            this.dataType = CockroachDBDataType.BOOL;
+            break;
+            case "text":
+            case "character":
+            case "character varying":
+            case "name":
+            case "regclass":
+            this.dataType = CockroachDBDataType.STRING;
+            break;
+            case "numeric":
+            this.dataType = CockroachDBDataType.DECIMAL;
+            break;
+            case "double precision":
+            case "real":
+            this.dataType = CockroachDBDataType.FLOAT;
+            break;
+            case "bit":
+            case "bit varying":
+            this.dataType = CockroachDBDataType.BIT;
+            break;
+
+            // for ire, maybe not correct
+            case "unknown":
+            this.dataType = CockroachDBDataType.BOOL;
+            break;
+            default:
+                throw new AssertionError(typeName);
+            }
+            
+            // TODO: check later
+            if (typeName.equals("bit varying")) {
+                this.size = 4;  
+            } else {
+                this.size = -1;
+            }
+            this.typeName = typeName;
         }
 
         public CockroachDBDataType getPrimitiveDataType() {
@@ -85,6 +134,9 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
 
         @Override
         public String toString() {
+            if (this.typeName != "") {
+                return this.typeName;
+            }
             switch (dataType) {
             case INT:
                 switch (size) {

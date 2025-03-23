@@ -1,11 +1,20 @@
 package sqlancer.duckdb;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.TableReferenceNode;
+import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
+import sqlancer.duckdb.ast.DuckDBExpressionBag;
 import sqlancer.duckdb.ast.DuckDBJoin;
+import sqlancer.duckdb.ast.DuckDBResultMap;
 import sqlancer.duckdb.ast.DuckDBSelect;
+import sqlancer.duckdb.ast.DuckDBTypeCast;
+import sqlancer.duckdb.ast.DuckDBTypeofNode;
+import sqlancer.duckdb.ast.DuckDBConstant.DuckDBNullConstant;
 
 public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> {
 
@@ -17,6 +26,14 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
             visit((DuckDBSelect) expr);
         } else if (expr instanceof DuckDBJoin) {
             visit((DuckDBJoin) expr);
+        } else if (expr instanceof DuckDBResultMap) {
+            visit((DuckDBResultMap) expr);
+        } else if (expr instanceof DuckDBTypeCast) {
+            visit((DuckDBTypeCast) expr);
+        } else if (expr instanceof DuckDBTypeofNode) {
+            visit((DuckDBTypeofNode) expr);
+        } else if (expr instanceof DuckDBExpressionBag) {
+            visit((DuckDBExpressionBag) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }
@@ -39,10 +56,15 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
     }
 
     private void visit(DuckDBConstant constant) {
+        sb.append("(");
         sb.append(constant.toString());
+        sb.append(")");
     }
 
     private void visit(DuckDBSelect select) {
+        if (select.getWithClause() != null) {
+            visit(select.getWithClause());
+        }
         sb.append("SELECT ");
         if (select.isDistinct()) {
             sb.append("DISTINCT ");
@@ -82,10 +104,70 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
         }
     }
 
+    public void visit(DuckDBResultMap expr) {
+        // use CASE WHEN to express the constant result of a expression
+        LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> dbstate = expr.getDbStates();
+        List<DuckDBExpression> result = expr.getResult();
+        int size = dbstate.values().iterator().next().size();
+        if (size == 0) {
+            sb.append(" NULL ");
+            return;
+        }
+        sb.append(" CASE ");
+        for (int i = 0; i < size; i++) {
+            sb.append("WHEN ");
+            Boolean isFirstCondition = true;
+            for (DuckDBColumnReference columnRef : dbstate.keySet()) {
+                if (!isFirstCondition) {
+                    sb.append(" AND ");
+                }
+                visit(columnRef);
+                if (dbstate.get(columnRef).get(i) instanceof DuckDBNullConstant) {
+                    sb.append(" IS NULL");
+                } else if (dbstate.get(columnRef).get(i) instanceof DuckDBTypeCast) {
+                    DuckDBTypeCast ct = (DuckDBTypeCast) dbstate.get(columnRef).get(i);
+                    if (ct.getExpression() instanceof DuckDBNullConstant) {
+                        sb.append(" IS NULL");
+                    } else {
+                        sb.append(" = ");
+                        visit(dbstate.get(columnRef).get(i));
+                    }
+                } else {
+                    sb.append(" = ");
+                    visit(dbstate.get(columnRef).get(i));
+                }
+                isFirstCondition = false;
+            }
+            sb.append(" THEN ");
+            visit(result.get(i));
+            sb.append(" ");
+        }
+        sb.append("END ");
+    }
+
+    public void visit(DuckDBTypeCast expr) {
+        sb.append("(");
+        visit(expr.getExpression());
+        sb.append(")::");
+        sb.append(expr.getType().toString());
+        sb.append(" ");
+    }
+
+    public void visit(DuckDBTypeofNode expr) {
+        sb.append("typeof(");
+        visit(expr.getExpr());
+        sb.append(")");
+    }
+
+    public void visit(DuckDBExpressionBag expr) {
+        visit(expr.getInnerExpr());
+    }
+
     public static String asString(DuckDBExpression expr) {
         DuckDBToStringVisitor visitor = new DuckDBToStringVisitor();
         visitor.visit(expr);
         return visitor.get();
     }
+
 
 }

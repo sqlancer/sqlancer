@@ -17,6 +17,9 @@ public class MySQLOptions implements DBMSSpecificOptions<MySQLOracleFactory> {
     @Parameter(names = "--oracle")
     public List<MySQLOracleFactory> oracles = Arrays.asList(MySQLOracleFactory.TLP_WHERE);
 
+    @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on expression, subquery, or random")
+    public String coddTestModel = "random";
+
     @Override
     public List<MySQLOracleFactory> getTestOracleFactory() {
         return oracles;
