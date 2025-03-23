@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import sqlancer.IgnoreMeException;
@@ -218,8 +217,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
 
     public static class DuckDBTable extends AbstractRelationalTable<DuckDBColumn, TableIndex, DuckDBGlobalState> {
 
-        public DuckDBTable(String tableName, List<DuckDBColumn> columns, boolean isView) {
-            super(tableName, columns, Collections.emptyList(), isView);
+        public DuckDBTable(String tableName, List<DuckDBColumn> columns, List<TableIndex> indexes, boolean isView) {
+            super(tableName, columns, indexes, isView);
         }
 
     }
@@ -233,7 +232,8 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
             }
             List<DuckDBColumn> databaseColumns = getTableColumns(con, tableName);
             boolean isView = tableName.startsWith("v");
-            DuckDBTable t = new DuckDBTable(tableName, databaseColumns, isView);
+            List<TableIndex> indexes = getIndexes(con, tableName, databaseName);
+            DuckDBTable t = new DuckDBTable(tableName, databaseColumns, indexes, isView);
             for (DuckDBColumn c : databaseColumns) {
                 c.setTable(t);
             }
@@ -241,6 +241,22 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
 
         }
         return new DuckDBSchema(databaseTables);
+    }
+
+    private static List<TableIndex> getIndexes(SQLConnection con, String tableName, String databaseName)
+            throws SQLException {
+        List<TableIndex> indexes = new ArrayList<>();
+        try (Statement s = con.createStatement()) {
+            try (ResultSet rs = s.executeQuery(String.format(
+                    "SELECT INDEX_NAME FROM duckdb_indexes() WHERE DATABASE_NAME = '%s' and TABLE_NAME = '%s';",
+                    databaseName, tableName))) {
+                while (rs.next()) {
+                    String indexName = rs.getString("INDEX_NAME");
+                    indexes.add(TableIndex.create(indexName));
+                }
+            }
+        }
+        return indexes;
     }
 
     private static List<String> getTableNames(SQLConnection con) throws SQLException {
