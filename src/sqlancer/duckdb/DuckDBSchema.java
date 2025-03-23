@@ -215,23 +215,12 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         return new DuckDBCompositeDataType(primitiveType, size);
     }
 
-    public static class DuckDBTable extends AbstractRelationalTable<DuckDBColumn, DuckDBIndex, DuckDBGlobalState> {
+    public static class DuckDBTable extends AbstractRelationalTable<DuckDBColumn, TableIndex, DuckDBGlobalState> {
 
-        public DuckDBTable(String tableName, List<DuckDBColumn> columns, List<DuckDBIndex> indexes, boolean isView) {
+        public DuckDBTable(String tableName, List<DuckDBColumn> columns, List<TableIndex> indexes, boolean isView) {
             super(tableName, columns, indexes, isView);
         }
 
-    }
-
-    public static final class DuckDBIndex extends TableIndex {
-
-        private DuckDBIndex(String indexName) {
-            super(indexName);
-        }
-
-        public static DuckDBIndex create(String indexName) {
-            return new DuckDBIndex(indexName);
-        }
     }
 
     public static DuckDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
@@ -243,7 +232,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
             }
             List<DuckDBColumn> databaseColumns = getTableColumns(con, tableName);
             boolean isView = tableName.startsWith("v");
-            List<DuckDBIndex> indexes = getIndexes(con, tableName, databaseName);
+            List<TableIndex> indexes = getIndexes(con, tableName, databaseName);
             DuckDBTable t = new DuckDBTable(tableName, databaseColumns, indexes, isView);
             for (DuckDBColumn c : databaseColumns) {
                 c.setTable(t);
@@ -254,16 +243,16 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         return new DuckDBSchema(databaseTables);
     }
 
-    private static List<DuckDBIndex> getIndexes(SQLConnection con, String tableName, String databaseName)
+    private static List<TableIndex> getIndexes(SQLConnection con, String tableName, String databaseName)
             throws SQLException {
-        List<DuckDBIndex> indexes = new ArrayList<>();
+        List<TableIndex> indexes = new ArrayList<>();
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(String.format(
                     "SELECT INDEX_NAME FROM duckdb_indexes() WHERE DATABASE_NAME = '%s' and TABLE_NAME = '%s';",
                     databaseName, tableName))) {
                 while (rs.next()) {
                     String indexName = rs.getString("INDEX_NAME");
-                    indexes.add(DuckDBIndex.create(indexName));
+                    indexes.add(TableIndex.create(indexName));
                 }
             }
         }
