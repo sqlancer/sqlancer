@@ -96,7 +96,7 @@ public class MySQLTableGenerator {
         list.add("Too many keys specified; max 1 keys allowed");
         list.add("The total length of the partitioning fields is too large");
         list.add("Got error -1 - 'Unknown error -1' from storage engine");
-
+    }
 
     private enum PartitionOptions {
         HASH, KEY
