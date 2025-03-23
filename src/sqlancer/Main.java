@@ -82,7 +82,8 @@ public final class Main {
         private final boolean logEachSelect;
         private final boolean logQueryPlan;
 
-        private final boolean useReducer;
+//        private final boolean useReducer;
+        private final MainOptions.ReducerType reducerType;
         private final DatabaseProvider<?, ?, ?> databaseProvider;
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
@@ -119,8 +120,9 @@ public final class Main {
             if (logQueryPlan) {
                 queryPlanFile = new File(dir, databaseName + "-plan.log");
             }
-            this.useReducer = options.useReducer();
-            if (useReducer) {
+//            this.useReducer = options.useReducer();
+            this.reducerType = options.getReducerType();
+            if (reducerType != MainOptions.ReducerType.NONE) {
                 File reduceFileDir = new File(dir, "reduce");
                 if (!reduceFileDir.exists()) {
                     reduceFileDir.mkdir();
@@ -194,7 +196,7 @@ public final class Main {
         }
 
         public FileWriter getReduceFileWriter() {
-            if (!useReducer) {
+            if (reducerType == MainOptions.ReducerType.NONE) {
                 throw new UnsupportedOperationException();
             }
             if (reduceFileWriter == null) {
@@ -460,10 +462,7 @@ public final class Main {
                     throw new AssertionError(e);
                 }
 
-                if (options.reduceAST() && !options.useReducer()) {
-                    throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
-                }
-                if (options.useReducer()) {
+                if (options.getReducerType() != MainOptions.ReducerType.NONE) {
                     if (reproducer == null) {
                         logger.getReduceFileWriter().write("current oracle does not support experimental reducer.");
                         throw new IgnoreMeException();
@@ -478,13 +477,8 @@ public final class Main {
                     newGlobalState.setStateLogger(new StateLogger(databaseName, provider, options));
                     newGlobalState.setManager(newManager);
 
-                    Reducer<G> reducer = new StatementReducer<>(provider);
+                    Reducer<G> reducer = getReducer(options);
                     reducer.reduce(state, reproducer, newGlobalState);
-
-                    if (options.reduceAST()) {
-                        Reducer<G> astBasedReducer = new ASTBasedReducer<>(provider);
-                        astBasedReducer.reduce(state, reproducer, newGlobalState);
-                    }
 
                     try {
                         logger.getReduceFileWriter().close();
@@ -518,6 +512,21 @@ public final class Main {
 
         public StateToReproduce getStateToReproduce() {
             return stateToRepro;
+        }
+
+        private Reducer<G> getReducer(MainOptions options) {
+            switch (options.getReducerType()) {
+                case NONE:
+                    return null;
+                case STATEMENT:
+                    return new StatementReducer<>(provider);
+                case AST:
+                    return new ASTBasedReducer<>(provider);
+                case CREDUCE:
+                    return new CReduceReducer<>();
+                default:
+                    throw new UnsupportedOperationException("Unknown reducer type: " + options.getReducerType());
+            }
         }
     }
 
