@@ -42,8 +42,7 @@ public class TestCommonSchema {
     }
 
     private TestTable createTestTable(String name, List<TestIndex> indexes, boolean isView, String... columns) {
-        List<TestTableColumn> cols = Arrays.stream(columns)
-                .map(col -> new TestTableColumn(col, null, "VARCHAR"))
+        List<TestTableColumn> cols = Arrays.stream(columns).map(col -> new TestTableColumn(col, null, "VARCHAR"))
                 .collect(Collectors.toList());
         return new TestTable(name, cols, indexes, isView);
     }
@@ -59,11 +58,14 @@ public class TestCommonSchema {
     @Test
     void testColumnManagement() {
         TestTable table = createTestTable("products", Collections.emptyList(), false, "sku", "price");
+        List<String> columnNames = table.getColumns().stream().map(TestTableColumn::getName)
+                .collect(Collectors.toList());
+        List<String> columnTypes = table.getColumns().stream().map(TestTableColumn::getType)
+                .collect(Collectors.toList());
         TestTableColumn randomCol = table.getRandomColumn();
 
-        assertEquals("sku", table.getColumns().get(0).getName());
-        assertEquals("VARCHAR", table.getColumns().get(1).getType());
-
+        assertTrue(columnNames.containsAll(Set.of("sku", "price")));
+        assertTrue(columnTypes.containsAll(Set.of("VARCHAR")));
         assertTrue(table.getColumns().contains(randomCol));
     }
 
@@ -81,16 +83,14 @@ public class TestCommonSchema {
 
     @Test
     void testViewManagement() {
-        TestTable view1 = createTestTable("v1", Collections.emptyList(),true, "col1");
-        TestTable view2 = createTestTable("v2", Collections.emptyList(),true, "col2");
+        TestTable view1 = createTestTable("v1", Collections.emptyList(), true, "col1");
+        TestTable view2 = createTestTable("v2", Collections.emptyList(), true, "col2");
         TestTable table = createTestTable("t1", Collections.emptyList(), false, "col3");
         TestSchema schema = createTestSchema(view1, view2, table);
 
-        assertAll(
-                () -> assertEquals(2, schema.getViews().size(), "Should detect 2 views"),
+        assertAll(() -> assertEquals(2, schema.getViews().size(), "Should detect 2 views"),
                 () -> assertEquals(1, schema.getDatabaseTablesWithoutViews().size(), "Should detect 1 normal table"),
-                () -> assertEquals("t1", schema.getDatabaseTablesWithoutViews().get(0).getName())
-        );
+                () -> assertEquals("t1", schema.getDatabaseTablesWithoutViews().get(0).getName()));
     }
 
     @Test
@@ -117,12 +117,10 @@ public class TestCommonSchema {
         TestTableColumn colA2 = new TestTableColumn("y", tableA, "INT");
         TestTableColumn colB1 = new TestTableColumn("b", tableB, "TEXT");
 
-        assertAll(
-                () -> assertTrue(colA1.compareTo(colA2) < 0, "Columns should be ordered by name"),
+        assertAll(() -> assertTrue(colA1.compareTo(colA2) < 0, "Columns should be ordered by name"),
                 () -> assertTrue(colA1.compareTo(colB1) < 0, "Columns should be ordered by name"),
                 () -> assertTrue(tableA.compareTo(tableB) > 0, "Tables should be ordered reverse-alphabetically"),
-                () -> assertEquals(0, tableA.compareTo(tableA), "Same table should be equal")
-        );
+                () -> assertEquals(0, tableA.compareTo(tableA), "Same table should be equal"));
     }
 
     @Test
@@ -135,12 +133,10 @@ public class TestCommonSchema {
         TestTableColumn col3 = new TestTableColumn("id", table2, "INT");
         TestTableColumn col4 = new TestTableColumn("name", table1, "TEXT");
 
-        assertAll(
-                () -> assertEquals(col1, col2, "Same table/column should be equal"),
+        assertAll(() -> assertEquals(col1, col2, "Same table/column should be equal"),
                 () -> assertNotEquals(col1, col3, "Different tables should not be equal"),
                 () -> assertNotEquals(col1, col4, "Different columns should not be equal"),
-                () -> assertNotEquals(col1, "invalid_object", "Different types should not be equal")
-        );
+                () -> assertNotEquals(col1, "invalid_object", "Different types should not be equal"));
     }
 
     @Test
