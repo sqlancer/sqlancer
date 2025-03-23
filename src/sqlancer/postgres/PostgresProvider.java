@@ -117,21 +117,11 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }), //
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
-        RESET((g) -> {
-            StringBuilder sb = new StringBuilder();
-            sb.append("RESET ");
-
-            // List of configuration parameters
-            String[] configParameters = { "statement_timeout", "timezone", "log_statement", "random_page_cost",
-                    "synchronous_commit", "search_path", "client_encoding", "lock_timeout" };
-            String parameter = "ALL";
-            if (Randomly.getBoolean()) {
-                parameter = Randomly.fromOptions(configParameters);
-            }
-            sb.append(parameter);
-
-            return new SQLQueryAdapter(sb.toString());
-        }), NOTIFY(PostgresNotifyGenerator::createNotify), //
+        RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
+                                                       * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+                                                       * configuration parameter
+                                                       */), //
+        NOTIFY(PostgresNotifyGenerator::createNotify), // , NOTIFY(PostgresNotifyGenerator::createNotify), //
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //

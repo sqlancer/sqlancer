@@ -214,14 +214,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             assert !expectedResult;
             PostgresExpression escapeChar = PostgresConstant.createTextConstant("\\");
             if (Randomly.getBoolean()) {
-                if (Randomly.getBoolean()) {
-                    escapeChar = PostgresConstant.createTextConstant(Randomly.fromList(Arrays.asList("0", "1", "2", "3",
-                            "4", "5", "6", "7", "8", "9", "!", "@", "#", "$", "%", "^", "&", "*", "/")));
-                } else {
-                    escapeChar = PostgresConstant.createTextConstant(
-                            Randomly.fromList(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
-                                    "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z")));
-                }
+                escapeChar = PostgresConstant.createTextConstant(r.getChar());
             }
             return new PostgresSimilarTo(generateExpression(depth + 1, PostgresDataType.TEXT),
                     generateExpression(depth + 1, PostgresDataType.TEXT), escapeChar);
