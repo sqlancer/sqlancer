@@ -31,7 +31,7 @@ public class MySQLAlterTable {
     private enum Action {
         ALGORITHM, //
         CHECKSUM, //
-        COMPRESSION, //
+        COMPRESSION("Punch hole not supported by the filesystem or the tablespace page size is not large enough."), //
         DISABLE_ENABLE_KEYS("Data truncated for functional index"), /* ignore due to http://bugs.mysql.com/?id=96295 */
         DROP_COLUMN("Cannot drop column", "ALGORITHM=INPLACE is not supported.", "ALGORITHM=INSTANT is not supported.",
                 "Duplicate entry", "has a partitioning function dependency and cannot be dropped or renamed.",
