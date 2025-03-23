@@ -121,7 +121,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                                                        * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
                                                        * configuration parameter
                                                        */), //
-        NOTIFY(PostgresNotifyGenerator::createNotify), // , NOTIFY(PostgresNotifyGenerator::createNotify), //
+        NOTIFY(PostgresNotifyGenerator::createNotify), //
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
