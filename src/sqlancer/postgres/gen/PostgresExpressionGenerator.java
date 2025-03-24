@@ -212,9 +212,13 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
                     generateExpression(depth + 1, type), generateExpression(depth + 1, type), Randomly.getBoolean());
         case SIMILAR_TO:
             assert !expectedResult;
-            // TODO also generate the escape character
+            PostgresExpression escapeChar = PostgresConstant.createTextConstant("\\");
+            if (Randomly.getBoolean()) {
+                escapeChar = PostgresConstant.createTextConstant(r.getChar());
+            }
             return new PostgresSimilarTo(generateExpression(depth + 1, PostgresDataType.TEXT),
-                    generateExpression(depth + 1, PostgresDataType.TEXT), null);
+                    generateExpression(depth + 1, PostgresDataType.TEXT), escapeChar);
+
         case POSIX_REGEX:
             assert !expectedResult;
             return new PostgresPOSIXRegularExpression(generateExpression(depth + 1, PostgresDataType.TEXT),
@@ -558,9 +562,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     public static PostgresExpression generateConstant(Randomly r, PostgresDataType type) {
-        if (Randomly.getBooleanWithSmallProbability()) {
-            return PostgresConstant.createNullConstant();
-        }
         // if (Randomly.getBooleanWithSmallProbability()) {
         // return PostgresConstant.createTextConstant(r.getString());
         // }

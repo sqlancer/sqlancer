@@ -331,9 +331,8 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         visit(op.getString());
         sb.append(" SIMILAR TO ");
         visit(op.getSimilarTo());
-        if (op.getEscapeCharacter() != null) {
-            visit(op.getEscapeCharacter());
-        }
+        sb.append(" ESCAPE ");
+        visit(op.getEscapeCharacter());
         sb.append(")");
     }
 
