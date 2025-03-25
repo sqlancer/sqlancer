@@ -92,7 +92,7 @@ public final class YSQLCommon {
     }
 
     public static void generateWith(StringBuilder sb, YSQLGlobalState globalState, ExpectedErrors errors,
-            List<YSQLColumn> columnsToBeAdded, boolean isTemporaryTable) {
+            List<YSQLColumn> columnsToBeAdded, boolean isTemporaryTable, boolean hasPrimaryKey) {
         if (Randomly.getBoolean()) {
             sb.append(" WITHOUT OIDS ");
         } else if (Randomly.getBoolean() && !isTemporaryTable) {
@@ -105,57 +105,59 @@ public final class YSQLCommon {
                 errors.add("columns must be present to split by number of tablets");
                 errors.add("option is not yet supported for hash partitioned tables");
             } else {
-                sb.append(" SPLIT AT VALUES (");
+                if (hasPrimaryKey) {
+                    sb.append(" SPLIT AT VALUES (");
 
-                errors.add("cannot create colocated table with split option");
-                errors.add("SPLIT AT option is not yet supported for hash partitioned tables");
-                errors.add("Cannot have duplicate split rows"); // just in case
+                    errors.add("cannot create colocated table with split option");
+                    errors.add("SPLIT AT option is not yet supported for hash partitioned tables");
+                    errors.add("Cannot have duplicate split rows"); // just in case
 
-                boolean hasBoolean = false;
-                for (YSQLColumn column : columnsToBeAdded) {
-                    if (column.getType().equals(YSQLDataType.BOOLEAN)) {
-                        hasBoolean = true;
-                        break;
-                    }
-                }
-
-                int splits = hasBoolean ? 2 : Randomly.smallNumber() + 2;
-                long start = Randomly.smallNumber();
-                boolean[] bools = { false, true };
-                for (int i = 1; i <= splits; i++) {
-                    int size = columnsToBeAdded.size();
-                    int counter = 1;
-                    for (YSQLColumn c : columnsToBeAdded) {
-                        sb.append("(");
-                        switch (c.getType()) {
-                        case INT:
-                        case REAL:
-                            sb.append(YSQLConstant.createDoubleConstant(start));
-                        case FLOAT:
-                            sb.append(YSQLConstant.createIntConstant(start));
+                    boolean hasBoolean = false;
+                    for (YSQLColumn column : columnsToBeAdded) {
+                        if (column.getType().equals(YSQLDataType.BOOLEAN)) {
+                            hasBoolean = true;
                             break;
-                        case BOOLEAN:
-                            sb.append(YSQLConstant.createBooleanConstant(bools[i - 1]));
-                            break;
-                        case TEXT:
-                            sb.append(YSQLConstant.createTextConstant(String.valueOf(start)));
-                            break;
-                        default:
-                            throw new IgnoreMeException();
                         }
-                        sb.append(")");
-                        counter++;
-                        start += Randomly.smallNumber() + 1;
-                        if (counter <= size) {
+                    }
+
+                    int splits = hasBoolean ? 2 : Randomly.smallNumber() + 2;
+                    long start = Randomly.smallNumber();
+                    boolean[] bools = { false, true };
+                    for (int i = 1; i <= splits; i++) {
+                        int size = columnsToBeAdded.size();
+                        int counter = 1;
+                        for (YSQLColumn c : columnsToBeAdded) {
+                            sb.append("(");
+                            switch (c.getType()) {
+                            case INT:
+                            case REAL:
+                                sb.append(YSQLConstant.createDoubleConstant(start));
+                            case FLOAT:
+                                sb.append(YSQLConstant.createIntConstant(start));
+                                break;
+                            case BOOLEAN:
+                                sb.append(YSQLConstant.createBooleanConstant(bools[i - 1]));
+                                break;
+                            case TEXT:
+                                sb.append(YSQLConstant.createTextConstant(String.valueOf(start)));
+                                break;
+                            default:
+                                throw new IgnoreMeException();
+                            }
+                            sb.append(")");
+                            counter++;
+                            start += Randomly.smallNumber() + 1;
+                            if (counter <= size) {
+                                sb.append(",");
+                            }
+                        }
+
+                        if (i < splits) {
                             sb.append(",");
                         }
                     }
-
-                    if (i < splits) {
-                        sb.append(",");
-                    }
+                    sb.append(")");
                 }
-                sb.append(")");
             }
         } else if (Randomly.getBoolean()) {
             errors.add("Cannot use TABLEGROUP with TEMP table");
