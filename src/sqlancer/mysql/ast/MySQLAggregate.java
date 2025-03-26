@@ -1,6 +1,7 @@
 package sqlancer.mysql.ast;
 
 import java.util.List;
+
 import sqlancer.Randomly;
 
 public class MySQLAggregate implements MySQLExpression {
@@ -66,7 +67,6 @@ public class MySQLAggregate implements MySQLExpression {
     public void setWindowSpecification(String windowSpec) {
         this.windowSpecification = windowSpec;
     }
-
 
     public boolean isWindowFunction() {
         return windowSpecification != null;
