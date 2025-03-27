@@ -34,7 +34,7 @@ public final class YSQLDropIndexGenerator {
         }
         return new SQLQueryAdapter(sb.toString(),
                 ExpectedErrors.from("cannot drop desired object(s) because other objects depend on them",
-                        "cannot drop index", "does not exist"),
+                        "cannot drop index", "does not exist", "Failed DDL operation as requested"),
                 true);
     }
 

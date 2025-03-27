@@ -23,6 +23,7 @@ public final class YSQLInsertGenerator {
         YSQLTable table = globalState.getSchema().getRandomTable(YSQLTable::isInsertable);
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("cannot insert into column");
+        errors.add("cannot insert a non-DEFAULT value into column");
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonInsertUpdateErrors(errors);
         YSQLErrors.addCommonExpressionErrors(errors);

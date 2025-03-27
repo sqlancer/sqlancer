@@ -46,6 +46,7 @@ public final class YSQLErrors {
     }
 
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
+        errors.add("Failed DDL operation as requested");
         errors.add("Catalog Version Mismatch");
         errors.add("specified value cannot be cast to type");
         errors.add("array OID value not set when in binary upgrade mode");

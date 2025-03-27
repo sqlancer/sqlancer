@@ -24,7 +24,7 @@ public final class YSQLDiscardGenerator {
             what = Randomly.fromOptions("PLANS", "SEQUENCES");
         }
         sb.append(what);
-        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("cannot run inside a transaction block")) {
+        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("cannot run inside a transaction block", "Failed DDL operation as requested")) {
 
             @Override
             public boolean couldAffectSchema() {
