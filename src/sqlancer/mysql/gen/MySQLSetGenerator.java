@@ -164,6 +164,16 @@ public class MySQLSetGenerator {
                 }
             }
 
+            if (MySQLBugs.bug112242) {
+                selectedOptions.remove("use_invisible_indexes");
+            }
+            if (MySQLBugs.bug112243) {
+                selectedOptions.remove("subquery_to_derived");
+            }
+            if (MySQLBugs.bug112264) {
+                selectedOptions.remove("block_nested_loop");
+            }
+
             sb.append(selectedOptions.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off", "default"))
                     .collect(Collectors.joining(",")));
             sb.append("'");
