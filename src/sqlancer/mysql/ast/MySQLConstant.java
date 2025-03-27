@@ -96,18 +96,7 @@ public abstract class MySQLConstant implements MySQLExpression {
 
         @Override
         public boolean asBooleanNotNull() {
-            // TODO implement as cast
-            for (int i = value.length(); i >= 0; i--) {
-                try {
-                    String substring = value.substring(0, i);
-                    Double val = Double.valueOf(substring);
-                    return val != 0 && !Double.isNaN(val);
-                } catch (NumberFormatException e) {
-                    // ignore
-                }
-            }
-            return false;
-            // return castAs(CastType.SIGNED).getInt() != 0;
+            return castAs(CastType.SIGNED).getInt() != 0;
         }
 
         @Override
