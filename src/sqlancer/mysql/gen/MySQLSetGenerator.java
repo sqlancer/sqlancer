@@ -2,7 +2,9 @@ package sqlancer.mysql.gen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -134,14 +136,35 @@ public class MySQLSetGenerator {
         private static String getOptimizerSwitchConfiguration(Randomly r) {
             StringBuilder sb = new StringBuilder();
             sb.append("'");
-            String[] options = { "index_merge", "index_merge_union", "index_merge_sort_union",
-                    "index_merge_intersection", "index_condition_pushdown", "mrr", "mrr_cost_based",
-                    "block_nested_loop", "batched_key_access", "materialization", "semijoin", "loosescan", "firstmatch",
-                    "duplicateweedout", "subquery_materialization_cost_based", "use_index_extensions",
-                    "condition_fanout_filter", "derived_merge", "use_invisible_indexes", "skip_scan", "hash_join",
-                    "subquery_to_derived", "prefer_ordering_index", "derived_condition_pushdown" };
-            List<String> optionSubset = Randomly.nonEmptySubset(options);
-            sb.append(optionSubset.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off"))
+
+            // grouping optimizer switches by category
+            Map<String, String[]> categorizedOptions = new HashMap<>();
+            categorizedOptions.put("index",
+                    new String[] { "index_merge", "index_merge_union", "index_merge_sort_union",
+                            "index_merge_intersection", "index_condition_pushdown", "use_index_extensions",
+                            "use_invisible_indexes", "skip_scan", "prefer_ordering_index" });
+
+            categorizedOptions.put("join", new String[] { "block_nested_loop", "batched_key_access", "hash_join",
+                    "derived_condition_pushdown" });
+
+            categorizedOptions.put("subquery", new String[] { "materialization", "semijoin", "loosescan", "firstmatch",
+                    "duplicateweedout", "subquery_materialization_cost_based", "subquery_to_derived" });
+
+            categorizedOptions.put("other",
+                    new String[] { "mrr", "mrr_cost_based", "condition_fanout_filter", "derived_merge" });
+
+            // Generate options for each category
+            List<String> selectedOptions = new ArrayList<>();
+            for (String[] options : categorizedOptions.values()) {
+                if (Randomly.getBoolean()) {
+                    // Include all options from this category
+                    selectedOptions.addAll(Arrays.asList(options));
+                } else {
+                    selectedOptions.addAll(Randomly.nonEmptySubset(options));
+                }
+            }
+
+            sb.append(selectedOptions.stream().map(s -> s + "=" + Randomly.fromOptions("on", "off", "default"))
                     .collect(Collectors.joining(",")));
             sb.append("'");
             return sb.toString();
