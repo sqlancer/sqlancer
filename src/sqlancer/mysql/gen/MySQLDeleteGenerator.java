@@ -47,7 +47,7 @@ public class MySQLDeleteGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             sb.append(MySQLVisitor.asString(gen.generateExpression()));
-            MySQLErrors.addExpressionErrors(errors);   // Expression Errors Added
+            MySQLErrors.addExpressionErrors(errors); // Expression Errors Added
             includeExpressionErrors = true;
         }
         errors.addAll(Arrays.asList("doesn't have this option",
@@ -62,7 +62,7 @@ public class MySQLDeleteGenerator {
             sb.append(orderBys.stream().map(exp -> MySQLVisitor.asString(exp)).collect(Collectors.joining(" , ")));
             if (!includeExpressionErrors) {
                 includeExpressionErrors = true;
-                MySQLErrors.addExpressionErrors(errors);  // Expression Errors added if 'WHERE' clause isn't executed
+                MySQLErrors.addExpressionErrors(errors); // Expression Errors added if 'WHERE' clause isn't executed
             }
         }
         return new SQLQueryAdapter(sb.toString(), errors);
