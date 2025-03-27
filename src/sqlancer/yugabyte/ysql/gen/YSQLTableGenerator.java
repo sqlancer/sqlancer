@@ -37,6 +37,7 @@ public class YSQLTableGenerator {
 
         errors.add("The catalog snapshot used for this transaction has been invalidated");
         errors.add("Timed out waiting for Create Table");
+        errors.add("Table with identifier");
         errors.add("Failed DDL operation as requested");
 
         errors.add("PRIMARY KEY containing column of type");
