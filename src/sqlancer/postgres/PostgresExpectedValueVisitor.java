@@ -1,5 +1,6 @@
 package sqlancer.postgres;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.postgres.ast.PostgresAggregate;
 import sqlancer.postgres.ast.PostgresBetweenOperation;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation;
@@ -22,6 +23,7 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresFromTable;
 import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
+import sqlancer.postgres.ast.PostgresWindowFunction;
 
 public final class PostgresExpectedValueVisitor implements PostgresVisitor {
 
@@ -46,7 +48,7 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
     // try {
     // super.visit(expr);
     // } catch (IgnoreMeException e) {
-    //
+
     // }
     // nrTabs--;
     // }
@@ -94,6 +96,11 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
     @Override
     public void visit(PostgresOrderByTerm op) {
 
+    }
+
+    @Override
+    public void visit(PostgresWindowFunction windowFunction) {
+        throw new IgnoreMeException();
     }
 
     @Override
