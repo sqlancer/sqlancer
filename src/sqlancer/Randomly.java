@@ -443,7 +443,7 @@ public final class Randomly {
     }
 
     public int getInteger(int left, int right) {
-        if(left > right) {
+        if (left > right) {
             throw new IllegalArgumentException("Left Bound cannot be greater than Right Bound");
         }
         if (left == right) {
