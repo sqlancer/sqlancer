@@ -202,9 +202,8 @@ public class TestRandomly {
     @Test
     public void testLong() {
         Randomly r = new Randomly();
-        // TODO: we should throw an exception instead
         assertEquals(0, r.getLong(0, 0));
-        assertEquals(0, r.getLong(0, 1));
+        assertThrows(IllegalArgumentException.class, () -> r.getLong(1, 0));
     }
 
     @Test
