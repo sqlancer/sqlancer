@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -194,23 +193,19 @@ public class TestRandomly {
     }
 
     @Test
-    public int testInteger(int min, int max) {
+    public void testInteger() {
         Randomly r = new Randomly();
         // TODO: we should throw an exception instead
-        if (min == max) {
-            throw new IllegalArgumentException("min and max should not be equal");
-        }
-        return (int) (Math.random() * (max - min + 1)) + min;
+        assertEquals(0, r.getInteger(0, 0));
+        assertEquals(0, r.getInteger(0, 1));
     }
 
     @Test
-    public long testLong(int min, int max) {
+    public void testLong() {
         Randomly r = new Randomly();
         // TODO: we should throw an exception instead
-        if (min == max) {
-            throw new IllegalArgumentException("min and max should not be equal");
-        }
-        return (long) (Math.random() * (max - min + 1)) + min;
+        assertEquals(0, r.getLong(0, 0));
+        assertEquals(0, r.getLong(0, 1));
     }
 
     @Test
