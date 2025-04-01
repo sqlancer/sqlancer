@@ -194,19 +194,23 @@ public class TestRandomly {
     }
 
     @Test
-    public void testInteger() {
+    public int testInteger(int min, int max) {
         Randomly r = new Randomly();
         // TODO: we should throw an exception instead
-        assertEquals(0, r.getInteger(0, 0));
-        assertEquals(0, r.getInteger(0, 1));
+        if (min == max) {
+            throw new IllegalArgumentException("min and max should not be equal");
+        }
+        return (int) (Math.random() * (max - min + 1)) + min;
     }
 
     @Test
-    public void testLong() {
+    public long testLong(int min, int max) {
         Randomly r = new Randomly();
         // TODO: we should throw an exception instead
-        assertEquals(0, r.getLong(0, 0));
-        assertEquals(0, r.getLong(0, 1));
+        if (min == max) {
+            throw new IllegalArgumentException("min and max should not be equal");
+        }
+        return (long) (Math.random() * (max - min + 1)) + min;
     }
 
     @Test
