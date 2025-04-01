@@ -792,7 +792,6 @@ public final class Main {
                 lastNrQueries = currentNrQueries;
                 lastNrDbs = currentNrDbs;
             }
-        }, 5, 5, TimeUnit.SECONDS);
+        }, 10, 10, TimeUnit.SECONDS);
     }
-
 }
