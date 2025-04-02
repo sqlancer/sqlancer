@@ -129,7 +129,7 @@ public class PostgresFunction implements PostgresExpression {
                 if (equals.isBoolean()) {
                     if (equals.asBoolean()) {
                         return PostgresConstant.createNullConstant();
-                    } else if (!evaluatedArgs[0].isBoolean()) {
+                    } else if (!evaluatedArgs[0].isBoolean() && evaluatedArgs[1].isBoolean()) {
                         return PostgresConstant
                                 .createBooleanConstant(evaluatedArgs[0].cast(PostgresDataType.BOOLEAN).asBoolean());
                     }
