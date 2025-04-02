@@ -118,7 +118,8 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }), //
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
-        RESET(PostgresResetGenerator::create), NOTIFY(PostgresNotifyGenerator::createNotify), //
+        RESET(PostgresResetGenerator::create), //
+        NOTIFY(PostgresNotifyGenerator::createNotify), //
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
