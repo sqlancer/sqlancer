@@ -62,10 +62,10 @@ public final class PostgresResetGenerator {
                 Arrays.asList(PostgresResetGenerator.DynamicConfigOption.values()));
         PostgresResetGenerator.DynamicConfigOption option = Randomly.fromList(options);
         sb.append("RESET ");
-        if (Randomly.getBooleanWithSmallProbability()) {
-            sb.append("ALL");
-        } else {
+        if (Randomly.getBoolean()) {
             sb.append(option.configName);
+        } else {
+            sb.append("ALL");
         }
 
         return new SQLQueryAdapter(sb.toString());
