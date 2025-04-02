@@ -375,7 +375,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum RangeExpression {
-        BINARY_OP;
+        BINARY_OP, FUNCTION;
     }
 
     private PostgresExpression generateRangeExpression(int depth) {
@@ -387,6 +387,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return new PostgresBinaryRangeOperation(PostgresBinaryRangeOperator.getRandom(),
                     generateExpression(depth + 1, PostgresDataType.RANGE),
                     generateExpression(depth + 1, PostgresDataType.RANGE));
+        case FUNCTION:
+            return generateFunction(depth + 1, PostgresDataType.RANGE);
+
         default:
             throw new AssertionError(option);
         }
@@ -490,7 +493,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private enum BitExpression {
-        BINARY_OPERATION
+        BINARY_OPERATION, FUNCTION;
     };
 
     private PostgresExpression generateBitExpression(int depth) {
@@ -501,6 +504,8 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return new PostgresBinaryBitOperation(PostgresBinaryBitOperator.getRandom(),
                     generateExpression(depth + 1, PostgresDataType.BIT),
                     generateExpression(depth + 1, PostgresDataType.BIT));
+        case FUNCTION:
+            return generateFunction(depth + 1, PostgresDataType.BIT);
         default:
             throw new AssertionError();
         }
