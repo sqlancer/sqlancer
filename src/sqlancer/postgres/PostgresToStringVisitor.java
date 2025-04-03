@@ -227,16 +227,20 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
 
     private void appendType(PostgresCastOperation cast) {
         PostgresCompoundDataType compoundType = cast.getCompoundType();
+        boolean typeModifierAllowed = true;
         switch (compoundType.getDataType()) {
         case BOOLEAN:
             sb.append("BOOLEAN");
             break;
-        case INT: // TODO support also other int types
-            sb.append("INT");
+        case INT:
+            sb.append(Randomly.fromOptions("INT", "SMALLINT", "BIGINT"));
             break;
         case TEXT:
-            // TODO: append TEXT, CHAR
-            sb.append(Randomly.fromOptions("VARCHAR"));
+            String opt = Randomly.fromOptions("VARCHAR", "TEXT", "CHAR");
+            if(opt.equals("TEXT")){
+                typeModifierAllowed = false;
+            }
+            sb.append(opt);
             break;
         case REAL:
             sb.append("FLOAT");
@@ -268,7 +272,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             throw new AssertionError(cast.getType());
         }
         Optional<Integer> size = compoundType.getSize();
-        if (size.isPresent()) {
+        if (size.isPresent() && typeModifierAllowed) {
             sb.append("(");
             sb.append(size.get());
             sb.append(")");
