@@ -237,7 +237,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             break;
         case TEXT:
             String opt = Randomly.fromOptions("VARCHAR", "TEXT", "CHAR");
-            if(opt.equals("TEXT")){
+            if (opt.equals("TEXT")) {
                 typeModifierAllowed = false;
             }
             sb.append(opt);
