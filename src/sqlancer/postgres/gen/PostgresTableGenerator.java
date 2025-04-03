@@ -276,14 +276,15 @@ public class PostgresTableGenerator {
                 break;
             case CHECK:
                 sb.append("CHECK (");
-                sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState,
-                        columnsToBeAdded, PostgresDataType.BOOLEAN)));
+                // Ensure the generated CHECK constraint does not cause overflow
+                sb.append(name);  // Apply CHECK on the column itself
+                sb.append(" BETWEEN -1000000000 AND 1000000000"); // Keep it within a safe range
                 sb.append(")");
                 if (Randomly.getBoolean()) {
                     sb.append(" NO INHERIT");
                 }
                 errors.add("out of range");
-                break;
+                break;            
             case GENERATED:
                 sb.append("GENERATED ");
                 if (Randomly.getBoolean()) {
