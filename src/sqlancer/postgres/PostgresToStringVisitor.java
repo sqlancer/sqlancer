@@ -233,7 +233,7 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             sb.append("BOOLEAN");
             break;
         case INT:
-            sb.append(Randomly.fromOptions("INT", "SMALLINT", "BIGINT"));
+            sb.append(Randomly.fromOptions("INT", "BIGINT"));
             break;
         case TEXT:
             String opt = Randomly.fromOptions("VARCHAR", "TEXT", "CHAR");
