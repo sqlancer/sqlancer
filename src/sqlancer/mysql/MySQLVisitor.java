@@ -5,6 +5,7 @@ import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
+import sqlancer.mysql.ast.MySQLCaseOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
 import sqlancer.mysql.ast.MySQLCollate;
 import sqlancer.mysql.ast.MySQLColumnReference;
@@ -61,6 +62,8 @@ public interface MySQLVisitor {
 
     void visit(MySQLAggregate aggregate);
 
+    void visit(MySQLCaseOperator caseOp);
+
     default void visit(MySQLExpression expr) {
         if (expr instanceof MySQLConstant) {
             visit((MySQLConstant) expr);
@@ -100,6 +103,8 @@ public interface MySQLVisitor {
             visit((MySQLText) expr);
         } else if (expr instanceof MySQLAggregate) {
             visit((MySQLAggregate) expr);
+        } else if (expr instanceof MySQLCaseOperator) {
+            visit((MySQLCaseOperator) expr);
         } else {
             throw new AssertionError(expr);
         }

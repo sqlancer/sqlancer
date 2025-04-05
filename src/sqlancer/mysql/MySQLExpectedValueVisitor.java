@@ -1,11 +1,14 @@
 package sqlancer.mysql;
 
+import java.util.List;
+
 import sqlancer.IgnoreMeException;
 import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
+import sqlancer.mysql.ast.MySQLCaseOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
 import sqlancer.mysql.ast.MySQLCollate;
 import sqlancer.mysql.ast.MySQLColumnReference;
@@ -172,4 +175,24 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
         // do nothing
     }
 
+    @Override
+    public void visit(MySQLCaseOperator caseOp) {
+        print(caseOp);
+
+        if (caseOp.getSwitchCondition() != null) {
+            visit(caseOp.getSwitchCondition());
+        }
+
+        List<MySQLExpression> whenConditions = caseOp.getConditions();
+        List<MySQLExpression> thenExpressions = caseOp.getExpressions();
+
+        for (int i = 0; i < whenConditions.size(); i++) {
+            visit(whenConditions.get(i));
+            visit(thenExpressions.get(i));
+        }
+
+        if (caseOp.getElseExpr() != null) {
+            visit(caseOp.getElseExpr());
+        }
+    }
 }
