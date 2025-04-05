@@ -25,6 +25,7 @@ import sqlancer.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperato
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
+import sqlancer.mysql.ast.MySQLCaseOperator;
 import sqlancer.mysql.ast.MySQLBinaryOperation.MySQLBinaryOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
 import sqlancer.mysql.ast.MySQLColumnReference;
@@ -64,7 +65,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
     private enum Actions {
         COLUMN, LITERAL, UNARY_PREFIX_OPERATION, UNARY_POSTFIX, COMPUTABLE_FUNCTION, BINARY_LOGICAL_OPERATOR,
-        BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS, BETWEEN_OPERATOR;
+        BINARY_COMPARISON_OPERATION, CAST, IN_OPERATION, BINARY_OPERATION, EXISTS, BETWEEN_OPERATOR, CASE_OPERATOR;
     }
 
     @Override
@@ -117,6 +118,10 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
             }
             return new MySQLBetweenOperation(generateExpression(depth + 1), generateExpression(depth + 1),
                     generateExpression(depth + 1));
+        case CASE_OPERATOR:
+            int nr = Randomly.smallNumber() + 1;
+            return new MySQLCaseOperator(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
+                    generateExpressions(nr, depth + 1), generateExpression(depth + 1));
         default:
             throw new AssertionError();
         }
