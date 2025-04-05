@@ -25,8 +25,8 @@ import sqlancer.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperato
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
-import sqlancer.mysql.ast.MySQLCaseOperator;
 import sqlancer.mysql.ast.MySQLBinaryOperation.MySQLBinaryOperator;
+import sqlancer.mysql.ast.MySQLCaseOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
 import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
