@@ -172,27 +172,34 @@ public class MySQLExpectedValueVisitor implements MySQLVisitor {
 
     @Override
     public void visit(MySQLAggregate aggr) {
-        // do nothing
+        // PQS is currently unsupported for aggregates.
+        throw new IgnoreMeException();
     }
 
     @Override
     public void visit(MySQLCaseOperator caseOp) {
         print(caseOp);
 
-        if (caseOp.getSwitchCondition() != null) {
-            visit(caseOp.getSwitchCondition());
+        MySQLExpression switchCondition = caseOp.getSwitchCondition();
+        if (switchCondition != null) {
+            print(switchCondition);
+            visit(switchCondition);
         }
 
         List<MySQLExpression> whenConditions = caseOp.getConditions();
         List<MySQLExpression> thenExpressions = caseOp.getExpressions();
 
         for (int i = 0; i < whenConditions.size(); i++) {
+            print(whenConditions.get(i));
             visit(whenConditions.get(i));
+            print(thenExpressions.get(i));
             visit(thenExpressions.get(i));
         }
 
-        if (caseOp.getElseExpr() != null) {
-            visit(caseOp.getElseExpr());
+        MySQLExpression elseExpr = caseOp.getElseExpr();
+        if (elseExpr != null) {
+            print(elseExpr);
+            visit(elseExpr);
         }
     }
 }
