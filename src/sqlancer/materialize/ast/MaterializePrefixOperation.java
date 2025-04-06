@@ -28,13 +28,35 @@ public class MaterializePrefixOperation implements MaterializeExpression {
 
             @Override
             public MaterializeDataType getExpressionType() {
-                return MaterializeDataType.INT;
+                return MaterializeDataType.FLOAT;
             }
 
             @Override
             protected MaterializeConstant getExpectedValue(MaterializeConstant expectedValue) {
-                // TODO: actual converts to double precision
-                return expectedValue;
+                if (expectedValue.isNull()) {
+                    return MaterializeConstant.createNullConstant();
+                }
+                double doubleValue;
+                if (expectedValue.isInt()) {
+                    doubleValue = expectedValue.asDouble();
+                } else if (expectedValue.isBoolean()) {
+                    doubleValue = expectedValue.asBoolean() ? 1.0 : 0.0;
+                } else if (expectedValue.isString()) {
+                    try {
+                        doubleValue = Double.parseDouble(expectedValue.asString());
+                    } catch (NumberFormatException e) {
+                        return MaterializeConstant.createNullConstant();
+                    }
+                } else if (expectedValue.isFloat()) {
+                    doubleValue = expectedValue.asDouble();
+                } else {
+                    try {
+                        doubleValue = expectedValue.asDouble();
+                    } catch (UnsupportedOperationException e) {
+                        return MaterializeConstant.createNullConstant();
+                    }
+                }
+                return MaterializeConstant.createDoubleConstant(doubleValue);
             }
 
         },

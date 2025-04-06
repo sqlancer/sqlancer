@@ -316,6 +316,12 @@ public abstract class MaterializeConstant implements MaterializeExpression {
             return getTextRepresentation();
         }
 
+        @Override
+        public double asDouble() {
+            return (double) val;
+        }
+
+
     }
 
     public static MaterializeConstant createNullConstant() {
@@ -363,7 +369,15 @@ public abstract class MaterializeConstant implements MaterializeExpression {
         throw new UnsupportedOperationException(this.toString());
     }
 
+    public double asDouble() {
+        throw new UnsupportedOperationException(this.toString());
+    }
+
     public boolean isBoolean() {
+        return false;
+    }
+
+    public boolean isFloat() {
         return false;
     }
 
@@ -451,6 +465,16 @@ public abstract class MaterializeConstant implements MaterializeExpression {
             return MaterializeDataType.FLOAT;
         }
 
+        @Override
+        public boolean isFloat() {
+            return true;
+        }
+
+        @Override
+        public double asDouble() {
+            return val;
+        }
+
     }
 
     public static class DoubleConstant extends MaterializeConstantBase {
@@ -473,6 +497,16 @@ public abstract class MaterializeConstant implements MaterializeExpression {
         @Override
         public MaterializeDataType getExpressionType() {
             return MaterializeDataType.FLOAT;
+        }
+
+        @Override
+        public double asDouble() {
+            return val;
+        }
+
+        @Override
+        public boolean isFloat() {
+            return true;
         }
 
     }
