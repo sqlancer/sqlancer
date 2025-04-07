@@ -87,7 +87,7 @@ public final class Main {
 
         private static final class AlsoWriteToConsoleFileWriter extends FileWriter {
 
-            AlsoWriteToConsoleFileWriter(File file) throws IOException {
+        	AlsoWriteToConsoleFileWriter(File file) throws IOException {
                 super(file);
             }
 
@@ -340,6 +340,27 @@ public final class Main {
             result = result.replaceAll("i[0-9]+", "i0"); // Avoid duplicate indexes
             return result + "\n";
         }
+        public void closeWriters() {
+            closeWriter(logFileWriter);
+            closeWriter(currentFileWriter);
+            closeWriter(queryPlanFileWriter);
+            closeWriter(reduceFileWriter);
+            logFileWriter = null;
+            currentFileWriter = null;
+            queryPlanFileWriter = null;
+            reduceFileWriter = null;
+        }
+
+        private void closeWriter(FileWriter writer) {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
     public static class QueryManager<C extends SQLancerDBConnection> {
@@ -495,6 +516,9 @@ public final class Main {
 
                     throw new AssertionError("Found a potential bug, please check reducer log for detail.");
                 }
+            }
+            finally {
+            	logger.closeWriters();
             }
         }
 
@@ -671,9 +695,12 @@ public final class Main {
                         return true;
                     } catch (Throwable reduce) {
                         reduce.printStackTrace();
-                        executor.getStateToReproduce().exception = reduce.getMessage();
-                        executor.getLogger().logFileWriter = null;
-                        executor.getLogger().logException(reduce, executor.getStateToReproduce());
+                        try {
+                        	executor.getLogger().logException(reduce, executor.getStateToReproduce());
+                        }finally {
+                        	executor.getLogger().closeWriters();
+                        	executor.getLogger().logFileWriter = null;
+                        }
                         return false;
                     } finally {
                         try {
@@ -794,5 +821,5 @@ public final class Main {
             }
         }, 5, 5, TimeUnit.SECONDS);
     }
-
+    
 }
