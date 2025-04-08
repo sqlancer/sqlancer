@@ -27,9 +27,9 @@ public final class CnosDBComparatorHelper {
                 state.getLogger().getCurrentFileWriter().flush();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
+                System.err.println("Failed to flush the file writer: " + e.getMessage());
+    e.printStackTrace();
+}
         CnosDBSelectQuery q = new CnosDBSelectQuery(queryString, errors);
         List<String> result = new ArrayList<>();
         CnosDBResultSet resultSet;
