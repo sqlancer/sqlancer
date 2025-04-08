@@ -177,7 +177,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
 
     @Override
     protected boolean mutateGroupBy() {
-        boolean increase = select.getGroupByExpressions().size() > 0;
+        boolean increase = !select.getGroupByExpressions().isEmpty();
         if (increase) {
             select.clearGroupByExpressions();
         } else {
@@ -188,7 +188,7 @@ public class CockroachDBCERTOracle extends CERTOracleBase<CockroachDBGlobalState
 
     @Override
     protected boolean mutateHaving() {
-        if (select.getGroupByExpressions().size() == 0) {
+        if (select.getGroupByExpressions().isEmpty()) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(gen.generateExpression(CockroachDBDataType.BOOL.get()));
             return false;

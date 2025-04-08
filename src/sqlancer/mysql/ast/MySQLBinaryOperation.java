@@ -78,20 +78,20 @@ public class MySQLBinaryOperation implements MySQLExpression {
         /* workaround for https://bugs.mysql.com/bug.php?id=95960 */
         if (leftExpected.isString()) {
             String text = leftExpected.castAsString();
-            while ((text.startsWith(" ") || text.startsWith("\t")) && text.length() > 0) {
+            while (text.startsWith(" ") || text.startsWith("\t")) {
                 text = text.substring(1);
             }
-            if (text.length() > 0 && (text.startsWith("\n") || text.startsWith("."))) {
+            if (text.startsWith("\n") || text.startsWith(".")) {
                 throw new IgnoreMeException();
             }
         }
 
         if (rightExpected.isString()) {
             String text = rightExpected.castAsString();
-            while ((text.startsWith(" ") || text.startsWith("\t")) && text.length() > 0) {
+            while (text.startsWith(" ") || text.startsWith("\t")) {
                 text = text.substring(1);
             }
-            if (text.length() > 0 && (text.startsWith("\n") || text.startsWith("."))) {
+            if (text.startsWith("\n") || text.startsWith(".")) {
                 throw new IgnoreMeException();
             }
         }

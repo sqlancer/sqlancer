@@ -457,7 +457,7 @@ public class CockroachDBExpressionGenerator extends
 
     @Override
     public List<CockroachDBExpression> generateFetchColumns(boolean shouldCreateDummy) {
-        if (shouldCreateDummy || columns.size() == 0) {
+        if (shouldCreateDummy || columns.isEmpty()) {
             return List.of(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false)));
         }
         return Randomly.nonEmptySubset(columns).stream().map(c -> new CockroachDBColumnReference(c))
@@ -541,7 +541,7 @@ public class CockroachDBExpressionGenerator extends
     }
 
     boolean mutateGroupBy(CockroachDBSelect select) {
-        boolean increase = select.getGroupByExpressions().size() > 0;
+        boolean increase = !select.getGroupByExpressions().isEmpty();
         if (increase) {
             select.clearGroupByExpressions();
         } else {
@@ -551,7 +551,7 @@ public class CockroachDBExpressionGenerator extends
     }
 
     boolean mutateHaving(CockroachDBSelect select) {
-        if (select.getGroupByExpressions().size() == 0) {
+        if (select.getGroupByExpressions().isEmpty()) {
             select.setGroupByExpressions(select.getFetchColumns());
             select.setHavingClause(generateExpression(CockroachDBDataType.BOOL.get()));
             return false;

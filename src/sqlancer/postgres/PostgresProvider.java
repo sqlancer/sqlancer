@@ -1,13 +1,21 @@
 package sqlancer.postgres;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.service.AutoService;
 
 import sqlancer.AbstractAction;
@@ -29,6 +37,7 @@ import sqlancer.postgres.gen.PostgresCommentGenerator;
 import sqlancer.postgres.gen.PostgresDeleteGenerator;
 import sqlancer.postgres.gen.PostgresDiscardGenerator;
 import sqlancer.postgres.gen.PostgresDropIndexGenerator;
+import sqlancer.postgres.gen.PostgresExplainGenerator;
 import sqlancer.postgres.gen.PostgresIndexGenerator;
 import sqlancer.postgres.gen.PostgresInsertGenerator;
 import sqlancer.postgres.gen.PostgresNotifyGenerator;
@@ -347,6 +356,77 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
     @Override
     public String getDBMSName() {
         return "postgres";
+    }
+
+    @Override
+    public String getQueryPlan(String selectStr, PostgresGlobalState globalState) throws Exception {
+        String queryPlan = "";
+        if (globalState.getOptions().logEachSelect()) {
+            globalState.getLogger().writeCurrent(selectStr);
+            try {
+                globalState.getLogger().getCurrentFileWriter().flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        SQLQueryAdapter q = new SQLQueryAdapter(PostgresExplainGenerator.explain(selectStr), null);
+        try (SQLancerResultSet rs = q.executeAndGet(globalState)) {
+            while (rs.next()) {
+                queryPlan += rs.getString(1);
+            }
+        } catch (SQLException | AssertionError e) {
+            queryPlan = "";
+        }
+        return formatQueryPlan(queryPlan);
+    }
+
+    @Override
+    protected double[] initializeWeightedAverageReward() {
+        return new double[PostgresProvider.Action.values().length];
+    }
+
+    @Override
+    protected void executeMutator(int index, PostgresGlobalState globalState) throws Exception {
+        SQLQueryAdapter queryMutateTable = PostgresProvider.Action.values()[index].getQuery(globalState);
+        globalState.executeStatement(queryMutateTable);
+    }
+
+    @Override
+    protected boolean addRowsToAllTables(PostgresGlobalState globalState) throws Exception {
+        List<PostgresSchema.PostgresTable> tablesNoRow = globalState.getSchema().getDatabaseTables().stream()
+                .filter(t -> t.getNrRows(globalState) == 0).collect(Collectors.toList());
+        for (PostgresSchema.PostgresTable table : tablesNoRow) {
+            SQLQueryAdapter queryAddRows = PostgresInsertGenerator.insertRows(globalState, table);
+            globalState.executeStatement(queryAddRows);
+        }
+        return true;
+    }
+
+    public String formatQueryPlan(String queryPlan) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(queryPlan).get(0).get("Plan");
+        // Extract nodes using BFS algorithm
+        List<String> nodeTypes = extractNodeTypesIterative(root);
+        return String.join(" ", nodeTypes);
+    }
+
+    // BFS algorithm for traversing the Json Query Plan
+    private static List<String> extractNodeTypesIterative(JsonNode root) {
+        List<String> result = new ArrayList<>();
+        Queue<JsonNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            JsonNode node = queue.poll();
+            if (node.has("Node Type")) {
+                result.add(node.get("Node Type").asText());
+            }
+            if (node.has("Plans") && node.get("Plans").isArray()) {
+                for (JsonNode plan : node.get("Plans")) {
+                    queue.add(plan);
+                }
+            }
+        }
+        return result;
     }
 
 }

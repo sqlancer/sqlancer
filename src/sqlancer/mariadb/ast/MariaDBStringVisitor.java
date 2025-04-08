@@ -54,7 +54,7 @@ public class MariaDBStringVisitor extends MariaDBVisitor {
             sb.append(" WHERE ");
             visit(s.getWhereCondition());
         }
-        if (s.getGroupBys().size() != 0) {
+        if (!s.getGroupBys().isEmpty()) {
             sb.append(" GROUP BY ");
             for (i = 0; i < s.getGroupBys().size(); i++) {
                 if (i != 0) {
