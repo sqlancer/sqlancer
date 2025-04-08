@@ -97,14 +97,17 @@ public class ClickHouseProvider extends SQLProviderAdapter<ClickHouseGlobalState
         }
 
         // TODO: add more Actions to populate table
-        StatementExecutor<ClickHouseGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
-                ClickHouseProvider::mapActions, (q) -> {
-                    if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                        throw new IgnoreMeException();
-                    }
-                });
-        se.executeStatements();
+        StatementExecutor<ClickHouseGlobalState, Action> se = new StatementExecutor<>(
+    globalState,
+    new Action[]{Action.INSERT, Action.UPDATE, Action.DELETE}, // Newly added actions to populate the table
+    ClickHouseProvider::mapActions,
+    (q) -> {
+        if (globalState.getSchema().getDatabaseTables().isEmpty()) {
+            throw new IgnoreMeException();
+        }
     }
+);
+se.executeStatements();
 
     @Override
     public SQLConnection createDatabase(ClickHouseGlobalState globalState) throws SQLException {

@@ -450,15 +450,11 @@ public final class Randomly {
     }
 
     // TODO redundant?
-    public class Randomly {
-        private final Random random = new Random();
-    
-        public long getLong(long left, long right) {
-            if (left == right) {
-                return left;
-            }
-            return left + (long) (random.nextDouble() * (right - left + 1));
+    public long getLong(long left, long right) {
+        if (left == right) {
+            return left;
         }
+        return getNextLong(left, right);
     }
 
     public BigInteger getBigInteger(BigInteger left, BigInteger right) {
