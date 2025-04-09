@@ -41,29 +41,6 @@ public abstract class HiveConstant implements HiveExpression {
         }
     }
 
-    // public static class HiveFloatConstant extends HiveConstant {
-
-    //     private final float value;
-
-    //     public HiveFloatConstant(float value) {
-    //         this.value = value;
-    //     }
-
-    //     public float getValue() {
-    //         return value;
-    //     }
-
-    //     @Override
-    //     public String toString() {
-    //         if (value == Float.POSITIVE_INFINITY) {
-    //             return "'+Inf'";
-    //         } else if (value == Float.NEGATIVE_INFINITY) {
-    //             return "'-Inf'";
-    //         }
-    //         return String.valueOf(value);
-    //     }
-    // }
-
     public static class HiveDoubleConstant extends HiveConstant {
 
         private final double value;

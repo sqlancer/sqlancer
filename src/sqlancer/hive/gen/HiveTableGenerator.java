@@ -48,8 +48,7 @@ public class HiveTableGenerator {
     private SQLQueryAdapter create() {
         ExpectedErrors errors = new ExpectedErrors();
 
-        sb.append("CREATE ");
-        sb.append("TABLE ");
+        sb.append("CREATE TABLE ");
         sb.append(globalState.getDatabaseName());
         sb.append(".");
         sb.append(tableName);
@@ -106,7 +105,6 @@ public class HiveTableGenerator {
                 sb.append(" NOT NULL");
                 break;
             case DEFAULT:
-                // TODO: add errors
                 sb.append(" DEFAULT (");
                 sb.append(HiveToStringVisitor.asString(gen.generateConstant()));
                 sb.append(")");

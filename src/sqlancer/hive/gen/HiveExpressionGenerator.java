@@ -33,11 +33,6 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
         CAST, FUNC, BETWEEN, IN, CASE;
     }
 
-    private enum ConstantType {
-        // TODO: add DECIMAL, DATE, TIMESTAMP, BINARY,...
-        STRING, INT, DOUBLE, BOOLEAN, NULL
-    }
-
     public HiveExpressionGenerator(HiveGlobalState globalState) {
         this.globalState = globalState;
     }
@@ -93,8 +88,6 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
                         generateExpression(depth + 1),
                         HiveExpressionGenerator.HiveBinaryArithmeticOperator.getRandom());
             case CAST:
-                // return new HiveCastOperation(generateExpression(depth + 1),
-                        // HiveSchema.HiveCompositeDataType.getRandomWithoutNull());
                 return new HiveCastOperation(generateExpression(depth + 1), HiveDataType.getRandomType());
             case FUNC:
                 HiveFunc func = HiveFunc.getRandom();
@@ -121,8 +114,11 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
 
     @Override
     public HiveExpression generateConstant() {
-        ConstantType[] values = ConstantType.values();
-        ConstantType constantType = Randomly.fromOptions(values);
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            return HiveConstant.createNullConstant();
+        }
+        HiveDataType[] values = HiveDataType.values();
+        HiveDataType constantType = Randomly.fromOptions(values);
         switch (constantType) {
             case STRING:
                 return HiveConstant.createStringConstant(globalState.getRandomly().getString());
@@ -132,8 +128,6 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
                 return HiveConstant.createDoubleConstant(globalState.getRandomly().getDouble());
             case BOOLEAN:
                 return HiveConstant.createBooleanConstant(Randomly.getBoolean());
-            case NULL:
-                return HiveConstant.createNullConstant();
             default:
                 throw new AssertionError(constantType);
         }

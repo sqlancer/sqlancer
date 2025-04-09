@@ -23,7 +23,7 @@ public class HiveSchema extends AbstractSchema<HiveGlobalState, HiveTable> {
     public enum HiveDataType {
 
         // TODO: support more types, e.g. TIMESTAMP, DATE, VARCHAR, CHAR, BINARY, ARRAY, MAP, STRUCT, UNIONTYPE...
-        INT, FLOAT, DECIMAL, STRING, BOOLEAN;
+        STRING, INT, DOUBLE, BOOLEAN;
 
         public static HiveDataType getRandomType() {
             return Randomly.fromList(Arrays.asList(values()));
@@ -56,13 +56,9 @@ public class HiveSchema extends AbstractSchema<HiveGlobalState, HiveTable> {
     }
 
     public static HiveSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
-        // TODO: discover built-in tables
         List<HiveTable> databaseTables = new ArrayList<>();
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
-            if (DBMSCommon.matchesIndexName(tableName)) {
-                continue; // TODO: unexpected?
-            }
             List<HiveColumn> databaseColumns = getTableColumns(con, tableName);
             boolean isView = tableName.startsWith("v");
             HiveTable t = new HiveTable(tableName, databaseColumns, isView);
@@ -102,9 +98,6 @@ public class HiveSchema extends AbstractSchema<HiveGlobalState, HiveTable> {
     }
 
     private static HiveDataType getColumnType(String typeString) {
-        if (typeString.startsWith("DECIMAL")) {
-            return HiveDataType.DECIMAL;
-        }
         return HiveDataType.valueOf(typeString.toUpperCase());
     }
 
