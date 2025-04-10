@@ -177,6 +177,8 @@ public class SQLite3Select extends SQLite3Expression
         return this.withClause;
     }
 
+    // This method is used in CODDTest to test subquery by replacing a table name
+    // in the SELECT clause with a derived table expression. 
     public void replaceFromTable(String tableName, SQLite3Expression newFromExpression) {
         int replaceIdx = -1;
         for (int i = 0; i < fromList.size(); ++i) {

@@ -929,11 +929,11 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
     }
 
     public boolean useSubquery() {
-        if (this.state.getDbmsSpecificOptions().coddTestModel.equals("random")) {
+        if (this.state.getDbmsSpecificOptions().coddTestModel.isRandom()) {
             return Randomly.getBoolean();
-        } else if (this.state.getDbmsSpecificOptions().coddTestModel.equals("expression")) {
+        } else if (this.state.getDbmsSpecificOptions().coddTestModel.isExpression()) {
             return false;
-        } else if (this.state.getDbmsSpecificOptions().coddTestModel.equals("subquery")) {
+        } else if (this.state.getDbmsSpecificOptions().coddTestModel.isSubquery()) {
             return true;
         } else {
             System.out.printf("Wrong option of --coddtest-model, should be one of: random, expression, subquery");

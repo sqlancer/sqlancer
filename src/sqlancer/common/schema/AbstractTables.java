@@ -51,7 +51,7 @@ public class AbstractTables<T extends AbstractTable<C, ?, ?>, C extends Abstract
         }
     }
 
-    public Boolean isContained(T table) {
+    public boolean isContained(T table) {
         return this.tables.contains(table);
     }
 

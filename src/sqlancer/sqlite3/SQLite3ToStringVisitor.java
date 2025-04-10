@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.sqlite3.ast.SQLite3Aggregate;
@@ -156,7 +155,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
             visit(whereClause);
             sb.append(")");
         }
-        if (s.getGroupByClause().size() > 0) {
+        if (!s.getGroupByClause().isEmpty()) {
             sb.append(" ");
             sb.append("GROUP BY ");
             visit(s.getGroupByClause());
@@ -550,22 +549,8 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
                     sb.append("(CAST(");
                     visit(vs.get(name).get(i));
                     sb.append(" AS ");
-                    switch(vs.get(name).get(i).getDataType()) {
-                    case BINARY:
-                        sb.append("BLOB))");
-                        break;
-                    case INT:
-                        sb.append("INT))");
-                        break;
-                    case TEXT:
-                        sb.append("TEXT))");
-                        break;
-                    case REAL:
-                        sb.append("REAL))");
-                        break;
-                    default:
-                        throw new IgnoreMeException();
-                    }
+                    sb.append(vs.get(name).get(i).getDataType().toString());
+                    sb.append("))");
                 }
                 isFirstColumn = true;
             }
@@ -591,7 +576,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
 
     @Override
     public void visit(SQLite3ResultMap tableSummary) {
-        // we utlize CASE WHEN THEN END here
+        // We use the CASE WHEN THEN END expression to represent the result of an expression for each row in the table.
         SQLite3Values values = tableSummary.getValues();
         List<SQLite3ColumnName> columnRefs = tableSummary.getColumns();
         List<SQLite3Constant> summary = tableSummary.getSummary();
@@ -599,16 +584,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
         Map<String, List<SQLite3Constant>> vs = values.getValues();
         int size = vs.get(vs.keySet().iterator().next()).size();
         if (size == 0) {
-            sb.append("(");
-            for (int j = 0; j < columnRefs.size(); ++j) {
-                visit(columnRefs.get(j));
-                sb.append(" IS NULL");
-                if (j < columnRefs.size() - 1) {
-                    sb.append(" AND ");
-                }
-            }
-            sb.append(")");
-            return;
+            throw new AssertionError("The result of the expression must not be empty.");
         }
         List<String> columnNames = values.getColumns().stream().map(c->c.getName()).collect(Collectors.toList());
         sb.append(" CASE ");

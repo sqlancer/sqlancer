@@ -20,4 +20,21 @@ public enum SQLite3DataType {
             throw new IgnoreMeException();
         }
     }
+
+    public String toString() {
+        switch(this) {
+            case BINARY:
+                return "BLOB";
+            case INT:
+                return "INT";
+            case TEXT:
+                return "TEXT";
+            case REAL:
+                return "REAL";
+            case NULL:
+                return "NULL";
+            default:
+                throw new IgnoreMeException();
+        }
+    }
 }
