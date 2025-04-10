@@ -8,6 +8,8 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 
 public final class PostgresResetGenerator {
+    private PostgresResetGenerator() {
+    }
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
