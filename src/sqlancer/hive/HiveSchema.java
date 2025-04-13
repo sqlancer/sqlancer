@@ -2,7 +2,6 @@ package sqlancer.hive;
 
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
-import sqlancer.common.DBMSCommon;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTableColumn;

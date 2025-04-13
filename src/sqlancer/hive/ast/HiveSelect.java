@@ -4,6 +4,7 @@ import java.util.List;
 
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
+import sqlancer.hive.HiveToStringVisitor;
 import sqlancer.hive.HiveSchema.HiveColumn;
 import sqlancer.hive.HiveSchema.HiveTable;
 
@@ -22,20 +23,19 @@ public class HiveSelect extends SelectBase<HiveExpression>
 
     @Override
     public void setJoinClauses(List<HiveJoin> joinStatements) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setJoinClauses'");
+        List<HiveExpression> expressions = joinStatements.stream().map(e -> (HiveExpression) e)
+                .collect(java.util.stream.Collectors.toList());
+        setJoinList(expressions);
     }
 
     @Override
     public List<HiveJoin> getJoinClauses() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getJoinClauses'");
+        return getJoinList().stream().map(e -> (HiveJoin) e).collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     public String asString() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'asString'");
+        return HiveToStringVisitor.asString(this);
     }
 
 }

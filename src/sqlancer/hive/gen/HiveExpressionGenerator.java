@@ -2,7 +2,9 @@ package sqlancer.hive.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewOrderingTerm.Ordering;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.hive.HiveGlobalState;
 import sqlancer.hive.HiveSchema.*;
 import sqlancer.hive.ast.HiveBetweenOperation;
@@ -14,7 +16,10 @@ import sqlancer.hive.ast.HiveConstant;
 import sqlancer.hive.ast.HiveExpression;
 import sqlancer.hive.ast.HiveFunction;
 import sqlancer.hive.ast.HiveInOperation;
+import sqlancer.hive.ast.HiveJoin;
 import sqlancer.hive.ast.HiveOrderingTerm;
+import sqlancer.hive.ast.HiveSelect;
+import sqlancer.hive.ast.HiveTableReference;
 import sqlancer.hive.ast.HiveUnaryPrefixOperation;
 import sqlancer.hive.ast.HiveUnaryPostfixOperation;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
@@ -22,10 +27,13 @@ import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpression, HiveColumn> {
+public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpression, HiveColumn> 
+        implements TLPWhereGenerator<HiveSelect, HiveJoin, HiveExpression, HiveTable, HiveColumn> {
 
     private final HiveGlobalState globalState;
+    private List<HiveTable> tables;
 
     private enum Expression {
         // TODO: add or delete expressions.
@@ -150,6 +158,45 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
             newExpr.add(curExpr);
         }
         return newExpr;
+    }
+
+
+    @Override
+    public HiveExpressionGenerator setTablesAndColumns(AbstractTables<HiveTable, HiveColumn> tables) {
+        this.columns = tables.getColumns();
+        this.tables = tables.getTables();
+
+        return this;
+    }
+
+    @Override
+    public HiveExpression generateBooleanExpression() {
+        return generateExpression();
+    }
+
+    @Override
+    public HiveSelect generateSelect() {
+        return new HiveSelect();
+    }
+
+    @Override
+    public List<HiveExpression> getTableRefs() {
+        return tables.stream().map(t -> new HiveTableReference(t)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<HiveExpression> generateFetchColumns(boolean allowAggregates) {
+        if (Randomly.getBoolean()) {
+            return List.of(new HiveColumnReference(new HiveColumn("*", null, null)));
+        }
+        return Randomly.nonEmptySubset(columns).stream()
+                .map(c -> new HiveColumnReference(c))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<HiveJoin> getRandomJoinClauses() {
+        return List.of();
     }
 
     public enum HiveUnaryPrefixOperator implements Operator {
