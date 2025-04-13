@@ -43,6 +43,6 @@ public class MySQLCaseOperator extends NewCaseOperatorNode<MySQLExpression> impl
             return elseExpr.getExpectedValue();
         }
 
-        return null;
+        return MySQLConstant.createNullConstant();
     }
 }

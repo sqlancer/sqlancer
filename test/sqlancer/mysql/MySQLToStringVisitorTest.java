@@ -18,7 +18,7 @@ public class MySQLToStringVisitorTest {
     @Test
     void visitAggregateToString() {
         MySQLSchema.MySQLColumn aCol = new MySQLSchema.MySQLColumn("a", MySQLSchema.MySQLDataType.INT, false, 0);
-        MySQLColumnReference aRef = new MySQLColumnReference(aCol, null);
+        MySQLColumnReference aRef = new MySQLColumnReference(aCol, MySQLConstant.createNullConstant());
 
         MySQLAggregate aggrCount = new MySQLAggregate(List.of(aRef), MySQLAggregate.MySQLAggregateFunction.COUNT);
         assertEquals("COUNT(a)", MySQLVisitor.asString(aggrCount));
@@ -36,7 +36,7 @@ public class MySQLToStringVisitorTest {
     @Test
     void visitAggregateWithDistinctToString() {
         MySQLSchema.MySQLColumn aCol = new MySQLSchema.MySQLColumn("a", MySQLSchema.MySQLDataType.INT, false, 0);
-        MySQLColumnReference aRef = new MySQLColumnReference(aCol, null);
+        MySQLColumnReference aRef = new MySQLColumnReference(aCol, MySQLConstant.createNullConstant());
 
         MySQLAggregate aggrCountDistinct = new MySQLAggregate(List.of(aRef),
                 MySQLAggregate.MySQLAggregateFunction.COUNT_DISTINCT);
@@ -58,7 +58,7 @@ public class MySQLToStringVisitorTest {
     @Test
     void visitCaseWhenToString() {
         MySQLSchema.MySQLColumn aCol = new MySQLSchema.MySQLColumn("a", MySQLSchema.MySQLDataType.INT, false, 0);
-        MySQLColumnReference switchExpr = new MySQLColumnReference(aCol, null);
+        MySQLColumnReference switchExpr = new MySQLColumnReference(aCol, MySQLConstant.createNullConstant());
 
         List<MySQLExpression> whenExprs = List.of(MySQLIntConstant.createIntConstant(1),
                 MySQLIntConstant.createIntConstant(2));
