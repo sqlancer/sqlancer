@@ -13,9 +13,8 @@ public final class PostgresResetGenerator {
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
-        ArrayList<PostgresSetGenerator.ConfigurationOption> options = new ArrayList<>(
-                Arrays.asList(PostgresSetGenerator.ConfigurationOption.values()));
-        PostgresSetGenerator.ConfigurationOption option = Randomly.fromList(options);
+        PostgresSetGenerator.ConfigurationOption option = Randomly
+                .fromOptions(PostgresSetGenerator.ConfigurationOption.values());
         sb.append("RESET ");
         if (Randomly.getBoolean()) {
             sb.append(option.getOptionName());
