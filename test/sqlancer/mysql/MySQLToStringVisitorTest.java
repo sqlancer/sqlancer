@@ -59,13 +59,10 @@ public class MySQLToStringVisitorTest {
     void visitCaseWhenToString() {
         MySQLSchema.MySQLColumn aCol = new MySQLSchema.MySQLColumn("a", MySQLSchema.MySQLDataType.INT, false, 0);
         MySQLColumnReference switchExpr = new MySQLColumnReference(aCol, MySQLConstant.createNullConstant());
-
         List<MySQLExpression> whenExprs = List.of(MySQLIntConstant.createIntConstant(1),
                 MySQLIntConstant.createIntConstant(2));
-
         List<MySQLExpression> thenExprs = List.of(MySQLIntConstant.createIntConstant(11),
                 MySQLIntConstant.createIntConstant(22));
-
         MySQLConstant elseExpr = MySQLConstant.createIntConstant(0);
 
         assertEquals("(CASE a WHEN 1 THEN 11 WHEN 2 THEN 22 ELSE 0 END)",
