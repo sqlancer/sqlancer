@@ -10,6 +10,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
+import sqlancer.mysql.oracle.MySQLDQEOracle;
 import sqlancer.mysql.oracle.MySQLDQPOracle;
 import sqlancer.mysql.oracle.MySQLFuzzer;
 import sqlancer.mysql.oracle.MySQLPivotedQuerySynthesisOracle;
@@ -74,6 +75,12 @@ public enum MySQLOracleFactory implements OracleFactory<MySQLGlobalState> {
         @Override
         public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
             return new MySQLDQPOracle(globalState);
+        }
+    },
+    DQE {
+        @Override
+        public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
+            return new MySQLDQEOracle(globalState);
         }
     };
 }
