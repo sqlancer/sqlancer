@@ -16,35 +16,58 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
         ADDITION("+") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l + r);
+                if (left.isReal() && right.isReal()) {
+                    return applyRealOperation(left, right, (l, r) -> l + r);
+                } else if (left.isFloat() && right.isFloat()) {
+                    return applyFloatOperation(left, right, (l, r) -> l + r);
+                } else {
+                    return applyIntOperation(left, right, (l, r) -> l + r);
+                }
             }
 
         },
         SUBTRACTION("-") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l - r);
+                if (left.isReal() && right.isReal()) {
+                    return applyRealOperation(left, right, (l, r) -> l - r);
+                } else if (left.isFloat() && right.isFloat()) {
+                    return applyFloatOperation(left, right, (l, r) -> l - r);
+                } else {
+                    return applyIntOperation(left, right, (l, r) -> l - r);
+                }
             }
         },
         MULTIPLICATION("*") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> l * r);
+                if (left.isReal() && right.isReal()) {
+                    return applyRealOperation(left, right, (l, r) -> l * r);
+                } else if (left.isFloat() && right.isFloat()) {
+                    return applyFloatOperation(left, right, (l, r) -> l * r);
+                } else {
+                    return applyIntOperation(left, right, (l, r) -> l * r);
+                }
             }
         },
         DIVISION("/") {
 
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
-
+                if (left.isReal() && right.isReal()) {
+                    return applyRealOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
+                } else if (left.isFloat() && right.isFloat()) {
+                    return applyFloatOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
+                } else {
+                    return applyIntOperation(left, right, (l, r) -> r == 0 ? -1 : l / r);
+                }
             }
 
         },
         MODULO("%") {
             @Override
             public PostgresConstant apply(PostgresConstant left, PostgresConstant right) {
-                return applyBitOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
+                return applyIntOperation(left, right, (l, r) -> r == 0 ? -1 : l % r);
 
             }
         },
@@ -57,7 +80,7 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
 
         private String textRepresentation;
 
-        private static PostgresConstant applyBitOperation(PostgresConstant left, PostgresConstant right,
+        private static PostgresConstant applyIntOperation(PostgresConstant left, PostgresConstant right,
                 BinaryOperator<Long> op) {
             if (left.isNull() || right.isNull()) {
                 return PostgresConstant.createNullConstant();
@@ -66,6 +89,30 @@ public class PostgresBinaryArithmeticOperation extends BinaryOperatorNode<Postgr
                 long rightVal = right.cast(PostgresDataType.INT).asInt();
                 long value = op.apply(leftVal, rightVal);
                 return PostgresConstant.createIntConstant(value);
+            }
+        }
+
+        private static PostgresConstant applyFloatOperation(PostgresConstant left, PostgresConstant right,
+                BinaryOperator<Float> op) {
+            if (left.isNull() || right.isNull()) {
+                return PostgresConstant.createNullConstant();
+            } else {
+                float leftVal = left.cast(PostgresDataType.FLOAT).asFloat();
+                float rightVal = right.cast(PostgresDataType.FLOAT).asFloat();
+                float value = op.apply(leftVal, rightVal);
+                return PostgresConstant.createFloatConstant(value);
+            }
+        }
+
+        private static PostgresConstant applyRealOperation(PostgresConstant left, PostgresConstant right,
+                BinaryOperator<Double> op) {
+            if (left.isNull() || right.isNull()) {
+                return PostgresConstant.createNullConstant();
+            } else {
+                double leftVal = left.cast(PostgresDataType.REAL).asReal();
+                double rightVal = right.cast(PostgresDataType.REAL).asReal();
+                double value = op.apply(leftVal, rightVal);
+                return PostgresConstant.createDoubleConstant(value);
             }
         }
 
