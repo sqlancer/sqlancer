@@ -381,12 +381,17 @@
         <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
-      <version>3.1.3</version>
+      <version>4.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-serde</artifactId>
-      <version>3.1.3</version>
+      <version>4.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-cli</artifactId>
+      <version>4.0.1</version>
     </dependency>
   </dependencies>
   <reporting>

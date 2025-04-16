@@ -109,7 +109,6 @@ public class HiveTableGenerator {
                 sb.append(HiveToStringVisitor.asString(gen.generateConstant()));
                 sb.append(")");
             case CHECK:
-                errors.add("Invalid Constraint syntax");
                 sb.append(" CHECK (");
                 sb.append(HiveToStringVisitor.asString(gen.generateExpression()));
                 sb.append(")");
