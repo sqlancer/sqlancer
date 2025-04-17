@@ -552,7 +552,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
                     sb.append(vs.get(name).get(i).getDataType().toString());
                     sb.append("))");
                 }
-                isFirstColumn = true;
+                isFirstColumn = false;
             }
             sb.append(")");
             if (i < size - 1) {

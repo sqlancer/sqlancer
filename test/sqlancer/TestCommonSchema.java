@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.common.schema.AbstractTable;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
 
 import java.util.*;
@@ -35,6 +36,12 @@ public class TestCommonSchema {
         }
     }
 
+    static class TestTables extends AbstractTables<TestTable, TestTableColumn> {
+        TestTables(List<TestTable> tables) {
+            super(tables);
+        }
+    }
+
     static class TestIndex extends TableIndex {
         TestIndex(String name) {
             super(name);
@@ -53,6 +60,10 @@ public class TestCommonSchema {
 
     private TestSchema createTestSchema(TestTable... tables) {
         return new TestSchema(Arrays.asList(tables));
+    }
+
+    private TestTables createTestTables(TestTable... tables) {
+        return new TestTables(new ArrayList(Arrays.asList(tables)));
     }
 
     @Test
@@ -148,5 +159,28 @@ public class TestCommonSchema {
         TestTableColumn col2 = createTestColumn("orphan", null, "UNKNOWN");
         assertEquals("orphan", col2.getFullQualifiedName());
         assertNull(col2.getTable());
+    }
+
+    @Test
+    void testTablesManagement() {
+        TestTable table1 = createTestTable("t1", Collections.emptyList(), false, "col1");
+        TestTable table2 = createTestTable("t2", Collections.emptyList(), false, "col2");
+        TestTable table3 = createTestTable("t3", Collections.emptyList(), false, "col3");
+
+        TestTables tables = createTestTables(table1, table2, table3);
+        assertEquals(3, tables.getSize(), "Should detect 3 tables");
+        assertEquals(3, tables.getColumns().size(), "Should detect 3 columns");
+        assertTrue(tables.isContained(table3), "Table3 shoule be contained");
+
+        TestTable table4 = createTestTable("t4", Collections.emptyList(), false, "col4");
+        tables.addTable(table4);
+        assertEquals(4, tables.getSize(), "Should detect 4 tables");
+        assertEquals(4, tables.getColumns().size(), "Should detect 4 columns");
+        assertTrue(tables.isContained(table4), "Table4 should be contained");
+
+        tables.removeTable(table4);
+        assertEquals(3, tables.getSize(), "Should detect 3 tables");
+        assertEquals(3, tables.getColumns().size(), "Should detect 3 columns");
+        assertTrue(!tables.isContained(table4), "Table4 should not be contained");
     }
 }

@@ -936,7 +936,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         } else if (this.state.getDbmsSpecificOptions().coddTestModel.isSubquery()) {
             return true;
         } else {
-            System.out.printf("Wrong option of --coddtest-model, should be one of: random, expression, subquery");
+            System.out.printf("Wrong option of --coddtest-model, should be one of: RANDOM, EXPRESSION, SUBQUERY");
             System.exit(1);
             return false;
         }

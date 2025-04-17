@@ -79,20 +79,20 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
     @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
     public int maxNumIndexes = 20;
 
-    public enum coddtest_model {
-        random, expression, subquery;
+    public enum CODDTestModel {
+        RANDOM, EXPRESSION, SUBQUERY;
         public boolean isRandom() {
-            return this == random;
+            return this == RANDOM;
         }
         public boolean isExpression() {
-            return this == expression;
+            return this == EXPRESSION;
         }
         public boolean isSubquery() {
-            return this == subquery;
+            return this == SUBQUERY;
         }
     }
-    @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on expression, subquery, or random")
-    public coddtest_model coddTestModel = coddtest_model.random;
+    @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on EXPRESSION, SUBQUERY, or RANDOM")
+    public CODDTestModel coddTestModel = CODDTestModel.RANDOM;
 
     @Override
     public List<SQLite3OracleFactory> getTestOracleFactory() {
