@@ -118,7 +118,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
         RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-                                                       * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+                                                       * https://www.postgresql.org/docs/13/sql-reset.html TODO: also
                                                        * configuration parameter
                                                        */), //
         NOTIFY(PostgresNotifyGenerator::createNotify), //
