@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -127,7 +126,7 @@ public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestO
             return -1;
         }
         if (rs.next()) {
-            secondCount += rs.getLong(1);
+            secondCount += (int) rs.getLong(1);
         }
         rs.close();
         return secondCount;
@@ -137,7 +136,7 @@ public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestO
             YSQLExpression randomWhereCondition, List<YSQLJoin> joinStatements) throws SQLException {
         YSQLSelect select = new YSQLSelect();
         YSQLColumnValue allColumns = new YSQLColumnValue(Randomly.fromList(columns), null);
-        select.setFetchColumns(Arrays.asList(allColumns));
+        select.setFetchColumns(List.of(allColumns));
         select.setFromList(randomTables);
         select.setWhereClause(randomWhereCondition);
         if (Randomly.getBooleanWithSmallProbability()) {

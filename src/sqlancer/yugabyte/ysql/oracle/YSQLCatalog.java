@@ -1,7 +1,5 @@
 package sqlancer.yugabyte.ysql.oracle;
 
-import static sqlancer.yugabyte.ysql.YSQLProvider.DDL_LOCK;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,25 +47,15 @@ public class YSQLCatalog implements TestOracle<YSQLGlobalState> {
     }
 
     protected void createTables(YSQLGlobalState globalState, int numTables) throws Exception {
-        synchronized (DDL_LOCK) {
-            while (globalState.getSchema().getDatabaseTables().size() < numTables) {
-                // TODO concurrent DDLs may produce a lot of noise in test logs so its disabled right now
-                // added timeout to avoid possible catalog collisions
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new AssertionError();
-                }
-
-                try {
-                    String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
-                    SQLQueryAdapter createTable = YSQLTableGenerator.generate(tableName, true, globalState);
-                    globalState.executeStatement(createTable);
-                    globalState.getManager().incrementSelectQueryCount();
-                    globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
-                } catch (IgnoreMeException e) {
-                    // do nothing
-                }
+        while (globalState.getSchema().getDatabaseTables().size() < numTables) {
+            try {
+                String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
+                SQLQueryAdapter createTable = YSQLTableGenerator.generate(tableName, true, globalState);
+                globalState.executeStatement(createTable);
+                globalState.getManager().incrementSelectQueryCount();
+                globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
+            } catch (IgnoreMeException e) {
+                // do nothing
             }
         }
     }

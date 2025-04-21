@@ -1,5 +1,13 @@
 package sqlancer.yugabyte.ysql;
 
+import com.google.auto.service.AutoService;
+import sqlancer.*;
+import sqlancer.common.DBMSCommon;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.query.SQLQueryProvider;
+import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.yugabyte.ysql.gen.*;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -8,29 +16,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 
-import com.google.auto.service.AutoService;
-
-import sqlancer.AbstractAction;
-import sqlancer.DatabaseProvider;
-import sqlancer.IgnoreMeException;
-import sqlancer.MainOptions;
-import sqlancer.Randomly;
-import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
-import sqlancer.StatementExecutor;
-import sqlancer.common.DBMSCommon;
-import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLQueryProvider;
-import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.yugabyte.ysql.gen.*;
-
 import static sqlancer.yugabyte.ysql.YSQLOptions.YSQLOracleFactory.CATALOG;
 
 @AutoService(DatabaseProvider.class)
 public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOptions> {
 
-    // TODO Due to yugabyte problems with parallel DDL we need this lock object
-    public static final Object DDL_LOCK = new Object();
     /**
      * Generate only data types and expressions that are understood by PQS.
      */
@@ -185,31 +175,29 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
 
     // for some reason yugabyte unable to create few databases simultaneously
     private void createDatabaseSync(YSQLGlobalState globalState, String entryDatabaseName) throws SQLException {
-        synchronized (DDL_LOCK) {
-            int counter = 0;
-            while (true) {
-                try {
-                    Connection con = createConnectionSafely(entryURL, username, password);
-                    globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-                    globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-                    createDatabaseCommand = getCreateDatabaseCommand(globalState);
-                    globalState.getState().logStatement(createDatabaseCommand);
-                    try (Statement s = con.createStatement()) {
-                        s.execute("DROP DATABASE IF EXISTS " + databaseName);
-                    }
-                    try (Statement s = con.createStatement()) {
-                        s.execute(createDatabaseCommand);
-                    }
-                    con.close();
-                    break;
-                } catch (Exception e) {
-                    if ((e.getMessage().contains("Catalog Version Mismatch") || e.getMessage().contains("Restart read required"))
-                            && counter < 9) {
-                        counter++;
-                        exceptionLessSleep(500);
-                    } else {
-                        throw e;
-                    }
+        int counter = 0;
+        while (true) {
+            try {
+                Connection con = createConnectionSafely(entryURL, username, password);
+                globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
+                globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+                createDatabaseCommand = getCreateDatabaseCommand(globalState);
+                globalState.getState().logStatement(createDatabaseCommand);
+                try (Statement s = con.createStatement()) {
+                    s.execute("DROP DATABASE IF EXISTS " + databaseName);
+                }
+                try (Statement s = con.createStatement()) {
+                    s.execute(createDatabaseCommand);
+                }
+                con.close();
+                break;
+            } catch (Exception e) {
+                if ((e.getMessage().contains("Catalog Version Mismatch") || e.getMessage().contains("Restart read required"))
+                        && counter < 9) {
+                    counter++;
+                    exceptionLessSleep(500);
+                } else {
+                    throw e;
                 }
             }
         }
@@ -246,22 +234,14 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
     }
 
     protected void createTables(YSQLGlobalState globalState, int numTables) throws Exception {
-        synchronized (DDL_LOCK) {
-            boolean prevCreationFailed = false; // small optimization - wait only after failed requests
-            while (globalState.getSchema().getDatabaseTables().size() < numTables) {
-                if (!prevCreationFailed) {
-                    exceptionLessSleep(5000);
-                }
-
-                try {
-                    String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
-                    SQLQueryAdapter createTable = YSQLTableGenerator.generate(tableName, generateOnlyKnown,
-                            globalState);
-                    globalState.executeStatement(createTable);
-                    prevCreationFailed = false;
-                } catch (IgnoreMeException e) {
-                    prevCreationFailed = true;
-                }
+        while (globalState.getSchema().getDatabaseTables().size() < numTables) {
+            try {
+                String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
+                SQLQueryAdapter createTable = YSQLTableGenerator.generate(tableName, generateOnlyKnown,
+                        globalState);
+                globalState.executeStatement(createTable);
+            } catch (IgnoreMeException e) {
+                // do nothing
             }
         }
     }
