@@ -177,8 +177,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
     private void createDatabaseSync(YSQLGlobalState globalState, String entryDatabaseName) throws SQLException {
         int counter = 0;
         while (true) {
-            try {
-                Connection con = createConnectionSafely(entryURL, username, password);
+            try (Connection con = createConnectionSafely(entryURL, username, password)) {
                 globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
                 globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
                 createDatabaseCommand = getCreateDatabaseCommand(globalState);
@@ -189,7 +188,6 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
                 try (Statement s = con.createStatement()) {
                     s.execute(createDatabaseCommand);
                 }
-                con.close();
                 break;
             } catch (Exception e) {
                 if ((e.getMessage().contains("Catalog Version Mismatch") || e.getMessage().contains("Restart read required"))
