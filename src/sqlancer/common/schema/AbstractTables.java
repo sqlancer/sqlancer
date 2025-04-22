@@ -34,7 +34,6 @@ public class AbstractTables<T extends AbstractTable<C, ?, ?>, C extends Abstract
         return getColumns().stream().map(function).collect(Collectors.joining(", "));
     }
 
-
     public void addTable(T table) {
         if (!this.tables.contains(table)) {
             this.tables.add(table);

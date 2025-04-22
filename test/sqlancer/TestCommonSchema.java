@@ -63,7 +63,7 @@ public class TestCommonSchema {
     }
 
     private TestTables createTestTables(TestTable... tables) {
-        return new TestTables(new ArrayList(Arrays.asList(tables)));
+        return new TestTables(new ArrayList<TestTable>(Arrays.asList(tables)));
     }
 
     @Test

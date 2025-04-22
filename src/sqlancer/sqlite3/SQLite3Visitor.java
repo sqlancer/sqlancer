@@ -21,9 +21,9 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ExpressionBag;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixUnaryOperation;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableAndColumnRef;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
@@ -137,7 +137,6 @@ public interface SQLite3Visitor {
 
     void visit(SQLite3WindowFunctionFrameSpecBetween between);
 
-    
     void visit(SQLite3Alias alias);
 
     void visit(SQLite3WithClause withClause);

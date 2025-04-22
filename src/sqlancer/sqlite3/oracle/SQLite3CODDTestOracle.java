@@ -31,20 +31,20 @@ import sqlancer.sqlite3.ast.SQLite3Constant.SQLite3TextConstant;
 import sqlancer.sqlite3.ast.SQLite3Expression;
 import sqlancer.sqlite3.ast.SQLite3Expression.InOperation;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
+import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Alias;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ColumnName;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ExpressionBag;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3PostfixText;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableAndColumnRef;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3WithClause;
-import sqlancer.sqlite3.ast.SQLite3Expression.Join.JoinType;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm.Ordering;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
 import sqlancer.sqlite3.ast.SQLite3Expression.Sqlite3BinaryOperation.BinaryOperator;
 import sqlancer.sqlite3.ast.SQLite3Select;
 import sqlancer.sqlite3.gen.SQLite3Common;
@@ -61,13 +61,13 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
     private SQLite3ExpressionGenerator gen;
     private Reproducer<SQLite3GlobalState> reproducer;
 
-    private String tempTableName = "temp_table";
+    private static final String TEMP_TABLE_NAME = "temp_table";
 
     private SQLite3Expression foldedExpr;
     private SQLite3Expression constantResOfFoldedExpr;
 
     private List<SQLite3Table> tablesFromOuterContext = new ArrayList<>();
-    private List<Join> joinsInExpr = null;
+    private List<Join> joinsInExpr;
 
     Map<String, List<SQLite3Constant>> auxiliaryQueryResult = new HashMap<>();
     Map<String, List<SQLite3Constant>> selectResult = new HashMap<>();
@@ -118,15 +118,14 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
 
             auxiliaryQueryResult.putAll(selectResult);
         }
-        
 
         SQLite3Select originalQuery = null;
-        
+
         Map<String, List<SQLite3Constant>> foldedResult = new HashMap<>();
         Map<String, List<SQLite3Constant>> originalResult = new HashMap<>();
 
         // dependent expression
-        if (!useSubqueryAsFoldedExpr || (useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr)) {
+        if (!useSubqueryAsFoldedExpr || useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr) {
             // original query
             SQLite3ExpressionBag specificCondition = new SQLite3ExpressionBag(this.foldedExpr);
             originalQuery = this.genSelectExpression(null, specificCondition);
@@ -137,69 +136,71 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             specificCondition.updateInnerExpr(this.constantResOfFoldedExpr);
             foldedQueryString = SQLite3Visitor.asString(originalQuery);
             foldedResult = getQueryResult(foldedQueryString, state);
-        }
-        // independent expression
-        // empty result, put the inner query in (NOT) EXIST
-        else if (auxiliaryQueryResult.size() == 0 || auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().iterator().next()).size() == 0) {
-            boolean isNegated = Randomly.getBoolean() ? false : true;
+        } else if (auxiliaryQueryResult.isEmpty()
+                || auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().iterator().next()).isEmpty()) {
+            // independent expression
+            // empty result, put the inner query in (NOT) EXIST
+            boolean isNegated = !Randomly.getBoolean();
             // original query
             SQLite3Exist existExpr = new SQLite3Exist(new SQLite3Select(auxiliaryQuery), isNegated);
             SQLite3ExpressionBag specificCondition = new SQLite3ExpressionBag(existExpr);
-            
+
             originalQuery = this.genSelectExpression(null, specificCondition);
             originalQueryString = SQLite3Visitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
-            
+
             // folded query
             SQLite3Expression equivalentExpr = isNegated ? SQLite3Constant.createTrue() : SQLite3Constant.createFalse();
             specificCondition.updateInnerExpr(equivalentExpr);
             foldedQueryString = SQLite3Visitor.asString(originalQuery);
             foldedResult = getQueryResult(foldedQueryString, state);
-        }
-        // Scalar Subquery: 1 column and 1 row, consider the inner query as a constant
-        else if (auxiliaryQueryResult.size() == 1 && auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().toArray()[0]).size() == 1 && Randomly.getBoolean()) {
+        } else if (auxiliaryQueryResult.size() == 1
+                && auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().toArray()[0]).size() == 1
+                && Randomly.getBoolean()) {
+            // Scalar Subquery: 1 column and 1 row, consider the inner query as a constant
             // original query
             SQLite3ExpressionBag specificCondition = new SQLite3ExpressionBag(auxiliaryQuery);
             originalQuery = this.genSelectExpression(null, specificCondition);
             originalQueryString = SQLite3Visitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
-            
+
             // folded query
-            SQLite3Expression equivalentExpr = auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().toArray()[0]).get(0);
-            specificCondition.updateInnerExpr(equivalentExpr);;
+            SQLite3Expression equivalentExpr = auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().toArray()[0])
+                    .get(0);
+            specificCondition.updateInnerExpr(equivalentExpr);
             foldedQueryString = SQLite3Visitor.asString(originalQuery);
             foldedResult = getQueryResult(foldedQueryString, state);
-        }
-        // one column
-        else if (auxiliaryQueryResult.size() == 1 && Randomly.getBooleanWithRatherLowProbability() && testInOperator()) {
+        } else if (auxiliaryQueryResult.size() == 1 && Randomly.getBooleanWithRatherLowProbability()
+                && enableInOperator()) {
+            // one column
             // original query
             List<SQLite3Column> columns = s.getRandomTableNonEmptyTables().getColumns();
             SQLite3ColumnName selectedColumn = new SQLite3ColumnName(Randomly.fromList(columns), null);
             SQLite3Table selectedTable = selectedColumn.getColumn().getTable();
-            InOperation INOperation = new InOperation(selectedColumn, new SQLite3Select(auxiliaryQuery));
-            SQLite3ExpressionBag specificCondition = new SQLite3ExpressionBag(INOperation);
+            InOperation inOperation = new InOperation(selectedColumn, new SQLite3Select(auxiliaryQuery));
+            SQLite3ExpressionBag specificCondition = new SQLite3ExpressionBag(inOperation);
 
             originalQuery = this.genSelectExpression(selectedTable, specificCondition);
             originalQueryString = SQLite3Visitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
             // folded query
-            // can not use IN VALUES here, because there is no affinity for the right operand of IN when right operand is a list
+            // can not use IN VALUES here, because there is no affinity for the right operand of IN when right operand
+            // is a list
             try {
                 SQLite3Table t = this.createTemporaryTable(auxiliaryQuery, "intable");
                 SQLite3TableReference equivalentTable = new SQLite3TableReference(t);
-                INOperation = new InOperation(selectedColumn, equivalentTable);
-                specificCondition.updateInnerExpr(INOperation);
+                inOperation = new InOperation(selectedColumn, equivalentTable);
+                specificCondition.updateInnerExpr(inOperation);
                 foldedQueryString = SQLite3Visitor.asString(originalQuery);
                 foldedResult = getQueryResult(foldedQueryString, state);
             } finally {
                 dropTemporaryTable("intable");
             }
-        }
-        // There is not `ANY` and `ALL` operator in SQLite3
-        // Row Subquery
-        else {
+        } else {
+            // There is not `ANY` and `ALL` operator in SQLite3
+            // Row Subquery
             // original query
-            SQLite3Table temporaryTable =  this.genTemporaryTable(auxiliaryQuery, this.tempTableName);
+            SQLite3Table temporaryTable = this.genTemporaryTable(auxiliaryQuery, this.TEMP_TABLE_NAME);
             originalQuery = this.genSelectExpression(temporaryTable, null);
             SQLite3TableAndColumnRef tableAndColumnRef = new SQLite3TableAndColumnRef(temporaryTable);
             SQLite3WithClause withClause = new SQLite3WithClause(tableAndColumnRef, new SQLite3Select(auxiliaryQuery));
@@ -207,7 +208,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             originalQueryString = SQLite3Visitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
             // folded query
-            if (Randomly.getBoolean() && this.testCommonTableExpression()) {
+            if (Randomly.getBoolean() && this.enableCommonTableExpression()) {
                 // there are too many false positives
                 // common table expression
                 // folded query: WITH table AS VALUES ()
@@ -215,25 +216,25 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                 originalQuery.updateWithClauseRight(values);
                 foldedQueryString = SQLite3Visitor.asString(originalQuery);
                 foldedResult = getQueryResult(foldedQueryString, state);
-            } else if (Randomly.getBoolean() && this.testDerivedTable()) {
+            } else if (Randomly.getBoolean() && this.enableDerivedTable()) {
                 // derived table
                 // folded query: SELECT FROM () AS table
                 originalQuery.setWithClause(null);
                 SQLite3TableReference tempTableRef = new SQLite3TableReference(temporaryTable);
                 SQLite3Alias alias = new SQLite3Alias(new SQLite3Select(auxiliaryQuery), tempTableRef);
-                originalQuery.replaceFromTable(this.tempTableName, alias);
+                originalQuery.replaceFromTable(this.TEMP_TABLE_NAME, alias);
                 foldedQueryString = SQLite3Visitor.asString(originalQuery);
                 foldedResult = getQueryResult(foldedQueryString, state);
-            } else if (this.testInsert()){
+            } else if (this.enableInsert()) {
                 // there are too many false positives
                 // folded query: CREATE the table and INSERT INTO table subquery
                 try {
-                    this.createTemporaryTable(auxiliaryQuery, this.tempTableName);
+                    this.createTemporaryTable(auxiliaryQuery, this.TEMP_TABLE_NAME);
                     originalQuery.setWithClause(null);
                     foldedQueryString = SQLite3Visitor.asString(originalQuery);
                     foldedResult = getQueryResult(foldedQueryString, state);
                 } finally {
-                    dropTemporaryTable(this.tempTableName);
+                    dropTemporaryTable(this.TEMP_TABLE_NAME);
                 }
             } else {
                 throw new IgnoreMeException();
@@ -247,8 +248,10 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         }
         if (!compareResult(foldedResult, originalResult)) {
             reproducer = null; // TODO
-            state.getState().getLocalState().log(auxiliaryQueryString + ";\n" + foldedQueryString + ";\n" + originalQueryString + ";");
-            throw new AssertionError(auxiliaryQueryResult.toString() + " " + foldedResult.toString() + " " + originalResult.toString());
+            state.getState().getLocalState()
+                    .log(auxiliaryQueryString + ";\n" + foldedQueryString + ";\n" + originalQueryString + ";");
+            throw new AssertionError(
+                    auxiliaryQueryResult.toString() + " " + foldedResult.toString() + " " + originalResult.toString());
         }
     }
 
@@ -257,7 +260,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         if (tempTable != null) {
             randomTables.addTable(tempTable);
         }
-        if (!useSubqueryAsFoldedExpr || (useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr)) {
+        if (!useSubqueryAsFoldedExpr || useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr) {
             for (SQLite3Table t : this.tablesFromOuterContext) {
                 randomTables.addTable(t);
             }
@@ -270,7 +273,8 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         }
 
         List<SQLite3Column> columns = randomTables.getColumns();
-        if ((!useSubqueryAsFoldedExpr || (useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr)) && this.joinsInExpr != null) {
+        if ((!useSubqueryAsFoldedExpr || useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr)
+                && this.joinsInExpr != null) {
             for (Join j : this.joinsInExpr) {
                 SQLite3Table t = j.getTable();
                 columns.addAll(t.getColumns());
@@ -279,34 +283,36 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         gen = new SQLite3ExpressionGenerator(state).setColumns(columns);
         List<SQLite3Table> tables = randomTables.getTables();
         List<Join> joinStatements = new ArrayList<>();
-        if (!useSubqueryAsFoldedExpr || (useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr)) {
+        if (!useSubqueryAsFoldedExpr || useSubqueryAsFoldedExpr && useCorrelatedSubqueryAsFoldedExpr) {
             if (this.joinsInExpr != null) {
                 joinStatements.addAll(this.joinsInExpr);
                 this.joinsInExpr = null;
             }
-        }
-        else if (Randomly.getBoolean()) {
-            joinStatements = genJoinExpression(gen, tables, Randomly.getBooleanWithRatherLowProbability() ? specificCondition : null, false);
+        } else if (Randomly.getBoolean()) {
+            joinStatements = genJoinExpression(gen, tables,
+                    Randomly.getBooleanWithRatherLowProbability() ? specificCondition : null, false);
         }
         List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
         SQLite3Select select = new SQLite3Select();
         select.setFromList(tableRefs);
-        if (joinStatements.size() > 0) {
+        if (!joinStatements.isEmpty()) {
             select.setJoinClauses(joinStatements);
         }
-        
+
         SQLite3Expression randomWhereCondition = gen.generateExpression();
         SQLite3Expression whereCondition = null;
         if (specificCondition != null) {
             BinaryOperator operator = BinaryOperator.getRandomOperator();
-            whereCondition = new SQLite3Expression.Sqlite3BinaryOperation(randomWhereCondition, specificCondition, operator);
+            whereCondition = new SQLite3Expression.Sqlite3BinaryOperation(randomWhereCondition, specificCondition,
+                    operator);
         } else {
             whereCondition = randomWhereCondition;
         }
         select.setWhereClause(whereCondition);
-        
+
         if (Randomly.getBoolean()) {
-            select.setOrderByClauses(genOrderBysExpression(gen, Randomly.getBooleanWithRatherLowProbability() ? specificCondition : null));
+            select.setOrderByClauses(genOrderBysExpression(gen,
+                    Randomly.getBooleanWithRatherLowProbability() ? specificCondition : null));
         }
 
         if (Randomly.getBoolean()) {
@@ -314,7 +320,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             List<SQLite3Expression> selectedAlias = new LinkedList<>();
             for (int i = 0; i < selectedColumns.size(); ++i) {
                 SQLite3ColumnName originalName = new SQLite3ColumnName(selectedColumns.get(i), null);
-                SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + String.valueOf(i)), null);
+                SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + i), null);
                 SQLite3Alias columnAlias = new SQLite3Alias(originalName, aliasName);
                 selectedAlias.add(columnAlias);
             }
@@ -322,14 +328,15 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         } else {
             SQLite3ColumnName aggr = new SQLite3ColumnName(Randomly.fromList(columns), null);
             SQLite3Provider.mustKnowResult = true;
-            SQLite3Expression originalName = new SQLite3Aggregate(Arrays.asList(aggr), SQLite3Aggregate.SQLite3AggregateFunction.getRandom());
+            SQLite3Expression originalName = new SQLite3Aggregate(Arrays.asList(aggr),
+                    SQLite3Aggregate.SQLite3AggregateFunction.getRandom());
             SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c0"), null);
             SQLite3Alias columnAlias = new SQLite3Alias(originalName, aliasName);
             select.setFetchColumns(Arrays.asList(columnAlias));
             if (Randomly.getBooleanWithRatherLowProbability()) {
                 List<SQLite3Expression> groupByClause = genGroupByClause(columns, specificCondition);
                 select.setGroupByClause(groupByClause);
-                if (groupByClause.size() > 0 && Randomly.getBooleanWithRatherLowProbability()) {
+                if (!groupByClause.isEmpty() && Randomly.getBooleanWithRatherLowProbability()) {
                     select.setHavingClause(genHavingClause(columns, specificCondition));
                 }
             }
@@ -349,13 +356,13 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         if (Randomly.getBooleanWithRatherLowProbability()) {
             joinsInExpr = genJoinExpression(gen, tables, null, true);
         } else {
-            joinsInExpr = new ArrayList<Join>();
+            joinsInExpr = new ArrayList<>();
         }
 
         List<SQLite3Expression> tableRefs = SQLite3Common.getTableRefs(tables, s);
         SQLite3Select select = new SQLite3Select();
         select.setFromList(tableRefs);
-        if (joinsInExpr != null && joinsInExpr.size() > 0) {
+        if (joinsInExpr != null && !joinsInExpr.isEmpty()) {
             select.setJoinClauses(joinsInExpr);
         }
 
@@ -366,14 +373,14 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         int columnIdx = 0;
         for (SQLite3Column c : randomTables.getColumns()) {
             SQLite3ColumnName cRef = new SQLite3ColumnName(c, null);
-            SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + String.valueOf(columnIdx)), null);
+            SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + columnIdx), null);
             SQLite3Alias columnAlias = new SQLite3Alias(cRef, aliasName);
             fetchColumns.add(columnAlias);
             columnIdx++;
         }
 
         // add the expression to fetch clause
-        SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + String.valueOf(columnIdx)), null);
+        SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + columnIdx), null);
         SQLite3Alias columnAlias = new SQLite3Alias(whereCondition, aliasName);
         fetchColumns.add(columnAlias);
 
@@ -388,7 +395,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             } else {
                 throw new AssertionError(e.getMessage());
             }
-        } 
+        }
         if (queryRes.get("c0").size() == 0) {
             throw new IgnoreMeException();
         }
@@ -398,7 +405,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         selectResult.putAll(queryRes);
 
         // get the summary from results
-        List<SQLite3Constant> summary = queryRes.remove("c" + String.valueOf(columnIdx));
+        List<SQLite3Constant> summary = queryRes.remove("c" + columnIdx);
 
         List<SQLite3Column> tempColumnList = new ArrayList<>();
 
@@ -443,13 +450,15 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                     SQLite3Column newColumn = new SQLite3Column(c.getName(), c.getType(), false, null, false);
                     newColumns.add(newColumn);
                 }
-                SQLite3Table newTable = new SQLite3Table(t.getName() + "a", newColumns, null, true, false, false, false);
+                SQLite3Table newTable = new SQLite3Table(t.getName() + "a", newColumns, null, true, false, false,
+                        false);
                 for (SQLite3Column c : newColumns) {
                     c.setTable(newTable);
                 }
                 innerQueryRandomTables.addTable(newTable);
-                
-                SQLite3Alias alias = new SQLite3Alias(new SQLite3TableReference(t), new SQLite3TableReference(newTable));
+
+                SQLite3Alias alias = new SQLite3Alias(new SQLite3TableReference(t),
+                        new SQLite3TableReference(newTable));
                 innerQueryFromTables.add(alias);
             }
         }
@@ -466,20 +475,21 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         innerQuery.setWhereClause(innerQueryWhereCondition);
 
         // use aggregate function in fetch column
-        SQLite3ColumnName innerQueryAggr = new SQLite3ColumnName(Randomly.fromList(innerQueryRandomTables.getColumns()), null);
+        SQLite3ColumnName innerQueryAggr = new SQLite3ColumnName(Randomly.fromList(innerQueryRandomTables.getColumns()),
+                null);
         SQLite3Provider.mustKnowResult = true;
-        SQLite3Expression innerQueryAggrName = new SQLite3Aggregate(Arrays.asList(innerQueryAggr), SQLite3Aggregate.SQLite3AggregateFunction.getRandom());
+        SQLite3Expression innerQueryAggrName = new SQLite3Aggregate(Arrays.asList(innerQueryAggr),
+                SQLite3Aggregate.SQLite3AggregateFunction.getRandom());
         innerQuery.setFetchColumns(Arrays.asList(innerQueryAggrName));
         if (Randomly.getBooleanWithRatherLowProbability()) {
             List<SQLite3Expression> groupByClause = genGroupByClause(innerQueryColumns, null);
             innerQuery.setGroupByClause(groupByClause);
-            if (groupByClause.size() > 0 && Randomly.getBooleanWithRatherLowProbability()) {
+            if (!groupByClause.isEmpty() && Randomly.getBooleanWithRatherLowProbability()) {
                 innerQuery.setHavingClause(genHavingClause(innerQueryColumns, null));
             }
         }
 
-        this.foldedExpr = innerQuery; 
-
+        this.foldedExpr = innerQuery;
 
         // outer query
         SQLite3Select outerQuery = new SQLite3Select();
@@ -490,14 +500,14 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         int columnIdx = 0;
         for (SQLite3Column c : outerQueryRandomTables.getColumns()) {
             SQLite3ColumnName cRef = new SQLite3ColumnName(c, null);
-            SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + String.valueOf(columnIdx)), null);
+            SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + columnIdx), null);
             SQLite3Alias columnAlias = new SQLite3Alias(cRef, aliasName);
             outerQueryFetchColumns.add(columnAlias);
             columnIdx++;
         }
 
         // add the expression to fetch clause
-        SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + String.valueOf(columnIdx)), null);
+        SQLite3ColumnName aliasName = new SQLite3ColumnName(SQLite3Column.createDummy("c" + columnIdx), null);
         SQLite3Alias columnAlias = new SQLite3Alias(innerQuery, aliasName);
         outerQueryFetchColumns.add(columnAlias);
 
@@ -514,7 +524,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             } else {
                 throw new AssertionError(e.getMessage());
             }
-        } 
+        }
         if (queryRes.get("c0").size() == 0) {
             throw new IgnoreMeException();
         }
@@ -524,7 +534,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         selectResult.putAll(queryRes);
 
         // get the summary from results
-        List<SQLite3Constant> summary = queryRes.remove("c" + String.valueOf(columnIdx));
+        List<SQLite3Constant> summary = queryRes.remove("c" + columnIdx);
 
         List<SQLite3Column> tempColumnList = new ArrayList<>();
 
@@ -550,7 +560,8 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         return outerQuery;
     }
 
-    private List<Join> genJoinExpression(SQLite3ExpressionGenerator gen, List<SQLite3Table> tables, SQLite3Expression specificCondition, boolean joinForExperssion) {
+    private List<Join> genJoinExpression(SQLite3ExpressionGenerator gen, List<SQLite3Table> tables,
+            SQLite3Expression specificCondition, boolean joinForExperssion) {
         List<Join> joinStatements = new ArrayList<>();
         if (!state.getDbmsSpecificOptions().testJoins) {
             return joinStatements;
@@ -569,7 +580,8 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                 SQLite3Expression onCondition = null;
                 if (specificCondition != null && Randomly.getBooleanWithRatherLowProbability()) {
                     BinaryOperator operator = BinaryOperator.getRandomOperator();
-                    onCondition = new SQLite3Expression.Sqlite3BinaryOperation(randomOnCondition, specificCondition, operator);
+                    onCondition = new SQLite3Expression.Sqlite3BinaryOperation(randomOnCondition, specificCondition,
+                            operator);
                 } else {
                     onCondition = randomOnCondition;
                 }
@@ -589,10 +601,12 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         return joinStatements;
     }
 
-    private List<SQLite3Expression> genOrderBysExpression(SQLite3ExpressionGenerator gen, SQLite3Expression specificCondition) {
+    private List<SQLite3Expression> genOrderBysExpression(SQLite3ExpressionGenerator gen,
+            SQLite3Expression specificCondition) {
         List<SQLite3Expression> expressions = new ArrayList<>();
         for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-            expressions.add(genOrderingTerm(gen, Randomly.getBooleanWithRatherLowProbability() ? specificCondition : null));
+            expressions.add(
+                    genOrderingTerm(gen, Randomly.getBooleanWithRatherLowProbability() ? specificCondition : null));
         }
         return expressions;
     }
@@ -645,7 +659,8 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         return expr;
     }
 
-    private Map<String, List<SQLite3Constant>> getQueryResult(String queryString, SQLite3GlobalState state) throws SQLException {
+    private Map<String, List<SQLite3Constant>> getQueryResult(String queryString, SQLite3GlobalState state)
+            throws SQLException {
         Map<String, List<SQLite3Constant>> result = new LinkedHashMap<>();
         if (options.logEachSelect()) {
             logger.writeCurrentNoLineBreak(queryString);
@@ -661,8 +676,8 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                 Integer columnCount = metaData.getColumnCount();
                 Map<Integer, String> idxNameMap = new HashMap<>();
                 for (int i = 1; i <= columnCount; i++) {
-                    result.put("c" + String.valueOf(i-1), new ArrayList<>());
-                    idxNameMap.put(i, "c" + String.valueOf(i-1));
+                    result.put("c" + (i - 1), new ArrayList<>());
+                    idxNameMap.put(i, "c" + (i - 1));
                 }
 
                 int resultRows = 0;
@@ -673,26 +688,18 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                             SQLite3Constant constant;
                             if (rs.wasNull()) {
                                 constant = SQLite3Constant.createNullConstant();
-                            }
-
-                            else if (value instanceof Integer) {
+                            } else if (value instanceof Integer) {
                                 constant = SQLite3Constant.createIntConstant(Long.valueOf((Integer) value));
                             } else if (value instanceof Short) {
                                 constant = SQLite3Constant.createIntConstant(Long.valueOf((Short) value));
                             } else if (value instanceof Long) {
                                 constant = SQLite3Constant.createIntConstant((Long) value);
-                            } 
-
-                            else if (value instanceof Double) {
+                            } else if (value instanceof Double) {
                                 constant = SQLite3Constant.createRealConstant((double) value);
                             } else if (value instanceof Float) {
                                 constant = SQLite3Constant.createRealConstant(((Float) value).doubleValue());
                             } else if (value instanceof BigDecimal) {
                                 constant = SQLite3Constant.createRealConstant(((BigDecimal) value).doubleValue());
-                            } 
-                            
-                            else if (value instanceof Byte) {
-                                constant = SQLite3Constant.createBinaryConstant((byte[]) value);
                             } else if (value instanceof byte[]) {
                                 constant = SQLite3Constant.createBinaryConstant((byte[]) value);
                             } else if (value instanceof Boolean) {
@@ -746,7 +753,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
 
         List<SQLite3Column> databaseColumns = new ArrayList<>();
         for (int i = 0; i < columnNumber; ++i) {
-            String columnName = "c" + String.valueOf(i);
+            String columnName = "c" + i;
             SQLite3Column column = new SQLite3Column(columnName, idxTypeMap.get(i), false, false, null);
             databaseColumns.add(column);
         }
@@ -769,19 +776,19 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             String columnTypeName = "";
             if (idxTypeMap.get(i) != null) {
                 switch (idxTypeMap.get(i)) {
-                    case INT:
-                    case TEXT:
-                    case REAL:
-                        columnTypeName = idxTypeMap.get(i).name();
-                        break;
-                    case BINARY:
-                        columnTypeName = "";
-                        break;
-                    default:
-                        columnTypeName = "";
+                case INT:
+                case TEXT:
+                case REAL:
+                    columnTypeName = idxTypeMap.get(i).name();
+                    break;
+                case BINARY:
+                    columnTypeName = "";
+                    break;
+                default:
+                    columnTypeName = "";
                 }
             }
-            sb.append("c" + String.valueOf(i) + " " + columnTypeName);
+            sb.append("c" + i + " " + columnTypeName);
             if (i < columnNumber - 1) {
                 sb.append(", ");
             }
@@ -808,7 +815,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         }
 
         StringBuilder sb2 = new StringBuilder();
-        sb2.append("INSERT INTO " + tableName + " "+ selectString);
+        sb2.append("INSERT INTO " + tableName + " " + selectString);
         String insertValueString = sb2.toString();
         if (options.logEachSelect()) {
             logger.writeCurrent(insertValueString);
@@ -831,7 +838,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
 
         List<SQLite3Column> databaseColumns = new ArrayList<>();
         for (int i = 0; i < columnNumber; ++i) {
-            String columnName = "c" + String.valueOf(i);
+            String columnName = "c" + i;
             SQLite3Column column = new SQLite3Column(columnName, idxTypeMap.get(i), false, false, null);
             databaseColumns.add(column);
         }
@@ -869,20 +876,20 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         if (r1.size() != r2.size()) {
             return false;
         }
-        for (Map.Entry < String, List<SQLite3Constant> > entry: r1.entrySet()) {
+        for (Map.Entry<String, List<SQLite3Constant>> entry : r1.entrySet()) {
             String currentKey = entry.getKey();
             if (!r2.containsKey(currentKey)) {
                 return false;
-            } 
-            List<SQLite3Constant> v1= entry.getValue();
-            List<SQLite3Constant> v2= r2.get(currentKey);
+            }
+            List<SQLite3Constant> v1 = entry.getValue();
+            List<SQLite3Constant> v2 = r2.get(currentKey);
             if (v1.size() != v2.size()) {
                 return false;
             }
             List<String> v1Value = new ArrayList<>(v1.stream().map(c -> c.toString()).collect(Collectors.toList()));
             List<String> v2Value = new ArrayList<>(v2.stream().map(c -> c.toString()).collect(Collectors.toList()));
             Collections.sort(v1Value);
-            Collections.sort(v2Value);  
+            Collections.sort(v2Value);
             if (!v1Value.equals(v2Value)) {
                 return false;
             }
@@ -893,7 +900,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
     private Map<Integer, SQLite3DataType> getColumnTypeFromSelect(SQLite3Select select) {
         List<SQLite3Expression> fetchColumns = select.getFetchColumns();
         List<SQLite3Expression> newFetchColumns = new ArrayList<>();
-        for(SQLite3Expression column : fetchColumns) {
+        for (SQLite3Expression column : fetchColumns) {
             newFetchColumns.add(column);
             SQLite3Alias columnAlias = (SQLite3Alias) column;
             SQLite3Expression typeofColumn = new SQLite3Typeof(columnAlias.getOriginalExpression());
@@ -910,14 +917,14 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             } else {
                 throw new AssertionError(e.getMessage());
             }
-        } 
+        }
 
         if (typeResult == null) {
             throw new IgnoreMeException();
         }
         Map<Integer, SQLite3DataType> idxTypeMap = new HashMap<>();
         for (int i = 0; i * 2 < typeResult.size(); ++i) {
-            String columnName = "c" + String.valueOf(i * 2 + 1);
+            String columnName = "c" + (i * 2 + 1);
             SQLite3Expression t = typeResult.get(columnName).get(0);
             SQLite3TextConstant tString = (SQLite3TextConstant) t;
             String typeName = tString.asString();
@@ -946,16 +953,19 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         return Randomly.getBoolean();
     }
 
-    public boolean testCommonTableExpression() {
+    public boolean enableCommonTableExpression() {
         return false;
     }
-    public boolean testDerivedTable() {
+
+    public boolean enableDerivedTable() {
         return true;
     }
-    public boolean testInsert() {
+
+    public boolean enableInsert() {
         return false;
     }
-    public boolean testInOperator() {
+
+    public boolean enableInOperator() {
         return false;
     }
 

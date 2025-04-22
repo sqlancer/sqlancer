@@ -25,7 +25,7 @@ public class SQLite3Select extends SQLite3Expression
     private List<SQLite3Expression> fetchColumns = Collections.emptyList();
     private List<Join> joinStatements = Collections.emptyList();
     private SQLite3Expression havingClause;
-    private SQLite3WithClause withClause = null;
+    private SQLite3WithClause withClause;
 
     public SQLite3Select() {
     }
@@ -178,14 +178,14 @@ public class SQLite3Select extends SQLite3Expression
     }
 
     // This method is used in CODDTest to test subquery by replacing a table name
-    // in the SELECT clause with a derived table expression. 
+    // in the SELECT clause with a derived table expression.
     public void replaceFromTable(String tableName, SQLite3Expression newFromExpression) {
         int replaceIdx = -1;
         for (int i = 0; i < fromList.size(); ++i) {
             SQLite3Expression f = fromList.get(i);
             if (f instanceof SQLite3TableReference) {
                 SQLite3TableReference tableRef = (SQLite3TableReference) f;
-                if (tableRef.getTable().getName() == tableName) {
+                if (tableRef.getTable().getName().equals(tableName)) {
                     replaceIdx = i;
                 }
             }

@@ -81,16 +81,20 @@ public class SQLite3Options implements DBMSSpecificOptions<SQLite3OracleFactory>
 
     public enum CODDTestModel {
         RANDOM, EXPRESSION, SUBQUERY;
+
         public boolean isRandom() {
             return this == RANDOM;
         }
+
         public boolean isExpression() {
             return this == EXPRESSION;
         }
+
         public boolean isSubquery() {
             return this == SUBQUERY;
         }
     }
+
     @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on EXPRESSION, SUBQUERY, or RANDOM")
     public CODDTestModel coddTestModel = CODDTestModel.RANDOM;
 

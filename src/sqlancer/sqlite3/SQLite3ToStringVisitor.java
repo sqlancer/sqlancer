@@ -29,9 +29,9 @@ import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Distinct;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Exist;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ExpressionBag;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3OrderingTerm;
+import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableAndColumnRef;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3TableReference;
-import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3ResultMap;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Text;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Typeof;
 import sqlancer.sqlite3.ast.SQLite3Expression.SQLite3Values;
@@ -317,7 +317,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
                 sb.append(")");
             }
         }
-        
+
         sb.append(")");
     }
 
@@ -534,7 +534,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
     public void visit(SQLite3Values values) {
         Map<String, List<SQLite3Constant>> vs = values.getValues();
         int size = vs.get(vs.keySet().iterator().next()).size();
-        List<String> columnNames = values.getColumns().stream().map(c->c.getName()).collect(Collectors.toList());
+        List<String> columnNames = values.getColumns().stream().map(c -> c.getName()).collect(Collectors.toList());
         sb.append("(VALUES ");
         for (int i = 0; i < size; i++) {
             sb.append("(");
@@ -586,7 +586,7 @@ public class SQLite3ToStringVisitor extends ToStringVisitor<SQLite3Expression> i
         if (size == 0) {
             throw new AssertionError("The result of the expression must not be empty.");
         }
-        List<String> columnNames = values.getColumns().stream().map(c->c.getName()).collect(Collectors.toList());
+        List<String> columnNames = values.getColumns().stream().map(c -> c.getName()).collect(Collectors.toList());
         sb.append(" CASE ");
         for (int i = 0; i < size; i++) {
             sb.append("WHEN ");

@@ -1,8 +1,8 @@
 package sqlancer.sqlite3.ast;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.LikeImplementationHelper;
@@ -114,7 +114,7 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
     public static class SQLite3Exist extends SQLite3Expression {
 
         private final SQLite3Expression select;
-        private boolean negated = false;
+        private boolean negated;
 
         public SQLite3Exist(SQLite3Expression select, boolean negated) {
             this.select = select;
@@ -1565,7 +1565,7 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
 
     public static class SQLite3WithClause extends SQLite3Expression {
 
-        private SQLite3Expression left;
+        private final SQLite3Expression left;
         private SQLite3Expression right;
 
         public SQLite3WithClause(SQLite3Expression left, SQLite3Expression right) {
@@ -1593,23 +1593,23 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
 
     public static class SQLite3Alias extends SQLite3Expression {
 
-        private SQLite3Expression originalExpression;
-        private SQLite3Expression aliasExpression;
-    
+        private final SQLite3Expression originalExpression;
+        private final SQLite3Expression aliasExpression;
+
         public SQLite3Alias(SQLite3Expression originalExpression, SQLite3Expression aliasExpression) {
             this.originalExpression = originalExpression;
             this.aliasExpression = aliasExpression;
         }
-    
+
         @Override
         public SQLite3CollateSequence getExplicitCollateSequence() {
             return null;
         }
-        
+
         public SQLite3Expression getOriginalExpression() {
             return originalExpression;
         }
-    
+
         public SQLite3Expression getAliasExpression() {
             return aliasExpression;
         }
@@ -1673,8 +1673,7 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
         }
     }
 
-
-    // The ExpressionBag is not a built-in SQL feature, 
+    // The ExpressionBag is not a built-in SQL feature,
     // but rather a utility class used in CODDTest's oracle construction
     // to substitute expressions with their corresponding constant values.
     public static class SQLite3ExpressionBag extends SQLite3Expression {
@@ -1700,7 +1699,7 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
     }
 
     public static class SQLite3Typeof extends SQLite3Expression {
-        private SQLite3Expression innerExpr;
+        private final SQLite3Expression innerExpr;
 
         public SQLite3Typeof(SQLite3Expression innerExpr) {
             this.innerExpr = innerExpr;
@@ -1714,7 +1713,7 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
         public SQLite3CollateSequence getExplicitCollateSequence() {
             return null;
         }
-        
+
     }
 
     public static class SQLite3ResultMap extends SQLite3Expression {
@@ -1723,7 +1722,8 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
         private final List<SQLite3Constant> summary;
         private final SQLite3DataType summaryDataType;
 
-        public SQLite3ResultMap(SQLite3Values values, List<SQLite3ColumnName> columns, List<SQLite3Constant> summary, SQLite3DataType summaryDataType) {
+        public SQLite3ResultMap(SQLite3Values values, List<SQLite3ColumnName> columns, List<SQLite3Constant> summary,
+                SQLite3DataType summaryDataType) {
             this.values = values;
             this.columns = columns;
             this.summary = summary;
@@ -1755,6 +1755,6 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
         public SQLite3CollateSequence getExplicitCollateSequence() {
             return null;
         }
-        
+
     }
 }
