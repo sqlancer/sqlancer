@@ -40,6 +40,7 @@ import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.materialize.MaterializeProvider;
 import sqlancer.mysql.MySQLProvider;
 import sqlancer.oceanbase.OceanBaseProvider;
+import sqlancer.oxla.OxlaProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.presto.PrestoProvider;
 import sqlancer.questdb.QuestDBProvider;
@@ -742,6 +743,7 @@ public final class Main {
             providers.add(new MaterializeProvider());
             providers.add(new MySQLProvider());
             providers.add(new OceanBaseProvider());
+            providers.add(new OxlaProvider());
             providers.add(new PrestoProvider());
             providers.add(new PostgresProvider());
             providers.add(new QuestDBProvider());
