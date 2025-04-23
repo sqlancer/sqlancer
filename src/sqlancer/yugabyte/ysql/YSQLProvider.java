@@ -72,9 +72,9 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             case SET_CONSTRAINTS:
             case SET:
             case COMMENT_ON:
-            case NOTIFY:
-            case LISTEN:
-            case UNLISTEN:
+//            case NOTIFY:
+//            case LISTEN:
+//            case UNLISTEN:
             case CREATE_SEQUENCE:
             case TRUNCATE:
                 nrPerformed = r.getInteger(0, 15);
@@ -347,9 +347,9 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
          * https://www.postgres.org/docs/devel/sql-reset.html TODO: also
          * configuration parameter
          */), //
-        NOTIFY(YSQLNotifyGenerator::createNotify), //
-        LISTEN((g) -> YSQLNotifyGenerator.createListen()), //
-        UNLISTEN((g) -> YSQLNotifyGenerator.createUnlisten()), //
+//        NOTIFY(YSQLNotifyGenerator::createNotify), //
+//        LISTEN((g) -> YSQLNotifyGenerator.createListen()), //
+//        UNLISTEN((g) -> YSQLNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(YSQLSequenceGenerator::createSequence), //
         CREATE_VIEW(YSQLViewGenerator::create),
         REFRESH_VIEW(YSQLMaterializedViewRefresh::create);
