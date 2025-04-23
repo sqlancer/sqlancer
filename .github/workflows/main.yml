@@ -569,6 +569,7 @@ jobs:
           mvn -Dtest=TestSQLitePQS test
           mvn -Dtest=TestSQLiteTLP test
           mvn -Dtest=TestSQLiteNoREC test
+          mvn -Dtest=TestSQLiteCODDTest test
 
   sqlite-qpg:
     name: QPG Tests (SQLite)
