@@ -81,13 +81,13 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
         SQLite3Errors.addExpectedExpressionErrors(errors);
         SQLite3Errors.addMatchQueryErrors(errors);
         SQLite3Errors.addQueryErrors(errors);
-        errors.add("misuse of aggregate");
-        errors.add("misuse of window function");
-        errors.add("second argument to nth_value must be a positive integer");
-        errors.add("no such table");
-        errors.add("no query solution");
-        errors.add("unable to use function MATCH in the requested context");
-        errors.add("[SQLITE_ERROR] SQL error or missing database (unrecognized token:");
+        // errors.add("misuse of aggregate");
+        // errors.add("misuse of window function");
+        // errors.add("second argument to nth_value must be a positive integer");
+        // errors.add("no such table");
+        // errors.add("no query solution");
+        // errors.add("unable to use function MATCH in the requested context");
+        // errors.add("[SQLITE_ERROR] SQL error or missing database (unrecognized token:");
     }
 
     @Override
@@ -200,7 +200,7 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
             // There is not `ANY` and `ALL` operator in SQLite3
             // Row Subquery
             // original query
-            SQLite3Table temporaryTable = this.genTemporaryTable(auxiliaryQuery, this.TEMP_TABLE_NAME);
+            SQLite3Table temporaryTable = this.genTemporaryTable(auxiliaryQuery, SQLite3CODDTestOracle.TEMP_TABLE_NAME);
             originalQuery = this.genSelectExpression(temporaryTable, null);
             SQLite3TableAndColumnRef tableAndColumnRef = new SQLite3TableAndColumnRef(temporaryTable);
             SQLite3WithClause withClause = new SQLite3WithClause(tableAndColumnRef, new SQLite3Select(auxiliaryQuery));
@@ -222,19 +222,19 @@ public class SQLite3CODDTestOracle extends CODDTestBase<SQLite3GlobalState> impl
                 originalQuery.setWithClause(null);
                 SQLite3TableReference tempTableRef = new SQLite3TableReference(temporaryTable);
                 SQLite3Alias alias = new SQLite3Alias(new SQLite3Select(auxiliaryQuery), tempTableRef);
-                originalQuery.replaceFromTable(this.TEMP_TABLE_NAME, alias);
+                originalQuery.replaceFromTable(SQLite3CODDTestOracle.TEMP_TABLE_NAME, alias);
                 foldedQueryString = SQLite3Visitor.asString(originalQuery);
                 foldedResult = getQueryResult(foldedQueryString, state);
             } else if (this.enableInsert()) {
                 // there are too many false positives
                 // folded query: CREATE the table and INSERT INTO table subquery
                 try {
-                    this.createTemporaryTable(auxiliaryQuery, this.TEMP_TABLE_NAME);
+                    this.createTemporaryTable(auxiliaryQuery, SQLite3CODDTestOracle.TEMP_TABLE_NAME);
                     originalQuery.setWithClause(null);
                     foldedQueryString = SQLite3Visitor.asString(originalQuery);
                     foldedResult = getQueryResult(foldedQueryString, state);
                 } finally {
-                    dropTemporaryTable(this.TEMP_TABLE_NAME);
+                    dropTemporaryTable(SQLite3CODDTestOracle.TEMP_TABLE_NAME);
                 }
             } else {
                 throw new IgnoreMeException();
