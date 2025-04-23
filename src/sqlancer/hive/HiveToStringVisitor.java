@@ -71,26 +71,26 @@ public class HiveToStringVisitor extends NewToStringVisitor<HiveExpression> {
 
     private void visit(HiveJoin join) {
         switch (join.getJoinType()) {
-            case INNER:
-                sb.append(" INNER JOIN ");
-                break;
-            case LEFT_OUTER:
-                sb.append(" LEFT JOIN ");
-                break;
-            case RIGHT_OUTER:
-                sb.append(" RIGHT JOIN ");
-                break;
-            case FULL_OUTER:
-                sb.append(" FULL JOIN ");
-                break;
-            case LEFT_SEMI:
-                sb.append(" LEFT SEMI JOIN ");
-                break;
-            case CROSS:
-                sb.append(" CROSS JOIN ");
-                break;
-            default:
-                throw new UnsupportedOperationException();
+        case INNER:
+            sb.append(" INNER JOIN ");
+            break;
+        case LEFT_OUTER:
+            sb.append(" LEFT JOIN ");
+            break;
+        case RIGHT_OUTER:
+            sb.append(" RIGHT JOIN ");
+            break;
+        case FULL_OUTER:
+            sb.append(" FULL JOIN ");
+            break;
+        case LEFT_SEMI:
+            sb.append(" LEFT SEMI JOIN ");
+            break;
+        case CROSS:
+            sb.append(" CROSS JOIN ");
+            break;
+        default:
+            throw new UnsupportedOperationException();
         }
         visit((TableReferenceNode<HiveExpression, HiveSchema.HiveTable>) join.getRightTable());
         if (join.getOnClause() != null) {

@@ -28,8 +28,8 @@ public class HiveOptions implements DBMSSpecificOptions<HiveOptions.HiveOracleFa
             @Override
             public TestOracle<HiveGlobalState> create(HiveGlobalState globalState) throws SQLException {
                 HiveExpressionGenerator gen = new HiveExpressionGenerator(globalState);
-                ExpectedErrors expectedErrors = ExpectedErrors.newErrors()
-                        .with(HiveErrors.getExpressionErrors()).build();
+                ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(HiveErrors.getExpressionErrors())
+                        .build();
 
                 return new TLPWhereOracle<>(globalState, gen, expectedErrors);
             }

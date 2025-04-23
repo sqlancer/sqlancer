@@ -61,15 +61,14 @@ public class HiveProvider extends SQLProviderAdapter<HiveGlobalState, HiveOption
                 String tableName = globalState.getSchema().getFreeTableName();
                 SQLQueryAdapter qt = HiveTableGenerator.generate(globalState, tableName);
                 success = globalState.executeStatement(qt);
-            } while(!success);
+            } while (!success);
         }
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
             throw new IgnoreMeException(); // TODO
         }
 
-        StatementExecutor<HiveGlobalState, Action> se = new StatementExecutor<HiveGlobalState, Action>(
-                globalState, Action.values(), 
-                HiveProvider::mapActions, (q) -> {
+        StatementExecutor<HiveGlobalState, Action> se = new StatementExecutor<HiveGlobalState, Action>(globalState,
+                Action.values(), HiveProvider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                         throw new IgnoreMeException();
                     }
@@ -107,9 +106,8 @@ public class HiveProvider extends SQLProviderAdapter<HiveGlobalState, HiveOption
             s.execute("USE " + databaseName);
         }
         con.close();
-        con = DriverManager.getConnection(
-            String.format("jdbc:hive2://%s:%d/%s", host, port, databaseName,
-            username, password));
+        con = DriverManager
+                .getConnection(String.format("jdbc:hive2://%s:%d/%s", host, port, databaseName, username, password));
 
         return new SQLConnection(con);
     }

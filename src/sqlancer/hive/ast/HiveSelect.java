@@ -8,7 +8,7 @@ import sqlancer.hive.HiveToStringVisitor;
 import sqlancer.hive.HiveSchema.HiveColumn;
 import sqlancer.hive.HiveSchema.HiveTable;
 
-public class HiveSelect extends SelectBase<HiveExpression> 
+public class HiveSelect extends SelectBase<HiveExpression>
         implements Select<HiveJoin, HiveExpression, HiveTable, HiveColumn>, HiveExpression {
 
     private boolean isDistinct;

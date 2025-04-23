@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpression, HiveColumn> 
+public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpression, HiveColumn>
         implements TLPWhereGenerator<HiveSelect, HiveJoin, HiveExpression, HiveTable, HiveColumn> {
 
     private final HiveGlobalState globalState;
@@ -37,8 +37,8 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
 
     private enum Expression {
         // TODO: add or delete expressions.
-        UNARY_PREFIX, UNARY_POSTFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC,
-        CAST, FUNC, BETWEEN, IN, CASE;
+        UNARY_PREFIX, UNARY_POSTFIX, BINARY_COMPARISON, BINARY_LOGICAL, BINARY_ARITHMETIC, CAST, FUNC, BETWEEN, IN,
+        CASE;
     }
 
     public HiveExpressionGenerator(HiveGlobalState globalState) {
@@ -62,12 +62,12 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
     }
 
     private HiveExpression generateExpressionInternal(int depth) throws AssertionError {
-            if (depth >= globalState.getOptions().getMaxExpressionDepth() 
+        if (depth >= globalState.getOptions().getMaxExpressionDepth()
                 || Randomly.getBooleanWithRatherLowProbability()) {
             return generateLeafNode();
         }
         if (allowAggregates && Randomly.getBooleanWithRatherLowProbability()) {
-            allowAggregates= false; // aggregate function calls cannot be nested
+            allowAggregates = false; // aggregate function calls cannot be nested
             HiveAggregateFunction aggregate = HiveAggregateFunction.getRandom();
             return new HiveFunction<>(generateExpressions(aggregate.getNrArgs(), depth + 1), aggregate);
         }
@@ -77,46 +77,36 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
 
         Expression expr = Randomly.fromList(possibleOptions);
         switch (expr) {
-            case UNARY_PREFIX:
-                return new HiveUnaryPrefixOperation(generateExpression(depth + 1),
-                        HiveUnaryPrefixOperator.getRandom());
-            case UNARY_POSTFIX:
-                return new HiveUnaryPostfixOperation(generateExpression(depth + 1),
-                        HiveUnaryPostfixOperator.getRandom());
-            case BINARY_COMPARISON:
-                Operator op = HiveBinaryComparisonOperator.getRandom();
-                return new HiveBinaryOperation(generateExpression(depth + 1),
-                        generateExpression(depth + 1), op);
-            case BINARY_LOGICAL:
-                op = HiveExpressionGenerator.HiveBinaryLogicalOperator.getRandom();
-                return new HiveBinaryOperation(generateExpression(depth + 1),
-                        generateExpression(depth + 1), op);
-            case BINARY_ARITHMETIC:
-                return new HiveBinaryOperation(generateExpression(depth + 1),
-                        generateExpression(depth + 1),
-                        HiveExpressionGenerator.HiveBinaryArithmeticOperator.getRandom());
-            case CAST:
-                return new HiveCastOperation(generateExpression(depth + 1), HiveDataType.getRandomType());
-            case FUNC:
-                HiveFunc func = HiveFunc.getRandom();
-                return new HiveFunction<>(generateExpressions(func.getNrArgs()), func);
-            case BETWEEN:
-                return new HiveBetweenOperation(generateExpression(depth + 1),
-                        generateExpression(depth + 1),
-                        generateExpression(depth + 1),
-                        Randomly.getBoolean());
-            case IN:
-                return new HiveInOperation(generateExpression(depth + 1),
-                        generateExpressions(Randomly.smallNumber() + 1, depth + 1),
-                        Randomly.getBoolean());
-            case CASE:
-                int nr = Randomly.smallNumber() + 1;
-                return new HiveCaseOperation(generateExpression(depth + 1),
-                        generateExpressions(nr, depth + 1),
-                        generateExpressions(nr, depth + 1),
-                        generateExpression(depth + 1));
-            default:
-                throw new AssertionError(expr);
+        case UNARY_PREFIX:
+            return new HiveUnaryPrefixOperation(generateExpression(depth + 1), HiveUnaryPrefixOperator.getRandom());
+        case UNARY_POSTFIX:
+            return new HiveUnaryPostfixOperation(generateExpression(depth + 1), HiveUnaryPostfixOperator.getRandom());
+        case BINARY_COMPARISON:
+            Operator op = HiveBinaryComparisonOperator.getRandom();
+            return new HiveBinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1), op);
+        case BINARY_LOGICAL:
+            op = HiveExpressionGenerator.HiveBinaryLogicalOperator.getRandom();
+            return new HiveBinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1), op);
+        case BINARY_ARITHMETIC:
+            return new HiveBinaryOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+                    HiveExpressionGenerator.HiveBinaryArithmeticOperator.getRandom());
+        case CAST:
+            return new HiveCastOperation(generateExpression(depth + 1), HiveDataType.getRandomType());
+        case FUNC:
+            HiveFunc func = HiveFunc.getRandom();
+            return new HiveFunction<>(generateExpressions(func.getNrArgs()), func);
+        case BETWEEN:
+            return new HiveBetweenOperation(generateExpression(depth + 1), generateExpression(depth + 1),
+                    generateExpression(depth + 1), Randomly.getBoolean());
+        case IN:
+            return new HiveInOperation(generateExpression(depth + 1),
+                    generateExpressions(Randomly.smallNumber() + 1, depth + 1), Randomly.getBoolean());
+        case CASE:
+            int nr = Randomly.smallNumber() + 1;
+            return new HiveCaseOperation(generateExpression(depth + 1), generateExpressions(nr, depth + 1),
+                    generateExpressions(nr, depth + 1), generateExpression(depth + 1));
+        default:
+            throw new AssertionError(expr);
         }
     }
 
@@ -128,16 +118,16 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
         HiveDataType[] values = HiveDataType.values();
         HiveDataType constantType = Randomly.fromOptions(values);
         switch (constantType) {
-            case STRING:
-                return HiveConstant.createStringConstant(globalState.getRandomly().getString());
-            case INT:
-                return HiveConstant.createIntConstant(globalState.getRandomly().getInteger());
-            case DOUBLE:
-                return HiveConstant.createDoubleConstant(globalState.getRandomly().getDouble());
-            case BOOLEAN:
-                return HiveConstant.createBooleanConstant(Randomly.getBoolean());
-            default:
-                throw new AssertionError(constantType);
+        case STRING:
+            return HiveConstant.createStringConstant(globalState.getRandomly().getString());
+        case INT:
+            return HiveConstant.createIntConstant(globalState.getRandomly().getInteger());
+        case DOUBLE:
+            return HiveConstant.createDoubleConstant(globalState.getRandomly().getDouble());
+        case BOOLEAN:
+            return HiveConstant.createBooleanConstant(Randomly.getBoolean());
+        default:
+            throw new AssertionError(constantType);
         }
     }
 
@@ -159,7 +149,6 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
         }
         return newExpr;
     }
-
 
     @Override
     public HiveExpressionGenerator setTablesAndColumns(AbstractTables<HiveTable, HiveColumn> tables) {
@@ -189,8 +178,7 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
         if (Randomly.getBoolean()) {
             return List.of(new HiveColumnReference(new HiveColumn("*", null, null)));
         }
-        return Randomly.nonEmptySubset(columns).stream()
-                .map(c -> new HiveColumnReference(c))
+        return Randomly.nonEmptySubset(columns).stream().map(c -> new HiveColumnReference(c))
                 .collect(Collectors.toList());
     }
 
@@ -243,9 +231,8 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
 
     public enum HiveBinaryComparisonOperator implements Operator {
 
-        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"),
-        SMALLER_EQUALS("<="), NOT_EQUALS("!="), LIKE("LIKE"),
-        NOT_LIKE("NOT LIKE"), REGEXP("RLIKE");
+        EQUALS("="), GREATER(">"), GREATER_EQUALS(">="), SMALLER("<"), SMALLER_EQUALS("<="), NOT_EQUALS("!="),
+        LIKE("LIKE"), NOT_LIKE("NOT LIKE"), REGEXP("RLIKE");
 
         private String textRepr;
 
@@ -305,18 +292,8 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
     }
 
     public enum HiveAggregateFunction {
-        COUNT(1),
-        SUM(1),
-        AVG(1),
-        MIN(1),
-        MAX(1),
-        VARIANCE(1),
-        VAR_SAMP(1),
-        STDDEV_POP(1),
-        STDDEV_SAMP(1),
-        COVAR_POP(2),
-        COVAR_SAMP(2),
-        CORR(2);
+        COUNT(1), SUM(1), AVG(1), MIN(1), MAX(1), VARIANCE(1), VAR_SAMP(1), STDDEV_POP(1), STDDEV_SAMP(1), COVAR_POP(2),
+        COVAR_SAMP(2), CORR(2);
 
         private int nrArgs;
 
@@ -335,17 +312,15 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
 
     // TODO: test all Hive default functions...
     public enum HiveFunc {
-      
+
         // mathematical functions
-        ROUND(2),
-        FLOOR(1);
+        ROUND(2), FLOOR(1);
 
         // collection functions
 
         // date functions
 
         // string functions
-        
 
         private int nrArgs;
         private boolean isVariadic;
