@@ -2,11 +2,7 @@ package sqlancer;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Supplier;
 
 public final class Randomly {
@@ -20,6 +16,7 @@ public final class Randomly {
     private final List<Integer> cachedIntegers = new ArrayList<>();
     private final List<String> cachedStrings = new ArrayList<>();
     private final List<Double> cachedDoubles = new ArrayList<>();
+    private final List<Float> cachedFloats = new ArrayList<>();
     private final List<byte[]> cachedBytes = new ArrayList<>();
     private Supplier<String> provider;
 
@@ -41,6 +38,12 @@ public final class Randomly {
     private void addToCache(double val) {
         if (useCaching && cachedDoubles.size() < cacheSize && !cachedDoubles.contains(val)) {
             cachedDoubles.add(val);
+        }
+    }
+
+    private void addToCache(float val) {
+        if (useCaching && cachedFloats.size() < cacheSize && !cachedFloats.contains(val)) {
+            cachedFloats.add(val);
         }
     }
 
@@ -74,6 +77,19 @@ public final class Randomly {
             return (double) Randomly.fromList(cachedLongs);
         } else if (!cachedDoubles.isEmpty()) {
             return Randomly.fromList(cachedDoubles);
+        } else {
+            return null;
+        }
+    }
+
+    private Float getFromFloatCache() {
+        if (!useCaching) {
+            return null;
+        }
+        if (Randomly.getBoolean() && !cachedLongs.isEmpty()) {
+            return (float) Randomly.fromList(cachedLongs);
+        } else if (!cachedFloats.isEmpty()) {
+            return Randomly.fromList(cachedFloats);
         } else {
             return null;
         }
@@ -206,10 +222,30 @@ public final class Randomly {
                     return l;
                 }
             }
-            long nextLong = getThreadRandom().get().nextInt();
+            long nextLong = getThreadRandom().get().nextLong();
             addToCache(nextLong);
             return nextLong;
         }
+    }
+
+    // NOTE: Alias for now, previous developers made `getInteger` return `long` for some reason - but refactoring this
+    // stuff would take some time, so yeah.
+    public long getLong() {
+        return getInteger();
+    }
+
+    public int getInteger32() {
+        if (smallBiasProbability()) {
+            return Randomly.fromOptions(-1, 1, 0, Integer.MAX_VALUE, Integer.MIN_VALUE);
+        } else if (cacheProbability()) {
+            Integer i = getFromIntegerCache();
+            if (i != null) {
+                return i;
+            }
+        }
+        int nextInteger = getThreadRandom().get().nextInt();
+        addToCache(nextInteger);
+        return nextInteger;
     }
 
     public enum StringGenerationStrategy {
@@ -269,7 +305,7 @@ public final class Randomly {
                     }
                 }
                 while (Randomly.getBooleanWithSmallProbability()) {
-                    String[][] pairs = { { "{", "}" }, { "[", "]" }, { "(", ")" } };
+                    String[][] pairs = {{"{", "}"}, {"[", "]"}, {"(", ")"}};
                     int idx = (int) Randomly.getNotCachedInteger(0, pairs.length);
                     int left = (int) Randomly.getNotCachedInteger(0, sb.length() + 1);
                     sb.insert(left, pairs[idx][0]);
@@ -426,6 +462,20 @@ public final class Randomly {
             }
         }
         double value = getThreadRandom().get().nextDouble();
+        addToCache(value);
+        return value;
+    }
+
+    public float getFloat() {
+        if (smallBiasProbability()) {
+            return Randomly.fromOptions(0.0f, -0.0f, Float.MAX_VALUE, -Float.MAX_VALUE, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY);
+        } else if (cacheProbability()) {
+            Float f = getFromFloatCache();
+            if (f != null) {
+                return f;
+            }
+        }
+        float value = getThreadRandom().get().nextFloat();
         addToCache(value);
         return value;
     }

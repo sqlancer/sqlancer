@@ -17,6 +17,7 @@ public class OxlaTableGenerator {
             Pattern.compile("relation \"[^\"]*\" already exists"),
             Pattern.compile("column \"[^\"]*\" has unsupported type")
     );
+    public static final ExpectedErrors expectedErrors = new ExpectedErrors(errors, regexErrors);
 
     private OxlaTableGenerator() {
     }
@@ -45,6 +46,6 @@ public class OxlaTableGenerator {
             }
         }
         queryBuilder.append(')');
-        return new SQLQueryAdapter(queryBuilder.toString(), new ExpectedErrors(errors, regexErrors), true);
+        return new SQLQueryAdapter(queryBuilder.toString(), expectedErrors, true);
     }
 }

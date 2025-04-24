@@ -20,6 +20,7 @@ public class OxlaProvider extends SQLProviderAdapter<OxlaGlobalState, OxlaOption
     protected String host;
     protected Integer port;
 
+    /** Actions performed each time the database is prepared. */
     public enum OxlaAction implements AbstractAction<OxlaGlobalState> {
         TEST_SELECT(state -> new SQLQueryAdapter("SELECT 1"));
 
@@ -36,15 +37,12 @@ public class OxlaProvider extends SQLProviderAdapter<OxlaGlobalState, OxlaOption
 
         public static int mapActions(OxlaGlobalState globalState, OxlaAction action) {
             Randomly randomly = globalState.getRandomly();
-            int timesPerformed = 0;
             switch (action) {
                 case TEST_SELECT:
-                    timesPerformed = randomly.getInteger(0, 5);
-                    break;
+                    return randomly.getInteger(0, 5);
                 default:
                     throw new AssertionError(action);
             }
-            return timesPerformed;
         }
     }
 

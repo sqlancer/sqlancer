@@ -14,7 +14,7 @@ public class OxlaFuzzer implements TestOracle<OxlaGlobalState> {
     @Override
     public void check() throws Exception {
         try {
-            globalState.executeStatement(new SQLQueryAdapter("SELECT 1;"));
+            globalState.executeStatement(new SQLQueryAdapter("SELECT 1"));
             globalState.getManager().incrementSelectQueryCount();
         } catch (Error e) {
             throw new AssertionError(e);
