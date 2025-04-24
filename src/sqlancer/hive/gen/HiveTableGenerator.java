@@ -1,5 +1,8 @@
 package sqlancer.hive.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
@@ -7,13 +10,10 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.hive.HiveErrors;
 import sqlancer.hive.HiveGlobalState;
 import sqlancer.hive.HiveSchema;
-import sqlancer.hive.HiveToStringVisitor;
 import sqlancer.hive.HiveSchema.HiveColumn;
 import sqlancer.hive.HiveSchema.HiveDataType;
 import sqlancer.hive.HiveSchema.HiveTable;
-
-import java.util.ArrayList;
-import java.util.List;
+import sqlancer.hive.HiveToStringVisitor;
 
 public class HiveTableGenerator {
 
@@ -31,7 +31,7 @@ public class HiveTableGenerator {
     private final HiveExpressionGenerator gen;
     private final HiveTable table;
     private final List<HiveColumn> columnsToBeAdded = new ArrayList<>();
-    private boolean setPrimaryKey = false;
+    private boolean setPrimaryKey;
 
     public HiveTableGenerator(HiveGlobalState globalState, String tableName) {
         this.tableName = tableName;
@@ -57,7 +57,7 @@ public class HiveTableGenerator {
             if (i != 0) {
                 sb.append(", ");
             }
-            appendColumn(i, errors);
+            appendColumn(i);
         }
         sb.append(")");
 
@@ -71,19 +71,20 @@ public class HiveTableGenerator {
         return new SQLQueryAdapter(sb.toString(), errors, true, false);
     }
 
-    private void appendColumn(int columnId, ExpectedErrors errors) {
+    private void appendColumn(int columnId) {
         String columnName = DBMSCommon.createColumnName(columnId);
         sb.append(columnName);
         sb.append(" ");
         HiveDataType randType = HiveSchema.HiveDataType.getRandomType();
         sb.append(randType);
         columnsToBeAdded.add(new HiveColumn(columnName, table, randType));
-        appendColumnConstraint(randType, errors);
+        appendColumnConstraint();
     }
 
-    private void appendColumnConstraint(HiveDataType type, ExpectedErrors errors) {
-        /* column_constraint_specification:
-             : [ PRIMARY KEY|UNIQUE|NOT NULL|DEFAULT [default_value]|CHECK  [check_expression] ENABLE|DISABLE NOVALIDATE RELY/NORELY ] 
+    private void appendColumnConstraint() {
+        /*
+         * column_constraint_specification: : [ PRIMARY KEY|UNIQUE|NOT NULL|DEFAULT [default_value]|CHECK
+         * [check_expression] ENABLE|DISABLE NOVALIDATE RELY/NORELY ]
          */
         if (Randomly.getBoolean()) {
             // no column constraint
@@ -92,31 +93,30 @@ public class HiveTableGenerator {
 
         ColumnConstraints constraint = Randomly.fromOptions(ColumnConstraints.values());
         switch (constraint) {
-            case PRIMARY_KEY_DISABLE:
-                if (allowPrimaryKey && !setPrimaryKey) {
-                    sb.append(" PRIMARY KEY DISABLE");
-                    setPrimaryKey = true;
-                }
-                break;
-            case UNIQUE_DISABLE:
-                sb.append(" UNIQUE DISABLE");
-                break;
-            case NOT_NULL:
-                sb.append(" NOT NULL");
-                break;
-            case DEFAULT:
-                sb.append(" DEFAULT (");
-                sb.append(HiveToStringVisitor.asString(gen.generateConstant()));
-                sb.append(")");
-            case CHECK:
-                sb.append(" CHECK (");
-                sb.append(HiveToStringVisitor.asString(gen.generateExpression()));
-                sb.append(")");
-                break;
-            default:
-                throw new AssertionError(constraint);
+        case PRIMARY_KEY_DISABLE:
+            if (allowPrimaryKey && !setPrimaryKey) {
+                sb.append(" PRIMARY KEY DISABLE");
+                setPrimaryKey = true;
+            }
+            break;
+        case UNIQUE_DISABLE:
+            sb.append(" UNIQUE DISABLE");
+            break;
+        case NOT_NULL:
+            sb.append(" NOT NULL");
+            break;
+        case DEFAULT:
+            sb.append(" DEFAULT (");
+            sb.append(HiveToStringVisitor.asString(gen.generateConstant()));
+            sb.append(")");
+        case CHECK:
+            sb.append(" CHECK (");
+            sb.append(HiveToStringVisitor.asString(gen.generateExpression()));
+            sb.append(")");
+            break;
+        default:
+            throw new AssertionError(constraint);
         }
     }
-
 
 }

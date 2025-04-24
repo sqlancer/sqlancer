@@ -1,5 +1,12 @@
 package sqlancer.hive;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
@@ -12,13 +19,6 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.hive.gen.HiveInsertGenerator;
 import sqlancer.hive.gen.HiveTableGenerator;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import com.google.auto.service.AutoService;
 
 @AutoService(DatabaseProvider.class)
 public class HiveProvider extends SQLProviderAdapter<HiveGlobalState, HiveOptions> {
@@ -61,14 +61,13 @@ public class HiveProvider extends SQLProviderAdapter<HiveGlobalState, HiveOption
                 String tableName = globalState.getSchema().getFreeTableName();
                 SQLQueryAdapter qt = HiveTableGenerator.generate(globalState, tableName);
                 success = globalState.executeStatement(qt);
-            } while(!success);
+            } while (!success);
         }
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
             throw new IgnoreMeException(); // TODO
         }
 
-        StatementExecutor<HiveGlobalState, Action> se = new StatementExecutor<HiveGlobalState, Action>(
-                globalState, Action.values(), 
+        StatementExecutor<HiveGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
                 HiveProvider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                         throw new IgnoreMeException();
@@ -107,9 +106,8 @@ public class HiveProvider extends SQLProviderAdapter<HiveGlobalState, HiveOption
             s.execute("USE " + databaseName);
         }
         con.close();
-        con = DriverManager.getConnection(
-            String.format("jdbc:hive2://%s:%d/%s", host, port, databaseName,
-            username, password));
+        con = DriverManager
+                .getConnection(String.format("jdbc:hive2://%s:%d/%s", host, port, databaseName, username, password));
 
         return new SQLConnection(con);
     }

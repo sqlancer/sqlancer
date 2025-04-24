@@ -9,5 +9,5 @@ public class HiveFunction<F> extends NewFunctionNode<HiveExpression, F> implemen
     public HiveFunction(List<HiveExpression> args, F func) {
         super(args, func);
     }
-    
+
 }

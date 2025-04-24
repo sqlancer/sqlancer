@@ -378,7 +378,7 @@
       <artifactId>flight-sql-jdbc-driver</artifactId>
       <version>16.1.0</version>
     </dependency>
-        <dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
       <version>4.0.1</version>

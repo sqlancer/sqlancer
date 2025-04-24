@@ -2,11 +2,11 @@ package sqlancer.hive;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.TableReferenceNode;
+import sqlancer.hive.ast.HiveCastOperation;
 import sqlancer.hive.ast.HiveConstant;
 import sqlancer.hive.ast.HiveExpression;
 import sqlancer.hive.ast.HiveJoin;
 import sqlancer.hive.ast.HiveSelect;
-import sqlancer.hive.ast.HiveCastOperation;
 
 public class HiveToStringVisitor extends NewToStringVisitor<HiveExpression> {
 
@@ -71,26 +71,26 @@ public class HiveToStringVisitor extends NewToStringVisitor<HiveExpression> {
 
     private void visit(HiveJoin join) {
         switch (join.getJoinType()) {
-            case INNER:
-                sb.append(" INNER JOIN ");
-                break;
-            case LEFT_OUTER:
-                sb.append(" LEFT JOIN ");
-                break;
-            case RIGHT_OUTER:
-                sb.append(" RIGHT JOIN ");
-                break;
-            case FULL_OUTER:
-                sb.append(" FULL JOIN ");
-                break;
-            case LEFT_SEMI:
-                sb.append(" LEFT SEMI JOIN ");
-                break;
-            case CROSS:
-                sb.append(" CROSS JOIN ");
-                break;
-            default:
-                throw new UnsupportedOperationException();
+        case INNER:
+            sb.append(" INNER JOIN ");
+            break;
+        case LEFT_OUTER:
+            sb.append(" LEFT JOIN ");
+            break;
+        case RIGHT_OUTER:
+            sb.append(" RIGHT JOIN ");
+            break;
+        case FULL_OUTER:
+            sb.append(" FULL JOIN ");
+            break;
+        case LEFT_SEMI:
+            sb.append(" LEFT SEMI JOIN ");
+            break;
+        case CROSS:
+            sb.append(" CROSS JOIN ");
+            break;
+        default:
+            throw new UnsupportedOperationException();
         }
         visit((TableReferenceNode<HiveExpression, HiveSchema.HiveTable>) join.getRightTable());
         if (join.getOnClause() != null) {

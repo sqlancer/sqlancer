@@ -17,7 +17,7 @@ public class HiveJoin implements HiveExpression, Join<HiveExpression, HiveTable,
         INNER, LEFT_OUTER, RIGHT_OUTER, FULL_OUTER, LEFT_SEMI, CROSS;
     }
 
-    public HiveJoin(HiveTableReference leftTable, HiveTableReference rightTable, JoinType joinType, 
+    public HiveJoin(HiveTableReference leftTable, HiveTableReference rightTable, JoinType joinType,
             HiveExpression onClause) {
         this.leftTable = leftTable;
         this.rightTable = rightTable;

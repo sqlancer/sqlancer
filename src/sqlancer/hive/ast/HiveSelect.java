@@ -4,11 +4,11 @@ import java.util.List;
 
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
-import sqlancer.hive.HiveToStringVisitor;
 import sqlancer.hive.HiveSchema.HiveColumn;
 import sqlancer.hive.HiveSchema.HiveTable;
+import sqlancer.hive.HiveToStringVisitor;
 
-public class HiveSelect extends SelectBase<HiveExpression> 
+public class HiveSelect extends SelectBase<HiveExpression>
         implements Select<HiveJoin, HiveExpression, HiveTable, HiveColumn>, HiveExpression {
 
     private boolean isDistinct;

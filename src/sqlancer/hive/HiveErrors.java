@@ -5,7 +5,7 @@ import java.util.List;
 
 import sqlancer.common.query.ExpectedErrors;
 
-public class HiveErrors {
+public final class HiveErrors {
 
     private HiveErrors() {
     }
