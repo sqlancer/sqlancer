@@ -1,12 +1,20 @@
 package sqlancer.hive.gen;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import sqlancer.Randomly;
+import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.NewOrderingTerm.Ordering;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.hive.HiveGlobalState;
-import sqlancer.hive.HiveSchema.*;
+import sqlancer.hive.HiveSchema.HiveColumn;
+import sqlancer.hive.HiveSchema.HiveDataType;
+import sqlancer.hive.HiveSchema.HiveTable;
 import sqlancer.hive.ast.HiveBetweenOperation;
 import sqlancer.hive.ast.HiveBinaryOperation;
 import sqlancer.hive.ast.HiveCaseOperation;
@@ -20,14 +28,8 @@ import sqlancer.hive.ast.HiveJoin;
 import sqlancer.hive.ast.HiveOrderingTerm;
 import sqlancer.hive.ast.HiveSelect;
 import sqlancer.hive.ast.HiveTableReference;
-import sqlancer.hive.ast.HiveUnaryPrefixOperation;
 import sqlancer.hive.ast.HiveUnaryPostfixOperation;
-import sqlancer.common.ast.BinaryOperatorNode.Operator;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import sqlancer.hive.ast.HiveUnaryPrefixOperation;
 
 public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpression, HiveColumn>
         implements TLPWhereGenerator<HiveSelect, HiveJoin, HiveExpression, HiveTable, HiveColumn> {

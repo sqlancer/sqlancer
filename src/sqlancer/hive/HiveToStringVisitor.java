@@ -2,11 +2,11 @@ package sqlancer.hive;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.TableReferenceNode;
+import sqlancer.hive.ast.HiveCastOperation;
 import sqlancer.hive.ast.HiveConstant;
 import sqlancer.hive.ast.HiveExpression;
 import sqlancer.hive.ast.HiveJoin;
 import sqlancer.hive.ast.HiveSelect;
-import sqlancer.hive.ast.HiveCastOperation;
 
 public class HiveToStringVisitor extends NewToStringVisitor<HiveExpression> {
 

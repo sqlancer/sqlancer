@@ -1,5 +1,12 @@
 package sqlancer.hive;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import com.google.auto.service.AutoService;
+
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
@@ -12,13 +19,6 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.hive.gen.HiveInsertGenerator;
 import sqlancer.hive.gen.HiveTableGenerator;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import com.google.auto.service.AutoService;
 
 @AutoService(DatabaseProvider.class)
 public class HiveProvider extends SQLProviderAdapter<HiveGlobalState, HiveOptions> {
@@ -67,8 +67,8 @@ public class HiveProvider extends SQLProviderAdapter<HiveGlobalState, HiveOption
             throw new IgnoreMeException(); // TODO
         }
 
-        StatementExecutor<HiveGlobalState, Action> se = new StatementExecutor<HiveGlobalState, Action>(globalState,
-                Action.values(), HiveProvider::mapActions, (q) -> {
+        StatementExecutor<HiveGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
+                HiveProvider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                         throw new IgnoreMeException();
                     }
