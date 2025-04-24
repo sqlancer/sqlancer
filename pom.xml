@@ -378,6 +378,21 @@
       <artifactId>flight-sql-jdbc-driver</artifactId>
       <version>16.1.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc</artifactId>
+      <version>4.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-serde</artifactId>
+      <version>4.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-cli</artifactId>
+      <version>4.0.1</version>
+    </dependency>
   </dependencies>
   <reporting>
     <plugins>
