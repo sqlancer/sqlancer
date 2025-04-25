@@ -9,6 +9,7 @@ import sqlancer.oxla.schema.OxlaDataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpression, OxlaColumn, OxlaDataType> {
     private final OxlaGlobalState globalState;
@@ -48,7 +49,7 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
             case INTERVAL:
                 return OxlaConstant.createIntervalConstant(randomly.getInteger32(), randomly.getInteger32(), randomly.getLong());
             case JSON:
-                return OxlaConstant.createJsonConstant(randomly.getString());
+                return OxlaConstant.createJsonConstant(randomly.getString()); // TODO: Valid JSON generation.
             case TEXT:
                 return OxlaConstant.createTextConstant(randomly.getString());
             case TIME:
@@ -81,7 +82,17 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
 
     @Override
     protected OxlaExpression generateColumn(OxlaDataType type) {
-        return (OxlaExpression) Randomly.fromList(columns);
+        // FIXME Iterate over all columns and:
+        //       1. check their 'cast-ability':
+        //          - exclude impossible casts from the list,
+        //          - do nothing if the cast would be implicit,
+        //          - generate cast expression if the cast is explicit.
+        //       2. (?) Throw an error if the resulting list is empty.
+        //       Potentially add a boolean switch for the behavior above.
+        return new OxlaColumnReference(Randomly.fromList(columns
+                .stream()
+                .filter(column -> (column.getType() == type))
+                .collect(Collectors.toList())));
     }
 
     @Override

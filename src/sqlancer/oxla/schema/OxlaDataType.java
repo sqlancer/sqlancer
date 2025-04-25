@@ -5,6 +5,8 @@ import sqlancer.Randomly;
 public enum OxlaDataType {
     BOOLEAN, DATE, FLOAT32, FLOAT64, INT32, INT64, INTERVAL, JSON, TEXT, TIME, TIMESTAMP, TIMESTAMPTZ;
 
+    public static final OxlaDataType[] NUMERIC = new OxlaDataType[]{INT32, INT64, FLOAT32, FLOAT64};
+
     public static OxlaDataType getRandomType() {
         return Randomly.fromOptions(values());
     }
