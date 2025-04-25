@@ -47,8 +47,8 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         this.newGlobalState = newGlobalState;
         this.reproducer = reproducer;
 
-        long maxReduceTime = state.getOptions().getMaxStatementReduceTime();
-        long maxReduceSteps = state.getOptions().getMaxStatementReduceSteps();
+        long maxReduceTime = state.getOptions().getMaxReduceTime();
+        long maxReduceSteps = state.getOptions().getMaxReduceSteps();
 
         List<Query<?>> initialBugInducingStatements = state.getState().getStatements();
         newGlobalState.getState().setStatements(new ArrayList<>(initialBugInducingStatements));

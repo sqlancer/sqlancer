@@ -36,8 +36,8 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
     @Override
     public void reduce(G state, Reproducer<G> reproducer, G newGlobalState) throws Exception {
 
-        maxReduceTime = state.getOptions().getMaxStatementReduceTime();
-        maxReduceSteps = state.getOptions().getMaxStatementReduceSteps();
+        maxReduceTime = state.getOptions().getMaxReduceTime();
+        maxReduceSteps = state.getOptions().getMaxReduceSteps();
 
         List<Query<C>> knownToReproduceBugStatements = new ArrayList<>();
         for (Query<?> stat : state.getState().getStatements()) {
