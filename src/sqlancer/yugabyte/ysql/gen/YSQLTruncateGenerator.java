@@ -22,6 +22,7 @@ public final class YSQLTruncateGenerator {
         sb.append(" ");
         sb.append(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty().stream().map(AbstractTable::getName)
                 .collect(Collectors.joining(", ")));
+        // TODO remove Restart read required after proper tx ddls
         return new SQLQueryAdapter(sb.toString(), ExpectedErrors
                 .from("cannot truncate a table referenced in a foreign key constraint", "is not a table", "Failed DDL operation as requested", "Restart read required"));
     }
