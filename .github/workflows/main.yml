@@ -278,6 +278,7 @@ jobs:
         run: |
           mvn -Dtest=TestDuckDBTLP test
           mvn -Dtest=TestDuckDBNoREC test
+          mvn -Dtest=TestDuckDBCODDTest test
 
   h2:
     name: DBMS Tests (H2)
