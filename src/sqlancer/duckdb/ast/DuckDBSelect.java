@@ -39,7 +39,9 @@ public class DuckDBSelect extends SelectBase<DuckDBExpression>
         return DuckDBToStringVisitor.asString(this);
     }
 
-    public DuckDBSelect() {}
+    public DuckDBSelect() {
+    }
+
     public DuckDBSelect(DuckDBSelect oldSelect) {
         this.setWithClause(oldSelect.getWithClause());
         this.setFetchColumns(oldSelect.getFetchColumns());
@@ -51,5 +53,5 @@ public class DuckDBSelect extends SelectBase<DuckDBExpression>
         this.setHavingClause(oldSelect.getHavingClause());
         this.setLimitClause(oldSelect.getLimitClause());
         this.setOffsetClause(oldSelect.getOffsetClause());
-    } 
+    }
 }

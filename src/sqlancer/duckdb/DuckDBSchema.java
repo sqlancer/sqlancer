@@ -41,7 +41,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
 
         private final int size;
 
-        // This is used to handle the type that out of the scope of our code 
+        // This is used to handle the type that out of the scope of our code
         private final String typeName;
 
         public DuckDBCompositeDataType(DuckDBDataType dataType, int size) {

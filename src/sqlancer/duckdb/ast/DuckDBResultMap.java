@@ -1,22 +1,22 @@
 package sqlancer.duckdb.ast;
 
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DuckDBResultMap implements DuckDBExpression {
-    private final LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> DBStates;
+    private final Map<DuckDBColumnReference, List<DuckDBExpression>> dbStates;
     private final List<DuckDBExpression> results;
 
-    public DuckDBResultMap(LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> s, List<DuckDBExpression> r) {
-        this.DBStates = s;
+    public DuckDBResultMap(Map<DuckDBColumnReference, List<DuckDBExpression>> s, List<DuckDBExpression> r) {
+        this.dbStates = s;
         this.results = r;
         if (s.get(s.keySet().iterator().next()).size() != r.size()) {
             throw new AssertionError();
         }
     }
 
-    public LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> getDbStates() {
-        return this.DBStates;
+    public Map<DuckDBColumnReference, List<DuckDBExpression>> getDbStates() {
+        return this.dbStates;
     }
 
     public List<DuckDBExpression> getResult() {

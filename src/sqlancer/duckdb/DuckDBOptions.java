@@ -92,6 +92,7 @@ public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
             return this == SUBQUERY;
         }
     }
+
     @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on EXPRESSION, SUBQUERY, or RANDOM")
     public CODDTestModel coddTestModel = CODDTestModel.RANDOM;
 

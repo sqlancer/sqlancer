@@ -192,12 +192,6 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         return newExpr;
     };
 
-    @Override
-    public List<DuckDBExpression> generateGroupBys() {
-        List<DuckDBExpression> expr = super.generateGroupBys();
-        return expr;
-    };
-
     public static class DuckDBCastOperation extends NewUnaryPostfixOperatorNode<DuckDBExpression>
             implements DuckDBExpression {
 

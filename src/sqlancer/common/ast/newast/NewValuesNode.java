@@ -4,7 +4,7 @@ import java.util.List;
 
 public class NewValuesNode<T> {
     private final List<T> valuesList;
-    
+
     public NewValuesNode(List<T> valuesList) {
         this.valuesList = valuesList;
     }

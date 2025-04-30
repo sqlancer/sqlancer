@@ -1,12 +1,13 @@
 package sqlancer.duckdb;
 
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBConstant;
+import sqlancer.duckdb.ast.DuckDBConstant.DuckDBNullConstant;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBExpressionBag;
 import sqlancer.duckdb.ast.DuckDBJoin;
@@ -14,7 +15,6 @@ import sqlancer.duckdb.ast.DuckDBResultMap;
 import sqlancer.duckdb.ast.DuckDBSelect;
 import sqlancer.duckdb.ast.DuckDBTypeCast;
 import sqlancer.duckdb.ast.DuckDBTypeofNode;
-import sqlancer.duckdb.ast.DuckDBConstant.DuckDBNullConstant;
 
 public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> {
 
@@ -106,7 +106,7 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
 
     public void visit(DuckDBResultMap expr) {
         // use CASE WHEN to express the constant result of a expression
-        LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> dbstate = expr.getDbStates();
+        Map<DuckDBColumnReference, List<DuckDBExpression>> dbstate = expr.getDbStates();
         List<DuckDBExpression> result = expr.getResult();
         int size = dbstate.values().iterator().next().size();
         if (size == 0) {
@@ -172,6 +172,5 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
         visitor.visit(expr);
         return visitor.get();
     }
-
 
 }

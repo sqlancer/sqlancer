@@ -47,7 +47,7 @@ public abstract class NewToStringVisitor<E> {
     }
 
     public void visit(List<E> expressions) {
-        if (expressions.size() > 0 && expressions.get(0) instanceof NewValuesNode) {
+        if (!expressions.isEmpty() && expressions.get(0) instanceof NewValuesNode) {
             sb.append("VALUES ");
         }
         for (int i = 0; i < expressions.size(); i++) {
@@ -172,7 +172,6 @@ public abstract class NewToStringVisitor<E> {
         sb.append(")");
     }
 
-
     public void visit(NewExistsNode<E> existExpr) {
         if (existExpr.getIsNot()) {
             sb.append(" NOT");
@@ -181,7 +180,7 @@ public abstract class NewToStringVisitor<E> {
         visit(existExpr.getExpr());
         sb.append(")");
     }
-    
+
     public void visit(NewValuesNode<E> valuesExpr) {
         sb.append("(");
         List<E> values = valuesExpr.getValues();
@@ -193,7 +192,7 @@ public abstract class NewToStringVisitor<E> {
         }
         sb.append(")");
     }
-    
+
     public void visit(NewWithNode<E> withExpr) {
         sb.append("WITH ");
         visit(withExpr.getLeftExpr());

@@ -17,7 +17,9 @@ public class SelectBase<T> {
     T offsetClause;
     T withClause;
 
-    public SelectBase(){}
+    public SelectBase() {
+    }
+
     public SelectBase(SelectBase<T> other) {
         fetchColumns = new ArrayList<>(other.fetchColumns);
         groupByExpressions = new ArrayList<>(other.groupByExpressions);
