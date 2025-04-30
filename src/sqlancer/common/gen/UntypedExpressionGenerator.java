@@ -11,7 +11,7 @@ public abstract class UntypedExpressionGenerator<E, C> implements ExpressionGene
     protected boolean allowAggregates;
 
     public E generateExpression() {
-        return generateExpression(Randomly.smallNumber() + 1);
+        return generateExpression(0);
     }
 
     public abstract E generateConstant();

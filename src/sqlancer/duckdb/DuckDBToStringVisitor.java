@@ -151,8 +151,11 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
         } else {
             sb.append("(");
             visit(expr.getExpression());
-            sb.append(")::");
-            sb.append(expr.getType().toString());
+            sb.append(")");
+            if (!expr.getType().toString().equals("unknown")) {
+                sb.append("::");
+                sb.append(expr.getType().toString());
+            }
             sb.append(" ");
         }
     }
