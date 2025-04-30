@@ -41,9 +41,19 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
 
         private final int size;
 
+        // This is used to handle the type that out of the scope of our code
+        private final String typeName;
+
         public DuckDBCompositeDataType(DuckDBDataType dataType, int size) {
             this.dataType = dataType;
             this.size = size;
+            this.typeName = "";
+        }
+
+        public DuckDBCompositeDataType(String typeName) {
+            this.dataType = null;
+            this.size = 0;
+            this.typeName = typeName;
         }
 
         public DuckDBDataType getPrimitiveDataType() {
@@ -82,6 +92,9 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
 
         @Override
         public String toString() {
+            if (getPrimitiveDataType() == null) {
+                return this.typeName;
+            }
             switch (getPrimitiveDataType()) {
             case INT:
                 switch (size) {
