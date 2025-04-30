@@ -59,10 +59,10 @@ public final class DuckDBErrors {
 
 
         // added by CODDTest
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("must appear in the GROUP BY clause or must be part of an aggregate function");
-        errors.add("GROUP BY term out of range - should be between");
-        errors.add("INTERNAL Error: Failed to bind column reference");
+        // errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        // errors.add("must appear in the GROUP BY clause or must be part of an aggregate function");
+        // errors.add("GROUP BY term out of range - should be between");
+        // errors.add("INTERNAL Error: Failed to bind column reference");
         errors.add("Binder Error: Aggregate with only constant parameters has to be bound in the root subquery");
         errors.add("COLLATE can only be applied to varchar columns");
 

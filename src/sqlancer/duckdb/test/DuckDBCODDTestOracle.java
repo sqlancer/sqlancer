@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Main;
@@ -35,7 +36,6 @@ import sqlancer.duckdb.ast.DuckDBAlias;
 import sqlancer.duckdb.ast.DuckDBBinaryOperator;
 import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBConstant;
-import sqlancer.duckdb.ast.DuckDBConstantWithType;
 import sqlancer.duckdb.ast.DuckDBExistsOperator;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBExpressionBag;
@@ -164,21 +164,18 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             originalResult = getQueryResult(originalQueryString, state);
 
             // folded query
-            DuckDBCompositeDataType constantType = this.getColumnTypeFromSelect(auxiliaryQuery).get(0);
+            DuckDBCompositeDataType constantType = this.getColumnTypeFromSelect(auxiliaryQuery).get(0).get(0);
             DuckDBConstant constant = (DuckDBConstant) auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().toArray()[0]).get(0);
-            DuckDBConstantWithType equivalentExpr = new DuckDBConstantWithType(constant, constantType);
+            DuckDBTypeCast equivalentExpr = new DuckDBTypeCast(constant, constantType);
             specificCondition.updateInnerExpr(equivalentExpr);
             foldedQueryString = DuckDBToStringVisitor.asString(originalQuery);
             foldedResult = getQueryResult(foldedQueryString, state);
             }
         // one column
         else if (auxiliaryQueryResult.size() == 1 && Randomly.getBoolean()) {
-            // float value is inexact, as https://duckdb.org/docs/sql/data_types/numeric#floating-point-types
-            DuckDBCompositeDataType valuesType = getColumnTypeFromSelect(auxiliaryQuery).get(0);
-            String typeName = valuesType.toString();
-            if (typeName.startsWith("FLOAT") || typeName.startsWith("DOUBLE") || typeName.startsWith("REAL")) {
-                throw new IgnoreMeException();
-            }
+            List<DuckDBCompositeDataType> valuesType = getColumnTypeFromSelect(auxiliaryQuery).get(0);
+            validateExpressionTypes(valuesType);
+            
             // original query
             List<DuckDBColumn> columns = s.getRandomTableNonEmptyTables().getColumns();
             DuckDBColumnReference selectedColumn = new DuckDBColumnReference(Randomly.fromList(columns));
@@ -187,7 +184,15 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             DuckDBExpressionBag tableBag = new DuckDBExpressionBag(selectedTableRef);
 
             Boolean isNegatedIn = Randomly.getBoolean();
-            DuckDBTypeCast columnWithType = new DuckDBTypeCast(selectedColumn, valuesType);
+            DuckDBCompositeDataType columnType = null;
+            for (DuckDBCompositeDataType value : valuesType) {
+                if (value != null) {
+                    columnType = value;
+                    break;
+                }
+            }
+
+            DuckDBTypeCast columnWithType = new DuckDBTypeCast(selectedColumn, columnType);
             DuckDBInOperator optInOperation = new DuckDBInOperator(columnWithType, Arrays.asList(auxiliaryQuery), isNegatedIn);
             DuckDBExpressionBag specificCondition = new DuckDBExpressionBag(optInOperation);
             originalQuery = this.genSelectExpression(tableBag, specificCondition);
@@ -196,12 +201,15 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
 
             // folded query
             List<DuckDBExpression> values = new ArrayList<>();
-            Map<Integer, DuckDBCompositeDataType> typeList = this.getColumnTypeFromSelect(auxiliaryQuery);
+            Map<Integer, List<DuckDBCompositeDataType>> typeList = this.getColumnTypeFromSelect(auxiliaryQuery);
+            if (typeList.values().stream().findFirst().map(List::size).orElse(0) != auxiliaryQueryResult.values().stream().findFirst().map(List::size).orElse(0)) {
+                throw new AssertionError();
+            }
             for (int i = 0; i < auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().toArray()[0]).size(); ++i) {
                 List<DuckDBExpression> rowRs = new ArrayList<>();
                 for (int j = 0; j < typeList.size(); ++j) {
-                    DuckDBConstant c = (DuckDBConstant) auxiliaryQueryResult.get("c" + String.valueOf(j)).get(i);
-                    rowRs.add(new DuckDBConstantWithType(c, typeList.get(j)));
+                    DuckDBConstant c = (DuckDBConstant) auxiliaryQueryResult.get("c" + j).get(i);
+                    rowRs.add(new DuckDBTypeCast(c, typeList.get(j).get(i)));
                 }
                 DuckDBValues valueRow = new DuckDBValues(rowRs);
                 values.add(valueRow);
@@ -220,8 +228,8 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             DuckDBExpressionBag tableBag = new DuckDBExpressionBag(tableRef);
             originalQuery = this.genSelectExpression(tableBag, null);
 
-            DuckDBWithClause optWithClasure = new DuckDBWithClause(tableRef, Arrays.asList(auxiliaryQuery));
-            originalQuery.setWithClause(optWithClasure);
+            DuckDBWithClause optWithClause = new DuckDBWithClause(tableRef, Arrays.asList(auxiliaryQuery));
+            originalQuery.setWithClause(optWithClause);
             originalQueryString = DuckDBToStringVisitor.asString(originalQuery);
             originalResult = getQueryResult(originalQueryString, state);
 
@@ -229,18 +237,21 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             if (Randomly.getBoolean()) {
                 // folded query: WITH table AS VALUES ()
                 List<DuckDBExpression> values = new ArrayList<>();
-                Map<Integer, DuckDBCompositeDataType> typeList = this.getColumnTypeFromSelect(auxiliaryQuery);
+                Map<Integer, List<DuckDBCompositeDataType>> typeList = this.getColumnTypeFromSelect(auxiliaryQuery);
+                if (typeList.values().stream().findFirst().map(List::size).orElse(0) != auxiliaryQueryResult.values().stream().findFirst().map(List::size).orElse(0)) {
+                    throw new AssertionError();
+                }
                 for (int i = 0; i < auxiliaryQueryResult.get(auxiliaryQueryResult.keySet().toArray()[0]).size(); ++i){
                     List<DuckDBExpression> rowRs = new ArrayList<>();
                     for (int j = 0; j < typeList.size(); ++j) {
-                        DuckDBConstant c = (DuckDBConstant) auxiliaryQueryResult.get("c" + String.valueOf(j)).get(i);
-                        rowRs.add(new DuckDBConstantWithType(c, typeList.get(j)));
+                        DuckDBConstant c = (DuckDBConstant) auxiliaryQueryResult.get("c" + j).get(i);
+                        rowRs.add(new DuckDBTypeCast(c, typeList.get(j).get(i)));
                     }
                     DuckDBValues valueRow = new DuckDBValues(rowRs);
                     values.add(valueRow);
                 }
-                DuckDBWithClause refWithClasure = new DuckDBWithClause(tableRef, values);
-                originalQuery.setWithClause(refWithClasure);
+                DuckDBWithClause refWithClause = new DuckDBWithClause(tableRef, values);
+                originalQuery.setWithClause(refWithClause);
                 foldedQueryString = DuckDBToStringVisitor.asString(originalQuery);
                 foldedResult = getQueryResult(foldedQueryString, state);
             } else if (Randomly.getBoolean()) {
@@ -480,18 +491,14 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
 
         // get the constant corresponding to each row from results
         List<DuckDBExpression> summary = queryRes.remove("c" + String.valueOf(columnIdx));
-        Map<Integer, DuckDBCompositeDataType> columnsType = getColumnTypeFromSelect(outerQuery);
+        Map<Integer, List<DuckDBCompositeDataType>> columnsType = getColumnTypeFromSelect(outerQuery);
 
-        DuckDBCompositeDataType exprType = columnsType.get(outerQueryFetchColumns.size() -1 );
-        if (exprType.toString().equals("REAL") || exprType.toString().startsWith("FLOAT")) {
-            throw new IgnoreMeException();
-        }
+        List<DuckDBCompositeDataType> exprType = columnsType.get(outerQueryFetchColumns.size()-1);
+        validateExpressionTypes(exprType);
 
-        List<DuckDBExpression> constantRes = new ArrayList<>();
-        for (DuckDBExpression e : summary) {
-            DuckDBConstant c = (DuckDBConstant) e;
-            constantRes.add(new DuckDBConstantWithType(c, exprType));
-        }
+        List<DuckDBExpression> constantRes = IntStream.range(0, Math.min(summary.size(), exprType.size()))
+            .mapToObj(i -> new DuckDBTypeCast(summary.get(i), exprType.get(i)))
+            .collect(Collectors.toList());
 
         LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> dbstate = new LinkedHashMap<>();
 
@@ -500,14 +507,15 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             DuckDBAlias cAlias = (DuckDBAlias) outerQueryFetchColumns.get(i);
             DuckDBColumnReference cRef = (DuckDBColumnReference) cAlias.getExpr();
             String columnName = cAlias.getAlias();
-            List<DuckDBExpression> constants = new ArrayList<>();
-            for (DuckDBExpression e : queryRes.get(columnName)) {
-                DuckDBConstant c = (DuckDBConstant) e;
-                if (columnsType.get(i).toString().equals("REAL") || columnsType.get(i).toString().startsWith("FLOAT")) {
-                    throw new IgnoreMeException();
-                }
-                constants.add(new DuckDBConstantWithType(c, columnsType.get(i)));
+            List<DuckDBExpression> columnConstant = queryRes.get(columnName);
+            List<DuckDBCompositeDataType> columnType = columnsType.get(i);
+            if (columnConstant.size() != columnType.size()) {
+                throw new AssertionError();
             }
+            validateExpressionTypes(columnType);
+            List<DuckDBExpression> constants = IntStream.range(0, Math.min(columnConstant.size(), columnType.size()))
+                .mapToObj(j -> new DuckDBTypeCast(columnConstant.get(j), columnType.get(j)))
+                .collect(Collectors.toList());
             dbstate.put(cRef, constants);
         }
         this.constantResOfFoldedExpr = new DuckDBResultMap(dbstate, constantRes);
@@ -576,16 +584,12 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
 
         // get the constant corresponding to each row from results
         List<DuckDBExpression> summary = queryRes.remove(exprAliasName);
-        Map<Integer, DuckDBCompositeDataType> columnsType = getColumnTypeFromSelect(select);
-        DuckDBCompositeDataType exprType = columnsType.get(fetchColumns.size() -1 );
-        if (exprType.toString().equals("REAL") || exprType.toString().startsWith("FLOAT")) {
-            throw new IgnoreMeException();
-        }
-        List<DuckDBExpression> constantRes = new ArrayList<>();
-        for (DuckDBExpression e : summary) {
-            DuckDBConstant c = (DuckDBConstant) e;
-            constantRes.add(new DuckDBConstantWithType(c, exprType));
-        }
+        Map<Integer, List<DuckDBCompositeDataType>> columnsType = getColumnTypeFromSelect(select);
+        List<DuckDBCompositeDataType> exprType = columnsType.get(fetchColumns.size() -1 );
+        validateExpressionTypes(exprType);
+        List<DuckDBExpression> constantRes = IntStream.range(0, Math.min(summary.size(), exprType.size()))
+            .mapToObj(i -> new DuckDBTypeCast(summary.get(i), exprType.get(i)))
+            .collect(Collectors.toList());
 
         LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> dbstate = new LinkedHashMap<>();
 
@@ -594,19 +598,30 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             DuckDBAlias cAlias = (DuckDBAlias) fetchColumns.get(i);
             DuckDBColumnReference cRef = (DuckDBColumnReference) cAlias.getExpr();
             String columnName = cAlias.getAlias();
-            List<DuckDBExpression> constants = new ArrayList<>();
-            for (DuckDBExpression e : queryRes.get(columnName)) {
-                DuckDBConstant c = (DuckDBConstant) e;
-                if (columnsType.get(i).toString().equals("REAL") || columnsType.get(i).toString().startsWith("FLOAT")) {
-                    throw new IgnoreMeException();
-                }
-                constants.add(new DuckDBConstantWithType(c, columnsType.get(i)));
+            List<DuckDBExpression> columnConstant = queryRes.get(columnName);
+            List<DuckDBCompositeDataType> columnType = columnsType.get(i);
+            if (columnConstant.size() != columnType.size()) {
+                throw new AssertionError();
             }
+            validateExpressionTypes(columnType);
+            List<DuckDBExpression> constants = IntStream.range(0, Math.min(columnConstant.size(), columnType.size()))
+                .mapToObj(j -> new DuckDBTypeCast(columnConstant.get(j), columnType.get(j)))
+                .collect(Collectors.toList());
             dbstate.put(cRef, constants);
         }
         this.constantResOfFoldedExpr = new DuckDBResultMap(dbstate, constantRes);
 
         return select;
+    }
+
+    private void validateExpressionTypes(List<DuckDBCompositeDataType> types) {
+        // float value is inexact, as https://duckdb.org/docs/sql/data_types/numeric#floating-point-types
+        for (DuckDBCompositeDataType type : types) {
+            String name = type.toString();
+            if (name.startsWith("FLOAT") || name.startsWith("DOUBLE") || name.startsWith("REAL")) {
+                throw new IgnoreMeException();
+            }
+        }
     }
 
     private List<DuckDBExpression> genJoinExpression(
@@ -687,8 +702,8 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
                 Integer columnCount = metaData.getColumnCount();
                 Map<Integer, String> idxNameMap = new HashMap<>();
                 for (int i = 1; i <= columnCount; i++) {
-                    result.put("c" + String.valueOf(i-1), new ArrayList<>());
-                    idxNameMap.put(i, "c" + String.valueOf(i-1));
+                    result.put("c" + (i-1), new ArrayList<>());
+                    idxNameMap.put(i, "c" + (i-1));
                 }
 
                 int resultRows = 0;
@@ -755,12 +770,19 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
 
     private DuckDBTable genTemporaryTable(DuckDBSelect select, String tableName) {
         int columnNumber = select.getFetchColumns().size();
-        Map<Integer, DuckDBCompositeDataType> idxTypeMap = this.getColumnTypeFromSelect(select);
+        Map<Integer, List<DuckDBCompositeDataType>> idxTypeMap = this.getColumnTypeFromSelect(select);
         
         List<DuckDBColumn> databaseColumns = new ArrayList<>();
         for (int i = 0; i < columnNumber; ++i) {
             String columnName = "c" + String.valueOf(i);
-            DuckDBColumn column = new DuckDBColumn(columnName, idxTypeMap.get(i), false, false);
+            DuckDBCompositeDataType columnType = null;
+            for (DuckDBCompositeDataType value : idxTypeMap.get(i)) {
+                if (value != null) {
+                    columnType = value;
+                    break;
+                }
+            }
+            DuckDBColumn column = new DuckDBColumn(columnName, columnType, false, false);
             databaseColumns.add(column);
         }
         DuckDBTable table = new DuckDBTable(tableName, databaseColumns, false);
@@ -775,16 +797,17 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
         String selectString = DuckDBToStringVisitor.asString(select);
         Integer columnNumber = select.getFetchColumns().size();
 
-        Map<Integer, DuckDBCompositeDataType> idxTypeMap = this.getColumnTypeFromSelect(select);
+        Map<Integer, List<DuckDBCompositeDataType>> idxTypeMap = this.getColumnTypeFromSelect(select);
 
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE " + tableName + " (");
         for (int i = 0; i < columnNumber; ++i) {
             String columnTypeName = idxTypeMap.get(i).toString();
-            sb.append("c" + String.valueOf(i) + " " + columnTypeName + ", ");
+            sb.append("c" + String.valueOf(i) + " " + columnTypeName);
+            if (i < columnNumber - 1) {
+                sb.append(", ");
+            }
         }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.deleteCharAt(sb.length() - 1);
         sb.append(");");
         String crateTableString = sb.toString();
         if (options.logEachSelect()) {
@@ -815,7 +838,14 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
         List<DuckDBColumn> databaseColumns = new ArrayList<>();
         for (int i = 0; i < columnNumber; ++i) {
             String columnName = "c" + String.valueOf(i);
-            DuckDBColumn column = new DuckDBColumn(columnName, idxTypeMap.get(i), false, false);
+            DuckDBCompositeDataType columnType = null;
+            for (DuckDBCompositeDataType value : idxTypeMap.get(i)) {
+                if (value != null) {
+                    columnType = value;
+                    break;
+                }
+            }
+            DuckDBColumn column = new DuckDBColumn(columnName, columnType, false, false);
             databaseColumns.add(column);
         }
         DuckDBTable table = new DuckDBTable(tableName, databaseColumns, false);
@@ -840,9 +870,8 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
         }
     }
 
-    private Map<Integer, DuckDBCompositeDataType> getColumnTypeFromSelect(DuckDBSelect select) {
+    private Map<Integer, List<DuckDBCompositeDataType>> getColumnTypeFromSelect(DuckDBSelect select) {
         DuckDBSelect newSelect = new DuckDBSelect(select);
-
 
         List<DuckDBExpression> fetchColumns = select.getFetchColumns();
         List<DuckDBExpression> newFetchColumns = new ArrayList<>();
@@ -886,18 +915,22 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
         if (typeResult == null) {
             throw new IgnoreMeException();
         }
-        Map<Integer, DuckDBCompositeDataType> idxTypeMap = new HashMap<>();
+        Map<Integer, List<DuckDBCompositeDataType>> idxTypeMap = new HashMap<>();
         for (int i = 0; i < typeResult.size(); ++i) {
-            String columnName = "c" + String.valueOf(i);
-            DuckDBExpression t = typeResult.get(columnName).get(0);
-            String typeName = "";
-            if (t instanceof DuckDBTextConstant) {
-                DuckDBTextConstant tString = (DuckDBTextConstant) t;
-                typeName = tString.getValue();
-            } else {
-                typeName = "unknown";
+            String columnName = "c" + i;
+            List<DuckDBExpression> t = typeResult.get(columnName);
+            List<DuckDBCompositeDataType> cType = new ArrayList<>();
+
+            for (DuckDBExpression expr : t) {
+                String typeName;
+                if (expr instanceof DuckDBTextConstant) {
+                    DuckDBTextConstant textConst = (DuckDBTextConstant) expr;
+                    typeName = textConst.getValue();
+                } else {
+                    typeName = "unknown";
+                }
+                cType.add(new DuckDBCompositeDataType(typeName));
             }
-            DuckDBCompositeDataType cType = new DuckDBCompositeDataType(typeName);
             idxTypeMap.put(i, cType);
         }
 
@@ -906,46 +939,54 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
             innerQuery.setFetchColumns(Arrays.asList(innerQueryFetchColumn));
         }
         
-        for (Map.Entry<Integer, DuckDBCompositeDataType> entry: idxTypeMap.entrySet()) {
-            Integer index = entry.getKey();
-            String typeName = entry.getValue().toString();
-            if (typeName.equals("unknown")) {
-                DuckDBExpression column = fetchColumns.get(index);
-                DuckDBCompositeDataType columnType = null;
-                if (column instanceof DuckDBColumnReference) {
-                    DuckDBColumnReference c = (DuckDBColumnReference)column;
-                    columnType = c.getColumn().getType();
-                } else if (column instanceof DuckDBAlias) {
-                    DuckDBAlias a = (DuckDBAlias) column;
-                    DuckDBExpression left = a.getExpr();
-                    if (left instanceof DuckDBColumnReference) {
-                        DuckDBColumnReference c = (DuckDBColumnReference) left;
-                        columnType = c.getColumn().getType();
-                    } else if (left instanceof DuckDBFunction) {
-                        DuckDBFunction<DuckDBAggregateFunction> aggr = (DuckDBFunction<DuckDBAggregateFunction>) left;
-                        List<DuckDBExpression> aggrExprs =  aggr.getArgs();
-                        DuckDBExpression aggrExpr = aggrExprs.get(0);
-                        if (aggrExpr instanceof DuckDBColumnReference) {
-                            DuckDBColumnReference c = (DuckDBColumnReference) aggrExpr;
-                            columnType = c.getColumn().getType();
-                        } 
-                    } else if (left instanceof DuckDBSelect) {
-                        DuckDBSelect sub = (DuckDBSelect) left;
-                        DuckDBExpression subFetchColumn = sub.getFetchColumns().get(0);
-                        if (subFetchColumn instanceof DuckDBFunction) {
-                            DuckDBFunction<DuckDBAggregateFunction> subAggr = (DuckDBFunction<DuckDBAggregateFunction>) subFetchColumn;
-                            DuckDBExpression cr = subAggr.getArgs().get(0);
-                            if (cr instanceof DuckDBColumnReference) {
-                                columnType = ((DuckDBColumnReference) cr).getColumn().getType();
-                            }
-                        }
-                    }
-                } 
-                if (columnType != null) {
-                    idxTypeMap.put(index, columnType);
-                }
-            }
-        }
+        // for (Map.Entry<Integer, DuckDBCompositeDataType> entry: idxTypeMap.entrySet()) {
+        //     Integer index = entry.getKey();
+        //     String typeName = entry.getValue().toString();
+        //     if (typeName.equals("unknown")) {
+        //         DuckDBExpression column = fetchColumns.get(index);
+        //         DuckDBCompositeDataType columnType = null;
+        //         if (column instanceof DuckDBColumnReference) {
+        //             DuckDBColumnReference c = (DuckDBColumnReference)column;
+        //             columnType = c.getColumn().getType();
+        //         } else if (column instanceof DuckDBAlias) {
+        //             DuckDBAlias a = (DuckDBAlias) column;
+        //             DuckDBExpression left = a.getExpr();
+        //             if (left instanceof DuckDBColumnReference) {
+        //                 DuckDBColumnReference c = (DuckDBColumnReference) left;
+        //                 columnType = c.getColumn().getType();
+        //             } else if (left instanceof DuckDBFunction) {
+        //                 DuckDBFunction<?> func = (DuckDBFunction<?>) left;
+        //                 if (func.getFunc() instanceof DuckDBAggregateFunction) {
+        //                     @SuppressWarnings("unchecked")
+        //                     DuckDBFunction<DuckDBAggregateFunction> aggr = (DuckDBFunction<DuckDBAggregateFunction>) func;
+        //                     List<DuckDBExpression> aggrExprs =  aggr.getArgs();
+        //                     DuckDBExpression aggrExpr = aggrExprs.get(0);
+        //                     if (aggrExpr instanceof DuckDBColumnReference) {
+        //                         DuckDBColumnReference c = (DuckDBColumnReference) aggrExpr;
+        //                         columnType = c.getColumn().getType();
+        //                     } 
+        //                 }
+        //             } else if (left instanceof DuckDBSelect) {
+        //                 DuckDBSelect sub = (DuckDBSelect) left;
+        //                 DuckDBExpression subFetchColumn = sub.getFetchColumns().get(0);
+        //                 if (subFetchColumn instanceof DuckDBFunction) {
+        //                     DuckDBFunction<?> func = (DuckDBFunction<?>) subFetchColumn;
+        //                     if (func.getFunc() instanceof DuckDBAggregateFunction) {
+        //                         @SuppressWarnings("unchecked")
+        //                         DuckDBFunction<DuckDBAggregateFunction> subAggr = (DuckDBFunction<DuckDBAggregateFunction>) func;
+        //                         DuckDBExpression cr = subAggr.getArgs().get(0);
+        //                         if (cr instanceof DuckDBColumnReference) {
+        //                             columnType = ((DuckDBColumnReference) cr).getColumn().getType();
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         } 
+        //         if (columnType != null) {
+        //             idxTypeMap.put(index, columnType);
+        //         }
+        //     }
+        // }
         return idxTypeMap;
     }
 
@@ -988,14 +1029,14 @@ public class DuckDBCODDTestOracle extends CODDTestBase<DuckDBGlobalState> implem
     }
 
     public boolean useSubquery() {
-        if (this.state.getDbmsSpecificOptions().coddTestModel.equals("random")) {
+        if (this.state.getDbmsSpecificOptions().coddTestModel.isRandom()) {
             return Randomly.getBoolean();
-        } else if (this.state.getDbmsSpecificOptions().coddTestModel.equals("expression")) {
+        } else if (this.state.getDbmsSpecificOptions().coddTestModel.isExpression()) {
             return false;
-        } else if (this.state.getDbmsSpecificOptions().coddTestModel.equals("subquery")) {
+        } else if (this.state.getDbmsSpecificOptions().coddTestModel.isSubquery()) {
             return true;
         } else {
-            System.out.printf("Wrong option of --coddtest-model, should be one of: random, expression, subquery");
+            System.out.printf("Wrong option of --coddtest-model, should be one of: RANDOM, EXPRESSION, SUBQUERY");
             System.exit(1);
             return false;
         }

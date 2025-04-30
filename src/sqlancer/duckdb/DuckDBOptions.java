@@ -77,8 +77,23 @@ public class DuckDBOptions implements DBMSSpecificOptions<DuckDBOracleFactory> {
     @Parameter(names = "--max-num-updates", description = "The maximum number of UPDATE statements that are issued for a database", arity = 1)
     public int maxNumUpdates = 5;
 
-    @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on expression, subquery, or random")
-    public String coddTestModel = "random";
+    public enum CODDTestModel {
+        RANDOM, EXPRESSION, SUBQUERY;
+
+        public boolean isRandom() {
+            return this == RANDOM;
+        }
+
+        public boolean isExpression() {
+            return this == EXPRESSION;
+        }
+
+        public boolean isSubquery() {
+            return this == SUBQUERY;
+        }
+    }
+    @Parameter(names = { "--coddtest-model" }, description = "Apply CODDTest on EXPRESSION, SUBQUERY, or RANDOM")
+    public CODDTestModel coddTestModel = CODDTestModel.RANDOM;
 
     @Parameter(names = "--oracle")
     public List<DuckDBOracleFactory> oracles = Arrays.asList(DuckDBOracleFactory.QUERY_PARTITIONING);

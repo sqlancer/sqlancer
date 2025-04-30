@@ -7,7 +7,6 @@ import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.common.ast.newast.TableReferenceNode;
 import sqlancer.duckdb.ast.DuckDBColumnReference;
 import sqlancer.duckdb.ast.DuckDBConstant;
-import sqlancer.duckdb.ast.DuckDBConstantWithType;
 import sqlancer.duckdb.ast.DuckDBExpression;
 import sqlancer.duckdb.ast.DuckDBExpressionBag;
 import sqlancer.duckdb.ast.DuckDBJoin;
@@ -27,8 +26,6 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
             visit((DuckDBSelect) expr);
         } else if (expr instanceof DuckDBJoin) {
             visit((DuckDBJoin) expr);
-        } else if (expr instanceof DuckDBConstantWithType) {
-            visit((DuckDBConstantWithType) expr);
         } else if (expr instanceof DuckDBResultMap) {
             visit((DuckDBResultMap) expr);
         } else if (expr instanceof DuckDBTypeCast) {
@@ -107,10 +104,6 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
         }
     }
 
-    public void visit(DuckDBConstantWithType expr) {
-        sb.append(expr.toString());
-    }
-
     public void visit(DuckDBResultMap expr) {
         // use CASE WHEN to express the constant result of a expression
         LinkedHashMap<DuckDBColumnReference, List<DuckDBExpression>> dbstate = expr.getDbStates();
@@ -123,13 +116,17 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
         sb.append(" CASE ");
         for (int i = 0; i < size; i++) {
             sb.append("WHEN ");
+            Boolean isFirstCondition = true;
             for (DuckDBColumnReference columnRef : dbstate.keySet()) {
+                if (!isFirstCondition) {
+                    sb.append(" AND ");
+                }
                 visit(columnRef);
                 if (dbstate.get(columnRef).get(i) instanceof DuckDBNullConstant) {
                     sb.append(" IS NULL");
-                } else if (dbstate.get(columnRef).get(i) instanceof DuckDBConstantWithType) {
-                    DuckDBConstantWithType ct = (DuckDBConstantWithType) dbstate.get(columnRef).get(i);
-                    if (ct.getConstant() instanceof DuckDBNullConstant) {
+                } else if (dbstate.get(columnRef).get(i) instanceof DuckDBTypeCast) {
+                    DuckDBTypeCast ct = (DuckDBTypeCast) dbstate.get(columnRef).get(i);
+                    if (ct.getExpression() instanceof DuckDBNullConstant) {
                         sb.append(" IS NULL");
                     } else {
                         sb.append(" = ");
@@ -139,12 +136,9 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
                     sb.append(" = ");
                     visit(dbstate.get(columnRef).get(i));
                 }
-                sb.append(" AND ");
+                isFirstCondition = false;
             }
-            for (int k = 0; k < 4; k++) {
-                sb.deleteCharAt(sb.length() - 1);
-            }
-            sb.append("THEN ");
+            sb.append(" THEN ");
             visit(result.get(i));
             sb.append(" ");
         }
@@ -152,11 +146,15 @@ public class DuckDBToStringVisitor extends NewToStringVisitor<DuckDBExpression> 
     }
 
     public void visit(DuckDBTypeCast expr) {
-        sb.append("(");
-        visit(expr.getExpression());
-        sb.append(")::");
-        sb.append(expr.getType().toString());
-        sb.append(" ");
+        if (expr.getExpression() instanceof DuckDBNullConstant) {
+            visit(expr.getExpression());
+        } else {
+            sb.append("(");
+            visit(expr.getExpression());
+            sb.append(")::");
+            sb.append(expr.getType().toString());
+            sb.append(" ");
+        }
     }
 
     public void visit(DuckDBTypeofNode expr) {
