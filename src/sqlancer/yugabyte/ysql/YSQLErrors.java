@@ -8,8 +8,8 @@ public final class YSQLErrors {
     }
 
     public static void addCommonFetchErrors(ExpectedErrors errors) {
-        errors.add("Failed DDL operation as requested");
-        errors.add("Table with identifier"); // TODO
+        errors.add("Failed DDL operation as requested"); // Special flag that cause next DDL to fail
+        errors.add("Table with identifier"); // TODO remove parallel
 
         errors.add("Operation failed. Try again");
         errors.add("could not serialize access due to concurrent update");
@@ -46,8 +46,10 @@ public final class YSQLErrors {
     }
 
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
-        errors.add("Failed DDL operation as requested");
-        errors.add("Catalog Version Mismatch");
+        errors.add("Failed DDL operation as requested"); // TODO remove parallel
+        errors.add("Catalog Version Mismatch"); // TODO remove parallel
+
+        errors.add("invalid byte sequence for encoding");
         errors.add("specified value cannot be cast to type");
         errors.add("array OID value not set when in binary upgrade mode");
 
