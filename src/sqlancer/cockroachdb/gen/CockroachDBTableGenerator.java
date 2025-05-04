@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBErrors;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
@@ -69,9 +68,10 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
             sb.append(cockroachDBColumn.getName());
             sb.append(" ");
             sb.append(cockroachDBColumn.getType());
-            if (cockroachDBColumn.getType().isString() && Randomly.getBoolean()) {
-                sb.append(" COLLATE " + CockroachDBCommon.getRandomCollate());
-            }
+            // disable collate until https://github.com/cockroachdb/cockroach/issues/110322 is fixed
+            // if (cockroachDBColumn.getType().isString() && Randomly.getBoolean()) {
+            //     sb.append(" COLLATE " + CockroachDBCommon.getRandomCollate());
+            // }
             boolean generatedColumn = Randomly.getBooleanWithRatherLowProbability()
                     && cockroachDBColumn.getType().getPrimitiveDataType() != CockroachDBDataType.SERIAL;
             if (generatedColumn) {
