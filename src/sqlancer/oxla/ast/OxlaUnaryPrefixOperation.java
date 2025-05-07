@@ -14,7 +14,7 @@ public class OxlaUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<OxlaExp
     }
 
     public static class OxlaUnaryPrefixOperator extends OxlaOperator {
-        public OxlaUnaryPrefixOperator(String textRepresentation, OxlaOperatorOverload overload) {
+        public OxlaUnaryPrefixOperator(String textRepresentation, OxlaTypeOverload overload) {
             super(textRepresentation, overload);
         }
     }
@@ -22,25 +22,25 @@ public class OxlaUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<OxlaExp
     // FIXME Imho, this class shouldn't hardcode the operators, but query the database for them instead.
     //       Sadly, Oxla does not support every pg_* table in the metastore so it's impossible for now.
     public static final List<OxlaOperator> ALL = List.of(
-            new OxlaUnaryPrefixOperator("+", new OxlaOperatorOverload(OxlaDataType.FLOAT32, OxlaDataType.FLOAT32)),
-            new OxlaUnaryPrefixOperator("+", new OxlaOperatorOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64)),
-            new OxlaUnaryPrefixOperator("+", new OxlaOperatorOverload(OxlaDataType.INT32, OxlaDataType.INT32)),
-            new OxlaUnaryPrefixOperator("+", new OxlaOperatorOverload(OxlaDataType.INT64, OxlaDataType.INT64)),
-            new OxlaUnaryPrefixOperator("-", new OxlaOperatorOverload(OxlaDataType.FLOAT32, OxlaDataType.FLOAT32)),
-            new OxlaUnaryPrefixOperator("-", new OxlaOperatorOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64)),
-            new OxlaUnaryPrefixOperator("-", new OxlaOperatorOverload(OxlaDataType.INT32, OxlaDataType.INT32)),
-            new OxlaUnaryPrefixOperator("-", new OxlaOperatorOverload(OxlaDataType.INT64, OxlaDataType.INT64)),
-            new OxlaUnaryPrefixOperator("-", new OxlaOperatorOverload(OxlaDataType.INTERVAL, OxlaDataType.INTERVAL)),
-            new OxlaUnaryPrefixOperator("@", new OxlaOperatorOverload(OxlaDataType.FLOAT32, OxlaDataType.FLOAT32)),
-            new OxlaUnaryPrefixOperator("@", new OxlaOperatorOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64)),
-            new OxlaUnaryPrefixOperator("@", new OxlaOperatorOverload(OxlaDataType.INT32, OxlaDataType.INT32)),
-            new OxlaUnaryPrefixOperator("@", new OxlaOperatorOverload(OxlaDataType.INT64, OxlaDataType.INT64)),
-            new OxlaUnaryPrefixOperator("NOT", new OxlaOperatorOverload(OxlaDataType.BOOLEAN, OxlaDataType.BOOLEAN)),
-            new OxlaUnaryPrefixOperator("|/", new OxlaOperatorOverload(OxlaDataType.FLOAT32, OxlaDataType.FLOAT64)),
-            new OxlaUnaryPrefixOperator("||/", new OxlaOperatorOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64)),
-            new OxlaUnaryPrefixOperator("~", new OxlaOperatorOverload(OxlaDataType.INT32, OxlaDataType.INT32)),
-            new OxlaUnaryPrefixOperator("~", new OxlaOperatorOverload(OxlaDataType.INT64, OxlaDataType.INT64)),
-            new OxlaUnaryPrefixOperator("~", new OxlaOperatorOverload(OxlaDataType.TEXT, OxlaDataType.TEXT))
+            new OxlaUnaryPrefixOperator("+", new OxlaTypeOverload(OxlaDataType.FLOAT32, OxlaDataType.FLOAT32)),
+            new OxlaUnaryPrefixOperator("+", new OxlaTypeOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64)),
+            new OxlaUnaryPrefixOperator("+", new OxlaTypeOverload(OxlaDataType.INT32, OxlaDataType.INT32)),
+            new OxlaUnaryPrefixOperator("+", new OxlaTypeOverload(OxlaDataType.INT64, OxlaDataType.INT64)),
+            new OxlaUnaryPrefixOperator("-", new OxlaTypeOverload(OxlaDataType.FLOAT32, OxlaDataType.FLOAT32)),
+            new OxlaUnaryPrefixOperator("-", new OxlaTypeOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64)),
+            new OxlaUnaryPrefixOperator("-", new OxlaTypeOverload(OxlaDataType.INT32, OxlaDataType.INT32)),
+            new OxlaUnaryPrefixOperator("-", new OxlaTypeOverload(OxlaDataType.INT64, OxlaDataType.INT64)),
+            new OxlaUnaryPrefixOperator("-", new OxlaTypeOverload(OxlaDataType.INTERVAL, OxlaDataType.INTERVAL)),
+            new OxlaUnaryPrefixOperator("@", new OxlaTypeOverload(OxlaDataType.FLOAT32, OxlaDataType.FLOAT32)),
+            new OxlaUnaryPrefixOperator("@", new OxlaTypeOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64)),
+            new OxlaUnaryPrefixOperator("@", new OxlaTypeOverload(OxlaDataType.INT32, OxlaDataType.INT32)),
+            new OxlaUnaryPrefixOperator("@", new OxlaTypeOverload(OxlaDataType.INT64, OxlaDataType.INT64)),
+            new OxlaUnaryPrefixOperator("NOT", new OxlaTypeOverload(OxlaDataType.BOOLEAN, OxlaDataType.BOOLEAN)),
+            new OxlaUnaryPrefixOperator("|/", new OxlaTypeOverload(OxlaDataType.FLOAT32, OxlaDataType.FLOAT64)),
+            new OxlaUnaryPrefixOperator("||/", new OxlaTypeOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64)),
+            new OxlaUnaryPrefixOperator("~", new OxlaTypeOverload(OxlaDataType.INT32, OxlaDataType.INT32)),
+            new OxlaUnaryPrefixOperator("~", new OxlaTypeOverload(OxlaDataType.INT64, OxlaDataType.INT64))
+//            new OxlaUnaryPrefixOperator("~", new OxlaTypeOverload(OxlaDataType.TEXT, OxlaDataType.TEXT)) // FIXME Generate only for REGEXes.
     );
     public static final OxlaOperator NOT = ALL.get(13);
 

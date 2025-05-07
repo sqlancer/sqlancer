@@ -1,11 +1,52 @@
 package sqlancer.oxla.ast;
 
+import sqlancer.Randomly;
+import sqlancer.oxla.OxlaGlobalState;
+import sqlancer.oxla.schema.OxlaDataType;
+
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 public abstract class OxlaConstant implements OxlaExpression {
 
     private OxlaConstant() {
+    }
+
+    public static OxlaConstant getRandomForType(OxlaGlobalState state, OxlaDataType type) {
+        final Randomly randomly = state.getRandomly();
+        switch (type) {
+            case BOOLEAN:
+                return createBooleanConstant(Randomly.getBoolean());
+            case DATE:
+                return createDateConstant(randomly.getInteger32());
+            case FLOAT32:
+                return createFloat32Constant(randomly.getFloat());
+            case FLOAT64:
+                return createFloat64Constant(randomly.getDouble());
+            case INT32:
+                return createInt32Constant(randomly.getInteger32());
+            case INT64:
+                return createInt64Constant(randomly.getLong());
+            case INTERVAL:
+                return createIntervalConstant(randomly.getInteger32(), randomly.getInteger32(), randomly.getLong());
+            case JSON:
+                return createJsonConstant(randomly.getString());
+            case TEXT:
+                return createTextConstant(randomly.getString());
+            case TIME:
+                return createTimeConstant(randomly.getInteger32());
+            case TIMESTAMP:
+                return createTimestampConstant(randomly.getLong());
+            case TIMESTAMPTZ:
+                return createTimestamptzConstant(randomly.getLong());
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public static OxlaConstant getRandom(OxlaGlobalState state) {
+        return getRandomForType(state, OxlaDataType.getRandomType());
     }
 
     public static OxlaConstant createNullConstant() {
@@ -21,11 +62,11 @@ public abstract class OxlaConstant implements OxlaExpression {
     }
 
     public static OxlaConstant createFloat32Constant(float value) {
-        return new OxlaFloatConstant(value);
+        return new OxlaFloat32Constant(value);
     }
 
     public static OxlaConstant createFloat64Constant(double value) {
-        return new OxlaFloatConstant(value);
+        return new OxlaFloat64Constant(value);
     }
 
     public static OxlaConstant createInt32Constant(int value) {
@@ -97,19 +138,38 @@ public abstract class OxlaConstant implements OxlaExpression {
         }
     }
 
-    public static class OxlaFloatConstant extends OxlaConstant {
-        public final double value;
+    public static class OxlaFloat32Constant extends OxlaConstant {
+        public final float value;
 
-        public OxlaFloatConstant(double value) {
-            this.value = value;
-        }
-
-        public OxlaFloatConstant(float value) {
+        public OxlaFloat32Constant(float value) {
             this.value = value;
         }
 
         @Override
         public String toString() {
+            if (value == Float.POSITIVE_INFINITY) {
+                return "'infinity'";
+            } else if (value == Float.NEGATIVE_INFINITY) {
+                return "'-infinity'";
+            }
+            return String.valueOf(value);
+        }
+    }
+
+    public static class OxlaFloat64Constant extends OxlaConstant {
+        public final double value;
+
+        public OxlaFloat64Constant(double value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            if (value == Double.POSITIVE_INFINITY) {
+                return "'infinity'";
+            } else if (value == Double.NEGATIVE_INFINITY) {
+                return "'-infinity'";
+            }
             return String.valueOf(value);
         }
     }
@@ -157,7 +217,10 @@ public abstract class OxlaConstant implements OxlaExpression {
 
         @Override
         public String toString() {
-            return String.format("JSON '%s'", value);
+            final String valString = value
+                    .replace("'", "")
+                    .replace("\\", "\\\\");
+            return String.format("JSON '%s'", String.format("{\"key\":\"%s\"}", valString));
         }
     }
 
@@ -170,7 +233,10 @@ public abstract class OxlaConstant implements OxlaExpression {
 
         @Override
         public String toString() {
-            return value;
+            final String valString = value
+                    .replace("'", "")
+                    .replace("\\", "\\\\");
+            return String.format("TEXT '%s'", valString);
         }
     }
 
@@ -183,7 +249,7 @@ public abstract class OxlaConstant implements OxlaExpression {
 
         @Override
         public String toString() {
-            return String.format("TIME '%s'", new SimpleDateFormat("yyyy-MM-dd").format(new Timestamp(value)));
+            return String.format("TIME '%s'", new Time(value));
         }
     }
 

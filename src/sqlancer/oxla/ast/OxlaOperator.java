@@ -4,9 +4,9 @@ import sqlancer.common.ast.BinaryOperatorNode;
 
 public abstract class OxlaOperator implements BinaryOperatorNode.Operator {
     public final String textRepresentation;
-    public final OxlaOperatorOverload overload;
+    public final OxlaTypeOverload overload;
 
-    public OxlaOperator(String textRepresentation, OxlaOperatorOverload overload) {
+    public OxlaOperator(String textRepresentation, OxlaTypeOverload overload) {
         this.textRepresentation = textRepresentation;
         this.overload = overload;
     }

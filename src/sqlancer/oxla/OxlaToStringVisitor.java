@@ -1,10 +1,8 @@
 package sqlancer.oxla;
 
+import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewToStringVisitor;
-import sqlancer.oxla.ast.OxlaConstant;
-import sqlancer.oxla.ast.OxlaExpression;
-import sqlancer.oxla.ast.OxlaJoin;
-import sqlancer.oxla.ast.OxlaSelect;
+import sqlancer.oxla.ast.*;
 
 public class OxlaToStringVisitor extends NewToStringVisitor<OxlaExpression> {
     private static final OxlaToStringVisitor visitor = new OxlaToStringVisitor();
@@ -29,6 +27,8 @@ public class OxlaToStringVisitor extends NewToStringVisitor<OxlaExpression> {
             visit((OxlaSelect) expr);
         } else if (expr instanceof OxlaJoin) {
             visit((OxlaJoin) expr);
+        } else if (expr instanceof OxlaCast) {
+            visit((OxlaCast) expr);
         } else {
             throw new AssertionError(expr.getClass());
         }
@@ -52,7 +52,10 @@ public class OxlaToStringVisitor extends NewToStringVisitor<OxlaExpression> {
         sb.append(" FROM ");
         visit(select.getFromList());
 
-        if (select.getJoinList() != null) {
+        if (!select.getJoinList().isEmpty()) {
+            if (!select.getFromList().isEmpty()) {
+                sb.append(", ");
+            }
             visit(select.getJoinList());
         }
         if (select.getWhereClause() != null) {
@@ -82,10 +85,27 @@ public class OxlaToStringVisitor extends NewToStringVisitor<OxlaExpression> {
     }
 
     private void visit(OxlaJoin join) {
+        visit(join.leftTable);
         sb.append(String.format(" %s JOIN ", join.type));
+        visit(join.rightTable);
         if (join.onClause != null) {
             sb.append(" ON ");
             visit(join.onClause);
+        }
+    }
+
+    private void visit(OxlaCast cast) {
+        if (Randomly.getBoolean()) {
+            sb.append("CAST(");
+            visit(cast.expression);
+            sb.append(" AS ");
+            sb.append(cast.dataType.toString());
+            sb.append(")");
+        } else {
+            sb.append("(");
+            visit(cast.expression);
+            sb.append(")::");
+            sb.append(cast.dataType.toString());
         }
     }
 }
