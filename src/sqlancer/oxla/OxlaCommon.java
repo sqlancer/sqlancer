@@ -26,4 +26,7 @@ public class OxlaCommon {
     public static final List<String> ORDER_BY_ERRORS = List.of(
             "non-integer constant in ORDER BY"
     );
+    public static final List<Pattern> ORDER_BY_REGEX_ERRORS = List.of(
+            Pattern.compile("ORDER BY position (\\d+) is not in select list")
+    );
 }

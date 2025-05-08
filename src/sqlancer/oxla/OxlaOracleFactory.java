@@ -23,6 +23,7 @@ public enum OxlaOracleFactory implements OracleFactory<OxlaGlobalState> {
                     .with(OxlaCommon.GROUP_BY_ERRORS)
                     .withRegex(OxlaCommon.GROUP_BY_REGEX_ERRORS)
                     .with(OxlaCommon.ORDER_BY_ERRORS)
+                    .withRegex(OxlaCommon.ORDER_BY_REGEX_ERRORS)
                     .build();
             return new NoRECOracle<>(globalState, generator, errors);
         }
