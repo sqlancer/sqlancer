@@ -5,7 +5,10 @@ import sqlancer.oxla.schema.OxlaColumn;
 
 public class OxlaColumnReference extends ColumnReferenceNode<OxlaExpression, OxlaColumn>
         implements OxlaExpression {
-    public OxlaColumnReference(OxlaColumn oxlaColumn) {
+    private final OxlaConstant expectedValue;
+
+    public OxlaColumnReference(OxlaColumn oxlaColumn, OxlaConstant expectedValue) {
         super(oxlaColumn);
+        this.expectedValue = expectedValue;
     }
 }

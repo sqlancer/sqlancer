@@ -7,6 +7,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.oxla.gen.OxlaExpressionGenerator;
 import sqlancer.oxla.oracle.OxlaFuzzer;
+import sqlancer.oxla.oracle.OxlaPivotedQuerySynthesisOracle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,12 @@ public enum OxlaOracleFactory implements OracleFactory<OxlaGlobalState> {
                     .withRegex(OxlaCommon.ORDER_BY_REGEX_ERRORS)
                     .build();
             return new NoRECOracle<>(globalState, generator, errors);
+        }
+    },
+    PQS {
+        @Override
+        public TestOracle<OxlaGlobalState> create(OxlaGlobalState globalState) throws Exception {
+            return new OxlaPivotedQuerySynthesisOracle(globalState);
         }
     },
     QUERY_PARTITIONING {
