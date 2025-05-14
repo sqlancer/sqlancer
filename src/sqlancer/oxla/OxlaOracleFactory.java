@@ -7,6 +7,7 @@ import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.oxla.gen.OxlaExpressionGenerator;
 import sqlancer.oxla.oracle.OxlaFuzzer;
+import sqlancer.oxla.oracle.OxlaPivotedQuerySynthesisOracle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +24,23 @@ public enum OxlaOracleFactory implements OracleFactory<OxlaGlobalState> {
                     .with(OxlaCommon.GROUP_BY_ERRORS)
                     .withRegex(OxlaCommon.GROUP_BY_REGEX_ERRORS)
                     .with(OxlaCommon.ORDER_BY_ERRORS)
+                    .withRegex(OxlaCommon.ORDER_BY_REGEX_ERRORS)
+                    .with(OxlaCommon.EXPRESSION_ERRORS)
+                    .withRegex(OxlaCommon.EXPRESSION_REGEX_ERRORS)
+                    .with(OxlaCommon.bugErrors())
                     .build();
             return new NoRECOracle<>(globalState, generator, errors);
+        }
+    },
+    PQS {
+        @Override
+        public TestOracle<OxlaGlobalState> create(OxlaGlobalState globalState) throws Exception {
+            return new OxlaPivotedQuerySynthesisOracle(globalState);
+        }
+
+        @Override
+        public boolean requiresAllTablesToContainRows() {
+            return true;
         }
     },
     QUERY_PARTITIONING {

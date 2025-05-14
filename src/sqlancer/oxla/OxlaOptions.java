@@ -13,7 +13,7 @@ public class OxlaOptions implements DBMSSpecificOptions<OxlaOracleFactory> {
     public static final int DEFAULT_PORT = 5432;
 
     @Parameter(names = "--oracle", description = "Specifies which test oracle should be used with Oxla")
-    public List<OxlaOracleFactory> oracle = List.of(OxlaOracleFactory.FUZZER);
+    public List<OxlaOracleFactory> oracle = List.of(OxlaOracleFactory.FUZZER, OxlaOracleFactory.PQS, OxlaOracleFactory.NOREC);
 
     @Parameter(names = "--connection-url", description = "Specifies the URL for connecting to the Oxla server", arity = 1)
     public String connectionURL = String.format("postgresql://%s:%d/oxla", OxlaOptions.DEFAULT_HOST, OxlaOptions.DEFAULT_PORT);

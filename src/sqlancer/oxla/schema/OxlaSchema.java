@@ -1,5 +1,7 @@
 package sqlancer.oxla.schema;
 
+import sqlancer.IgnoreMeException;
+import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.schema.AbstractSchema;
 import sqlancer.oxla.OxlaGlobalState;
@@ -41,6 +43,12 @@ public class OxlaSchema extends AbstractSchema<OxlaGlobalState, OxlaTable> {
         }
     }
 
+    public OxlaTables getRandomTableNonEmptyTables() {
+        if (getDatabaseTables().isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        return new OxlaTables(Randomly.nonEmptySubset(getDatabaseTables()));
+    }
 
     public String getDatabaseName() {
         return databaseName;

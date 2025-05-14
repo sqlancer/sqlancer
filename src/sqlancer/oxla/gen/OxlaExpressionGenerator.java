@@ -8,6 +8,7 @@ import sqlancer.oxla.OxlaGlobalState;
 import sqlancer.oxla.ast.*;
 import sqlancer.oxla.schema.OxlaColumn;
 import sqlancer.oxla.schema.OxlaDataType;
+import sqlancer.oxla.schema.OxlaRowValue;
 import sqlancer.oxla.schema.OxlaTable;
 
 import java.util.ArrayList;
@@ -17,19 +18,25 @@ import java.util.stream.Stream;
 
 public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpression, OxlaColumn, OxlaDataType>
         implements NoRECGenerator<OxlaSelect, OxlaJoin, OxlaExpression, OxlaTable, OxlaColumn> {
-    private final OxlaGlobalState globalState;
-    private List<OxlaTable> tables;
-
-    public OxlaExpressionGenerator(OxlaGlobalState globalState) {
-        this.globalState = globalState;
-    }
-
     private enum ExpressionType {
         UNARY_PREFIX, UNARY_POSTFIX;
 
         public static ExpressionType getRandom() {
             return Randomly.fromOptions(values());
         }
+    }
+
+    private final OxlaGlobalState globalState;
+    private List<OxlaTable> tables;
+    private OxlaRowValue rowValue;
+
+    public OxlaExpressionGenerator(OxlaGlobalState globalState) {
+        this.globalState = globalState;
+    }
+
+    public OxlaExpressionGenerator setRowValue(OxlaRowValue rowValue) {
+        this.rowValue = rowValue;
+        return this;
     }
 
     @Override
@@ -71,10 +78,12 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
         //          - generate cast expression if the cast is explicit.
         //       2. (?) Throw an error if the resulting list is empty.
         //       Potentially add a boolean switch for the behavior above.
-        return new OxlaColumnReference(Randomly.fromList(columns
+        final OxlaColumn column = Randomly.fromList(columns
                 .stream()
-                .filter(column -> (column.getType() == type))
-                .collect(Collectors.toList())));
+                .filter(c -> (c.getType() == type))
+                .collect(Collectors.toList()));
+        final OxlaConstant value = rowValue != null ? rowValue.getValues().get(column) : null;
+        return new OxlaColumnReference(column, value);
     }
 
     @Override

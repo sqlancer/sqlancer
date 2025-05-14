@@ -1,5 +1,6 @@
 package sqlancer.oxla;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -26,4 +27,22 @@ public class OxlaCommon {
     public static final List<String> ORDER_BY_ERRORS = List.of(
             "non-integer constant in ORDER BY"
     );
+    public static final List<Pattern> ORDER_BY_REGEX_ERRORS = List.of(
+            Pattern.compile("ORDER BY position (\\d+) is not in select list")
+    );
+    public static final List<String> EXPRESSION_ERRORS = List.of(
+            "input is out of range"
+    );
+    public static final List<Pattern> EXPRESSION_REGEX_ERRORS = List.of();
+
+    public static List<String> bugErrors() {
+        List<String> list = new ArrayList<>();
+        if (OxlaBugs.bugOxla3376) {
+            list.add("Integer literal error. Value of literal exceeds range.");
+        }
+        if (OxlaBugs.bugOxla8323) {
+            list.add("Invalidated shared object in join processors");
+        }
+        return list;
+    }
 }

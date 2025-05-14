@@ -7,4 +7,9 @@ public class OxlaAlias extends NewAliasNode<OxlaExpression>
     public OxlaAlias(OxlaExpression expr, String alias) {
         super(expr, alias);
     }
+
+    @Override
+    public OxlaConstant getExpectedValue() {
+        return getExpr().getExpectedValue();
+    }
 }
