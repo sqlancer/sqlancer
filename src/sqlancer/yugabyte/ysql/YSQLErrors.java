@@ -50,6 +50,7 @@ public final class YSQLErrors {
         errors.add("Catalog Version Mismatch"); // TODO remove parallel
 
         errors.add("invalid byte sequence for encoding");
+        errors.add("cannot convert infinity to integer");
         errors.add("specified value cannot be cast to type");
         errors.add("array OID value not set when in binary upgrade mode");
 
