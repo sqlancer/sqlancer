@@ -28,6 +28,7 @@ public class OxlaPivotedQuerySynthesisOracle extends PivotedQuerySynthesisBase<O
         errors.addAll(OxlaCommon.SYNTAX_ERRORS);
         errors.addAllRegexes(OxlaCommon.SYNTAX_REGEX_ERRORS);
         errors.addAll(OxlaCommon.JOIN_ERRORS);
+        errors.addAllRegexes(OxlaCommon.JOIN_REGEX_ERRORS);
         errors.addAll(OxlaCommon.GROUP_BY_ERRORS);
         errors.addAllRegexes(OxlaCommon.GROUP_BY_REGEX_ERRORS);
         errors.addAll(OxlaCommon.ORDER_BY_ERRORS);
@@ -136,7 +137,7 @@ public class OxlaPivotedQuerySynthesisOracle extends PivotedQuerySynthesisBase<O
             select.setOffsetClause(OxlaConstant.createInt32Constant(0));
         }
 
-        return new SQLQueryAdapter(OxlaToStringVisitor.asString(select));
+        return new SQLQueryAdapter(OxlaToStringVisitor.asString(select), errors);
     }
 
     @Override

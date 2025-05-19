@@ -1,7 +1,9 @@
 package sqlancer.oxla.oracle;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.oracle.TestOracle;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.oxla.OxlaGlobalState;
 import sqlancer.oxla.ast.OxlaExpression;
@@ -18,10 +20,12 @@ import java.util.stream.Collectors;
 public class OxlaFuzzer implements TestOracle<OxlaGlobalState> {
     private final OxlaGlobalState globalState;
     private final OxlaExpressionGenerator generator;
+    private final ExpectedErrors errors;
 
-    public OxlaFuzzer(OxlaGlobalState globalState) {
+    public OxlaFuzzer(OxlaGlobalState globalState, ExpectedErrors errors) {
         this.globalState = globalState;
         this.generator = new OxlaExpressionGenerator(globalState);
+        this.errors = errors;
     }
 
     @Override
@@ -31,7 +35,9 @@ public class OxlaFuzzer implements TestOracle<OxlaGlobalState> {
             globalState.executeStatement(query);
             globalState.getManager().incrementSelectQueryCount();
         } catch (Error e) {
-            // NOTE
+            if (errors.errorIsExpected(e.getMessage())) {
+                throw new IgnoreMeException();
+            }
             throw new AssertionError(e);
         }
     }
@@ -82,6 +88,6 @@ public class OxlaFuzzer implements TestOracle<OxlaGlobalState> {
         if (Randomly.getBoolean()) {
             select.setOffsetClause(generator.generateConstant(Randomly.fromOptions(OxlaDataType.NUMERIC)));
         }
-        return new SQLQueryAdapter(select.toString());
+        return new SQLQueryAdapter(select.toString(), this.errors);
     }
 }

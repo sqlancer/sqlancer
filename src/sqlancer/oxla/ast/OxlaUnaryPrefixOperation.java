@@ -5,7 +5,6 @@ import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
 import sqlancer.oxla.schema.OxlaDataType;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class OxlaUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<OxlaExpression>
         implements OxlaExpression {
@@ -64,15 +63,8 @@ public class OxlaUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<OxlaExp
             new OxlaUnaryPrefixOperator("||/", new OxlaTypeOverload(OxlaDataType.FLOAT64, OxlaDataType.FLOAT64), OxlaUnaryPrefixOperation::applyCbrt),
             new OxlaUnaryPrefixOperator("~", new OxlaTypeOverload(OxlaDataType.INT32, OxlaDataType.INT32), OxlaUnaryPrefixOperation::applyBitNot),
             new OxlaUnaryPrefixOperator("~", new OxlaTypeOverload(OxlaDataType.INT64, OxlaDataType.INT64), OxlaUnaryPrefixOperation::applyBitNot)
-//            new OxlaUnaryPrefixOperator("~", new OxlaTypeOverload(OxlaDataType.TEXT, OxlaDataType.TEXT)) // FIXME Generate only for REGEXes.
     );
     public static final OxlaOperator NOT = ALL.get(13);
-
-    public static List<OxlaOperator> getForType(OxlaDataType returnType) {
-        return ALL.stream()
-                .filter(op -> (op.overload.returnType == returnType))
-                .collect(Collectors.toList());
-    }
 
     private static OxlaConstant applyPlus(OxlaConstant[] constants) {
         return constants[0]; // No-op.

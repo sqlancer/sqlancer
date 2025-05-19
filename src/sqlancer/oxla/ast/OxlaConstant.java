@@ -5,6 +5,8 @@ import sqlancer.Randomly;
 import sqlancer.oxla.OxlaGlobalState;
 import sqlancer.oxla.schema.OxlaDataType;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -19,6 +21,12 @@ public abstract class OxlaConstant implements OxlaExpression {
      * @return OxlaConstant of a given type if successful, nullptr if the cast couldn't be performed.
      */
     public abstract OxlaConstant tryCast(OxlaDataType toType);
+
+    /**
+     * @param toType Data type to compare the OxlaConstant to.
+     * @return -1, 0 or 1 depending on if the toType is less, equal or greater than this type.
+     */
+    public abstract int compareTo(OxlaConstant toType);
 
     @Override
     public OxlaConstant getExpectedValue() {
@@ -127,6 +135,11 @@ public abstract class OxlaConstant implements OxlaExpression {
         public OxlaConstant tryCast(OxlaDataType unused) {
             return createNullConstant(); // No-op.
         }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            return 0; // NOTE: NULL is less, equal and greater than any type.
+        }
     }
 
     public static class OxlaBooleanConstant extends OxlaConstant {
@@ -151,6 +164,14 @@ public abstract class OxlaConstant implements OxlaExpression {
                 default:
                     return null; // Impossible.
             }
+        }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaBooleanConstant) {
+                return Boolean.compare(this.value, ((OxlaBooleanConstant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaBooleanConstant::compareTo not implemented for type: %s", toType.getClass()));
         }
     }
 
@@ -178,6 +199,17 @@ public abstract class OxlaConstant implements OxlaExpression {
                 default:
                     return null; // Impossible.
             }
+        }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaDateConstant) {
+                return Integer.compare(this.value, ((OxlaDateConstant) toType).value);
+            } else if (toType instanceof OxlaTimestampConstant) {
+                OxlaConstant thisType = tryCast(OxlaDataType.TIMESTAMP);
+                return thisType.compareTo(toType);
+            }
+            throw new AssertionError(String.format("OxlaDateConstant::compareTo not implemented for type: %s", toType.getClass()));
         }
     }
 
@@ -215,6 +247,18 @@ public abstract class OxlaConstant implements OxlaExpression {
                     return null; // Impossible.
             }
         }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaIntegerConstant) {
+                return Float.compare(this.value, ((OxlaIntegerConstant) toType).value);
+            } else if (toType instanceof OxlaFloat32Constant) {
+                return Float.compare(this.value, ((OxlaFloat32Constant) toType).value);
+            } else if (toType instanceof OxlaFloat64Constant) {
+                return Float.compare(this.value, (float) ((OxlaFloat64Constant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaFloat64Constant::compareTo not implemented for type: %s", toType.getClass()));
+        }
     }
 
     public static class OxlaFloat64Constant extends OxlaConstant {
@@ -250,6 +294,18 @@ public abstract class OxlaConstant implements OxlaExpression {
                 default:
                     return null; // Impossible.
             }
+        }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaIntegerConstant) {
+                return Double.compare(this.value, ((OxlaIntegerConstant) toType).value);
+            } else if (toType instanceof OxlaFloat32Constant) {
+                return Double.compare(this.value, ((OxlaFloat32Constant) toType).value);
+            } else if (toType instanceof OxlaFloat64Constant) {
+                return Double.compare(this.value, ((OxlaFloat64Constant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaFloat64Constant::compareTo not implemented for type: %s", toType.getClass()));
         }
     }
 
@@ -287,6 +343,18 @@ public abstract class OxlaConstant implements OxlaExpression {
                     return null; // Impossible.
             }
         }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaIntegerConstant) {
+                return Long.compare(this.value, ((OxlaIntegerConstant) toType).value);
+            } else if (toType instanceof OxlaFloat32Constant) {
+                return Float.compare(this.value, ((OxlaFloat32Constant) toType).value);
+            } else if (toType instanceof OxlaFloat64Constant) {
+                return Double.compare(this.value, ((OxlaFloat64Constant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaIntegerConstant::compareTo not implemented for type: %s", toType.getClass()));
+        }
     }
 
     public static class OxlaIntervalConstant extends OxlaConstant {
@@ -315,6 +383,24 @@ public abstract class OxlaConstant implements OxlaExpression {
                 default:
                     return null; // Impossible.
             }
+        }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaIntervalConstant) {
+                BigInteger left = asBigInteger(this);
+                BigInteger right = asBigInteger((OxlaIntervalConstant) toType);
+                return left.compareTo(right);
+            }
+            throw new AssertionError(String.format("OxlaIntervalConstant::compareTo not implemented for type: %s", toType.getClass()));
+        }
+
+        private static BigInteger asBigInteger(OxlaIntervalConstant interval) {
+            ByteBuffer buffer = ByteBuffer.allocate(16); // sizeof(months) + sizeof(days) + sizeof(micro).
+            buffer.putInt(interval.months);
+            buffer.putInt(interval.days);
+            buffer.putLong(interval.microseconds);
+            return new BigInteger(1, buffer.array());
         }
     }
 
@@ -369,6 +455,14 @@ public abstract class OxlaConstant implements OxlaExpression {
                 default:
                     return null; // Impossible.
             }
+        }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaJsonConstant) {
+                return value.compareTo(((OxlaJsonConstant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaJsonConstant::compareTo not implemented for type: %s", toType.getClass()));
         }
     }
 
@@ -458,6 +552,14 @@ public abstract class OxlaConstant implements OxlaExpression {
                     return null; // Impossible.
             }
         }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaTextConstant) {
+                return value.compareTo(((OxlaTextConstant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaTextConstant::compareTo not implemented for type: %s", toType.getClass()));
+        }
     }
 
     public static class OxlaTimeConstant extends OxlaConstant {
@@ -484,6 +586,14 @@ public abstract class OxlaConstant implements OxlaExpression {
                 default:
                     return null; // Impossible.
             }
+        }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaTimeConstant) {
+                return Integer.compare(this.value, ((OxlaTimeConstant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaTimeConstant::compareTo not implemented for type: %s", toType.getClass()));
         }
     }
 
@@ -516,6 +626,18 @@ public abstract class OxlaConstant implements OxlaExpression {
                     return null; // Impossible.
             }
         }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaDateConstant) {
+                return Long.compare(this.value, ((OxlaDateConstant) toType).value);
+            } else if (toType instanceof OxlaTimestampConstant) {
+                return Long.compare(this.value, ((OxlaTimestampConstant) toType).value);
+            } else if (toType instanceof OxlaTimestamptzConstant) {
+                return Long.compare(this.value, ((OxlaTimestamptzConstant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaTimestamptzConstant::compareTo not implemented for type: %s", toType.getClass()));
+        }
     }
 
     public static class OxlaTimestamptzConstant extends OxlaConstant {
@@ -546,6 +668,16 @@ public abstract class OxlaConstant implements OxlaExpression {
                 default:
                     return null; // Impossible.
             }
+        }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaTimestampConstant) {
+                return Long.compare(this.value, ((OxlaTimestampConstant) toType).value);
+            } else if (toType instanceof OxlaTimestamptzConstant) {
+                return Long.compare(this.value, ((OxlaTimestamptzConstant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaTimestamptzConstant::compareTo not implemented for type: %s", toType.getClass()));
         }
     }
 }

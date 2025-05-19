@@ -4,6 +4,7 @@ import sqlancer.Randomly;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
+import sqlancer.oxla.OxlaBugs;
 import sqlancer.oxla.OxlaGlobalState;
 import sqlancer.oxla.ast.*;
 import sqlancer.oxla.schema.OxlaColumn;
@@ -12,14 +13,23 @@ import sqlancer.oxla.schema.OxlaRowValue;
 import sqlancer.oxla.schema.OxlaTable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpression, OxlaColumn, OxlaDataType>
         implements NoRECGenerator<OxlaSelect, OxlaJoin, OxlaExpression, OxlaTable, OxlaColumn> {
     private enum ExpressionType {
-        UNARY_PREFIX, UNARY_POSTFIX;
+        BINARY_ARITHMETIC_OPERATOR,
+        BINARY_BINARY_OPERATOR,
+        BINARY_COMPARISON_OPERATOR,
+        BINARY_LOGIC_OPERATOR,
+        BINARY_MISC_OPERATOR,
+        BINARY_REGEX_OPERATOR,
+        UNARY_PREFIX_OPERATOR,
+        UNARY_POSTFIX_OPERATOR;
 
         public static ExpressionType getRandom() {
             return Randomly.fromOptions(values());
@@ -60,10 +70,25 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
 
         ExpressionType expressionType = ExpressionType.getRandom();
         switch (expressionType) {
-            case UNARY_PREFIX:
-                return generateOperator(OxlaUnaryPrefixOperation::new, OxlaUnaryPrefixOperation.ALL, wantReturnType, depth);
-            case UNARY_POSTFIX:
-                return generateOperator(OxlaUnaryPostfixOperation::new, OxlaUnaryPostfixOperation.ALL, wantReturnType, depth);
+            case UNARY_PREFIX_OPERATOR:
+                return generateUnaryOperator(OxlaUnaryPrefixOperation::new, OxlaUnaryPrefixOperation.ALL, wantReturnType, depth);
+            case UNARY_POSTFIX_OPERATOR:
+                return generateUnaryOperator(OxlaUnaryPostfixOperation::new, OxlaUnaryPostfixOperation.ALL, wantReturnType, depth);
+            case BINARY_ARITHMETIC_OPERATOR:
+                return generateBinaryOperator(OxlaBinaryOperation.ARITHMETIC, wantReturnType, depth);
+            case BINARY_COMPARISON_OPERATOR:
+                return generateBinaryOperator(OxlaBinaryOperation.COMPARISON, wantReturnType, depth);
+            case BINARY_LOGIC_OPERATOR:
+                return generateBinaryOperator(OxlaBinaryOperation.LOGIC, wantReturnType, depth);
+            case BINARY_REGEX_OPERATOR:
+                if (OxlaBugs.bugOxla8329) {
+                    return generateLeafNode(wantReturnType);
+                }
+                return generateBinaryOperator(OxlaBinaryOperation.REGEX, wantReturnType, depth);
+            case BINARY_BINARY_OPERATOR:
+                return generateBinaryOperator(OxlaBinaryOperation.BINARY, wantReturnType, depth);
+            case BINARY_MISC_OPERATOR:
+                return generateBinaryOperator(OxlaBinaryOperation.MISC, wantReturnType, depth);
             default:
                 throw new AssertionError(expressionType);
         }
@@ -179,12 +204,7 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
         return "SELECT SUM(COUNT) FROM (" + select.asString() + ") as res";
     }
 
-    @FunctionalInterface
-    interface OxlaUnaryOperatorFactory {
-        OxlaExpression create(OxlaExpression expr, OxlaOperator op);
-    }
-
-    private OxlaExpression generateOperator(OxlaUnaryOperatorFactory factory, List<OxlaOperator> operators, OxlaDataType wantReturnType, int depth) {
+    private OxlaExpression generateOperatorImpl(List<OxlaOperator> operators, OxlaDataType wantReturnType, Function<OxlaOperator, OxlaExpression> generator) {
         List<OxlaOperator> validOperators = new ArrayList<>(operators);
         validOperators.removeIf(operator -> operator.overload.returnType != wantReturnType);
 
@@ -193,8 +213,44 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
             return generateLeafNode(wantReturnType);
         }
 
-        OxlaOperator randomOperator = Randomly.fromList(validOperators);
-        OxlaExpression inputExpression = generateExpression(randomOperator.overload.inputTypes[0], depth + 1);
-        return factory.create(inputExpression, randomOperator);
+        final OxlaOperator randomOperator = Randomly.fromList(validOperators);
+        return generator.apply(randomOperator);
+    }
+
+    @FunctionalInterface
+    interface OxlaUnaryOperatorFactory {
+        OxlaExpression create(OxlaExpression expr, OxlaOperator op);
+    }
+
+    private OxlaExpression generateUnaryOperator(OxlaUnaryOperatorFactory factory, List<OxlaOperator> operators, OxlaDataType wantReturnType, int depth) {
+        return generateOperatorImpl(operators, wantReturnType, (operator) -> {
+            OxlaExpression inputExpression = generateExpression(operator.overload.inputTypes[0], depth + 1);
+            return factory.create(inputExpression, operator);
+        });
+    }
+
+    private OxlaExpression generateBinaryOperator(List<OxlaOperator> operators, OxlaDataType wantReturnType, int depth) {
+        // TODO OXLA-8328 Remove this check and `validOperators` after the crash is resolved.
+        List<OxlaOperator> validOperators = new ArrayList<>(operators);
+        if (OxlaBugs.bugOxla8328) {
+            validOperators.removeIf(operator -> {
+                if (operator.overload.inputTypes.length != 2) {
+                    return false;
+                }
+                final String textRepresentation = operator.getTextRepresentation();
+                if (!(textRepresentation.equalsIgnoreCase("-") ||
+                        textRepresentation.equalsIgnoreCase("+"))) {
+                    return false;
+                }
+                final OxlaDataType[] inputTypes = operator.overload.inputTypes;
+                return (inputTypes[0] == OxlaDataType.DATE && Arrays.asList(OxlaDataType.NUMERIC).contains(inputTypes[1])) ||
+                        (Arrays.asList(OxlaDataType.NUMERIC).contains(inputTypes[0]) && inputTypes[1] == OxlaDataType.DATE);
+            });
+        }
+        return generateOperatorImpl(validOperators, wantReturnType, (operator) -> {
+            OxlaExpression left = generateExpression(operator.overload.inputTypes[0], depth + 1);
+            OxlaExpression right = generateExpression(operator.overload.inputTypes[1], depth + 1);
+            return new OxlaBinaryOperation(left, right, operator);
+        });
     }
 }
