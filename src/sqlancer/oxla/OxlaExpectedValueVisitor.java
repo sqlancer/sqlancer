@@ -34,8 +34,8 @@ public class OxlaExpectedValueVisitor {
             visit((OxlaColumnReference) expr);
         } else if (expr instanceof OxlaConstant) {
             visit((OxlaConstant) expr);
-        } else if (expr instanceof OxlaFunction<?>) {
-            visit((OxlaFunction<?>) expr);
+        } else if (expr instanceof OxlaFunctionOperation) {
+            visit((OxlaFunctionOperation) expr);
         } else if (expr instanceof OxlaInOperator) {
             visit((OxlaInOperator) expr);
         } else if (expr instanceof OxlaJoin) {
@@ -110,7 +110,7 @@ public class OxlaExpectedValueVisitor {
         toValue(expr);
     }
 
-    private void visit(OxlaFunction<?> expr) {
+    private void visit(OxlaFunctionOperation expr) {
         toValue(expr);
         for (OxlaExpression arg : expr.getArgs()) {
             visit(arg);

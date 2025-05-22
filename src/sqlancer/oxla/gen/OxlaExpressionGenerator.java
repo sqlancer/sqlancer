@@ -22,14 +22,20 @@ import java.util.stream.Stream;
 public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpression, OxlaColumn, OxlaDataType>
         implements NoRECGenerator<OxlaSelect, OxlaJoin, OxlaExpression, OxlaTable, OxlaColumn> {
     private enum ExpressionType {
+        AGGREGATE_FUNCTION,
         BINARY_ARITHMETIC_OPERATOR,
         BINARY_BINARY_OPERATOR,
         BINARY_COMPARISON_OPERATOR,
         BINARY_LOGIC_OPERATOR,
         BINARY_MISC_OPERATOR,
         BINARY_REGEX_OPERATOR,
+        MATH_FUNCTION,
+        MISC_FUNCTION,
+        PG_FUNCTION,
+        SYSTEM_FUNCTION,
+        UNARY_POSTFIX_OPERATOR,
         UNARY_PREFIX_OPERATOR,
-        UNARY_POSTFIX_OPERATOR;
+        WINDOW_FUNCTION;
 
         public static ExpressionType getRandom() {
             return Randomly.fromOptions(values());
@@ -70,6 +76,8 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
 
         ExpressionType expressionType = ExpressionType.getRandom();
         switch (expressionType) {
+            case AGGREGATE_FUNCTION:
+                return generateFunction(OxlaFunctionOperation.AGGREGATE, wantReturnType, depth);
             case UNARY_PREFIX_OPERATOR:
                 return generateUnaryOperator(OxlaUnaryPrefixOperation::new, OxlaUnaryPrefixOperation.ALL, wantReturnType, depth);
             case UNARY_POSTFIX_OPERATOR:
@@ -89,6 +97,16 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
                 return generateBinaryOperator(OxlaBinaryOperation.BINARY, wantReturnType, depth);
             case BINARY_MISC_OPERATOR:
                 return generateBinaryOperator(OxlaBinaryOperation.MISC, wantReturnType, depth);
+            case MATH_FUNCTION:
+                return generateFunction(OxlaFunctionOperation.MATH, wantReturnType, depth);
+            case MISC_FUNCTION:
+                return generateFunction(OxlaFunctionOperation.MISC, wantReturnType, depth);
+            case PG_FUNCTION:
+                return generateFunction(OxlaFunctionOperation.PG_FUNCTIONS, wantReturnType, depth);
+            case SYSTEM_FUNCTION:
+                return generateFunction(OxlaFunctionOperation.SYSTEM, wantReturnType, depth);
+            case WINDOW_FUNCTION:
+                return generateFunction(OxlaFunctionOperation.WINDOW, wantReturnType, depth);
             default:
                 throw new AssertionError(expressionType);
         }
@@ -252,5 +270,36 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
             OxlaExpression right = generateExpression(operator.overload.inputTypes[1], depth + 1);
             return new OxlaBinaryOperation(left, right, operator);
         });
+    }
+
+    private OxlaExpression generateFunction(List<OxlaFunctionOperation.OxlaFunction> functions, OxlaDataType wantReturnType, int depth) {
+        List<OxlaFunctionOperation.OxlaFunction> validFunctions = new ArrayList<>(functions);
+        validFunctions.removeIf(function -> function.overload.returnType != wantReturnType);
+
+        if (OxlaBugs.bugOxla8347) {
+            validFunctions.removeIf(function -> function.textRepresentation.equalsIgnoreCase("pg_typeof"));
+        }
+        if (OxlaBugs.bugOxla8349) {
+            validFunctions.removeIf(function ->
+                    function.textRepresentation.equalsIgnoreCase("for_min") ||
+                            function.textRepresentation.equalsIgnoreCase("for_max")
+            );
+        }
+        if (OxlaBugs.bugOxla8350) {
+            validFunctions.removeIf(function -> function.textRepresentation.startsWith("pg_") &&
+                    Arrays.stream(function.overload.inputTypes).anyMatch(type -> type == OxlaDataType.INT32 || type == OxlaDataType.INT64));
+        }
+
+        if (validFunctions.isEmpty()) {
+            // In case no operator matches the criteria - we can safely generate a leaf expression instead.
+            return generateLeafNode(wantReturnType);
+        }
+
+        final OxlaFunctionOperation.OxlaFunction randomFunction = Randomly.fromList(validFunctions);
+        List<OxlaExpression> args = new ArrayList<>();
+        for (OxlaDataType inputType : randomFunction.overload.inputTypes) {
+            args.add(generateExpression(inputType, depth + 1));
+        }
+        return new OxlaFunctionOperation(args, randomFunction);
     }
 }

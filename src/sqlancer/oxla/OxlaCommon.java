@@ -31,7 +31,8 @@ public class OxlaCommon {
             "non-integer constant in GROUP BY"
     );
     public static final List<Pattern> GROUP_BY_REGEX_ERRORS = List.of(
-            Pattern.compile("GROUP BY position (\\d+) is not in select list")
+            Pattern.compile("GROUP BY position (\\d+) is not in select list"),
+            Pattern.compile("column \"[^\"]+\" must appear in the GROUP BY clause or be used in an aggregate function")
     );
     public static final List<String> ORDER_BY_ERRORS = List.of(
             "non-integer constant in ORDER BY"
@@ -44,11 +45,23 @@ public class OxlaCommon {
             "division by zero",
             "zero raised to a negative power is undefined",
             "LIMIT must not be negative",
-            "OFFSET must not be negative"
+            "OFFSET must not be negative",
+            "aggregate function calls cannot be nested",
+            "expecting only literal for percentiles",
+            "could not determine polymorphic type because input has type unknown",
+            "cannot get array length of a non-array"
     );
     public static final List<Pattern> EXPRESSION_REGEX_ERRORS = List.of(
             Pattern.compile("operator is not unique:\\s+(.+)"),
-            Pattern.compile("operator does not exist:\\s+(.+)")
+            Pattern.compile("operator does not exist:\\s+(.+)"),
+            Pattern.compile("aggregate functions are not allowed in (.+)"),
+            Pattern.compile("percentile value ((-?\\d+(.\\d*)?)|inf|-inf|nan) is not between 0 and 1"),
+            Pattern.compile("window function (.+) requires an OVER clause"),
+            Pattern.compile("relation \"[^\"]*\" does not exist"),
+            Pattern.compile("unit \"[^\"]*\" not recognized for type (.+)"),
+            Pattern.compile("database \"[^\"]*\" does not exist"),
+            Pattern.compile("role \"[^\"]*\" does not exist"),
+            Pattern.compile("HAS_SCHEMA_PRIVILEGE function got unrecognized privilege type:\\s+\"[^\"]*\"")
     );
 
     public static List<String> bugErrors() {

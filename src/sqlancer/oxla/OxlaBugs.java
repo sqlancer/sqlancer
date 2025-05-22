@@ -27,4 +27,16 @@ public final class OxlaBugs {
     /// See: https://oxla.atlassian.net/browse/OXLA-8332
     /// Oxla returns Internal Compiler Error for NULL literal JSON extract(s).
     public static boolean bugOxla8332 = true;
+
+    /// See: https://oxla.atlassian.net/browse/OXLA-8347
+    /// PG_TYPEOF function resolves its type into the expression's type instead of text.
+    public static boolean bugOxla8347 = true;
+
+    /// See: https://oxla.atlassian.net/browse/OXLA-8349
+    /// Some FOR_MIN/FOR_MAX queries cause the Oxla to crash.
+    public static boolean bugOxla8349 = true;
+
+    /// See: https://oxla.atlassian.net/browse/OXLA-8350
+    /// 'pg_*' functions that accept INT4 do not work with INT8.
+    public static boolean bugOxla8350 = true;
 }
