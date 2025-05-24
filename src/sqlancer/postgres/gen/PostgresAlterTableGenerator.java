@@ -48,7 +48,7 @@ public class PostgresAlterTableGenerator {
         SET_LOGGED_UNLOGGED, //
         NOT_OF, //
         OWNER_TO, //
-        REPLICA_IDENTITY
+        REPLICA_IDENTITY, ALTER_VIEW_RENAME_COLUMN // RENAME COLUMN old_name TO new_name (for views)
     }
 
     public PostgresAlterTableGenerator(PostgresTable randomTable, PostgresGlobalState globalState,
@@ -98,6 +98,20 @@ public class PostgresAlterTableGenerator {
             // make it more likely that the ALTER TABLE succeeds
             action = Randomly.subset(Randomly.smallNumber(), Action.values());
         }
+
+        // If this is a view, only allow view-compatible operations
+        if (randomTable.isView()) {
+            // Remove all table-specific operations for views
+            action.removeIf(a -> a != Action.ALTER_VIEW_RENAME_COLUMN);
+            // If no view operations remain, add the rename column action
+            if (action.isEmpty()) {
+                action.add(Action.ALTER_VIEW_RENAME_COLUMN);
+            }
+        } else {
+            // Remove view-specific actions if this is a table
+            action.remove(Action.ALTER_VIEW_RENAME_COLUMN);
+        }
+
         if (randomTable.getColumns().size() == 1) {
             action.remove(Action.ALTER_TABLE_DROP_COLUMN);
         }
@@ -120,14 +134,24 @@ public class PostgresAlterTableGenerator {
         int i = 0;
         List<Action> action = getActions(errors);
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLE ");
-        if (Randomly.getBoolean()) {
-            sb.append(" ONLY");
-            errors.add("cannot use ONLY for foreign key on partitioned table");
+
+        // Check if we're dealing with a view operation
+        boolean isViewOperation = action.contains(Action.ALTER_VIEW_RENAME_COLUMN);
+
+        if (isViewOperation) {
+            sb.append("ALTER VIEW ");
+        } else {
+            sb.append("ALTER TABLE ");
+            if (Randomly.getBoolean()) {
+                sb.append(" ONLY");
+                errors.add("cannot use ONLY for foreign key on partitioned table");
+            }
         }
+
         sb.append(" ");
         sb.append(randomTable.getName());
         sb.append(" ");
+
         for (Action a : action) {
             if (i++ != 0) {
                 sb.append(", ");
@@ -363,6 +387,17 @@ public class PostgresAlterTableGenerator {
                     errors.add("cannot use partial index");
                     errors.add("cannot use invalid index");
                 }
+                break;
+            case ALTER_VIEW_RENAME_COLUMN:
+                sb.append("RENAME COLUMN ");
+                PostgresColumn columnToRename = randomTable.getRandomColumn();
+                sb.append(columnToRename.getName());
+                sb.append(" TO ");
+                sb.append("new_" + columnToRename.getName() + "_" + r.getInteger(1, 1000));
+                errors.add("column does not exist");
+                errors.add("column name already exists");
+                errors.add("cannot rename column of view");
+                errors.add("permission denied");
                 break;
             default:
                 throw new AssertionError(a);
