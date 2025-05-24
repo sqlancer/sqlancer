@@ -48,8 +48,13 @@ public class PostgresAlterTableGenerator {
         SET_LOGGED_UNLOGGED, //
         NOT_OF, //
         OWNER_TO, //
-        REPLICA_IDENTITY, ALTER_VIEW_RENAME_COLUMN // RENAME COLUMN old_name TO new_name (for views)
+        REPLICA_IDENTITY, // RENAME COLUMN old_name TO new_name (for views)
+        ALTER_VIEW_RENAME_COLUMN // RENAME COLUMN old_name TO new_name (for views)
     }
+
+    private static final List<Action> VIEW_ACTIONS = List.of(
+        Action.ALTER_VIEW_RENAME_COLUMN
+    );
 
     public PostgresAlterTableGenerator(PostgresTable randomTable, PostgresGlobalState globalState,
             boolean generateOnlyKnown) {
@@ -101,15 +106,15 @@ public class PostgresAlterTableGenerator {
 
         // If this is a view, only allow view-compatible operations
         if (randomTable.isView()) {
-            // Remove all table-specific operations for views
-            action.removeIf(a -> a != Action.ALTER_VIEW_RENAME_COLUMN);
-            // If no view operations remain, add the rename column action
+            // Remove all non-view operations
+            action.removeIf(a -> !VIEW_ACTIONS.contains(a));
+            // If no view operations remain, add a random view operation
             if (action.isEmpty()) {
-                action.add(Action.ALTER_VIEW_RENAME_COLUMN);
+                action.add(VIEW_ACTIONS.get(r.getInteger(0, VIEW_ACTIONS.size() - 1)));
             }
         } else {
             // Remove view-specific actions if this is a table
-            action.remove(Action.ALTER_VIEW_RENAME_COLUMN);
+            action.removeIf(VIEW_ACTIONS::contains);
         }
 
         if (randomTable.getColumns().size() == 1) {
