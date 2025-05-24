@@ -434,6 +434,8 @@ public final class PostgresCommon {
             }
             break;
         case EXCLUDE:
+            errors.add("exclusion constraints are not supported on partitioned tables");
+            errors.add("unsupported EXCLUDE constraint with partition key definition");
             sb.append("EXCLUDE ");
             sb.append("(");
             // TODO [USING index_method ]
@@ -454,7 +456,6 @@ public final class PostgresCommon {
             errors.add("exclusion constraints are not supported on partitioned tables");
             errors.add("The exclusion operator must be related to the index operator class for the constraint");
             errors.add("could not create exclusion constraint");
-            // TODO: index parameters
             if (Randomly.getBoolean()) {
                 sb.append(" WHERE ");
                 sb.append("(");

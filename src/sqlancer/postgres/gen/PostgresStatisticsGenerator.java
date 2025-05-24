@@ -58,6 +58,20 @@ public final class PostgresStatisticsGenerator {
         return new SQLQueryAdapter(sb.toString(), true);
     }
 
+    public static SQLQueryAdapter alter(PostgresGlobalState globalState) {
+        StringBuilder sb = new StringBuilder("ALTER STATISTICS ");
+        PostgresTable randomTable = globalState.getSchema().getRandomTable();
+        List<PostgresStatisticsObject> statistics = randomTable.getStatistics();
+        if (statistics.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        PostgresStatisticsObject randomStatistic = Randomly.fromList(statistics);
+        sb.append(randomStatistic.getName());
+        sb.append(" SET STATISTICS ");
+        sb.append(Randomly.getNotCachedInteger(-1, 10000)); // -1 means default
+        return new SQLQueryAdapter(sb.toString(), true);
+    }
+
     private static String getNewStatisticsName(PostgresTable randomTable) {
         List<PostgresStatisticsObject> statistics = randomTable.getStatistics();
         int i = 0;
