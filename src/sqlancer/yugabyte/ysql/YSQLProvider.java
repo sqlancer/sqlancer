@@ -100,10 +100,11 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
 
     @Override
     public void generateDatabase(YSQLGlobalState globalState) throws Exception {
-        readFunctions(globalState);
-        createTables(globalState, Randomly.fromOptions(4, 5, 6));
-        prepareTables(globalState);
-
+        if (globalState.getDbmsSpecificOptions().createDatabases) {
+            readFunctions(globalState);
+            createTables(globalState, Randomly.fromOptions(4, 5, 6));
+            prepareTables(globalState);
+        }
     }
 
     @Override
@@ -157,7 +158,8 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             throw new AssertionError(e);
         }
 
-        createDatabaseSync(globalState, entryDatabaseName);
+        if (globalState.getDbmsSpecificOptions().createDatabases)
+            createDatabaseSync(globalState, entryDatabaseName);
 
         int databaseIndex = entryURL.indexOf("/" + entryDatabaseName) + 1;
         String preDatabaseName = entryURL.substring(0, databaseIndex);
@@ -349,7 +351,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
          * https://www.postgres.org/docs/devel/sql-reset.html TODO: also
          * configuration parameter
          */), //
-//        NOTIFY(YSQLNotifyGenerator::createNotify), //
+        //        NOTIFY(YSQLNotifyGenerator::createNotify), //
 //        LISTEN((g) -> YSQLNotifyGenerator.createListen()), //
 //        UNLISTEN((g) -> YSQLNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(YSQLSequenceGenerator::createSequence), //

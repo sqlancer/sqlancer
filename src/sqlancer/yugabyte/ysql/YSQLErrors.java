@@ -18,7 +18,6 @@ public final class YSQLErrors {
         errors.add("An I/O error occurred while sending to the backend");
         errors.add("RPC");
         errors.add("Conflicts with committed transaction");
-        errors.add("cannot be changed");
         errors.add("cannot insert a non-DEFAULT value into column");
         errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
 
@@ -27,13 +26,10 @@ public final class YSQLErrors {
         errors.add("missing FROM-clause entry for table");
 
         errors.add("canceling statement due to statement timeout");
-
-        errors.add("non-integer constant in");
-        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
-        errors.add("GROUP BY position");
     }
 
     public static void addCommonTableErrors(ExpectedErrors errors) {
+
         errors.add("specified value cannot be cast to type real for column");
         errors.add("PRIMARY KEY containing column of type 'INET' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'VARBIT' not yet supported");
@@ -48,6 +44,15 @@ public final class YSQLErrors {
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
         errors.add("Failed DDL operation as requested"); // TODO remove parallel
         errors.add("Catalog Version Mismatch"); // TODO remove parallel
+
+        errors.add("non-integer constant in");
+        errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        errors.add("GROUP BY position");
+        errors.add("must not be");
+        errors.add("must be");
+        errors.add("cannot be changed");
+        errors.add("cannot be less");
+        errors.add("cannot be greater");
 
         errors.add("invalid byte sequence for encoding");
         errors.add("cannot convert infinity to integer");
