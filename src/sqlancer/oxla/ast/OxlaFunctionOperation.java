@@ -86,7 +86,7 @@ public class OxlaFunctionOperation extends NewFunctionNode<OxlaExpression, OxlaF
             .addMultipleParamOverload("atan2d", new OxlaDataType[]{OxlaDataType.FLOAT32, OxlaDataType.FLOAT32}, OxlaDataType.FLOAT32, null)
             .addMultipleParamOverload("atan2d", new OxlaDataType[]{OxlaDataType.FLOAT64, OxlaDataType.FLOAT64}, OxlaDataType.FLOAT64, null)
             .addOneParamMatchReturnOverloads("atan", OxlaDataType.FLOATING_POINT, null)
-            .addOneParamMatchReturnOverloads("atan2d", OxlaDataType.FLOATING_POINT, null)
+            .addOneParamMatchReturnOverloads("atand", OxlaDataType.FLOATING_POINT, null)
             .addNoParamOverload("pi", OxlaDataType.FLOAT64, (ignored) -> OxlaConstant.createFloat64Constant(Math.PI))
             .addOneParamMatchReturnOverloads("tan", OxlaDataType.FLOATING_POINT, null)
             .addOneParamMatchReturnOverloads("tand", OxlaDataType.FLOATING_POINT, null)
@@ -240,7 +240,7 @@ public class OxlaFunctionOperation extends NewFunctionNode<OxlaExpression, OxlaF
 
 
     public static final List<OxlaFunction> AGGREGATE = OxlaFunctionBuilder.create()
-            .addOneParamMatchReturnOverloads("sum", new OxlaDataType[]{OxlaDataType.FLOAT32, OxlaDataType.FLOAT64, OxlaDataType.INT32, OxlaDataType.INT64, OxlaDataType.INTERVAL, OxlaDataType.TIME}, null)
+            .addOneParamOverloads("sum", new OxlaDataType[]{OxlaDataType.FLOAT32, OxlaDataType.FLOAT64, OxlaDataType.INT32, OxlaDataType.INT64, OxlaDataType.INTERVAL, OxlaDataType.TIME}, new OxlaDataType[]{OxlaDataType.FLOAT64, OxlaDataType.FLOAT64, OxlaDataType.INT64, OxlaDataType.INT64, OxlaDataType.INTERVAL, OxlaDataType.TIME}, null)
             .addOneParamMatchReturnOverloads("min", new OxlaDataType[]{OxlaDataType.DATE, OxlaDataType.FLOAT32, OxlaDataType.FLOAT64, OxlaDataType.INT32, OxlaDataType.INT64, OxlaDataType.INTERVAL, OxlaDataType.TEXT, OxlaDataType.TIMESTAMPTZ, OxlaDataType.TIMESTAMP, OxlaDataType.TIME}, null)
             .addOneParamMatchReturnOverloads("max", new OxlaDataType[]{OxlaDataType.DATE, OxlaDataType.FLOAT32, OxlaDataType.FLOAT64, OxlaDataType.INT32, OxlaDataType.INT64, OxlaDataType.INTERVAL, OxlaDataType.TEXT, OxlaDataType.TIMESTAMPTZ, OxlaDataType.TIMESTAMP, OxlaDataType.TIME}, null)
             .addOneParamOverloads("avg", new OxlaDataType[]{OxlaDataType.FLOAT32, OxlaDataType.FLOAT64, OxlaDataType.INT32, OxlaDataType.INT64}, OxlaDataType.FLOAT64, null)
@@ -303,6 +303,14 @@ public class OxlaFunctionOperation extends NewFunctionNode<OxlaExpression, OxlaF
             return this;
         }
 
+        public OxlaFunctionBuilder addOneParamOverloads(String textRepresentation, OxlaDataType[] types, OxlaDataType[] returnTypes, OxlaApplyFunction applyFunction) {
+            assert types.length == returnTypes.length;
+            for (int index = 0; index < types.length; ++index) {
+                overloads.add(new OxlaFunction(textRepresentation, new OxlaTypeOverload(new OxlaDataType[]{types[index]}, returnTypes[index]), applyFunction));
+            }
+            return this;
+        }
+
         public OxlaFunctionBuilder addOneParamMatchReturnOverloads(String textRepresentation, OxlaDataType[] types, OxlaApplyFunction applyFunction) {
             for (OxlaDataType type : types) {
                 overloads.add(new OxlaFunction(textRepresentation, new OxlaTypeOverload(new OxlaDataType[]{type}, type), applyFunction));
@@ -337,8 +345,10 @@ public class OxlaFunctionOperation extends NewFunctionNode<OxlaExpression, OxlaF
             return OxlaConstant.createFloat32Constant(Math.abs(((OxlaConstant.OxlaFloat32Constant) constant).value));
         } else if (constant instanceof OxlaConstant.OxlaFloat64Constant) {
             return OxlaConstant.createFloat64Constant(Math.abs(((OxlaConstant.OxlaFloat64Constant) constant).value));
-        } else if (constant instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(Math.abs(((OxlaConstant.OxlaIntegerConstant) constant).value));
+        } else if (constant instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(Math.abs(((OxlaConstant.OxlaInt32Constant) constant).value));
+        } else if (constant instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(Math.abs(((OxlaConstant.OxlaInt64Constant) constant).value));
         }
         throw new AssertionError(String.format("OxlaFunctionOperation::applyAbs failed: %s", constant.getClass()));
     }
@@ -382,8 +392,10 @@ public class OxlaFunctionOperation extends NewFunctionNode<OxlaExpression, OxlaF
     private static OxlaConstant applyBitPower(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant((long) Math.pow(((OxlaConstant.OxlaIntegerConstant) left).value, ((OxlaConstant.OxlaIntegerConstant) right).value));
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant((int) Math.pow(((OxlaConstant.OxlaInt32Constant) left).value, ((OxlaConstant.OxlaInt32Constant) right).value));
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant((long) Math.pow(((OxlaConstant.OxlaInt64Constant) left).value, ((OxlaConstant.OxlaInt64Constant) right).value));
         } else if (left instanceof OxlaConstant.OxlaFloat32Constant && right instanceof OxlaConstant.OxlaFloat32Constant) {
             return OxlaConstant.createFloat32Constant((float) Math.pow(((OxlaConstant.OxlaFloat32Constant) left).value, ((OxlaConstant.OxlaFloat32Constant) right).value));
         } else if (left instanceof OxlaConstant.OxlaFloat64Constant && right instanceof OxlaConstant.OxlaFloat64Constant) {

@@ -82,8 +82,10 @@ public class OxlaUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<OxlaExp
             return OxlaConstant.createFloat32Constant(-((OxlaConstant.OxlaFloat32Constant) constant).value);
         } else if (constant instanceof OxlaConstant.OxlaFloat64Constant) {
             return OxlaConstant.createFloat64Constant(-((OxlaConstant.OxlaFloat64Constant) constant).value);
-        } else if (constant instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(-((OxlaConstant.OxlaIntegerConstant) constant).value);
+        } else if (constant instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(-((OxlaConstant.OxlaInt32Constant) constant).value);
+        } else if (constant instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(-((OxlaConstant.OxlaInt64Constant) constant).value);
         }
         throw new AssertionError(String.format("OxlaUnaryPrefixOperation::applyMinus failed: %s", constant.getClass()));
     }
@@ -94,8 +96,10 @@ public class OxlaUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<OxlaExp
             return OxlaConstant.createFloat32Constant(Math.abs(((OxlaConstant.OxlaFloat32Constant) constant).value));
         } else if (constant instanceof OxlaConstant.OxlaFloat64Constant) {
             return OxlaConstant.createFloat64Constant(Math.abs(((OxlaConstant.OxlaFloat64Constant) constant).value));
-        } else if (constant instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(Math.abs(((OxlaConstant.OxlaIntegerConstant) constant).value));
+        } else if (constant instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(Math.abs(((OxlaConstant.OxlaInt32Constant) constant).value));
+        } else if (constant instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(Math.abs(((OxlaConstant.OxlaInt64Constant) constant).value));
         }
         throw new AssertionError(String.format("OxlaUnaryPrefixOperation::applyAbs failed: %s", constant.getClass()));
     }
@@ -130,8 +134,10 @@ public class OxlaUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<OxlaExp
 
     private static OxlaConstant applyBitNot(OxlaConstant[] constants) {
         final OxlaConstant constant = constants[0];
-        if (constant instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(~((OxlaConstant.OxlaIntegerConstant) constant).value);
+        if (constant instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(~((OxlaConstant.OxlaInt32Constant) constant).value);
+        } else if (constant instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(~((OxlaConstant.OxlaInt32Constant) constant).value);
         }
         throw new AssertionError(String.format("OxlaUnaryPrefixOperation::applyCbrt failed: %s", constant.getClass()));
     }

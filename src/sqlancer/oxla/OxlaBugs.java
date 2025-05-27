@@ -39,4 +39,8 @@ public final class OxlaBugs {
     /// See: https://oxla.atlassian.net/browse/OXLA-8350
     /// 'pg_*' functions that accept INT4 do not work with INT8.
     public static boolean bugOxla8350 = true;
+
+    /// See: https://oxla.atlassian.net/browse/OXLA-8364
+    /// `timestamp_trunc` returns invalid parsing errors for numeric params.
+    public static boolean bugOxla8364 = true;
 }

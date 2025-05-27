@@ -2,6 +2,7 @@ package sqlancer.oxla.gen;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.NoRECGenerator;
+import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.oxla.OxlaBugs;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpression, OxlaColumn, OxlaDataType>
-        implements NoRECGenerator<OxlaSelect, OxlaJoin, OxlaExpression, OxlaTable, OxlaColumn> {
+        implements NoRECGenerator<OxlaSelect, OxlaJoin, OxlaExpression, OxlaTable, OxlaColumn>, TLPWhereGenerator<OxlaSelect, OxlaJoin, OxlaExpression, OxlaTable, OxlaColumn> {
     private enum ExpressionType {
         AGGREGATE_FUNCTION,
         BINARY_ARITHMETIC_OPERATOR,
@@ -45,6 +46,7 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
     private final OxlaGlobalState globalState;
     private List<OxlaTable> tables;
     private OxlaRowValue rowValue;
+    private boolean forceLiteralCasts = false;
 
     public OxlaExpressionGenerator(OxlaGlobalState globalState) {
         this.globalState = globalState;
@@ -55,14 +57,20 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
         return this;
     }
 
+    public OxlaExpressionGenerator forceLiteralCasts(boolean forceLiteralCasts) {
+        this.forceLiteralCasts = forceLiteralCasts;
+        return this;
+    }
+
     @Override
     public OxlaExpression generateConstant(OxlaDataType type) {
         if (Randomly.getBooleanWithSmallProbability()) {
-            return OxlaConstant.createNullConstant();
+            return forceLiteralCasts ? new OxlaCast(OxlaConstant.createNullConstant(), type)
+                    : OxlaConstant.createNullConstant();
         }
         // FIXME Imho, we should generate a random constant that is implicitly or explicitly cast-able to the wanted type.
         OxlaExpression expression = OxlaConstant.getRandomForType(globalState, type);
-        if (Randomly.getBooleanWithRatherLowProbability()) {
+        if (forceLiteralCasts || Randomly.getBooleanWithRatherLowProbability()) {
             return new OxlaCast(expression, type); // Explicit cast to self type.
         }
         return expression;
@@ -185,8 +193,7 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
             OxlaExpressionGenerator joinGenerator = new OxlaExpressionGenerator(globalState).setColumns(columns);
             OxlaJoin.JoinType joinType = OxlaJoin.JoinType.getRandom();
             joinStatements.add(new OxlaJoin(leftTable, rightTable, joinType, joinType != OxlaJoin.JoinType.CROSS
-                    ? joinGenerator.generateExpression(OxlaDataType.BOOLEAN)
-                    : null));
+                    ? joinGenerator.generatePredicate() : null));
         }
         tables = tableReferences.stream().map(OxlaTableReference::getTable).collect(Collectors.toList());
         return joinStatements;
@@ -195,6 +202,14 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
     @Override
     public List<OxlaExpression> getTableRefs() {
         return tables.stream().map(OxlaTableReference::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<OxlaExpression> generateFetchColumns(boolean shouldCreateDummy) {
+        if (shouldCreateDummy || columns.isEmpty()) {
+            return List.of(new OxlaColumnReference(new OxlaColumn("*", null)));
+        }
+        return Randomly.nonEmptySubset(columns.stream().map(OxlaColumnReference::new).collect(Collectors.toList()));
     }
 
     @Override
@@ -286,8 +301,13 @@ public class OxlaExpressionGenerator extends TypedExpressionGenerator<OxlaExpres
             );
         }
         if (OxlaBugs.bugOxla8350) {
-            validFunctions.removeIf(function -> function.textRepresentation.startsWith("pg_") &&
+            validFunctions.removeIf(function -> (function.textRepresentation.startsWith("pg_") ||
+                    function.textRepresentation.startsWith("has_")) &&
                     Arrays.stream(function.overload.inputTypes).anyMatch(type -> type == OxlaDataType.INT32 || type == OxlaDataType.INT64));
+        }
+
+        if (OxlaBugs.bugOxla8364) {
+            validFunctions.removeIf(function -> (function.textRepresentation.equalsIgnoreCase("timestamp_trunc")));
         }
 
         if (validFunctions.isEmpty()) {

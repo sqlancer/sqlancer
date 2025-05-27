@@ -3,16 +3,14 @@ package sqlancer.oxla.oracle;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.oxla.OxlaCommon;
 import sqlancer.oxla.OxlaExpectedValueVisitor;
 import sqlancer.oxla.OxlaGlobalState;
-import sqlancer.oxla.OxlaToStringVisitor;
 import sqlancer.oxla.ast.*;
 import sqlancer.oxla.gen.OxlaExpressionGenerator;
 import sqlancer.oxla.schema.OxlaColumn;
-import sqlancer.oxla.schema.OxlaDataType;
 import sqlancer.oxla.schema.OxlaRowValue;
 import sqlancer.oxla.schema.OxlaTables;
 
@@ -23,19 +21,9 @@ import java.util.stream.Collectors;
 public class OxlaPivotedQuerySynthesisOracle extends PivotedQuerySynthesisBase<OxlaGlobalState, OxlaRowValue, OxlaExpression, SQLConnection> {
     private List<OxlaColumn> fetchColumns;
 
-    public OxlaPivotedQuerySynthesisOracle(OxlaGlobalState globalState) {
+    public OxlaPivotedQuerySynthesisOracle(OxlaGlobalState globalState, ExpectedErrors errors) {
         super(globalState);
-        errors.addAll(OxlaCommon.SYNTAX_ERRORS);
-        errors.addAllRegexes(OxlaCommon.SYNTAX_REGEX_ERRORS);
-        errors.addAll(OxlaCommon.JOIN_ERRORS);
-        errors.addAllRegexes(OxlaCommon.JOIN_REGEX_ERRORS);
-        errors.addAll(OxlaCommon.GROUP_BY_ERRORS);
-        errors.addAllRegexes(OxlaCommon.GROUP_BY_REGEX_ERRORS);
-        errors.addAll(OxlaCommon.ORDER_BY_ERRORS);
-        errors.addAllRegexes(OxlaCommon.ORDER_BY_REGEX_ERRORS);
-        errors.addAll(OxlaCommon.EXPRESSION_ERRORS);
-        errors.addAllRegexes(OxlaCommon.EXPRESSION_REGEX_ERRORS);
-        errors.addAll(OxlaCommon.bugErrors());
+        this.errors.addAll(errors);
     }
 
     @Override
@@ -94,7 +82,7 @@ public class OxlaPivotedQuerySynthesisOracle extends PivotedQuerySynthesisBase<O
             OxlaExpressionGenerator generator = new OxlaExpressionGenerator(globalState);
             generator.setColumns(fetchColumns);
             generator.setRowValue(pivotRow);
-            OxlaExpression expr = generator.generateExpression(OxlaDataType.BOOLEAN);
+            OxlaExpression expr = generator.generatePredicate();
             OxlaExpression result = null;
             if (expr.getExpectedValue() instanceof OxlaConstant.OxlaNullConstant) {
                 result = new OxlaUnaryPostfixOperation(expr, OxlaUnaryPostfixOperation.IS_NULL);
@@ -137,7 +125,7 @@ public class OxlaPivotedQuerySynthesisOracle extends PivotedQuerySynthesisBase<O
             select.setOffsetClause(OxlaConstant.createInt32Constant(0));
         }
 
-        return new SQLQueryAdapter(OxlaToStringVisitor.asString(select), errors);
+        return new SQLQueryAdapter(select.asString(), errors);
     }
 
     @Override

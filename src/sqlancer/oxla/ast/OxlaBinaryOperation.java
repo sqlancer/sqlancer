@@ -318,8 +318,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applyAdd(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaIntegerConstant) left).value + ((OxlaConstant.OxlaIntegerConstant) right).value);
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(((OxlaConstant.OxlaInt32Constant) left).value + ((OxlaConstant.OxlaInt32Constant) right).value);
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaInt64Constant) left).value + ((OxlaConstant.OxlaInt64Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat32Constant && right instanceof OxlaConstant.OxlaFloat32Constant) {
             return OxlaConstant.createFloat32Constant(((OxlaConstant.OxlaFloat32Constant) left).value + ((OxlaConstant.OxlaFloat32Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat64Constant && right instanceof OxlaConstant.OxlaFloat64Constant) {
@@ -331,8 +333,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applySub(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaIntegerConstant) left).value - ((OxlaConstant.OxlaIntegerConstant) right).value);
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(((OxlaConstant.OxlaInt32Constant) left).value - ((OxlaConstant.OxlaInt32Constant) right).value);
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaInt64Constant) left).value - ((OxlaConstant.OxlaInt64Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat32Constant && right instanceof OxlaConstant.OxlaFloat32Constant) {
             return OxlaConstant.createFloat32Constant(((OxlaConstant.OxlaFloat32Constant) left).value - ((OxlaConstant.OxlaFloat32Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat64Constant && right instanceof OxlaConstant.OxlaFloat64Constant) {
@@ -344,8 +348,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applyMul(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaIntegerConstant) left).value * ((OxlaConstant.OxlaIntegerConstant) right).value);
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(((OxlaConstant.OxlaInt32Constant) left).value * ((OxlaConstant.OxlaInt32Constant) right).value);
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaInt64Constant) left).value * ((OxlaConstant.OxlaInt64Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat32Constant && right instanceof OxlaConstant.OxlaFloat32Constant) {
             return OxlaConstant.createFloat32Constant(((OxlaConstant.OxlaFloat32Constant) left).value * ((OxlaConstant.OxlaFloat32Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat64Constant && right instanceof OxlaConstant.OxlaFloat64Constant) {
@@ -357,8 +363,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applyDiv(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaIntegerConstant) left).value / ((OxlaConstant.OxlaIntegerConstant) right).value);
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(((OxlaConstant.OxlaInt32Constant) left).value / ((OxlaConstant.OxlaInt32Constant) right).value);
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaInt64Constant) left).value / ((OxlaConstant.OxlaInt64Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat32Constant && right instanceof OxlaConstant.OxlaFloat32Constant) {
             return OxlaConstant.createFloat32Constant(((OxlaConstant.OxlaFloat32Constant) left).value / ((OxlaConstant.OxlaFloat32Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat64Constant && right instanceof OxlaConstant.OxlaFloat64Constant) {
@@ -370,8 +378,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applyMod(OxlaConstant[] constants) {
         OxlaConstant left = constants[0];
         OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaIntegerConstant) left).value % ((OxlaConstant.OxlaIntegerConstant) right).value);
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(((OxlaConstant.OxlaInt32Constant) left).value % ((OxlaConstant.OxlaInt32Constant) right).value);
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaInt64Constant) left).value % ((OxlaConstant.OxlaInt64Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat32Constant && right instanceof OxlaConstant.OxlaFloat32Constant) {
             return OxlaConstant.createFloat32Constant(((OxlaConstant.OxlaFloat32Constant) left).value % ((OxlaConstant.OxlaFloat32Constant) right).value);
         } else if (left instanceof OxlaConstant.OxlaFloat64Constant && right instanceof OxlaConstant.OxlaFloat64Constant) {
@@ -383,8 +393,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applyBitXor(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaIntegerConstant) left).value ^ ((OxlaConstant.OxlaIntegerConstant) right).value);
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(((OxlaConstant.OxlaInt32Constant) left).value ^ ((OxlaConstant.OxlaInt32Constant) right).value);
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaInt64Constant) left).value ^ ((OxlaConstant.OxlaInt64Constant) right).value);
         }
         throw new AssertionError(String.format("OxlaBinaryOperationOperation::applyBitXor failed: %s vs %s", constants[0].getClass(), constants[1].getClass()));
     }
@@ -392,8 +404,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applyBitAnd(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaIntegerConstant) left).value & ((OxlaConstant.OxlaIntegerConstant) right).value);
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(((OxlaConstant.OxlaInt32Constant) left).value & ((OxlaConstant.OxlaInt32Constant) right).value);
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaInt64Constant) left).value & ((OxlaConstant.OxlaInt64Constant) right).value);
         }
         throw new AssertionError(String.format("OxlaBinaryOperationOperation::applyBitAnd failed: %s vs %s", constants[0].getClass(), constants[1].getClass()));
     }
@@ -401,8 +415,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applyBitPower(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant((long) Math.pow(((OxlaConstant.OxlaIntegerConstant) left).value, ((OxlaConstant.OxlaIntegerConstant) right).value));
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant((int) Math.pow(((OxlaConstant.OxlaInt32Constant) left).value, ((OxlaConstant.OxlaInt32Constant) right).value));
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant((long) Math.pow(((OxlaConstant.OxlaInt64Constant) left).value, ((OxlaConstant.OxlaInt64Constant) right).value));
         } else if (left instanceof OxlaConstant.OxlaFloat32Constant && right instanceof OxlaConstant.OxlaFloat32Constant) {
             return OxlaConstant.createFloat32Constant((float) Math.pow(((OxlaConstant.OxlaFloat32Constant) left).value, ((OxlaConstant.OxlaFloat32Constant) right).value));
         } else if (left instanceof OxlaConstant.OxlaFloat64Constant && right instanceof OxlaConstant.OxlaFloat64Constant) {
@@ -414,8 +430,10 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
     private static OxlaConstant applyBitOr(OxlaConstant[] constants) {
         final OxlaConstant left = constants[0];
         final OxlaConstant right = constants[1];
-        if (left instanceof OxlaConstant.OxlaIntegerConstant && right instanceof OxlaConstant.OxlaIntegerConstant) {
-            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaIntegerConstant) left).value | ((OxlaConstant.OxlaIntegerConstant) right).value);
+        if (left instanceof OxlaConstant.OxlaInt32Constant && right instanceof OxlaConstant.OxlaInt32Constant) {
+            return OxlaConstant.createInt32Constant(((OxlaConstant.OxlaInt32Constant) left).value | ((OxlaConstant.OxlaInt32Constant) right).value);
+        } else if (left instanceof OxlaConstant.OxlaInt64Constant && right instanceof OxlaConstant.OxlaInt64Constant) {
+            return OxlaConstant.createInt64Constant(((OxlaConstant.OxlaInt64Constant) left).value | ((OxlaConstant.OxlaInt64Constant) right).value);
         }
         throw new AssertionError(String.format("OxlaBinaryOperationOperation::applyBitOr failed: %s vs %s", constants[0].getClass(), constants[1].getClass()));
     }

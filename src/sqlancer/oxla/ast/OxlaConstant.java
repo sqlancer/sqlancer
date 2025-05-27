@@ -90,11 +90,11 @@ public abstract class OxlaConstant implements OxlaExpression {
     }
 
     public static OxlaConstant createInt32Constant(int value) {
-        return new OxlaIntegerConstant(value);
+        return new OxlaInt32Constant(value);
     }
 
     public static OxlaConstant createInt64Constant(long value) {
-        return new OxlaIntegerConstant(value);
+        return new OxlaInt64Constant(value);
     }
 
     public static OxlaConstant createIntervalConstant(int months, int days, long microseconds) {
@@ -223,9 +223,9 @@ public abstract class OxlaConstant implements OxlaExpression {
         @Override
         public String toString() {
             if (value == Float.POSITIVE_INFINITY) {
-                return "'infinity'";
+                return "'infinity'::FLOAT4";
             } else if (value == Float.NEGATIVE_INFINITY) {
-                return "'-infinity'";
+                return "'-infinity'::FLOAT4";
             }
             return String.valueOf(value);
         }
@@ -250,8 +250,10 @@ public abstract class OxlaConstant implements OxlaExpression {
 
         @Override
         public int compareTo(OxlaConstant toType) {
-            if (toType instanceof OxlaIntegerConstant) {
-                return Float.compare(this.value, ((OxlaIntegerConstant) toType).value);
+            if (toType instanceof OxlaInt32Constant) {
+                return Float.compare(this.value, ((OxlaInt32Constant) toType).value);
+            } else if (toType instanceof OxlaInt64Constant) {
+                return Float.compare(this.value, ((OxlaInt64Constant) toType).value);
             } else if (toType instanceof OxlaFloat32Constant) {
                 return Float.compare(this.value, ((OxlaFloat32Constant) toType).value);
             } else if (toType instanceof OxlaFloat64Constant) {
@@ -271,9 +273,9 @@ public abstract class OxlaConstant implements OxlaExpression {
         @Override
         public String toString() {
             if (value == Double.POSITIVE_INFINITY) {
-                return "'infinity'";
+                return "'infinity'::FLOAT8";
             } else if (value == Double.NEGATIVE_INFINITY) {
-                return "'-infinity'";
+                return "'-infinity'::FLOAT8";
             }
             return String.valueOf(value);
         }
@@ -298,8 +300,10 @@ public abstract class OxlaConstant implements OxlaExpression {
 
         @Override
         public int compareTo(OxlaConstant toType) {
-            if (toType instanceof OxlaIntegerConstant) {
-                return Double.compare(this.value, ((OxlaIntegerConstant) toType).value);
+            if (toType instanceof OxlaInt32Constant) {
+                return Double.compare(this.value, ((OxlaInt32Constant) toType).value);
+            } else if (toType instanceof OxlaInt64Constant) {
+                return Double.compare(this.value, ((OxlaInt64Constant) toType).value);
             } else if (toType instanceof OxlaFloat32Constant) {
                 return Double.compare(this.value, ((OxlaFloat32Constant) toType).value);
             } else if (toType instanceof OxlaFloat64Constant) {
@@ -309,14 +313,10 @@ public abstract class OxlaConstant implements OxlaExpression {
         }
     }
 
-    public static class OxlaIntegerConstant extends OxlaConstant {
-        public final long value;
+    public static class OxlaInt32Constant extends OxlaConstant {
+        public final int value;
 
-        public OxlaIntegerConstant(long value) {
-            this.value = value;
-        }
-
-        public OxlaIntegerConstant(int value) {
+        public OxlaInt32Constant(int value) {
             this.value = value;
         }
 
@@ -335,6 +335,54 @@ public abstract class OxlaConstant implements OxlaExpression {
                 case FLOAT64:
                     return OxlaConstant.createFloat64Constant(value);
                 case INT32:
+                    return this;
+                case INT64:
+                    return OxlaConstant.createInt64Constant(value);
+                case TEXT:
+                    return OxlaConstant.createTextConstant(toString());
+                default:
+                    return null; // Impossible.
+            }
+        }
+
+        @Override
+        public int compareTo(OxlaConstant toType) {
+            if (toType instanceof OxlaInt32Constant) {
+                return Long.compare(this.value, ((OxlaInt32Constant) toType).value);
+            } else if (toType instanceof OxlaInt64Constant) {
+                return Long.compare(this.value, ((OxlaInt64Constant) toType).value);
+            } else if (toType instanceof OxlaFloat32Constant) {
+                return Float.compare(this.value, ((OxlaFloat32Constant) toType).value);
+            } else if (toType instanceof OxlaFloat64Constant) {
+                return Double.compare(this.value, ((OxlaFloat64Constant) toType).value);
+            }
+            throw new AssertionError(String.format("OxlaInt32Constant::compareTo not implemented for type: %s", toType.getClass()));
+        }
+    }
+
+    public static class OxlaInt64Constant extends OxlaConstant {
+        public final long value;
+
+        public OxlaInt64Constant(long value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(value);
+        }
+
+        @Override
+        public OxlaConstant tryCast(OxlaDataType toType) {
+            switch (toType) {
+                case BOOLEAN:
+                    return OxlaConstant.createBooleanConstant(value != 0);
+                case FLOAT32:
+                    return OxlaConstant.createFloat32Constant(value);
+                case FLOAT64:
+                    return OxlaConstant.createFloat64Constant(value);
+                case INT32:
+                    return OxlaConstant.createInt32Constant((int) value);
                 case INT64:
                     return this;
                 case TEXT:
@@ -346,14 +394,16 @@ public abstract class OxlaConstant implements OxlaExpression {
 
         @Override
         public int compareTo(OxlaConstant toType) {
-            if (toType instanceof OxlaIntegerConstant) {
-                return Long.compare(this.value, ((OxlaIntegerConstant) toType).value);
+            if (toType instanceof OxlaInt32Constant) {
+                return Long.compare(this.value, ((OxlaInt32Constant) toType).value);
+            } else if (toType instanceof OxlaInt64Constant) {
+                return Long.compare(this.value, ((OxlaInt64Constant) toType).value);
             } else if (toType instanceof OxlaFloat32Constant) {
                 return Float.compare(this.value, ((OxlaFloat32Constant) toType).value);
             } else if (toType instanceof OxlaFloat64Constant) {
                 return Double.compare(this.value, ((OxlaFloat64Constant) toType).value);
             }
-            throw new AssertionError(String.format("OxlaIntegerConstant::compareTo not implemented for type: %s", toType.getClass()));
+            throw new AssertionError(String.format("OxlaInt64Constant::compareTo not implemented for type: %s", toType.getClass()));
         }
     }
 

@@ -4,6 +4,7 @@ import sqlancer.Randomly;
 
 import java.util.Arrays;
 
+// TODO OXLA-8233 Add `decimal` and `numeric` types after they are supported natively in Oxla.
 public enum OxlaDataType {
     BOOLEAN, DATE, FLOAT32, FLOAT64, INT32, INT64, INTERVAL, JSON, TEXT, TIME, TIMESTAMP, TIMESTAMPTZ;
 
@@ -39,12 +40,10 @@ public enum OxlaDataType {
             case "real":
             case "float4":
                 return FLOAT32;
-            case "decimal":
             case "double precision":
             case "double":
             case "float":
             case "float8":
-            case "numeric":
                 return FLOAT64;
             case "int":
             case "int4":
@@ -88,7 +87,7 @@ public enum OxlaDataType {
             case FLOAT32:
                 return Randomly.fromOptions("real", "float4");
             case FLOAT64:
-                return Randomly.fromOptions("decimal", "double precision", "double", "float", "float8", "numeric");
+                return Randomly.fromOptions("double precision", "double", "float", "float8");
             case INT32:
                 return Randomly.fromOptions("int", "int4", "integer");
             case INT64:

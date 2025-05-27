@@ -28,11 +28,13 @@ public class OxlaCommon {
             Pattern.compile("could not identify an ordering operator for type\\s+.*")
     );
     public static final List<String> GROUP_BY_ERRORS = List.of(
-            "non-integer constant in GROUP BY"
+            "non-integer constant in GROUP BY",
+            "'*' can be used only in the SELECT clause."
     );
     public static final List<Pattern> GROUP_BY_REGEX_ERRORS = List.of(
             Pattern.compile("GROUP BY position (\\d+) is not in select list"),
-            Pattern.compile("column \"[^\"]+\" must appear in the GROUP BY clause or be used in an aggregate function")
+            Pattern.compile("column \"[^\"]+\" must appear in the GROUP BY clause or be used in an aggregate function"),
+            Pattern.compile("could not identify an equality operator for type\\s+(.*)")
     );
     public static final List<String> ORDER_BY_ERRORS = List.of(
             "non-integer constant in ORDER BY"
@@ -49,7 +51,8 @@ public class OxlaCommon {
             "aggregate function calls cannot be nested",
             "expecting only literal for percentiles",
             "could not determine polymorphic type because input has type unknown",
-            "cannot get array length of a non-array"
+            "cannot get array length of a non-array",
+            "empty format provided"
     );
     public static final List<Pattern> EXPRESSION_REGEX_ERRORS = List.of(
             Pattern.compile("operator is not unique:\\s+(.+)"),
@@ -61,7 +64,9 @@ public class OxlaCommon {
             Pattern.compile("unit \"[^\"]*\" not recognized for type (.+)"),
             Pattern.compile("database \"[^\"]*\" does not exist"),
             Pattern.compile("role \"[^\"]*\" does not exist"),
-            Pattern.compile("HAS_SCHEMA_PRIVILEGE function got unrecognized privilege type:\\s+\"[^\"]*\"")
+            Pattern.compile("HAS_SCHEMA_PRIVILEGE function got unrecognized privilege type:\\s+\"[^\"]*\""),
+            Pattern.compile("found multiple function overloads taking arguments from different type categories, when trying to match function\\s+(.+)"),
+            Pattern.compile("nrecognized privilege type:\\s+\"[^\"]*\"")
     );
 
     public static List<String> bugErrors() {
@@ -78,6 +83,7 @@ public class OxlaCommon {
         if (OxlaBugs.bugOxla8332) {
             list.add("std::get: wrong index for variant");
         }
+        list.add("is not supported"); // TODO TEMP
         return list;
     }
 

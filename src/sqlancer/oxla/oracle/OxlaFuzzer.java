@@ -66,14 +66,14 @@ public class OxlaFuzzer implements TestOracle<OxlaGlobalState> {
 
         // WHERE
         if (Randomly.getBoolean()) {
-            select.setWhereClause(generator.generateExpression(OxlaDataType.BOOLEAN));
+            select.setWhereClause(generator.generatePredicate());
         }
         // GROUP BY
         if (Randomly.getBoolean()) {
             select.setGroupByClause(generator.generateExpressions(Randomly.smallNumber() + 1));
             // HAVING
             if (Randomly.getBoolean()) {
-                select.setHavingClause(generator.generateExpression(OxlaDataType.BOOLEAN));
+                select.setHavingClause(generator.generatePredicate());
             }
         }
         // ORDER BY

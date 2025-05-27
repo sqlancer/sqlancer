@@ -166,10 +166,10 @@ public final class ComparatorHelper {
             ExpectedErrors errors) throws SQLException {
         String unionString;
         if (asUnion) {
-            unionString = firstQueryString + " UNION " + secondQueryString + " UNION " + thirdQueryString;
+            unionString = "(" + firstQueryString + ") UNION (" + secondQueryString + ") UNION (" + thirdQueryString + ")";
         } else {
-            unionString = "SELECT DISTINCT * FROM (" + firstQueryString + " UNION ALL " + secondQueryString
-                    + " UNION ALL " + thirdQueryString + ")";
+            unionString = "SELECT DISTINCT * FROM ((" + firstQueryString + ") UNION ALL (" + secondQueryString
+                    + ") UNION ALL (" + thirdQueryString + "))";
         }
         List<String> secondResultSet;
         combinedString.add(unionString);

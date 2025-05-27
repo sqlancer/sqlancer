@@ -50,6 +50,15 @@ public class ExpectedErrors {
         return this;
     }
 
+    public ExpectedErrors addAll(ExpectedErrors appendErrors) {
+        if (appendErrors == null) {
+            throw new IllegalArgumentException();
+        }
+        errors.addAll(appendErrors.errors);
+        regexes.addAll(appendErrors.regexes);
+        return this;
+    }
+
     public ExpectedErrors addAll(Collection<String> list) {
         if (list == null) {
             throw new IllegalArgumentException();
