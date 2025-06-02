@@ -194,7 +194,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             } catch (Exception e) {
                 if ((e.getMessage().contains("Catalog Version Mismatch") || e.getMessage().contains("Restart read required")
                         || e.getMessage().contains("could not serialize access due to concurrent update"))
-                        || e.getMessage().contains("is being accessed by other users")
+                        || e.getMessage().contains("is being accessed by other users") || e.getMessage().contains("Restarting a DDL transaction not supported")
                         && counter < 20) {
                     counter++;
                     exceptionLessSleep(500);
