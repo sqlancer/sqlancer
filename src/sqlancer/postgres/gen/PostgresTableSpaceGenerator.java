@@ -1,0 +1,49 @@
+package sqlancer.postgres.gen;
+
+import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.postgres.PostgresGlobalState;
+
+public class PostgresTableSpaceGenerator {
+    
+    private final ExpectedErrors errors = new ExpectedErrors();
+    private final PostgresGlobalState globalState;
+
+    public PostgresTableSpaceGenerator(PostgresGlobalState globalState) {
+        this.globalState = globalState;
+        errors.add("ERROR: directory \"/tmp/postgresql/tablespace1\" does not exist");
+        errors.add("ERROR: directory \"/tmp/postgresql/tablespace2\" does not exist");
+        errors.add("ERROR: directory \"/tmp/postgresql/tablespace3\" does not exist");
+        errors.add("ERROR: directory \"/tmp/postgresql/tablespace4\" does not exist");
+        errors.add("ERROR: directory \"/tmp/postgresql/tablespace5\" does not exist");
+        errors.add("ERROR: tablespace directory \"/tmp/postgresql/tablespace1\" does not exist");
+        errors.add("ERROR: tablespace directory \"/tmp/postgresql/tablespace2\" does not exist");
+        errors.add("ERROR: tablespace directory \"/tmp/postgresql/tablespace3\" does not exist");
+        errors.add("ERROR: tablespace directory \"/tmp/postgresql/tablespace4\" does not exist");
+        errors.add("ERROR: tablespace directory \"/tmp/postgresql/tablespace5\" does not exist");
+        errors.add("ERROR: must be a directory");
+        errors.add("ERROR: permission denied");
+        errors.add("ERROR: already exists");
+        errors.add("ERROR: is not empty");
+        errors.add("ERROR: cannot be created because system does not support tablespaces");
+    }
+
+    public static SQLQueryAdapter generate(PostgresGlobalState globalState) {
+        return new PostgresTableSpaceGenerator(globalState).generateTableSpace();
+    }
+
+    private SQLQueryAdapter generateTableSpace() {
+        StringBuilder sb = new StringBuilder();
+        int tableSpaceNum = globalState.getRandomly().getInteger(1, 5); // Use the instance method
+        
+        // CREATE TABLESPACE syntax
+        sb.append("CREATE TABLESPACE ");
+        sb.append("tablespace");
+        sb.append(tableSpaceNum);
+        sb.append(" LOCATION '/tmp/postgresql/tablespace");
+        sb.append(tableSpaceNum);
+        sb.append("'");
+        
+        return new SQLQueryAdapter(sb.toString(), errors);
+    }
+}
