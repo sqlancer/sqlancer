@@ -276,27 +276,31 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         Connection con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
         globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
         
-        createDatabaseCommand = getCreateDatabaseCommand(globalState);
-        
-        // postgres 13+ supports force
+        String dropCommand = "DROP DATABASE";
         if (Randomly.getBoolean()) {
-            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-            try (Statement s = con.createStatement()) {
-                s.execute("DROP DATABASE FORCE IF EXISTS " + databaseName);
-            } catch (SQLException e) {
-                // If force fails, fall back to regular drop
+            dropCommand += " FORCE";
+        }
+        dropCommand += " IF EXISTS " + databaseName;
+        
+        globalState.getState().logStatement(dropCommand + ";");
+        try (Statement s = con.createStatement()) {
+            s.execute(dropCommand);
+        } catch (SQLException e) {
+            // If force fails, fall back to regular drop
+            if (dropCommand.contains("FORCE")) {
+                String fallbackDrop = "DROP DATABASE IF EXISTS " + databaseName;
+                globalState.getState().logStatement(fallbackDrop + ";");
                 try (Statement s = con.createStatement()) {
-                    s.execute("DROP DATABASE IF EXISTS " + databaseName);
+                    s.execute(fallbackDrop);
                 }
-            }
-        } else {
-            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-            try (Statement s = con.createStatement()) {
-                s.execute("DROP DATABASE IF EXISTS " + databaseName);
+            } else {
+                throw e;
             }
         }
         
-        // Execute the create database command
+        // Create database section
+        createDatabaseCommand = getCreateDatabaseCommand(globalState);
+        globalState.getState().logStatement(createDatabaseCommand + ";");
         try (Statement s = con.createStatement()) {
             s.execute(createDatabaseCommand);
         }
