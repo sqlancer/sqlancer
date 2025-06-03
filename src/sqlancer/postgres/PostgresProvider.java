@@ -344,9 +344,13 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                     sb.append(Randomly.fromOptions("utf8"));
                     sb.append("' ");
                 }
-                for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
-                    if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
-                        sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+                if (Randomly.getBoolean() && !state.getCollates().isEmpty()) {
+                    sb.append(String.format(" LOCALE = '%s' ", Randomly.fromList(state.getCollates())));
+                } else {
+                    for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
+                        if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
+                            sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+                        }
                     }
                 }
                 sb.append(" TEMPLATE template0");
