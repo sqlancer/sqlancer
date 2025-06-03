@@ -99,6 +99,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }), //
         CREATE_STATISTICS(PostgresStatisticsGenerator::insert), //
         DROP_STATISTICS(PostgresStatisticsGenerator::remove), //
+        ALTER_STATISTICS(PostgresStatisticsGenerator::alter), //
         DELETE(PostgresDeleteGenerator::create), //
         DISCARD(PostgresDiscardGenerator::create), //
         DROP_INDEX(PostgresDropIndexGenerator::create), //
@@ -149,6 +150,9 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             break;
         case CREATE_STATISTICS:
             nrPerformed = r.getInteger(0, 5);
+            break;
+        case ALTER_STATISTICS:
+            nrPerformed = r.getInteger(0, 2);
             break;
         case DISCARD:
         case DROP_INDEX:
