@@ -34,6 +34,7 @@ public class PostgresAlterTableGenerator {
         ALTER_COLUMN_SET_ATTRIBUTE_OPTION, // ALTER [ COLUMN ] column SET ( attribute_option = value [, ... ] )
         ALTER_COLUMN_RESET_ATTRIBUTE_OPTION, // ALTER [ COLUMN ] column RESET ( attribute_option [, ... ] )
         ALTER_COLUMN_SET_STORAGE, // ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
+        ALTER_COLUMN_DROP_EXPRESSION, // ALTER [ COLUMN ] column DROP EXPRESSION [ IF EXISTS ]
         ADD_TABLE_CONSTRAINT, // ADD table_constraint [ NOT VALID ]
         ADD_TABLE_CONSTRAINT_USING_INDEX, // ADD table_constraint_using_index
         VALIDATE_CONSTRAINT, // VALIDATE CONSTRAINT constraint_name
@@ -278,6 +279,19 @@ public class PostgresAlterTableGenerator {
                 sb.append(Randomly.fromOptions("PLAIN", "EXTERNAL", "EXTENDED", "MAIN"));
                 errors.add("can only have storage");
                 errors.add("is an identity column");
+                break;
+            case ALTER_COLUMN_DROP_EXPRESSION:
+                alterColumn(randomTable, sb);
+                sb.append("DROP EXPRESSION");
+                if (Randomly.getBoolean()) {
+                    sb.append(" IF EXISTS");
+                }
+                errors.add("is not a generated column");
+                errors.add("is not a stored generated column");
+                errors.add("cannot drop expression from inherited column");
+                errors.add("cannot drop generation expression from inherited column");
+                errors.add("must be applied to child tables too");
+                errors.add("cannot drop expression from column");
                 break;
             case ADD_TABLE_CONSTRAINT:
                 sb.append("ADD ");
