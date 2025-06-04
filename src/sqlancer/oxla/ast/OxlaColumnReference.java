@@ -1,6 +1,7 @@
 package sqlancer.oxla.ast;
 
 import sqlancer.common.ast.newast.ColumnReferenceNode;
+import sqlancer.oxla.OxlaToStringVisitor;
 import sqlancer.oxla.schema.OxlaColumn;
 
 public class OxlaColumnReference extends ColumnReferenceNode<OxlaExpression, OxlaColumn>
@@ -19,5 +20,10 @@ public class OxlaColumnReference extends ColumnReferenceNode<OxlaExpression, Oxl
     @Override
     public OxlaConstant getExpectedValue() {
         return expectedValue;
+    }
+
+    @Override
+    public String toString() {
+        return OxlaToStringVisitor.asString(this);
     }
 }

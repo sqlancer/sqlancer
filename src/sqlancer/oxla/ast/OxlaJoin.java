@@ -2,6 +2,7 @@ package sqlancer.oxla.ast;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Join;
+import sqlancer.oxla.OxlaToStringVisitor;
 import sqlancer.oxla.schema.OxlaColumn;
 import sqlancer.oxla.schema.OxlaTable;
 
@@ -48,5 +49,10 @@ public class OxlaJoin implements OxlaExpression, Join<OxlaExpression, OxlaTable,
     @Override
     public void setOnClause(OxlaExpression onClause) {
         throw new AssertionError("stupid interface requirement; use the variable instead.");
+    }
+
+    @Override
+    public String toString() {
+        return OxlaToStringVisitor.asString(this);
     }
 }

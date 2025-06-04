@@ -1,6 +1,5 @@
 package sqlancer.oxla.ast;
 
-import sqlancer.Randomly;
 import sqlancer.common.ast.SelectBase;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.oxla.OxlaToStringVisitor;
@@ -12,16 +11,9 @@ import java.util.stream.Collectors;
 
 public class OxlaSelect extends SelectBase<OxlaExpression>
         implements OxlaExpression, Select<OxlaJoin, OxlaExpression, OxlaTable, OxlaColumn> {
-    public enum SelectType {
-        DISTINCT, ALL;
-
-        public static SelectType getRandom() {
-            return Randomly.fromOptions(values());
-        }
-    }
+    public enum SelectType {DISTINCT, ALL}
 
     public SelectType type;
-    public OxlaExpression distinctOnClause = null;
 
     @Override
     public void setJoinClauses(List<OxlaJoin> joinStatements) {

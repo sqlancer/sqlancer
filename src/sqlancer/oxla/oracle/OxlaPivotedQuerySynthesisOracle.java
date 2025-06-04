@@ -56,16 +56,16 @@ public class OxlaPivotedQuerySynthesisOracle extends PivotedQuerySynthesisBase<O
 
         fetchColumns = randomFromTables.getColumns();
 
-        // WHAT
+        // FROM
         final OxlaSelect select = new OxlaSelect();
-        select.type = OxlaSelect.SelectType.getRandom();
+        select.type = Randomly.fromOptions(OxlaSelect.SelectType.values());
         select.setFromList(randomFromTables
                 .getTables()
                 .stream()
                 .map(OxlaTableReference::new)
                 .collect(Collectors.toList()));
 
-        // FROM
+        // WHAT
         select.setFetchColumns(fetchColumns
                 .stream()
                 .map(column -> new OxlaColumnReference(getAliasedColumn(column), pivotRow.getValues().get(column)))

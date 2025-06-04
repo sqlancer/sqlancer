@@ -88,7 +88,7 @@ public enum OxlaOracleFactory implements OracleFactory<OxlaGlobalState> {
     FUZZER {
         @Override
         public TestOracle<OxlaGlobalState> create(OxlaGlobalState globalState) throws Exception {
-            return new OxlaFuzzer(globalState, OxlaCommon.ALL_ERRORS);
+            return new OxlaFuzzer(globalState);
         }
     }
 }

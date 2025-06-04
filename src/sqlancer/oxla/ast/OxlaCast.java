@@ -1,5 +1,6 @@
 package sqlancer.oxla.ast;
 
+import sqlancer.oxla.OxlaToStringVisitor;
 import sqlancer.oxla.schema.OxlaDataType;
 
 public class OxlaCast implements OxlaExpression {
@@ -17,5 +18,10 @@ public class OxlaCast implements OxlaExpression {
     @Override
     public OxlaConstant getExpectedValue() {
         return expression.getExpectedValue().tryCast(dataType);
+    }
+
+    @Override
+    public String toString() {
+        return OxlaToStringVisitor.asString(this);
     }
 }

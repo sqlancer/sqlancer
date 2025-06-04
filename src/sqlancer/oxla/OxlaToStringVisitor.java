@@ -4,8 +4,16 @@ import sqlancer.Randomly;
 import sqlancer.common.ast.newast.NewToStringVisitor;
 import sqlancer.oxla.ast.*;
 
+import java.util.List;
+
 public class OxlaToStringVisitor extends NewToStringVisitor<OxlaExpression> {
     private static final OxlaToStringVisitor visitor = new OxlaToStringVisitor();
+
+    public static synchronized String asString(List<OxlaExpression> exprs) {
+        visitor.reset();
+        visitor.visit(exprs);
+        return visitor.get();
+    }
 
     public static synchronized String asString(OxlaExpression expr) {
         visitor.reset();

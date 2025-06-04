@@ -17,6 +17,7 @@ public enum OxlaDataType {
     public static final OxlaDataType[] ALL = values();
     public static final OxlaDataType[] ANY_TIMESTAMP = new OxlaDataType[]{TIMESTAMP, TIMESTAMPTZ};
     public static final OxlaDataType[] COMPARABLE_WITHOUT_INTERVAL = Arrays.stream(values()).filter(o -> !(o == JSON || o == INTERVAL)).toArray(OxlaDataType[]::new);
+    public static final OxlaDataType[] INTEGER = new OxlaDataType[]{INT32, INT64};
     public static final OxlaDataType[] FLOATING_POINT = new OxlaDataType[]{FLOAT32, FLOAT64};
     public static final OxlaDataType[] NUMERIC = new OxlaDataType[]{INT32, INT64, FLOAT32, FLOAT64};
 

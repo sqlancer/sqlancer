@@ -2,6 +2,7 @@ package sqlancer.oxla.ast;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.common.ast.newast.NewFunctionNode;
+import sqlancer.oxla.OxlaToStringVisitor;
 import sqlancer.oxla.schema.OxlaDataType;
 
 import java.util.ArrayList;
@@ -23,6 +24,11 @@ public class OxlaFunctionOperation extends NewFunctionNode<OxlaExpression, OxlaF
             expectedValues[index] = args.get(index).getExpectedValue();
         }
         return func.apply(expectedValues);
+    }
+
+    @Override
+    public String toString() {
+        return OxlaToStringVisitor.asString(this);
     }
 
     public static class OxlaFunction implements OxlaExpression {

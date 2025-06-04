@@ -2,6 +2,7 @@ package sqlancer.oxla.ast;
 
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewUnaryPrefixOperatorNode;
+import sqlancer.oxla.OxlaToStringVisitor;
 import sqlancer.oxla.schema.OxlaDataType;
 
 import java.util.List;
@@ -19,6 +20,11 @@ public class OxlaUnaryPrefixOperation extends NewUnaryPrefixOperatorNode<OxlaExp
             return null;
         }
         return ((OxlaUnaryPrefixOperator) op).apply(new OxlaConstant[]{expectedValue});
+    }
+
+    @Override
+    public String toString() {
+        return OxlaToStringVisitor.asString(this);
     }
 
     public static class OxlaUnaryPrefixOperator extends OxlaOperator {

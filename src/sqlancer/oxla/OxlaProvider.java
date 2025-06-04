@@ -2,11 +2,12 @@ package sqlancer.oxla;
 
 import com.google.auto.service.AutoService;
 import sqlancer.*;
-import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.oxla.gen.OxlaTableGenerator;
+import sqlancer.oxla.gen.OxlaCreateTableGenerator;
+import sqlancer.oxla.gen.OxlaDropTableGenerator;
+import sqlancer.oxla.gen.OxlaInsertIntoGenerator;
+import sqlancer.oxla.schema.OxlaTable;
 
 import java.sql.DriverManager;
 
@@ -19,33 +20,6 @@ public class OxlaProvider extends SQLProviderAdapter<OxlaGlobalState, OxlaOption
     protected String password;
     protected String host;
     protected Integer port;
-
-    /** Actions performed each time the database is prepared. */
-    public enum OxlaAction implements AbstractAction<OxlaGlobalState> {
-        TEST_SELECT(state -> new SQLQueryAdapter("SELECT 1"));
-
-        private final SQLQueryProvider<OxlaGlobalState> sqlQueryProvider;
-
-        OxlaAction(SQLQueryProvider<OxlaGlobalState> sqlQueryProvider) {
-            this.sqlQueryProvider = sqlQueryProvider;
-        }
-
-        @Override
-        public SQLQueryAdapter getQuery(OxlaGlobalState state) throws Exception {
-            return sqlQueryProvider.getQuery(state);
-        }
-
-        public static int mapActions(OxlaGlobalState globalState, OxlaAction action) {
-            Randomly randomly = globalState.getRandomly();
-            switch (action) {
-                case TEST_SELECT:
-                    return randomly.getInteger(0, 5);
-                default:
-                    throw new AssertionError(action);
-            }
-        }
-    }
-
 
     public OxlaProvider() {
         super(OxlaGlobalState.class, OxlaOptions.class);
@@ -66,21 +40,8 @@ public class OxlaProvider extends SQLProviderAdapter<OxlaGlobalState, OxlaOption
             globalState.functionAndTypes.put(functionName, functionType);
         }
 
-        // Create tables
-        final long tableCount = Randomly.getNotCachedInteger(3, 7); // [)
-        while (globalState.getSchema().getDatabaseTables().size() < tableCount) {
-            String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
-            SQLQueryAdapter createTableStatement = OxlaTableGenerator.generate(tableName, globalState);
-            globalState.executeStatement(createTableStatement);
-        }
-
         // Prepare tables
-        StatementExecutor<OxlaGlobalState, OxlaAction> statementExecutor = new StatementExecutor<>(globalState, OxlaAction.values(), OxlaAction::mapActions, (q) -> {
-            if (globalState.getSchema().getDatabaseTables().isEmpty()) {
-                throw new IgnoreMeException();
-            }
-        });
-        statementExecutor.executeStatements();
+        ensureValidDatabaseState(globalState);
     }
 
     @Override
@@ -102,5 +63,47 @@ public class OxlaProvider extends SQLProviderAdapter<OxlaGlobalState, OxlaOption
     @Override
     public String getDBMSName() {
         return "oxla";
+    }
+
+    private synchronized void ensureValidDatabaseState(OxlaGlobalState globalState) throws Exception {
+        // 1. Delete random tables until we're not over the specified limit...
+        final OxlaOptions options = globalState.getDbmsSpecificOptions();
+        int presentTablesCount = globalState.getSchema().getDatabaseTables().size();
+        if (presentTablesCount > options.maxTableCount) {
+            OxlaDropTableGenerator dropTableGenerator = new OxlaDropTableGenerator(globalState);
+            while (presentTablesCount > options.maxTableCount) {
+                if (globalState.executeStatement(dropTableGenerator.getQuery(0))) {
+                    presentTablesCount--;
+                }
+            }
+        }
+
+        // 2. ...but if we're under, then generate them until the upper limit is reached...
+        if (presentTablesCount < options.minTableCount) {
+            OxlaCreateTableGenerator createTableGenerator = new OxlaCreateTableGenerator(globalState );
+            while (presentTablesCount < options.minTableCount) {
+                if (globalState.executeStatement(createTableGenerator.getQuery(0))) {
+                    presentTablesCount++;
+                }
+            }
+        }
+
+        // 3. ... while making sure that each table has sufficient number of rows.
+        OxlaInsertIntoGenerator insertIntoGenerator = new OxlaInsertIntoGenerator(globalState);
+        for (OxlaTable table : globalState.getSchema().getDatabaseTables()) {
+            final SQLQueryAdapter rowCountQuery = new SQLQueryAdapter(String.format("SELECT COUNT(*) FROM %s", table.getName()));
+            try (SQLancerResultSet rowCountResult = globalState.executeStatementAndGet(rowCountQuery)) {
+                rowCountResult.next();
+                int rowCount = rowCountResult.getInt(1);
+                assert !rowCountResult.next();
+                if (rowCount < options.minRowCount) {
+                    globalState.executeStatement(insertIntoGenerator.getQueryForTable(table));
+                }
+            } catch (Exception e) {
+                throw new AssertionError("[OxlaFuzzer] failed to insert rows to a table '" + table.getName() + "', because: " + e);
+            }
+        }
+
+        // FIXME: What about cases where we've run an UPDATE? Should we just drop all rows and repopulate?
     }
 }

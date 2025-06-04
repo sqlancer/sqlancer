@@ -3,6 +3,7 @@ package sqlancer.oxla.ast;
 import sqlancer.IgnoreMeException;
 import sqlancer.common.ast.BinaryOperatorNode;
 import sqlancer.common.ast.newast.NewBinaryOperatorNode;
+import sqlancer.oxla.OxlaToStringVisitor;
 import sqlancer.oxla.schema.OxlaDataType;
 
 import java.util.List;
@@ -24,6 +25,11 @@ public class OxlaBinaryOperation extends NewBinaryOperatorNode<OxlaExpression>
             return OxlaConstant.createNullConstant();
         }
         return ((OxlaBinaryOperation.OxlaBinaryOperator) op).apply(new OxlaConstant[]{leftValue, rightValue});
+    }
+
+    @Override
+    public String toString() {
+        return OxlaToStringVisitor.asString(this);
     }
 
     public static class OxlaBinaryOperator extends OxlaOperator {
