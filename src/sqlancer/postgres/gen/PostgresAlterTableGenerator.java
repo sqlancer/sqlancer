@@ -53,9 +53,7 @@ public class PostgresAlterTableGenerator {
         ALTER_VIEW_RENAME_COLUMN // RENAME COLUMN old_name TO new_name (for views)
     }
 
-    private static final List<Action> VIEW_ACTIONS = List.of(
-        Action.ALTER_VIEW_RENAME_COLUMN
-    );
+    private static final List<Action> VIEW_ACTIONS = List.of(Action.ALTER_VIEW_RENAME_COLUMN);
 
     public PostgresAlterTableGenerator(PostgresTable randomTable, PostgresGlobalState globalState,
             boolean generateOnlyKnown) {
