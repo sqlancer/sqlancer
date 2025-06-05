@@ -37,10 +37,11 @@ public final class SQLite3RandomQuerySynthesizer {
         SQLite3Tables targetTables = s.getRandomTableNonEmptyTables();
         List<SQLite3Expression> expressions = new ArrayList<>();
         SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState)
-                .setColumns(s.getTables().getColumns());
-        SQLite3ExpressionGenerator whereClauseGen = new SQLite3ExpressionGenerator(globalState);
+                .setColumns(targetTables.getColumns());
+        SQLite3ExpressionGenerator whereClauseGen = new SQLite3ExpressionGenerator(globalState)
+                .setColumns(targetTables.getColumns());
         SQLite3ExpressionGenerator aggregateGen = new SQLite3ExpressionGenerator(globalState)
-                .setColumns(s.getTables().getColumns()).allowAggregateFunctions();
+                .setColumns(targetTables.getColumns()).allowAggregateFunctions();
 
         // SELECT
         SQLite3Select select = new SQLite3Select();
