@@ -25,7 +25,6 @@ public final class PostgresInsertGenerator {
 
     public static SQLQueryAdapter insertRows(PostgresGlobalState globalState, PostgresSchema.PostgresTable table) {
         ExpectedErrors errors = new ExpectedErrors();
-        // errors.add("cannot insert into column");
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonInsertUpdateErrors(errors);
         PostgresCommon.addCommonExpressionErrors(errors);
