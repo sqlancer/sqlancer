@@ -46,12 +46,12 @@ import sqlancer.postgres.gen.PostgresSequenceGenerator;
 import sqlancer.postgres.gen.PostgresSetGenerator;
 import sqlancer.postgres.gen.PostgresStatisticsGenerator;
 import sqlancer.postgres.gen.PostgresTableGenerator;
+import sqlancer.postgres.gen.PostgresTableSpaceGenerator;
 import sqlancer.postgres.gen.PostgresTransactionGenerator;
 import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
 import sqlancer.postgres.gen.PostgresViewGenerator;
-import sqlancer.postgres.gen.PostgresTableSpaceGenerator;
 
 // EXISTS
 // IN
@@ -126,8 +126,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
-        CREATE_VIEW(PostgresViewGenerator::create),
-        CREATE_TABLESPACE(PostgresTableSpaceGenerator::generate);
+        CREATE_VIEW(PostgresViewGenerator::create), CREATE_TABLESPACE(PostgresTableSpaceGenerator::generate);
 
         private final SQLQueryProvider<PostgresGlobalState> sqlQueryProvider;
 
