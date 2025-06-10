@@ -199,12 +199,18 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
     public void visit(PostgresFunction f) {
         sb.append(f.getFunctionName());
         sb.append("(");
-        int i = 0;
-        for (PostgresExpression arg : f.getArguments()) {
-            if (i++ != 0) {
-                sb.append(", ");
+        if (f.isExtractFunction()) {
+            visit(f.getArguments()[0]);
+            sb.append(" FROM ");
+            visit(f.getArguments()[1]);
+        } else {
+            int i = 0;
+            for (PostgresExpression arg : f.getArguments()) {
+                if (i++ != 0) {
+                    sb.append(", ");
+                }
+                visit(arg);
             }
-            visit(arg);
         }
         sb.append(")");
     }
@@ -258,11 +264,15 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             break;
         case BIT:
             sb.append("BIT");
-            // if (Randomly.getBoolean()) {
-            // sb.append("(");
-            // sb.append(Randomly.getNotCachedInteger(1, 100));
-            // sb.append(")");
-            // }
+            break;
+        case TIMESTAMP:
+            sb.append("TIMESTAMP");
+            break;
+        case DATE:
+            sb.append("DATE");
+            break;
+        case TIME:
+            sb.append("TIME");
             break;
         default:
             throw new AssertionError(cast.getType());
