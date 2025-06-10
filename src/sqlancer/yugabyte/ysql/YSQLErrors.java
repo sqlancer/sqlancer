@@ -44,6 +44,8 @@ public final class YSQLErrors {
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
         errors.add("Failed DDL operation as requested"); // TODO remove parallel
         errors.add("Catalog Version Mismatch"); // TODO remove parallel
+        errors.add("Timed out waiting"); // TODO remove parallel
+        errors.add("could not serialize access due to concurrent update"); // TODO remove parallel
 
         errors.add("non-integer constant in");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
