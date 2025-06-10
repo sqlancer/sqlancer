@@ -36,6 +36,7 @@ public class YSQLTableGenerator {
         // YB catalog specific messages
 
         errors.add("The catalog snapshot used for this transaction has been invalidated");
+        errors.add("Split rows ordering does not match column ordering");
         errors.add("Timed out waiting for Create Table");
         errors.add("Table with identifier");
         errors.add("Failed DDL operation as requested");
