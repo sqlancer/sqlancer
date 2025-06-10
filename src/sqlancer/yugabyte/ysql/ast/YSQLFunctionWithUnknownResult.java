@@ -26,7 +26,7 @@ public enum YSQLFunctionWithUnknownResult {
     CURRENT_SCHEMA("current_schema", YSQLDataType.TEXT), // name
     // CURRENT_SCHEMAS("current_schemas", YSQLDataType.TEXT, YSQLDataType.BOOLEAN),
     INET_CLIENT_PORT("inet_client_port", YSQLDataType.INT), INET_SERVER_PORT("inet_server_port", YSQLDataType.INT),
-    PG_BACKEND_PID("pg_backend_pid", YSQLDataType.INT), PG_CURRENT_LOGFILE("pg_current_logfile", YSQLDataType.TEXT),
+//    PG_BACKEND_PID("pg_backend_pid", YSQLDataType.INT), PG_CURRENT_LOGFILE("pg_current_logfile", YSQLDataType.TEXT),
     // PG_IS_OTHER_TEMP_SCHEMA("pg_is_other_temp_schema", YSQLDataType.BOOLEAN),
     // PG_JIT_AVAILABLE("pg_is_other_temp_schema", YSQLDataType.BOOLEAN),
     PG_NOTIFICATION_QUEUE_USAGE("pg_notification_queue_usage", YSQLDataType.REAL),
