@@ -43,4 +43,8 @@ public final class OxlaBugs {
     /// See: https://oxla.atlassian.net/browse/OXLA-8364
     /// `timestamp_trunc` returns invalid parsing errors for numeric params.
     public static boolean bugOxla8364 = true;
+
+    /// See: https://oxla.atlassian.net/browse/OXLA-8408
+    /// `WHERE false` queries with multiple FROM tables return _Map_base::at error(s).
+    public static boolean bugOxla8408 = true;
 }

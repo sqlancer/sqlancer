@@ -23,6 +23,18 @@ public final class DBMSCommon {
         return String.format("i%d", nr);
     }
 
+    public static String createSchemaName(int nr) {
+        return String.format("s%d", nr);
+    }
+
+    public static String createUserName(int nr) {
+        return String.format("u%d", nr);
+    }
+
+    public static String createRoleName(int nr) {
+        return String.format("r%d", nr);
+    }
+
     public static boolean matchesIndexName(String indexName) {
         Matcher matcher = SQLANCER_INDEX_PATTERN.matcher(indexName);
         return matcher.matches();

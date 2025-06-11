@@ -10,63 +10,67 @@ public class OxlaCommon {
     private OxlaCommon() {
     }
 
-    public static final List<String> SYNTAX_ERRORS = List.of(
-            "invalid input syntax for type"
-    );
-    public static final List<Pattern> SYNTAX_REGEX_ERRORS = List.of(
-            Pattern.compile("operator \"[^\"]+\" is not unique"),
-            Pattern.compile("operator is not unique: (.*)"),
-            Pattern.compile("Failed to compile '[^']+' as a regular expression pattern"),
-            Pattern.compile("Could not locate this time zone:.*")
-    );
-    public static final List<String> JOIN_ERRORS = List.of(
-            "invalid JOIN ON clause condition. Only equi join is supported",
-            "both sides of \"=\" operator in JOIN ON condition must come from different sources",
-            "expression on one side of \"=\" operator in JOIN ON condition must come from exactly one source"
-    );
-    public static final List<Pattern> JOIN_REGEX_ERRORS = List.of(
-            Pattern.compile("could not identify an ordering operator for type\\s+.*")
-    );
-    public static final List<String> GROUP_BY_ERRORS = List.of(
-            "non-integer constant in GROUP BY",
-            "'*' can be used only in the SELECT clause."
-    );
-    public static final List<Pattern> GROUP_BY_REGEX_ERRORS = List.of(
-            Pattern.compile("GROUP BY position (\\d+) is not in select list"),
-            Pattern.compile("column \"[^\"]+\" must appear in the GROUP BY clause or be used in an aggregate function"),
-            Pattern.compile("could not identify an equality operator for type\\s+(.*)")
-    );
-    public static final List<String> ORDER_BY_ERRORS = List.of(
-            "non-integer constant in ORDER BY"
-    );
-    public static final List<Pattern> ORDER_BY_REGEX_ERRORS = List.of(
-            Pattern.compile("ORDER BY position (\\d+) is not in select list")
-    );
-    public static final List<String> EXPRESSION_ERRORS = List.of(
-            "out of range",
-            "division by zero",
-            "zero raised to a negative power is undefined",
+    public static final List<String> EXACT_ERRORS = List.of(
+            "'*' can be used only in the SELECT clause.",
+            "Expected frame clause with ROWS or RANGE mode",
             "LIMIT must not be negative",
+            "Not all provided names_to_validate were found in the schema",
             "OFFSET must not be negative",
+            "RANGE with offset PRECEDING/FOLLOWING requires exactly one ORDER BY column",
+            "SELECT ... INTO table is not supported",
             "aggregate function calls cannot be nested",
-            "expecting only literal for percentiles",
-            "could not determine polymorphic type because input has type unknown",
+            "argument of nth_value must be greater than zero",
+            "both sides of \"=\" operator in JOIN ON condition must come from different sources",
             "cannot get array length of a non-array",
-            "empty format provided"
+            "could not determine polymorphic type because input has type unknown",
+            "division by zero",
+            "empty format provided",
+            "expecting only literal for percentiles",
+            "expression on one side of \"=\" operator in JOIN ON condition must come from exactly one source",
+            "frame end cannot be UNBOUNDED PRECEDING",
+            "frame start cannot be UNBOUNDED FOLLOWING",
+            "frame starting from current row cannot have preceding rows",
+            "frame starting from following row cannot end with current row",
+            "frame starting from following row cannot have preceding rows",
+            "invalid JOIN ON clause condition. Only equi join is supported",
+            "invalid input syntax for type",
+            "non-integer constant in GROUP BY",
+            "non-integer constant in ORDER BY",
+            "out of range",
+            "zero raised to a negative power is undefined"
     );
-    public static final List<Pattern> EXPRESSION_REGEX_ERRORS = List.of(
-            Pattern.compile("operator is not unique:\\s+(.+)"),
-            Pattern.compile("operator does not exist:\\s+(.+)"),
-            Pattern.compile("aggregate functions are not allowed in (.+)"),
-            Pattern.compile("percentile value ((-?\\d+(.\\d*)?)|inf|-inf|nan) is not between 0 and 1"),
-            Pattern.compile("window function (.+) requires an OVER clause"),
-            Pattern.compile("relation \"[^\"]*\" does not exist"),
-            Pattern.compile("unit \"[^\"]*\" not recognized for type (.+)"),
-            Pattern.compile("database \"[^\"]*\" does not exist"),
-            Pattern.compile("role \"[^\"]*\" does not exist"),
+    public static final List<Pattern> REGEX_ERRORS = List.of(
+            Pattern.compile("Could not locate this time zone:.*"),
+            Pattern.compile("Failed to compile '[^']+' as a regular expression pattern"),
+            Pattern.compile("Function \\S+ is not window function"),
+            Pattern.compile("GROUP BY position (\\d+) is not in select list"),
             Pattern.compile("HAS_SCHEMA_PRIVILEGE function got unrecognized privilege type:\\s+\"[^\"]*\""),
+            Pattern.compile("ORDER BY position (\\d+) is not in select list"),
+            Pattern.compile("\\S+ types .*?(?=and)and .*?(?=cannot)cannot be matched"),
+            Pattern.compile("aggregate functions are not allowed in (.+)"),
+            Pattern.compile("argument of ROWS must be type bigint, not type (.+)"),
+            Pattern.compile("cannot copy window \"[^\"]+\" because it has a frame clause"),
+            Pattern.compile("cannot override \\S+ BY clause of window \"[^\"]+\""),
+            Pattern.compile("column \"[^\"]+\" must appear in the GROUP BY clause or be used in an aggregate function"),
+            Pattern.compile("column reference \"[^\"]*\" is ambiguous"),
+            Pattern.compile("could not identify an \\S+ operator for type\\s+.*"),
+            Pattern.compile("database \"[^\"]*\" does not exist"),
+            Pattern.compile("each \\S+ query must have the same number of columns"),
+            Pattern.compile("for SELECT DISTINCT, expression \"[^\"]*\" must appear in select list"),
             Pattern.compile("found multiple function overloads taking arguments from different type categories, when trying to match function\\s+(.+)"),
-            Pattern.compile("nrecognized privilege type:\\s+\"[^\"]*\"")
+            Pattern.compile("missing FROM-clause entry for table \"[^\"]*\""),
+            Pattern.compile("nrecognized privilege type:\\s+\"[^\"]*\""),
+            Pattern.compile("operator \"[^\"]+\" is not unique"),
+            Pattern.compile("operator does not exist:\\s+(.+)"),
+            Pattern.compile("operator is not unique: (.*)"),
+            Pattern.compile("operator is not unique:\\s+(.+)"),
+            Pattern.compile("percentile value ((-?\\d+(.\\d*)?)|inf|-inf|nan) is not between 0 and 1"),
+            Pattern.compile("relation \"[^\"]*\" does not exist"),
+            Pattern.compile("role \"[^\"]*\" does not exist"),
+            Pattern.compile("unit \"[^\"]*\" not recognized for type (.+)"),
+            Pattern.compile("window \"[^\"]*\" does not exist"),
+            Pattern.compile("window \"[^\"]*\" is already defined"),
+            Pattern.compile("window function (.+) requires an OVER clause")
     );
 
     public static List<String> bugErrors() {
@@ -83,21 +87,15 @@ public class OxlaCommon {
         if (OxlaBugs.bugOxla8332) {
             list.add("std::get: wrong index for variant");
         }
-        list.add("is not supported"); // TODO TEMP
+        if (OxlaBugs.bugOxla8408) {
+            list.add("Logic error in QueryPlanner (if you see this, there is a bug): _Map_base::at");
+        }
         return list;
     }
 
     public static final ExpectedErrors ALL_ERRORS = ExpectedErrors.newErrors()
-            .with(OxlaCommon.SYNTAX_ERRORS)
-            .withRegex(OxlaCommon.SYNTAX_REGEX_ERRORS)
-            .with(OxlaCommon.JOIN_ERRORS)
-            .withRegex(OxlaCommon.JOIN_REGEX_ERRORS)
-            .with(OxlaCommon.GROUP_BY_ERRORS)
-            .withRegex(OxlaCommon.GROUP_BY_REGEX_ERRORS)
-            .with(OxlaCommon.ORDER_BY_ERRORS)
-            .withRegex(OxlaCommon.ORDER_BY_REGEX_ERRORS)
-            .with(OxlaCommon.EXPRESSION_ERRORS)
-            .withRegex(OxlaCommon.EXPRESSION_REGEX_ERRORS)
+            .with(OxlaCommon.EXACT_ERRORS)
+            .withRegex(OxlaCommon.REGEX_ERRORS)
             .with(OxlaCommon.bugErrors())
             .build();
 }

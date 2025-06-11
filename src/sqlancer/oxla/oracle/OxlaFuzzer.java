@@ -15,20 +15,32 @@ public class OxlaFuzzer implements TestOracle<OxlaGlobalState> {
         this.globalState = globalState;
 
         generators = new RandomCollection<OxlaQueryGenerator>()
-                .add(5, new OxlaCreateTableGenerator(this.globalState))
-                .add(2, new OxlaDeleteFromGenerator(this.globalState))
-                .add(3, new OxlaDropTableGenerator(this.globalState))
-                .add(10, new OxlaInsertIntoGenerator(this.globalState))
-                .add(200, new OxlaSelectGenerator(this.globalState));
+                .add(1, new OxlaCreateIndexGenerator())
+                .add(1, new OxlaCreateRoleGenerator())
+                .add(1, new OxlaCreateSchemaGenerator())
+                .add(15, new OxlaCreateTableGenerator())
+                .add(1, new OxlaCreateTypeGenerator())
+                .add(1, new OxlaDeleteFromGenerator())
+                .add(1, new OxlaDropRoleGenerator())
+                .add(1, new OxlaDropSchemaGenerator())
+                .add(5, new OxlaDropTableGenerator())
+                .add(1, new OxlaDropTypeGenerator())
+                .add(50, new OxlaInsertIntoGenerator())
+                .add(1, new OxlaUpdateGenerator())
+                .add(200, new OxlaSelectGenerator())
+        ;
     }
 
     @Override
     public void check() throws Exception {
         final OxlaQueryGenerator generator = generators.getRandom();
-        final SQLQueryAdapter query = generator.getQuery(0);
+        final SQLQueryAdapter query = generator.getQuery(globalState, 0);
         try {
             globalState.executeStatement(query);
             globalState.getManager().incrementSelectQueryCount();
+            if (generator.modifiesDatabaseState()) {
+                globalState.updateSchema();
+            }
         } catch (Error e) {
             if (query.getExpectedErrors().errorIsExpected(e.getMessage())) {
                 throw new IgnoreMeException();
