@@ -30,11 +30,12 @@ public class OxlaFuzzer implements TestOracle<OxlaGlobalState> {
                 .add(1, new OxlaDropTypeGenerator())
                 .add(1, new OxlaDiscardGenerator())
                 .add(50, new OxlaInsertIntoGenerator())
-                .add(1, new OxlaUpdateGenerator())
+                .add(1, new OxlaPrivilegeGenerator())
                 .add(200, new OxlaSelectGenerator())
                 .add(1, new OxlaSetGenerator())
                 .add(1, new OxlaShowGenerator())
                 .add(1, new OxlaTransactionGenerator(), options.enableTransactionTesting)
+                .add(1, new OxlaUpdateGenerator())
         ;
     }
 
