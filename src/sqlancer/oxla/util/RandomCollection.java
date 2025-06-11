@@ -18,6 +18,13 @@ public class RandomCollection<E> {
         return this;
     }
 
+    public RandomCollection<E> add(int weight, E result, boolean condition) {
+        if (!condition) {
+            return this;
+        }
+        return add(weight, result);
+    }
+
     public E getRandom() {
         final long value = Randomly.getNotCachedInteger(0, total + 1);
         final NavigableMap.Entry<Integer, E> entry = map.higherEntry((int)value);

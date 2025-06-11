@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class OxlaCreateRoleGenerator extends OxlaQueryGenerator {
-    enum RoleOption {LOGIN, USERTYPE, PASSWORD}
+    public enum RoleOption {LOGIN, USERTYPE, PASSWORD}
 
     private static final List<String> errors = List.of(
             "conflicting or redundant options",
@@ -48,7 +48,7 @@ public class OxlaCreateRoleGenerator extends OxlaQueryGenerator {
         return true;
     }
 
-    private String asRoleOption(OxlaGlobalState globalState, RoleOption option) {
+    public static String asRoleOption(OxlaGlobalState globalState, RoleOption option) {
         return switch (option) {
             case LOGIN -> "LOGIN";
             case USERTYPE -> Randomly.getBoolean() ? "SUPERUSER" : "NOSUPERUSER";

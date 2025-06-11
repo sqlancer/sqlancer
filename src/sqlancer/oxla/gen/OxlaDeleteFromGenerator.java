@@ -6,7 +6,6 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.oxla.OxlaCommon;
 import sqlancer.oxla.OxlaGlobalState;
 import sqlancer.oxla.OxlaToStringVisitor;
-import sqlancer.oxla.schema.OxlaTable;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -26,24 +25,41 @@ public class OxlaDeleteFromGenerator extends OxlaQueryGenerator {
 
     @Override
     public SQLQueryAdapter getQuery(OxlaGlobalState globalState, int ignored) {
+        final var tableName = Randomly.fromList(globalState.getSchema().getDatabaseTables()).getName();
+        return new SQLQueryAdapter(Randomly.getBooleanWithRatherLowProbability()
+                ? getTruncateQuery(tableName) : getDeleteQuery(globalState, tableName), expectedErrors);
+    }
+
+    private String getDeleteQuery(OxlaGlobalState globalState, String tableName) {
         // delete_statement := DELETE FROM [ ONLY ] table_name [ AS [ alias ] ] [ WHERE condition ]
-        final OxlaTable table = Randomly.fromList(globalState.getSchema().getDatabaseTables());
         StringBuilder queryBuilder = new StringBuilder()
                 .append("DELETE FROM ")
                 .append(Randomly.getBoolean() ? "ONLY " : "")
-                .append(table.getName());
+                .append(tableName);
 
         if (Randomly.getBoolean()) {
             queryBuilder.append(" AS ")
-                    .append(table.getName())
+                    .append(tableName)
                     .append('_')
                     .append("_aliased")
                     .append(' ');
         }
 
         if (Randomly.getBoolean()) {
-            queryBuilder.append(" WHERE ").append(OxlaToStringVisitor.asString(new OxlaExpressionGenerator(globalState).generatePredicate()));
+            queryBuilder
+                    .append(" WHERE ")
+                    .append(OxlaToStringVisitor
+                            .asString(new OxlaExpressionGenerator(globalState).generatePredicate()));
         }
-        return new SQLQueryAdapter(queryBuilder.toString(), expectedErrors);
+        return queryBuilder.toString();
+    }
+
+    private String getTruncateQuery(String tableName) {
+        // truncate_statement := TRUNCATE [TABLE] table_name
+        return new StringBuilder()
+                .append("TRUNCATE ")
+                .append(Randomly.getBoolean() ? "TABLE " : "")
+                .append(tableName)
+                .toString();
     }
 }
