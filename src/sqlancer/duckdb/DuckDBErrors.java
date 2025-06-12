@@ -44,6 +44,7 @@ public final class DuckDBErrors {
         // collate
         errors.add("Cannot combine types with different collation!");
         errors.add("collations are only supported for type varchar");
+        errors.add("COLLATE can only be applied to varchar columns");
 
         errors.add("Like pattern must not end with escape character!"); // LIKE
 
