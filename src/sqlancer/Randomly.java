@@ -252,33 +252,28 @@ public final class Randomly {
 
         NUMERIC {
             @Override
-            public String getString(Randomly r) {
-                return getStringOfAlphabet(r, NUMERIC_ALPHABET);
+            public String getString(Randomly r, int minChars) {
+                return getStringOfAlphabet(r, NUMERIC_ALPHABET, minChars);
             }
-
         },
         ALPHANUMERIC {
             @Override
-            public String getString(Randomly r) {
-                return getStringOfAlphabet(r, ALPHANUMERIC_ALPHABET);
-
+            public String getString(Randomly r, int minChars) {
+                return getStringOfAlphabet(r, ALPHANUMERIC_ALPHABET, minChars);
             }
-
         },
         ALPHANUMERIC_SPECIALCHAR {
             @Override
-            public String getString(Randomly r) {
-                return getStringOfAlphabet(r, ALPHANUMERIC_SPECIALCHAR_ALPHABET);
-
+            public String getString(Randomly r, int minChars) {
+                return getStringOfAlphabet(r, ALPHANUMERIC_SPECIALCHAR_ALPHABET, minChars);
             }
-
         },
         SOPHISTICATED {
 
             private static final String ALPHABET = ALPHANUMERIC_SPECIALCHAR_ALPHABET;
 
             @Override
-            public String getString(Randomly r) {
+            public String getString(Randomly r, int minChars) {
                 if (smallBiasProbability()) {
                     return Randomly.fromOptions("TRUE", "FALSE", "0.0", "-0.0", "1e500", "-1e500");
                 }
@@ -293,7 +288,7 @@ public final class Randomly {
 
                 StringBuilder sb = new StringBuilder();
 
-                int chars = getStringLength(r);
+                int chars = getStringLength(r, minChars);
                 for (int i = 0; i < chars; i++) {
                     if (Randomly.getBooleanWithRatherLowProbability()) {
                         char val = (char) r.getInteger();
@@ -314,7 +309,7 @@ public final class Randomly {
                 }
                 if (r.provider != null) {
                     while (Randomly.getBooleanWithSmallProbability()) {
-                        if (sb.length() == 0) {
+                        if (sb.isEmpty()) {
                             sb.append(r.provider.get());
                         } else {
                             sb.insert((int) Randomly.getNotCachedInteger(0, sb.length()), r.provider.get());
@@ -343,25 +338,24 @@ public final class Randomly {
                     return new String(chars);
                 }
             }
-
         };
 
         private static final String ALPHANUMERIC_SPECIALCHAR_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#<>/.,~-+'*()[]{} ^*?%_\t\n\r|&\\";
         private static final String ALPHANUMERIC_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         private static final String NUMERIC_ALPHABET = "0123456789";
 
-        private static int getStringLength(Randomly r) {
+        private static int getStringLength(Randomly r, int minChars) {
             int chars;
             if (Randomly.getBoolean()) {
-                chars = Randomly.smallNumber();
+                chars = Math.max(minChars, Randomly.smallNumber());
             } else {
-                chars = r.getInteger(0, maxStringLength);
+                chars = r.getInteger(minChars, maxStringLength);
             }
             return chars;
         }
 
-        private static String getStringOfAlphabet(Randomly r, String alphabet) {
-            int chars = getStringLength(r);
+        private static String getStringOfAlphabet(Randomly r, String alphabet, int minChars) {
+            int chars = getStringLength(r, minChars);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < chars; i++) {
                 sb.append(alphabet.charAt(getNextInt(0, alphabet.length())));
@@ -369,7 +363,7 @@ public final class Randomly {
             return sb.toString();
         }
 
-        public abstract String getString(Randomly r);
+        public abstract String getString(Randomly r, int minChars);
 
         public String transformCachedString(Randomly r, String s) {
             return s;
@@ -378,7 +372,11 @@ public final class Randomly {
     }
 
     public String getString() {
-        return stringGenerationStrategy.getString(this);
+        return stringGenerationStrategy.getString(this, 0);
+    }
+
+    public String getString(int minChars) {
+        return stringGenerationStrategy.getString(this, minChars);
     }
 
     public byte[] getBytes() {

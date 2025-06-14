@@ -1,10 +1,7 @@
 package sqlancer.oxla;
 
 import com.google.auto.service.AutoService;
-import sqlancer.DatabaseProvider;
-import sqlancer.MainOptions;
-import sqlancer.SQLConnection;
-import sqlancer.SQLProviderAdapter;
+import sqlancer.*;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.oxla.gen.OxlaCreateTableGenerator;
@@ -122,7 +119,7 @@ public class OxlaProvider extends SQLProviderAdapter<OxlaGlobalState, OxlaOption
                 if (rowCount < options.minRowCount) {
                     globalState.executeStatement(insertIntoGenerator.getQueryForTable(globalState, table));
                 }
-            } catch (Exception e) {
+            } catch (Error e) {
                 throw new AssertionError("[OxlaFuzzer] failed to insert rows to a table '" + table.getName() + "', because: " + e);
             }
         }

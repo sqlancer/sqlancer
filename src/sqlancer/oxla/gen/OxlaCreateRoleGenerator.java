@@ -13,14 +13,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class OxlaCreateRoleGenerator extends OxlaQueryGenerator {
-    enum RoleOption {LOGIN, USERTYPE, PASSWORD}
+    public enum RoleOption {LOGIN, USERTYPE, PASSWORD}
 
     private static final List<String> errors = List.of(
             "conflicting or redundant options",
             "password must be provided",
             "password cannot be empty"
     );
-    private static final List<Pattern> regexErrors = List.of();
+    private static final List<Pattern> regexErrors = List.of(
+            Pattern.compile("role \"[^\"]*\" already exists")
+    );
     private static final ExpectedErrors expectedErrors = new ExpectedErrors(errors, regexErrors)
             .addAll(OxlaCommon.ALL_ERRORS);
 
@@ -35,7 +37,7 @@ public class OxlaCreateRoleGenerator extends OxlaQueryGenerator {
                 .append("CREATE ")
                 .append(isRole ? "ROLE " : "USER ")
                 .append(isRole ? DBMSCommon.createRoleName(index) : DBMSCommon.createUserName(index))
-                .append(Randomly.getBoolean() ? " WITH " : "")
+                .append(Randomly.getBoolean() ? " WITH " : " ")
                 .append(options
                         .stream()
                         .map(o -> asRoleOption(globalState, o))
@@ -48,7 +50,7 @@ public class OxlaCreateRoleGenerator extends OxlaQueryGenerator {
         return true;
     }
 
-    private String asRoleOption(OxlaGlobalState globalState, RoleOption option) {
+    public static String asRoleOption(OxlaGlobalState globalState, RoleOption option) {
         return switch (option) {
             case LOGIN -> "LOGIN";
             case USERTYPE -> Randomly.getBoolean() ? "SUPERUSER" : "NOSUPERUSER";
