@@ -1,5 +1,6 @@
 package sqlancer.duckdb.gen;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,11 +55,12 @@ public final class DuckDBRandomQuerySynthesizer {
         }
 
         if (Randomly.getBoolean()) {
-            select.setLimitClause(DuckDBConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
+            select.setLimitClause(DuckDBConstant
+                    .createIntConstant(BigInteger.valueOf(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE))));
         }
         if (Randomly.getBoolean()) {
-            select.setOffsetClause(
-                    DuckDBConstant.createIntConstant(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE)));
+            select.setOffsetClause(DuckDBConstant
+                    .createIntConstant(BigInteger.valueOf(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE))));
         }
         if (Randomly.getBoolean()) {
             select.setHavingClause(gen.generateHavingClause());

@@ -1,5 +1,6 @@
 package sqlancer.duckdb.gen;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -147,7 +148,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
             if (!globalState.getDbmsSpecificOptions().testIntConstants) {
                 throw new IgnoreMeException();
             }
-            return DuckDBConstant.createIntConstant(globalState.getRandomly().getInteger());
+            return DuckDBConstant.createIntConstant(BigInteger.valueOf(globalState.getRandomly().getInteger()));
         case DATE:
             if (!globalState.getDbmsSpecificOptions().testDateConstants) {
                 throw new IgnoreMeException();

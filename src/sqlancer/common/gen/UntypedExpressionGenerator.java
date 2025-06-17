@@ -55,6 +55,10 @@ public abstract class UntypedExpressionGenerator<E, C> implements ExpressionGene
         return generateExpressions(Randomly.smallNumber() + 1);
     }
 
+    public List<E> generateGroupBys() {
+        return generateExpressions(Randomly.smallNumber() + 1);
+    }
+
     // override this class to generate aggregate functions
     public E generateHavingClause() {
         allowAggregates = true;

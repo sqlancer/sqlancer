@@ -35,12 +35,21 @@ public abstract class NewToStringVisitor<E> {
             visit((NewPostfixTextNode<E>) expr);
         } else if (expr instanceof NewTernaryNode<?>) {
             visit((NewTernaryNode<E>) expr);
+        } else if (expr instanceof NewExistsNode<?>) {
+            visit((NewExistsNode<E>) expr);
+        } else if (expr instanceof NewValuesNode<?>) {
+            visit((NewValuesNode<E>) expr);
+        } else if (expr instanceof NewWithNode<?>) {
+            visit((NewWithNode<E>) expr);
         } else {
             visitSpecific(expr);
         }
     }
 
     public void visit(List<E> expressions) {
+        if (!expressions.isEmpty() && expressions.get(0) instanceof NewValuesNode) {
+            sb.append("VALUES ");
+        }
         for (int i = 0; i < expressions.size(); i++) {
             if (i != 0) {
                 sb.append(", ");
@@ -59,7 +68,9 @@ public abstract class NewToStringVisitor<E> {
     }
 
     public void visit(NewAliasNode<E> alias) {
+        sb.append("(");
         visit(alias.getExpr());
+        sb.append(")");
         sb.append(" AS ");
         sb.append(alias.getAlias());
     }
@@ -159,6 +170,35 @@ public abstract class NewToStringVisitor<E> {
         sb.append(" ");
         visit(ternaryNode.getRight());
         sb.append(")");
+    }
+
+    public void visit(NewExistsNode<E> existExpr) {
+        if (existExpr.getIsNot()) {
+            sb.append(" NOT");
+        }
+        sb.append(" EXISTS(");
+        visit(existExpr.getExpr());
+        sb.append(")");
+    }
+
+    public void visit(NewValuesNode<E> valuesExpr) {
+        sb.append("(");
+        List<E> values = valuesExpr.getValues();
+        for (int i = 0; i < values.size(); ++i) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            visit(values.get(i));
+        }
+        sb.append(")");
+    }
+
+    public void visit(NewWithNode<E> withExpr) {
+        sb.append("WITH ");
+        visit(withExpr.getLeftExpr());
+        sb.append(" AS(");
+        visit(withExpr.getRightExpr());
+        sb.append(") ");
     }
 
     public String get() {

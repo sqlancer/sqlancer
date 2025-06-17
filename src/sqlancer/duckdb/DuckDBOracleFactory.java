@@ -10,7 +10,9 @@ import sqlancer.common.oracle.NoRECOracle;
 import sqlancer.common.oracle.TLPWhereOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
+import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
+import sqlancer.duckdb.test.DuckDBCODDTestOracle;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningDistinctTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningGroupByTester;
@@ -80,6 +82,12 @@ public enum DuckDBOracleFactory implements OracleFactory<DuckDBProvider.DuckDBGl
             oracles.add(DISTINCT.create(globalState));
             oracles.add(GROUP_BY.create(globalState));
             return new CompositeTestOracle<DuckDBProvider.DuckDBGlobalState>(oracles, globalState);
+        }
+    },
+    CODDTest {
+        @Override
+        public TestOracle<DuckDBGlobalState> create(DuckDBGlobalState globalState) throws SQLException {
+            return new DuckDBCODDTestOracle(globalState);
         }
     };
 
