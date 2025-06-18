@@ -14,7 +14,7 @@ import sqlancer.DBMSSpecificOptions;
 public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactory> {
     public static final String DEFAULT_HOST = "localhost";
     public static final int DEFAULT_PORT = 5432;
-    private static final boolean DEFAULT_TEST_TABLESPACES = determineDefaultTablespaceSupport();
+    private static Boolean defaultTestTablespaces = null;
 
     @Parameter(names = "--bulk-insert", description = "Specifies whether INSERT statements should be issued in bulk", arity = 1)
     public boolean allowBulkInsert;
@@ -26,7 +26,7 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
     public boolean testCollations = true;
 
     @Parameter(names = "--test-tablespaces", description = "Specifies whether to test tablespace creation (default is OS-dependent)", arity = 1)
-    public boolean testTablespaces = DEFAULT_TEST_TABLESPACES;
+    public boolean testTablespaces = false;
 
     @Parameter(names = "--tablespace-path", description = "Base path for tablespace directories (default is OS-dependent)", arity = 1)
     public String tablespacePath = getDefaultTablespacePath();
@@ -73,5 +73,47 @@ public class PostgresOptions implements DBMSSpecificOptions<PostgresOracleFactor
     @Override
     public List<PostgresOracleFactory> getTestOracleFactory() {
         return oracle;
+    }
+
+    public String getTablespacePath() {
+        if (tablespacePath == null || tablespacePath.trim().isEmpty()) {
+            throw new AssertionError("Tablespace path is null or empty. Please configure --tablespace-path");
+        }
+        
+        File path = new File(tablespacePath);
+        
+        // Check if the directory exists or can be created
+        if (!path.exists()) {
+            if (!path.mkdirs()) {
+                throw new AssertionError("Cannot create tablespace directory: " + tablespacePath + 
+                    ". Please ensure the parent directory exists and you have write permissions.");
+            }
+        }
+        
+        // Check if it's actually a directory
+        if (!path.isDirectory()) {
+            throw new AssertionError("Tablespace path is not a directory: " + tablespacePath);
+        }
+        
+        // Check write permissions
+        if (!path.canWrite()) {
+            throw new AssertionError("No write permissions for tablespace directory: " + tablespacePath + 
+                ". Please ensure you have write permissions to this directory.");
+        }
+        
+        return tablespacePath;
+    }
+
+    public boolean isTestTablespaces() {
+        // If the user explicitly set the value via command line, use that
+        // Otherwise, use the OS-dependent default
+        return testTablespaces || getDefaultTablespaceSupport();
+    }
+
+    private static boolean getDefaultTablespaceSupport() {
+        if (defaultTestTablespaces == null) {
+            defaultTestTablespaces = determineDefaultTablespaceSupport();
+        }
+        return defaultTestTablespaces;
     }
 }
