@@ -28,7 +28,16 @@ public class OxlaOptions implements DBMSSpecificOptions<OxlaOracleFactory> {
     public boolean enableTransactionTesting = false;
 
     @Parameter(names = "--oracle", description = "Specifies which test oracle should be used with Oxla")
-    public List<OxlaOracleFactory> oracle = List.of(OxlaOracleFactory.FUZZER, OxlaOracleFactory.PQS, OxlaOracleFactory.NOREC);
+    public List<OxlaOracleFactory> oracle = List.of(
+            OxlaOracleFactory.FUZZER,
+            OxlaOracleFactory.PQS,
+            OxlaOracleFactory.NOREC,
+            OxlaOracleFactory.AGGREGATE,
+            OxlaOracleFactory.DISTINCT,
+            OxlaOracleFactory.WHERE,
+            OxlaOracleFactory.WHERE_EXTENDED,
+            OxlaOracleFactory.QUERY_PARTITIONING
+    );
 
     @Parameter(names = "--connection-url", description = "Specifies the URL for connecting to the Oxla server", arity = 1)
     public String connectionURL = String.format("postgresql://%s:%d/oxla", OxlaOptions.DEFAULT_HOST, OxlaOptions.DEFAULT_PORT);
