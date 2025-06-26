@@ -63,6 +63,7 @@ public class YSQLTableGenerator {
         errors.add("inherits from generated column but specifies default");
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonTableErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
     }
 
     public static SQLQueryAdapter generate(String tableName, boolean generateOnlyKnown, YSQLGlobalState globalState) {
@@ -153,6 +154,7 @@ public class YSQLTableGenerator {
         errors.add("does not accept data type");
         int n = partitionOption.contentEquals("LIST") ? 1 : Randomly.smallNumber() + 1;
         YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
         for (int i = 0; i < n; i++) {
             if (i != 0) {
                 sb.append(", ");

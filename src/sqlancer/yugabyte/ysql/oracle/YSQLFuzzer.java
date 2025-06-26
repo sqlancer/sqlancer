@@ -25,6 +25,7 @@ public class YSQLFuzzer implements TestOracle<YSQLGlobalState> {
         YSQLErrors.addCommonFetchErrors(errors);
         YSQLErrors.addGroupingErrors(errors);
         YSQLErrors.addViewErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
 
         // remove timeout error from scope
         errors.add("canceling statement due to statement timeout");

@@ -40,6 +40,7 @@ public class YSQLCatalog implements TestOracle<YSQLGlobalState> {
         this.options = state.getOptions();
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonFetchErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
     }
 
     private YSQLProvider.Action getRandomAction(List<YSQLProvider.Action> actions) {

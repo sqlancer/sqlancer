@@ -51,6 +51,7 @@ public final class YSQLUpdateGenerator extends AbstractUpdateGenerator<YSQLColum
         errors.add("could not determine which collation to use for string comparison");
         errors.add("but expression is of type");
         YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
         if (!Randomly.getBooleanWithSmallProbability()) {
             sb.append(" WHERE ");
             YSQLExpression where = YSQLExpressionGenerator.generateExpression(globalState, randomTable.getColumns(),

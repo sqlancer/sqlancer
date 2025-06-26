@@ -30,6 +30,7 @@ public class YSQLAlterTableGenerator {
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonInsertUpdateErrors(errors);
         YSQLErrors.addCommonTableErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
         errors.add("duplicate key value violates unique constraint");
         errors.add("cannot drop key column");
         errors.add("cannot drop desired object(s) because other objects depend on them");

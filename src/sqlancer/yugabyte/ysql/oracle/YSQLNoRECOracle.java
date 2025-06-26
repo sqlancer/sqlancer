@@ -41,6 +41,7 @@ public class YSQLNoRECOracle extends NoRECBase<YSQLGlobalState> implements TestO
         this.s = globalState.getSchema();
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonFetchErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
     }
 
     public static List<YSQLJoin> getJoinStatements(YSQLGlobalState globalState, List<YSQLColumn> columns,

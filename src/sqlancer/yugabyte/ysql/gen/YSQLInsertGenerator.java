@@ -22,11 +22,11 @@ public final class YSQLInsertGenerator {
     public static SQLQueryAdapter insert(YSQLGlobalState globalState) {
         YSQLTable table = globalState.getSchema().getRandomTable(YSQLTable::isInsertable);
         ExpectedErrors errors = new ExpectedErrors();
-        errors.add("cannot insert into column");
-        errors.add("cannot insert a non-DEFAULT value into column");
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonInsertUpdateErrors(errors);
-        YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
+        errors.add("cannot insert into column");
+        errors.add("cannot insert a non-DEFAULT value into column");
         errors.add("multiple assignments to same column");
         errors.add("violates foreign key constraint");
         errors.add("value too long for type character varying");

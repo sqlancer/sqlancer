@@ -210,6 +210,7 @@ public final class YSQLCommon {
         List<YSQLColumn> randomNonEmptyColumnSubset = table.getRandomNonEmptyColumnSubset();
         List<YSQLColumn> otherColumns;
         YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
         switch (t) {
         case CHECK:
             sb.append("CHECK(");

@@ -3,6 +3,7 @@ package sqlancer.yugabyte.ysql.gen;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 
 public final class YSQLTransactionGenerator {
 
@@ -16,11 +17,8 @@ public final class YSQLTransactionGenerator {
             errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
             sb.append(" ISOLATION LEVEL ");
             sb.append(Randomly.fromOptions("SERIALIZABLE", "REPEATABLE READ", "READ COMMITTED"));
-            // if (Randomly.getBoolean()) {
-            // sb.append(" ");
-            // sb.append(Randomly.fromOptions("READ WRITE", "READ ONLY"));
-            // }
         }
+        YSQLErrors.addTransactionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 

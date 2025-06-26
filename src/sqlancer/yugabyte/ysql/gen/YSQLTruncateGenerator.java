@@ -6,6 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTable;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 
 public final class YSQLTruncateGenerator {
@@ -23,8 +24,10 @@ public final class YSQLTruncateGenerator {
         sb.append(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty().stream().map(AbstractTable::getName)
                 .collect(Collectors.joining(", ")));
         // TODO remove Restart read required after proper tx ddls
-        return new SQLQueryAdapter(sb.toString(), ExpectedErrors
-                .from("cannot truncate a table referenced in a foreign key constraint", "is not a table", "Failed DDL operation as requested", "could not serialize access due to concurrent update", "conflicts with same priority transaction"));
+        ExpectedErrors errors = ExpectedErrors
+                .from("cannot truncate a table referenced in a foreign key constraint", "is not a table");
+        YSQLErrors.addTransactionErrors(errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

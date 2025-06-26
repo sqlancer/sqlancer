@@ -23,6 +23,7 @@ public final class YSQLMaterializedViewRefresh {
             YSQLErrors.addGroupingErrors(errors);
             YSQLErrors.addViewErrors(errors);
             YSQLErrors.addCommonExpressionErrors(errors);
+            YSQLErrors.addTransactionErrors(errors);
             errors.add("Create a unique index with no WHERE clause on one or more columns of the materialized view");
             return new SQLQueryAdapter(sb.toString(), errors, true);
         } catch (Exception e) {

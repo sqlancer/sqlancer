@@ -6,6 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 
@@ -31,7 +32,9 @@ public final class YSQLAnalyzeGenerator {
             sb.append(")");
         }
 
-        return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("deadlock"));
+        ExpectedErrors errors = ExpectedErrors.from("deadlock");
+        YSQLErrors.addTransactionErrors(errors);
+        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

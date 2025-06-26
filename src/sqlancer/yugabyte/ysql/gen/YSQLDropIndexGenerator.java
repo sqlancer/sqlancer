@@ -6,6 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLIndex;
 
@@ -32,9 +33,11 @@ public final class YSQLDropIndexGenerator {
             sb.append(" ");
             sb.append(Randomly.fromOptions("CASCADE", "RESTRICT"));
         }
+        ExpectedErrors errors = ExpectedErrors.from("cannot drop desired object(s) because other objects depend on them",
+                "cannot drop index", "does not exist", "Failed DDL operation as requested");
+        YSQLErrors.addTransactionErrors(errors);
         return new SQLQueryAdapter(sb.toString(),
-                ExpectedErrors.from("cannot drop desired object(s) because other objects depend on them",
-                        "cannot drop index", "does not exist", "Failed DDL operation as requested"),
+                errors,
                 true);
     }
 

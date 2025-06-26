@@ -7,6 +7,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLIndex;
 
@@ -48,6 +49,7 @@ public final class YSQLReindexGenerator {
         errors.add("already contains data"); // FIXME bug report
         errors.add("does not exist"); // internal index
         errors.add("REINDEX is not yet implemented for partitioned indexes");
+        YSQLErrors.addTransactionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

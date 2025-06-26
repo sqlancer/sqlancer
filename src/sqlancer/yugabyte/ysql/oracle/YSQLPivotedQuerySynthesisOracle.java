@@ -33,6 +33,7 @@ public class YSQLPivotedQuerySynthesisOracle
         super(globalState);
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonFetchErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
     }
 
     /*

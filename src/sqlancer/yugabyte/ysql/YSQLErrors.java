@@ -8,17 +8,8 @@ public final class YSQLErrors {
     }
 
     public static void addCommonFetchErrors(ExpectedErrors errors) {
-        errors.add("Failed DDL operation as requested"); // Special flag that cause next DDL to fail
-        errors.add("Table with identifier"); // TODO remove parallel
+        errors.add("Table with identifier");
 
-        errors.add("Operation failed. Try again");
-        errors.add("could not serialize access due to concurrent update");
-        errors.add("Value write after transaction start");
-
-        errors.add("An I/O error occurred while sending to the backend");
-        errors.add("RPC");
-        errors.add("Conflicts with committed transaction");
-        errors.add("cannot insert a non-DEFAULT value into column");
         errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
 
         errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
@@ -29,7 +20,6 @@ public final class YSQLErrors {
     }
 
     public static void addCommonTableErrors(ExpectedErrors errors) {
-
         errors.add("specified value cannot be cast to type real for column");
         errors.add("PRIMARY KEY containing column of type 'INET' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'VARBIT' not yet supported");
@@ -41,12 +31,18 @@ public final class YSQLErrors {
         errors.add("cannot split table that does not have primary key");
     }
 
-    public static void addCommonExpressionErrors(ExpectedErrors errors) {
-        errors.add("Failed DDL operation as requested"); // TODO remove parallel
-        errors.add("Catalog Version Mismatch"); // TODO remove parallel
-        errors.add("Timed out waiting"); // TODO remove parallel
-        errors.add("could not serialize access due to concurrent update"); // TODO remove parallel
+    public static void addTransactionErrors(ExpectedErrors errors) {
+        errors.add("could not serialize access due to concurrent update");
+        errors.add("Timed out waiting");
+        errors.add("An I/O error occurred while sending to the backend");
+        errors.add("RPC");
+        errors.add("Conflicts with committed transaction");
+        errors.add("cannot insert a non-DEFAULT value into column");
+        errors.add("Operation failed. Try again");
+        errors.add("Value write after transaction start");
+    }
 
+    public static void addCommonExpressionErrors(ExpectedErrors errors) {
         errors.add("non-integer constant in");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
         errors.add("GROUP BY position");

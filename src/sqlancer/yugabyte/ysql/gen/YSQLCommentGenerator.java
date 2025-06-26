@@ -22,6 +22,7 @@ public final class YSQLCommentGenerator {
         YSQLErrors.addGroupingErrors(errors);
         YSQLErrors.addViewErrors(errors);
         YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
         sb.append("COMMENT ON ");
         Action type = Randomly.fromOptions(Action.values());
         YSQLTable randomTable = globalState.getSchema().getRandomTable();

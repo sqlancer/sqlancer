@@ -87,6 +87,7 @@ public final class YSQLSequenceGenerator {
         }
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonFetchErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

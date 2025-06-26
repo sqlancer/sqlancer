@@ -55,6 +55,7 @@ public final class YSQLViewGenerator {
         YSQLErrors.addGroupingErrors(errors);
         YSQLErrors.addViewErrors(errors);
         YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addTransactionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
