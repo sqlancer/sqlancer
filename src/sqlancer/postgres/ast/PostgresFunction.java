@@ -210,6 +210,66 @@ public class PostgresFunction implements PostgresExpression {
                 return true;
             }
 
+        },
+        CEIL(1, "ceil") {
+            @Override
+            public PostgresConstant apply(PostgresConstant[] evaluatedArgs, PostgresExpression... args) {
+                if (evaluatedArgs[0].isNull()) {
+                    return PostgresConstant.createNullConstant();
+                }
+                double value = evaluatedArgs[0].cast(PostgresDataType.REAL).asReal();
+                return PostgresConstant.createDoubleConstant(Math.ceil(value));
+            }
+
+            @Override
+            public boolean supportsReturnType(PostgresDataType type) {
+                return type == PostgresDataType.REAL;
+            }
+
+            @Override
+            public PostgresDataType[] getInputTypesForReturnType(PostgresDataType returnType, int nrArguments) {
+                return new PostgresDataType[] { PostgresDataType.REAL };
+            }
+        },
+        FLOOR(1, "floor") {
+            @Override
+            public PostgresConstant apply(PostgresConstant[] evaluatedArgs, PostgresExpression... args) {
+                if (evaluatedArgs[0].isNull()) {
+                    return PostgresConstant.createNullConstant();
+                }
+                double value = evaluatedArgs[0].cast(PostgresDataType.REAL).asReal();
+                return PostgresConstant.createDoubleConstant(Math.floor(value));
+            }
+
+            @Override
+            public boolean supportsReturnType(PostgresDataType type) {
+                return type == PostgresDataType.REAL;
+            }
+
+            @Override
+            public PostgresDataType[] getInputTypesForReturnType(PostgresDataType returnType, int nrArguments) {
+                return new PostgresDataType[] { PostgresDataType.REAL };
+            }
+        },
+        ROUND(1, "round") {
+            @Override
+            public PostgresConstant apply(PostgresConstant[] evaluatedArgs, PostgresExpression... args) {
+                if (evaluatedArgs[0].isNull()) {
+                    return PostgresConstant.createNullConstant();
+                }
+                double value = evaluatedArgs[0].cast(PostgresDataType.REAL).asReal();
+                return PostgresConstant.createDoubleConstant(Math.round(value));
+            }
+
+            @Override
+            public boolean supportsReturnType(PostgresDataType type) {
+                return type == PostgresDataType.REAL;
+            }
+
+            @Override
+            public PostgresDataType[] getInputTypesForReturnType(PostgresDataType returnType, int nrArguments) {
+                return new PostgresDataType[] { PostgresDataType.REAL };
+            }
         };
 
         private String functionName;
