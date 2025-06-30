@@ -144,4 +144,8 @@ public class ExpectedErrors {
             return new ExpectedErrors(errors, regexes);
         }
     }
+
+    public Set<String> getErrors() {
+        return errors;
+    }
 }

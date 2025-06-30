@@ -129,6 +129,9 @@ public class MainOptions {
     @Parameter(names = "--reduce-ast", description = "EXPERIMENTAL perform AST reduction after statement reduction")
     private boolean reduceAST = false; // NOPMD
 
+    @Parameter(names = "--save-reducer-context", description = "Save serialized reducer context information when errors occur")
+    private boolean saveReducerContext = false; // NOPMD
+
     @Parameter(names = "--statement-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the statement reducer will do")
     private long maxStatementReduceSteps = NO_REDUCE_LIMIT; // NOPMD
 
@@ -310,6 +313,10 @@ public class MainOptions {
 
     public boolean reduceAST() {
         return reduceAST;
+    }
+
+    public boolean saveReducerContext() {
+        return saveReducerContext;
     }
 
     public long getMaxStatementReduceSteps() {
