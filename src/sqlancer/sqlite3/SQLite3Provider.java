@@ -361,7 +361,6 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
     public ExpectedErrors getAllExpectedErrors() {
         ExpectedErrors errors = new ExpectedErrors();
 
-        // 添加所有SQLite3特定的预期错误
         SQLite3Errors.addExpectedExpressionErrors(errors);
         SQLite3Errors.addMatchQueryErrors(errors);
         SQLite3Errors.addQueryErrors(errors);
@@ -370,7 +369,7 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
         SQLite3Errors.addTableManipulationErrors(errors);
         SQLite3Errors.addInsertNowErrors(errors);
 
-        // 添加一些通用的SQLite3错误
+        // add some common SQLite3 errors
         errors.add("misuse of aggregate");
         errors.add("misuse of window function");
         errors.add("second argument to nth_value must be a positive integer");
