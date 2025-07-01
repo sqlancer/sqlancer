@@ -211,7 +211,7 @@ public class H2Schema extends AbstractSchema<H2GlobalState, H2Table> {
             return H2DataType.INT;
         } else if (columnType.startsWith("BOOLEAN")) {
             return H2DataType.BOOL;
-        } else if (columnType.startsWith("CHARACTER VARYING")) {
+        } else if (columnType.startsWith("CHARACTER VARYING") || columnType.startsWith("VARCHAR")) {
             return H2DataType.VARCHAR;
         } else if (columnType.startsWith("DOUBLE") || columnType.startsWith("DECFLOAT") || columnType.startsWith("REAL")
                 || columnType.startsWith("FLOAT")) {
