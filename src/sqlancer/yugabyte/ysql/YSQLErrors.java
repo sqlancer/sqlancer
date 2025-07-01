@@ -32,6 +32,7 @@ public final class YSQLErrors {
     }
 
     public static void addTransactionErrors(ExpectedErrors errors) {
+        errors.add("Restart read required");
         errors.add("could not serialize access due to concurrent update");
         errors.add("Timed out waiting");
         errors.add("An I/O error occurred while sending to the backend");
