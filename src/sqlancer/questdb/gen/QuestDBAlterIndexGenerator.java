@@ -23,6 +23,8 @@ public final class QuestDBAlterIndexGenerator {
         errors.add("cannot create index");
         errors.add("Index flag is only supported for SYMBOL");
         errors.add("Invalid column: ");
+        errors.add("column is not indexed");
+        errors.add("column is already indexed");
 
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
 
