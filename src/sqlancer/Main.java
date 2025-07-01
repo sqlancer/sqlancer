@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.security.SecureRandom;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public final class Main {
     public static volatile AtomicLong nrUnsuccessfulActions = new AtomicLong();
     public static volatile AtomicLong threadsShutdown = new AtomicLong();
     static boolean progressMonitorStarted;
+    public static final SecureRandom SECURE_PRNG = new SecureRandom();
 
     static {
         System.setProperty(org.slf4j.simple.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
@@ -630,7 +632,7 @@ public final class Main {
             final String databaseName = options.getDatabasePrefix() + i;
             final long seed;
             if (options.getRandomSeed() == -1) {
-                seed = System.currentTimeMillis() + i;
+                seed = SECURE_PRNG.nextLong();
             } else {
                 seed = options.getRandomSeed() + i;
             }
