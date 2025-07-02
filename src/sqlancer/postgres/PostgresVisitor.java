@@ -12,6 +12,7 @@ import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
+import sqlancer.postgres.ast.PostgresCTE;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
@@ -27,6 +28,7 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresWindowFunction;
+import sqlancer.postgres.ast.PostgresWithClause;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
 
 public interface PostgresVisitor {
@@ -75,6 +77,10 @@ public interface PostgresVisitor {
 
     void visit(PostgresWindowFunction windowFunction);
 
+    void visit(PostgresCTE cte);
+
+    void visit(PostgresWithClause withClause);
+
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
             visit((PostgresConstant) expression);
@@ -118,6 +124,10 @@ public interface PostgresVisitor {
             visit((PostgresTableReference) expression);
         } else if (expression instanceof PostgresWindowFunction) {
             visit((PostgresWindowFunction) expression);
+        } else if (expression instanceof PostgresCTE) {
+            visit((PostgresCTE) expression);
+        } else if (expression instanceof PostgresWithClause) {
+            visit((PostgresWithClause) expression);
         } else {
             throw new AssertionError(expression);
         }
