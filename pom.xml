@@ -364,6 +364,11 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc</artifactId>
+      <version>2.3.9</version> <!-- 替换为您使用的 Hive 版本 -->
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
       <version>1.9.0</version>

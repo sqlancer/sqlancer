@@ -273,7 +273,7 @@ public abstract class PrestoConstant implements PrestoExpression {
             return PrestoConstant.PrestoTextConstant.createStringConstant(randomly.getAlphabeticChar(), type.getSize());
         case VARCHAR:
             return PrestoConstant.PrestoTextConstant.createStringConstant(randomly.getString(), type.getSize());
-        case VARBINARY:
+        case BINARY:
             return PrestoConstant.createVarbinaryConstant(randomly.getString());
         /*case JSON:
             return PrestoConstant.PrestoJsonConstant.createJsonConstant();
@@ -398,9 +398,9 @@ public abstract class PrestoConstant implements PrestoExpression {
         @Override
         public String toString() {
             if (value == Double.POSITIVE_INFINITY) {
-                return "infinity()";
+                return "1";
             } else if (value == Double.NEGATIVE_INFINITY) {
-                return "-infinity()";
+                return "-1";
             }
             return String.valueOf(value);
         }
@@ -434,9 +434,9 @@ public abstract class PrestoConstant implements PrestoExpression {
         @Override
         public String toString() {
             if (value == Double.POSITIVE_INFINITY) {
-                return "'+Inf'";
+                return "'1'";
             } else if (value == Double.NEGATIVE_INFINITY) {
-                return "'-Inf'";
+                return "'-1'";
             }
             return DECIMAL_FORMAT.format(value);
         }
@@ -466,7 +466,7 @@ public abstract class PrestoConstant implements PrestoExpression {
 
         @Override
         public String toString() {
-            return "'" + value.replace("'", "''") + "'";
+            return "'" + value.replace("'", "''").replace("\\", "#") + "'";
         }
 
     }
@@ -485,7 +485,7 @@ public abstract class PrestoConstant implements PrestoExpression {
 
         @Override
         public String toString() {
-            return String.format("CAST ('%s' AS VARBINARY)", value);
+            return String.format("CAST ('%s' AS BINARY)", value);
         }
 
     }
@@ -800,7 +800,7 @@ public abstract class PrestoConstant implements PrestoExpression {
 
         @Override
         public String toString() {
-            return "ARRAY[" + elements.stream().map(Object::toString).collect(Collectors.joining(", ")) + "]";
+            return "ARRAY(" + elements.stream().map(Object::toString).collect(Collectors.joining(", ")) + ")";
         }
 
     }

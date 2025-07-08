@@ -28,7 +28,7 @@ public class PrestoInsertGenerator extends AbstractInsertGenerator<PrestoColumn>
     private SQLQueryAdapter generate() {
         sb.append("INSERT INTO ");
         PrestoTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        List<PrestoColumn> columns = table.getRandomNonEmptyColumnSubset();
+        List<PrestoColumn> columns = table.getColumns(); //table.getRandomNonEmptyColumnSubset();
         sb.append(table.getName());
         sb.append("(");
         sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));

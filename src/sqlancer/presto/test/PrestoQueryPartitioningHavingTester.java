@@ -26,12 +26,12 @@ public class PrestoQueryPartitioningHavingTester extends PrestoQueryPartitioning
     public void check() throws SQLException {
         super.check();
         if (Randomly.getBoolean()) {
-            select.setWhereClause(gen.generateExpression(PrestoSchema.PrestoCompositeDataType.getRandomWithoutNull()));
+            select.setWhereClause(gen.generateBooleanExpression());
         }
         boolean orderBy = Randomly.getBoolean();
-        if (orderBy) {
-            select.setOrderByClauses(gen.generateOrderBys());
-        }
+//        if (orderBy) {
+//            select.setOrderByClauses(gen.generateOrderBys());
+//        }
         select.setGroupByExpressions(gen.generateExpressions(Randomly.smallNumber() + 1));
         select.setHavingClause(null);
         String originalQueryString = PrestoToStringVisitor.asString(select);

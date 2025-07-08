@@ -12,6 +12,6 @@ public class TestPrestoNoREC {
     public void testPrestoNoREC() {
         assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.PRESTO_ENV));
         assertEquals(0, Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
-                "--num-threads", "4", "--num-queries", TestConfig.NUM_QUERIES, "presto", "--oracle", "NOREC" }));
+                "--num-threads", "1", "--num-queries", TestConfig.NUM_QUERIES, "presto", "--oracle", "NOREC" }));
     }
 }

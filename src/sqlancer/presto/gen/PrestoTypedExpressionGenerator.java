@@ -21,29 +21,7 @@ import sqlancer.presto.PrestoSchema.PrestoCompositeDataType;
 import sqlancer.presto.PrestoSchema.PrestoDataType;
 import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.PrestoToStringVisitor;
-import sqlancer.presto.ast.PrestoAggregateFunction;
-import sqlancer.presto.ast.PrestoAtTimeZoneOperator;
-import sqlancer.presto.ast.PrestoBetweenOperation;
-import sqlancer.presto.ast.PrestoBinaryOperation;
-import sqlancer.presto.ast.PrestoCaseOperation;
-import sqlancer.presto.ast.PrestoCastFunction;
-import sqlancer.presto.ast.PrestoColumnReference;
-import sqlancer.presto.ast.PrestoConstant;
-import sqlancer.presto.ast.PrestoDefaultFunction;
-import sqlancer.presto.ast.PrestoExpression;
-import sqlancer.presto.ast.PrestoFunctionNode;
-import sqlancer.presto.ast.PrestoInOperation;
-import sqlancer.presto.ast.PrestoJoin;
-import sqlancer.presto.ast.PrestoMultiValuedComparison;
-import sqlancer.presto.ast.PrestoMultiValuedComparisonOperator;
-import sqlancer.presto.ast.PrestoMultiValuedComparisonType;
-import sqlancer.presto.ast.PrestoPostfixText;
-import sqlancer.presto.ast.PrestoQuantifiedComparison;
-import sqlancer.presto.ast.PrestoSelect;
-import sqlancer.presto.ast.PrestoTableReference;
-import sqlancer.presto.ast.PrestoTernary;
-import sqlancer.presto.ast.PrestoUnaryPostfixOperation;
-import sqlancer.presto.ast.PrestoUnaryPrefixOperation;
+import sqlancer.presto.ast.*;
 
 public final class PrestoTypedExpressionGenerator extends
         TypedExpressionGenerator<PrestoExpression, PrestoSchema.PrestoColumn, PrestoSchema.PrestoCompositeDataType>
@@ -63,9 +41,7 @@ public final class PrestoTypedExpressionGenerator extends
 
     @Override
     public PrestoExpression generatePredicate() {
-        return generateExpression(
-                PrestoSchema.PrestoCompositeDataType.fromDataType(PrestoSchema.PrestoDataType.BOOLEAN),
-                randomly.getInteger(0, maxDepth));
+        return generateBooleanExpression();
     }
 
     @Override
@@ -95,6 +71,15 @@ public final class PrestoTypedExpressionGenerator extends
             // return PrestoConstant.createMapConstant(type);
         }
         return PrestoConstant.generateConstant(type, true);
+    }
+
+    public List<PrestoExpression> aliasSelectFields(List<PrestoExpression> expressions) {
+        List<PrestoExpression> args = new ArrayList<>();
+        int i = 0;
+        for (PrestoExpression expr : expressions) {
+            args.add(new PrestoAlias(expr, "field" + i++));
+        }
+        return args;
     }
 
     @Override
@@ -139,13 +124,13 @@ public final class PrestoTypedExpressionGenerator extends
             case TIMESTAMP:
 //            case TIME_WITH_TIME_ZONE:
 //            case TIMESTAMP_WITH_TIME_ZONE:
-//                return generateTemporalExpression(type, depth);
+               return generateTemporalExpression(type, depth);
 //            case INTERVAL_YEAR_TO_MONTH:
 //            case INTERVAL_DAY_TO_SECOND:
 //                return generateIntervalExpression(type, depth);
 //            case JSON:
 //                return generateJsonExpression(type);
-            case VARBINARY:
+            case BINARY:
             case ARRAY:
                 // case MAP:
                 return generateLeafNode(type); // TODO
@@ -294,8 +279,8 @@ public final class PrestoTypedExpressionGenerator extends
             return getBetween(depth);
         case LIKE:
             return getLike(depth);
-        case MULTI_VALUED_COMPARISON: // TODO other operators
-            return getMultiValuedComparison(depth);
+//        case MULTI_VALUED_COMPARISON: // TODO other operators
+//            return getMultiValuedComparison(depth);
         default:
             throw new AssertionError(exprType);
         }
@@ -347,9 +332,9 @@ public final class PrestoTypedExpressionGenerator extends
                 globalState).setColumns(columns);
         PrestoExpression predicate = typedExpressionGenerator.generatePredicate();
         select.setWhereClause(predicate);
-        if (Randomly.getBooleanWithSmallProbability()) {
-            select.setOrderByClauses(typedExpressionGenerator.generateOrderBys());
-        }
+//        if (Randomly.getBooleanWithSmallProbability()) {
+//            select.setOrderByClauses(typedExpressionGenerator.generateOrderBys());
+//        }
         List<PrestoExpression> joins = PrestoJoin.getJoins(tableList, globalState).stream()
                 .collect(Collectors.toList());
         select.setJoinList(joins);
@@ -494,11 +479,14 @@ public final class PrestoTypedExpressionGenerator extends
     }
 
     private PrestoExpression generateNOT(int depth) {
+        boolean old = allowAggregates;
+        allowAggregates=false;
         PrestoUnaryPrefixOperation.PrestoUnaryPrefixOperator operator = PrestoUnaryPrefixOperation.PrestoUnaryPrefixOperator.NOT;
-        return new PrestoUnaryPrefixOperation(
-                generateExpression(
-                        PrestoSchema.PrestoCompositeDataType.fromDataType(PrestoSchema.PrestoDataType.BOOLEAN), depth),
+        PrestoExpression expr =  new PrestoUnaryPrefixOperation(
+                generateBooleanExpression(depth),
                 operator);
+        allowAggregates = old;
+        return expr;
     }
 
     @Override
@@ -566,14 +554,16 @@ public final class PrestoTypedExpressionGenerator extends
 
     public List<PrestoExpression> generateArgsForAggregate(PrestoSchema.PrestoCompositeDataType type,
             PrestoAggregateFunction aggregateFunction) {
-        List<PrestoSchema.PrestoDataType> returnTypes = aggregateFunction.getReturnTypes(type.getPrimitiveDataType());
+/*        List<PrestoSchema.PrestoDataType> returnTypes = aggregateFunction.getReturnTypes(type.getPrimitiveDataType());
         List<PrestoExpression> arguments = new ArrayList<>();
         allowAggregates = false; //
         for (PrestoSchema.PrestoDataType argumentType : returnTypes) {
             arguments.add(generateExpression(PrestoSchema.PrestoCompositeDataType.fromDataType(argumentType)));
         }
         // return new NewFunctionNode<>(arguments, aggregateFunction);
-        return arguments;
+        return arguments;*/
+        allowAggregates = false;
+        return aggregateFunction.getArgumentsForReturnType(this, this.maxDepth - 1, type, false);
     }
 
     @Override
@@ -670,7 +660,7 @@ public final class PrestoTypedExpressionGenerator extends
     }
 
     private enum BooleanExpression {
-        NOT, BINARY_COMPARISON, BINARY_LOGICAL, AND_OR_CHAIN, REGEX, IS_NULL, IN, BETWEEN, LIKE, MULTI_VALUED_COMPARISON
+        NOT, BINARY_COMPARISON, BINARY_LOGICAL, AND_OR_CHAIN, REGEX, IS_NULL, IN, BETWEEN, LIKE //, MULTI_VALUED_COMPARISON
     }
 
     public enum PrestoBinaryLogicalOperator implements BinaryOperatorNode.Operator {
@@ -744,7 +734,7 @@ public final class PrestoTypedExpressionGenerator extends
                 return getRandom();
             case VARCHAR:
             case CHAR:
-            case VARBINARY:
+            case BINARY:
            // case JSON:
             case ARRAY:
 //            case INTERVAL_YEAR_TO_MONTH:
@@ -814,9 +804,10 @@ public final class PrestoTypedExpressionGenerator extends
 
     @Override
     public PrestoExpression generateBooleanExpression() {
-        return generateExpression(
-                PrestoSchema.PrestoCompositeDataType.fromDataType(PrestoSchema.PrestoDataType.BOOLEAN),
-                randomly.getInteger(0, maxDepth));
+        return generateBooleanExpression(randomly.getInteger(0, maxDepth));
+//        return generateExpression(
+//                PrestoSchema.PrestoCompositeDataType.fromDataType(PrestoSchema.PrestoDataType.BOOLEAN),
+//                randomly.getInteger(0, maxDepth));
     }
 
     @Override
@@ -852,9 +843,9 @@ public final class PrestoTypedExpressionGenerator extends
             List<PrestoExpression> allColumns = columns.stream().map((c) -> new PrestoColumnReference(c))
                     .collect(Collectors.toList());
             select.setFetchColumns(allColumns);
-            if (Randomly.getBooleanWithSmallProbability()) {
-                select.setOrderByClauses(generateOrderBys());
-            }
+//            if (Randomly.getBooleanWithSmallProbability()) {
+//                select.setOrderByClauses(generateOrderBys());
+//            }
         }
         select.setWhereClause(whereCondition);
 

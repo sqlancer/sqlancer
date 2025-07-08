@@ -30,7 +30,7 @@ public class PrestoTableGenerator {
         String catalog = globalState.getDbmsSpecificOptions().catalog;
         String schema = globalState.getDatabaseName();
 
-        sb.append(catalog).append(".");
+       // sb.append(catalog).append(".");
         sb.append(schema).append(".");
 
         sb.append(tableName);

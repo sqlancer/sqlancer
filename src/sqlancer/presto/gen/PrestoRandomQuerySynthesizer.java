@@ -9,11 +9,7 @@ import sqlancer.presto.PrestoGlobalState;
 import sqlancer.presto.PrestoSchema;
 import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.PrestoSchema.PrestoTables;
-import sqlancer.presto.ast.PrestoConstant;
-import sqlancer.presto.ast.PrestoExpression;
-import sqlancer.presto.ast.PrestoJoin;
-import sqlancer.presto.ast.PrestoSelect;
-import sqlancer.presto.ast.PrestoTableReference;
+import sqlancer.presto.ast.*;
 
 public final class PrestoRandomQuerySynthesizer {
 
@@ -38,6 +34,7 @@ public final class PrestoRandomQuerySynthesizer {
             // columns.add(gen());
             // }
         }
+        columns = gen.aliasSelectFields(columns);
         select.setFetchColumns(columns);
         List<PrestoTable> tables = targetTables.getTables();
         List<PrestoTableReference> tableList = tables.stream().map(t -> new PrestoTableReference(t))
@@ -47,7 +44,7 @@ public final class PrestoRandomQuerySynthesizer {
         select.setJoinList(new ArrayList<>(joins));
         select.setFromList(new ArrayList<>(tableList));
         if (Randomly.getBoolean()) {
-            select.setWhereClause(gen.generateExpression(PrestoSchema.PrestoCompositeDataType.getRandomWithoutNull()));
+            select.setWhereClause(gen.generateBooleanExpression());
         }
         if (Randomly.getBoolean()) {
             select.setOrderByClauses(gen.generateOrderBys());

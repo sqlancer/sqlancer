@@ -23,7 +23,7 @@ public enum PrestoDefaultFunction implements PrestoFunction {
         @Override
         public PrestoSchema.PrestoDataType[] getArgumentTypes(PrestoSchema.PrestoCompositeDataType returnType) {
             return new PrestoSchema.PrestoDataType[] { PrestoSchema.PrestoDataType.BOOLEAN,
-                    returnType.getPrimitiveDataType() };
+                    returnType.getPrimitiveDataType(),  returnType.getPrimitiveDataType() };
         }
     },
 

@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.schema.AbstractRelationalTable;
@@ -17,6 +19,8 @@ import sqlancer.common.schema.AbstractTables;
 import sqlancer.common.schema.TableIndex;
 
 public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema.PrestoTable> {
+
+    private static final Logger log = LoggerFactory.getLogger(PrestoSchema.class);
 
     public PrestoSchema(List<PrestoTable> databaseTables) {
         super(databaseTables);
@@ -44,7 +48,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
             // SHOW TABLES [ FROM schema ] [ LIKE pattern [ ESCAPE 'escape_character' ] ]
             try (ResultSet rs = s.executeQuery("SHOW TABLES")) {
                 while (rs.next()) {
-                    tableNames.add(rs.getString("Table"));
+                    tableNames.add(rs.getString("tableName"));
                 }
             }
         }
@@ -55,14 +59,12 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
             throws SQLException {
         List<PrestoColumn> columns = new ArrayList<>();
         try (Statement s = con.createStatement()) {
-            try (ResultSet rs = s.executeQuery(String.format("select " + " table_catalog " + " , table_schema "
-                    + " , table_name " + " , column_name " + " , is_nullable " + " , data_type "
-                    + " from information_schema.columns " + " where table_schema = '%s' and table_name = '%s'",
+            try (ResultSet rs = s.executeQuery(String.format("desc %s.%s",
                     databaseName, tableName))) {
                 while (rs.next()) {
-                    String columnName = rs.getString("column_name");
+                    String columnName = rs.getString("col_name");
                     String dataType = rs.getString("data_type");
-                    boolean isNullable = rs.getString("is_nullable").contentEquals("YES");
+                    boolean isNullable = true; //rs.getString("comment").contentEquals("NULL");
                     PrestoColumn c = new PrestoColumn(columnName, getColumnType(dataType), false, isNullable);
                     columns.add(c);
                 }
@@ -73,7 +75,10 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
     }
 
     private static PrestoCompositeDataType getColumnType(String typeString) {
-        int bracesStart = typeString.indexOf('(');
+        int bracesStart = typeString.indexOf('<');
+        if (bracesStart == -1) {
+            bracesStart = typeString.indexOf('(');
+        }
         String type;
         int size = 0;
         int precision = 0;
@@ -86,7 +91,8 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
 
         PrestoDataType primitiveType;
         switch (type) {
-        case "INTEGER":
+            case "INT":
+            case "INTEGER":
             primitiveType = PrestoDataType.INT;
             size = 4;
             break;
@@ -105,8 +111,8 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
         case "VARCHAR":
             primitiveType = PrestoDataType.VARCHAR;
             break;
-        case "VARBINARY":
-            primitiveType = PrestoDataType.VARBINARY;
+        case "BINARY":
+            primitiveType = PrestoDataType.BINARY;
             break;
         case "CHAR":
             primitiveType = PrestoDataType.CHAR;
@@ -169,7 +175,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
     }
 
     public enum PrestoDataType {
-        BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY, DATE, TIMESTAMP, ARRAY,
+        BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, BINARY, DATE, TIMESTAMP, ARRAY,
         // TIME, TIME_WITH_TIME_ZONE,
         // TIMESTAMP_WITH_TIME_ZONE, INTERVAL_YEAR_TO_MONTH, INTERVAL_DAY_TO_SECOND, JSON, ARRAY,
         // MAP,
@@ -200,14 +206,14 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
         }
 
         public static List<PrestoDataType> getComparableTypes() {
-            return Arrays.asList(BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY, DATE, TIMESTAMP
+            return Arrays.asList(BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, BINARY, DATE, TIMESTAMP
                     //  ,TIME, JSON,TIME_WITH_TIME_ZONE, TIMESTAMP_WITH_TIME_ZONE,
                     //  INTERVAL_YEAR_TO_MONTH, INTERVAL_DAY_TO_SECOND
             );
         }
 
         public static List<PrestoDataType> getOrderableTypes() {
-            return Arrays.asList(BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, VARBINARY,DATE, TIMESTAMP, ARRAY
+            return Arrays.asList(BOOLEAN, INT, FLOAT, DECIMAL, VARCHAR, CHAR, BINARY,DATE, TIMESTAMP, ARRAY
                     // JSON,
                     // TIME,  TIME_WITH_TIME_ZONE, TIMESTAMP_WITH_TIME_ZONE, INTERVAL_YEAR_TO_MONTH,
                     //INTERVAL_DAY_TO_SECOND
@@ -228,7 +234,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
         }
 
         public static List<PrestoDataType> getTextTypes() {
-            return Arrays.asList(VARCHAR, CHAR, VARBINARY /*,JSON*/);
+            return Arrays.asList(VARCHAR, CHAR, BINARY /*,JSON*/);
         }
 
         public boolean isNumeric() {
@@ -293,7 +299,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
                 size = Math.toIntExact(8);
                 scale = Math.toIntExact(4);
                 break;
-            case VARBINARY:
+            case BINARY:
            //case JSON:
             case VARCHAR:
             case CHAR:
@@ -340,7 +346,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
             case ARRAY:
                 return new PrestoCompositeDataType(type, PrestoCompositeDataType.getRandomWithoutNull());
             case BOOLEAN:
-            case VARBINARY:
+            case BINARY:
             case DATE:
             case TIMESTAMP:
             /*case TIME:
@@ -391,8 +397,8 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
                 default:
                     throw new AssertionError(size);
                 }
-            case VARBINARY:
-                return "VARBINARY";
+            case BINARY:
+                return "BINARY";
             /*case JSON:
                 return "JSON";*/
             case VARCHAR:
@@ -427,7 +433,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
             case TIME_WITH_TIME_ZONE:
                 return "TIME WITH TIME ZONE";*/
             case ARRAY:
-                return "ARRAY(" + elementType + ")";
+                return "ARRAY<" + elementType + ">";
             case NULL:
                 return "NULL";
             default:

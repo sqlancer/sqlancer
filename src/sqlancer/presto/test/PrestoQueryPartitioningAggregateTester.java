@@ -50,9 +50,9 @@ public class PrestoQueryPartitioningAggregateTester extends PrestoQueryPartition
         PrestoFunctionNode<PrestoAggregateFunction> aggregate = new PrestoFunctionNode<>(aggregateArgs,
                 aggregateFunction);
         select.setFetchColumns(List.of(aggregate));
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            select.setOrderByClauses(gen.generateOrderBys());
-        }
+//        if (Randomly.getBooleanWithRatherLowProbability()) {
+//            select.setOrderByClauses(gen.generateOrderBys());
+//        }
         originalQuery = PrestoToStringVisitor.asString(select);
         firstResult = getAggregateResult(originalQuery);
         firstResultType = getAggregateResultType(originalQuery);
@@ -61,8 +61,8 @@ public class PrestoQueryPartitioningAggregateTester extends PrestoQueryPartition
 
         state.getState().getLocalState().log(
                 "--" + originalQuery + ";\n--" + metamorphicQuery + "\n-- " + firstResult + "\n-- " + secondResult);
-        if (firstResultType.equals("VARBINARY") || firstResultType.equals("ARRAY(VARBINARY)")
-                || firstResultType.equals("ARRAY(ARRAY(VARBINARY))")) {
+        if (firstResultType.equals("BINARY") || firstResultType.equals("ARRAY<BINARY>")
+                || firstResultType.equals("ARRAY<ARRAY<BINARY>>")) {
             throw new IgnoreMeException();
         }
         if (firstResult == null && secondResult != null) {

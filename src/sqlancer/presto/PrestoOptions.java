@@ -10,11 +10,11 @@ import sqlancer.DBMSSpecificOptions;
 @Parameters(commandDescription = "Presto")
 public class PrestoOptions implements DBMSSpecificOptions<PrestoOracleFactory> {
 
-    public static final String DEFAULT_HOST = "localhost";
-    public static final int DEFAULT_PORT = 8080;
+    public static final String DEFAULT_HOST = "172.17.0.2";
+    public static final int DEFAULT_PORT = 10000;
 
     @Parameter(names = "--test-collate", arity = 1)
-    public boolean testCollate = true;
+    public boolean testCollate = false;
 
     @Parameter(names = "--test-check", description = "Allow generating CHECK constraints in tables", arity = 1)
     public boolean testCheckConstraints = true;
@@ -86,7 +86,7 @@ public class PrestoOptions implements DBMSSpecificOptions<PrestoOracleFactory> {
     public List<PrestoOracleFactory> oracles = List.of(PrestoOracleFactory.NOREC);
 
     @Parameter(names = "--catalog")
-    public String catalog = "memory";
+    public String catalog = "default";
 
     @Parameter(names = "--schema")
     public String schema = "test";

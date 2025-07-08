@@ -90,7 +90,7 @@ public class PrestoProvider extends SQLProviderAdapter<PrestoGlobalState, Presto
         }
         String catalogName = globalState.getDbmsSpecificOptions().catalog;
         String databaseName = globalState.getDatabaseName();
-        String url = String.format("jdbc:presto://%s:%d/%s?SSL=%b", host, port, catalogName, useSSl);
+        String url = String.format("jdbc:hive2://%s:%d/%s?SSL=%b", host, port, catalogName, useSSl);
         Connection con = DriverManager.getConnection(url, username, password);
         List<String> schemaNames = getSchemaNames(con, catalogName, databaseName);
         dropExistingTables(con, catalogName, databaseName, schemaNames);
@@ -103,36 +103,36 @@ public class PrestoProvider extends SQLProviderAdapter<PrestoGlobalState, Presto
 
     private static void useSchema(PrestoGlobalState globalState, Connection con, String catalogName,
             String databaseName) throws SQLException {
-        globalState.getState().logStatement("USE " + catalogName + "." + databaseName);
+        globalState.getState().logStatement("USE " + databaseName);
         try (Statement s = con.createStatement()) {
-            s.execute("USE " + catalogName + "." + databaseName);
+            s.execute("USE " +  databaseName);
         }
     }
 
     private static void createSchema(PrestoGlobalState globalState, Connection con, String catalogName,
             String databaseName) throws SQLException {
-        globalState.getState().logStatement("CREATE SCHEMA IF NOT EXISTS " + catalogName + "." + databaseName);
+        globalState.getState().logStatement("CREATE SCHEMA IF NOT EXISTS " + databaseName);
         try (Statement s = con.createStatement()) {
-            s.execute("CREATE SCHEMA IF NOT EXISTS " + catalogName + "." + databaseName);
+            s.execute("CREATE SCHEMA IF NOT EXISTS " + databaseName);
         }
     }
 
     private static void dropSchema(PrestoGlobalState globalState, Connection con, String catalogName,
             String databaseName) throws SQLException {
-        globalState.getState().logStatement("DROP SCHEMA IF EXISTS " + catalogName + "." + databaseName);
+        globalState.getState().logStatement("DROP SCHEMA IF EXISTS " + databaseName);
         try (Statement s = con.createStatement()) {
-            s.execute("DROP SCHEMA IF EXISTS " + catalogName + "." + databaseName);
+            s.execute("DROP SCHEMA IF EXISTS " + databaseName + " CASCADE");
         }
     }
 
     private static List<String> getSchemaNames(Connection con, String catalogName, String databaseName)
             throws SQLException {
         List<String> schemaNames = new ArrayList<>();
-        final String showSchemasSql = "SHOW SCHEMAS FROM " + catalogName + " LIKE '" + databaseName + "'";
+        final String showSchemasSql = "SHOW SCHEMAS LIKE '" + databaseName + "'";
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery(showSchemasSql)) {
                 while (rs.next()) {
-                    schemaNames.add(rs.getString("Schema"));
+                    schemaNames.add(rs.getString("namespace"));
                 }
             }
         }
@@ -144,15 +144,15 @@ public class PrestoProvider extends SQLProviderAdapter<PrestoGlobalState, Presto
         if (!schemaNames.isEmpty()) {
             List<String> tableNames = new ArrayList<>();
             try (Statement s = con.createStatement()) {
-                try (ResultSet rs = s.executeQuery("SHOW TABLES FROM " + catalogName + "." + databaseName)) {
+                try (ResultSet rs = s.executeQuery("SHOW TABLES FROM " + databaseName)) {
                     while (rs.next()) {
-                        tableNames.add(rs.getString("Table"));
+                        tableNames.add(rs.getString("tableName"));
                     }
                 }
             }
             try (Statement s = con.createStatement()) {
                 for (String tableName : tableNames) {
-                    s.execute("DROP TABLE IF EXISTS " + catalogName + "." + databaseName + "." + tableName);
+                    s.execute("DROP TABLE IF EXISTS " + databaseName + "." + tableName);
                 }
             }
         }
