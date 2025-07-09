@@ -81,12 +81,32 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
         return result;
     }
 
+    /**
+     * This method is used to mostly oracles, which need to report exceptions.
+     * We set the reportException parameter to true by default meaning that exceptions are reported.
+     * @param globalState
+     * @param fills
+     * @return whether the query was executed successfully
+     * @param <G>
+     * @throws SQLException
+     */
     @Override
     public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, String... fills)
             throws SQLException {
         return execute(globalState, true, fills);
     }
 
+    /**
+     * This method is used to DQE oracles, DQE does not check exception separately, while other testing methods may need.
+     * We use reportException to control this behavior.
+     * For a specific DBMS used DQE oracle, we call this method and pass a boolean value of false as an argument.
+     * @param globalState
+     * @param reportException
+     * @param fills
+     * @return whether the query was executed successfully
+     * @param <G>
+     * @throws SQLException
+     */
     public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, boolean reportException,
                                                                         String... fills) throws SQLException {
         return internalExecute(globalState.getConnection(), reportException, fills);
