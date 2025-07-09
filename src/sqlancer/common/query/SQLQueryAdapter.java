@@ -84,7 +84,7 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     @Override
     public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, String... fills)
             throws SQLException {
-        return execute(globalState, false, fills);
+        return execute(globalState, true, fills);
     }
 
     public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, boolean reportException,
@@ -113,12 +113,10 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
             return true;
         } catch (Exception e) {
             Main.nrUnsuccessfulActions.addAndGet(1);
-            // checkException(e);
             if (reportException) {
-                throw e;
-            } else {
-                return false;
+                checkException(e);
             }
+            return false;
         } finally {
             s.close();
         }
@@ -141,7 +139,7 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     @Override
     public <G extends GlobalState<?, ?, SQLConnection>> SQLancerResultSet executeAndGet(G globalState, String... fills)
             throws SQLException {
-        return executeAndGet(globalState, false, fills);
+        return executeAndGet(globalState, true, fills);
     }
 
     public <G extends GlobalState<?, ?, SQLConnection>> SQLancerResultSet executeAndGet(G globalState,
@@ -175,12 +173,10 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
         } catch (Exception e) {
             s.close();
             Main.nrUnsuccessfulActions.addAndGet(1);
-            //checkException(e);
             if (reportException) {
-                throw e;
-            } else {
-                return null;
+                checkException(e);
             }
+            return null;
         }
     }
 

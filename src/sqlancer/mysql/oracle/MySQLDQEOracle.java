@@ -361,7 +361,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         List<SQLQueryError> queryErrors;
         SQLancerResultSet resultSet = null;
         try {
-            resultSet = new SQLQueryAdapter(selectStmt, selectExpectedErrors).executeAndGet(state, true);
+            resultSet = new SQLQueryAdapter(selectStmt, selectExpectedErrors).executeAndGet(state, false);
         } catch (SQLException ignored) {
             // we ignore this error, and use get errors to catch it
         } finally {
@@ -388,8 +388,8 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         Map<AbstractRelationalTable<?, ?, ?>, Set<String>> accessedRows = new HashMap<>();
         List<SQLQueryError> queryErrors;
         try {
-            new SQLQueryAdapter("BEGIN").execute(state);
-            new SQLQueryAdapter(updateStmt, updateExpectedErrors).execute(state, true);
+            new SQLQueryAdapter("BEGIN").execute(state, false);
+            new SQLQueryAdapter(updateStmt, updateExpectedErrors).execute(state, false);
         } catch (SQLException ignored) {
             // we ignore this error, and we use get errors to catch it
         } finally {
@@ -400,7 +400,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 String rowId = tableName + "." + COLUMN_ROWID;
                 String updated = tableName + "." + COLUMN_UPDATED;
                 String selectRowIdWithUpdated = String.format("SELECT %s FROM %s WHERE %s = 1", rowId, tableName, updated);
-                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowIdWithUpdated).executeAndGet(state);
+                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowIdWithUpdated).executeAndGet(state, false);
                 HashSet<String> rows = new HashSet<>();
                 if (resultSet != null) {
                     while (resultSet.next()) {
@@ -411,7 +411,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 accessedRows.put(table, rows);
             }
 
-            new SQLQueryAdapter("ROLLBACK").execute(state);
+            new SQLQueryAdapter("ROLLBACK").execute(state, false);
         }
 
         return new SQLQueryResult(accessedRows, queryErrors);
@@ -425,7 +425,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 String tableName = table.getName();
                 String rowId = tableName + "." + COLUMN_ROWID;
                 String selectRowId = String.format("SELECT %s FROM %s", rowId, tableName);
-                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowId).executeAndGet(state);
+                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowId).executeAndGet(state, false);
                 HashSet<String> rows = new HashSet<>();
                 if (resultSet != null) {
                     while (resultSet.next()) {
@@ -436,8 +436,8 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 accessedRows.put(table, rows);
             }
 
-            new SQLQueryAdapter("BEGIN").execute(state);
-            new SQLQueryAdapter(deleteStmt, deleteExpectedErrors).execute(state, true);
+            new SQLQueryAdapter("BEGIN").execute(state, false);
+            new SQLQueryAdapter(deleteStmt, deleteExpectedErrors).execute(state, false);
         } catch (SQLException ignored) {
             // we ignore this error, and use get errors to catch it
         } finally {
@@ -447,7 +447,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 String tableName = table.getName();
                 String rowId = tableName + "." + COLUMN_ROWID;
                 String selectRowId = String.format("SELECT %s FROM %s", rowId, tableName);
-                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowId).executeAndGet(state);
+                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowId).executeAndGet(state, false);
                 HashSet<String> rows = new HashSet<>();
                 if (resultSet != null) {
                     while (resultSet.next()) {
@@ -459,14 +459,14 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 accessedRows.get(table).removeAll(rows);
             }
 
-            new SQLQueryAdapter("ROLLBACK").execute(state);
+            new SQLQueryAdapter("ROLLBACK").execute(state, false);
         }
 
         return new SQLQueryResult(accessedRows, queryErrors);
     }
 
     private List<SQLQueryError> getErrors() throws SQLException {
-        SQLancerResultSet resultSet = new SQLQueryAdapter("SHOW WARNINGS").executeAndGet(state);
+        SQLancerResultSet resultSet = new SQLQueryAdapter("SHOW WARNINGS").executeAndGet(state, false);
         List<SQLQueryError> queryErrors = new ArrayList<>();
         if (resultSet != null) {
             while (resultSet.next()) {
@@ -487,15 +487,15 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         String tableName = table.getName();
 
         String addColumnRowID = String.format("ALTER TABLE %s ADD %s TEXT", tableName, COLUMN_ROWID);
-        new SQLQueryAdapter(addColumnRowID).execute(state);
+        new SQLQueryAdapter(addColumnRowID).execute(state, false);
         state.getState().getLocalState().log(addColumnRowID);
 
         String addColumnUpdated = String.format("ALTER TABLE %s ADD %s INT DEFAULT 0", tableName, COLUMN_UPDATED);
-        new SQLQueryAdapter(addColumnUpdated).execute(state);
+        new SQLQueryAdapter(addColumnUpdated).execute(state, false);
         state.getState().getLocalState().log(addColumnUpdated);
 
         String updateRowsWithUniqueID = String.format("UPDATE %s SET %s = UUID()", tableName, COLUMN_ROWID);
-        new SQLQueryAdapter(updateRowsWithUniqueID).execute(state);
+        new SQLQueryAdapter(updateRowsWithUniqueID).execute(state, false);
         state.getState().getLocalState().log(updateRowsWithUniqueID);
     }
 
