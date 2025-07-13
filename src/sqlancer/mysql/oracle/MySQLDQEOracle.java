@@ -1,16 +1,6 @@
 package sqlancer.mysql.oracle;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.beust.jcommander.Strings;
-
 import sqlancer.Randomly;
 import sqlancer.common.oracle.DQEBase;
 import sqlancer.common.oracle.TestOracle;
@@ -29,9 +19,21 @@ import sqlancer.mysql.MySQLVisitor;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOracle<MySQLGlobalState> {
 
     private final MySQLSchema schema;
+    private final String appendOrderBy = "%s ORDER BY %s";
+    private final String appendLimit = "%s LIMIT %d";
+    private final List<String> orderColumns = new ArrayList<>();
+    private boolean generateLimit = false;
+    private boolean generateOrderBy = false;
+    private boolean operateOnSingleTable = false;
+    private int limit = 0;
+
 
     public MySQLDQEOracle(MySQLGlobalState state) {
         super(state);
@@ -46,6 +48,74 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
 
         MySQLErrors.addExpressionErrors(deleteExpectedErrors);
         deleteExpectedErrors.add("a foreign key constraint fails");
+    }
+
+    @Override
+    public String generateSelectStatement(MySQLTables tables, String tableName, String whereClauseStr) {
+        operateOnSingleTable = tables.getTables().size() == 1;
+        List<String> selectColumns = new ArrayList<>();
+        for (MySQLTable table : tables.getTables()) {
+            selectColumns.add(table.getName() + "." + COLUMN_ROWID);
+        }
+        if (operateOnSingleTable) {
+            if (Randomly.getBooleanWithSmallProbability()) {
+                generateOrderBy = true;
+                // generate order by columns
+                for (MySQLColumn column : Randomly.nonEmptySubset(tables.getColumns())) {
+                    orderColumns.add(column.getFullQualifiedName());
+                }
+
+                if (Randomly.getBooleanWithRatherLowProbability()) {
+                    generateLimit = true;
+                    limit = (int) Randomly.getNotCachedInteger(1, 10);
+                }
+            }
+        }
+
+        String selectStmt = String.format("SELECT %s FROM %s WHERE %s",
+                Strings.join(",", selectColumns).toLowerCase(), tableName, whereClauseStr);
+        if (generateOrderBy) {
+            selectStmt = String.format(appendOrderBy, selectStmt, String.join(",", orderColumns));
+            if (generateLimit) {
+                selectStmt = String.format(appendLimit, selectStmt, limit);
+            }
+        }
+        return selectStmt;
+    }
+
+    @Override
+    public String generateUpdateStatement(MySQLTables tables, String tableName, String whereClauseStr) {
+        List<String> updateColumns = new ArrayList<>();
+        for (MySQLTable table : tables.getTables()) {
+            updateColumns.add(String.format("%s = 1", table.getName() + "." + COLUMN_UPDATED));
+        }
+        String updateStmt = String.format("UPDATE %s SET %s WHERE %s",
+                tableName, Strings.join(",", updateColumns), whereClauseStr);
+        if (generateOrderBy) {
+            updateStmt = String.format(appendOrderBy, updateStmt, String.join(",", orderColumns));
+            if (generateLimit) {
+                updateStmt = String.format(appendLimit, updateStmt, limit);
+            }
+        }
+        return updateStmt;
+    }
+
+
+    @Override
+    public String generateDeleteStatement(MySQLTables tables, String tableName, String whereClauseStr) {
+        String deleteStmt;
+        if (operateOnSingleTable) {
+            deleteStmt = String.format("DELETE FROM %s WHERE %s", tableName, whereClauseStr);
+            if (generateOrderBy) {
+                deleteStmt = String.format(appendOrderBy, deleteStmt, String.join(",", orderColumns));
+                if (generateLimit) {
+                    deleteStmt = String.format(appendLimit, deleteStmt, limit);
+                }
+            }
+        } else {
+            deleteStmt = String.format("DELETE %s FROM %s WHERE %s", tableName, tableName, whereClauseStr);
+        }
+        return deleteStmt;
     }
 
     public void check() throws SQLException {
@@ -63,66 +133,13 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         String whereClauseStr = MySQLVisitor.asString(whereClause);
 
         // Generate a SELECT statement
-        List<String> selectColumns = new ArrayList<>();
-        for (MySQLTable table : tables.getTables()) {
-            selectColumns.add(table.getName() + "." + COLUMN_ROWID);
-        }
-        boolean operateOnSingleTable = tables.getTables().size() == 1;
-        boolean generateOrderBy = false;
-        List<String> orderColumns = new ArrayList<>();
-        boolean generateLimit = false;
-        int limit = 0;
-        if (operateOnSingleTable) {
-            if (Randomly.getBooleanWithSmallProbability()) {
-                generateOrderBy = true;
-                for (MySQLColumn column : Randomly.nonEmptySubset(tables.getColumns())) {
-                    orderColumns.add(column.getFullQualifiedName());
-                }
-                if (Randomly.getBooleanWithRatherLowProbability()) {
-                    generateLimit = true;
-                    limit = (int) Randomly.getNotCachedInteger(1, 10);
-                }
-            }
-        }
-        String appendOrderBy = "%s ORDER BY %s";
-        String appendLimit = "%s LIMIT %d";
-
-        String selectStmt = String.format("SELECT %s FROM %s WHERE %s",
-                Strings.join(",", selectColumns).toLowerCase(), tableName, whereClauseStr);
-        if (generateOrderBy) {
-            selectStmt = String.format(appendOrderBy, selectStmt, String.join(",", orderColumns));
-            if (generateLimit) {
-                selectStmt = String.format(appendLimit, selectStmt, limit);
-            }
-        }
+        String selectStmt = generateSelectStatement(tables, tableName, whereClauseStr);
 
         // Generate an UPDATE statement
-        List<String> updateColumns = new ArrayList<>();
-        for (MySQLTable table : tables.getTables()) {
-            updateColumns.add(String.format("%s = 1", table.getName() + "." + COLUMN_UPDATED));
-        }
-        String updateStmt = String.format("UPDATE %s SET %s WHERE %s",
-                tableName, Strings.join(",", updateColumns), whereClauseStr);
-        if (generateOrderBy) {
-            updateStmt = String.format(appendOrderBy, updateStmt, String.join(",", orderColumns));
-            if (generateLimit) {
-                updateStmt = String.format(appendLimit, updateStmt, limit);
-            }
-        }
+        String updateStmt = generateUpdateStatement(tables, tableName, whereClauseStr);
 
         // Generate a DELETE statement
-        String deleteStmt;
-        if (operateOnSingleTable) {
-            deleteStmt = String.format("DELETE FROM %s WHERE %s", tableName, whereClauseStr);
-            if (generateOrderBy) {
-                deleteStmt = String.format(appendOrderBy, deleteStmt, String.join(",", orderColumns));
-                if (generateLimit) {
-                    deleteStmt = String.format(appendLimit, deleteStmt, limit);
-                }
-            }
-        } else {
-            deleteStmt = String.format("DELETE %s FROM %s WHERE %s", tableName, tableName, whereClauseStr);
-        }
+        String deleteStmt = generateDeleteStatement(tables, tableName, whereClauseStr);
 
         for (MySQLTable table : tables.getTables()) {
             addAuxiliaryColumns(table);
@@ -319,10 +336,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
     private boolean hasUpdateSpecificErrors(SQLQueryResult updateResult) {
         for (SQLQueryError queryError : updateResult.getQueryErrors()) {
             int errorCode = queryError.getCode();
-            // 1048, Column 'c0' cannot be null
-            // 1062, Duplicate entry '2' for key 't1.i0
-            // 3105, The value specified for generated column 'c1' in table 't1' is not allowed
-            if (errorCode == 1048 || errorCode == 1062 || errorCode == 3105) {
+            if (errorCode == SQLQueryResultErrorCodeConstants.COLUMN_CANNOT_BE_NULL || errorCode == SQLQueryResultErrorCodeConstants.DUPLICATE_ENTRY || errorCode == SQLQueryResultErrorCodeConstants.GENERATED_COLUMN_ERROR) {
                 // TODO: error code may not complete
                 return true;
             }
@@ -337,8 +351,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
     private boolean hasDeleteSpecificErrors(SQLQueryResult deleteResult) {
         for (SQLQueryError queryError : deleteResult.getQueryErrors()) {
             int errorCode = queryError.getCode();
-            // 1451, Cannot delete or update a parent row: a foreign key constraint fails
-            if (errorCode == 1451) {
+            if (errorCode == SQLQueryResultErrorCodeConstants.FOREIGN_KEY_CONSTRAINT_FAILS) {
                 // TODO: error code may not complete
                 return true;
             }

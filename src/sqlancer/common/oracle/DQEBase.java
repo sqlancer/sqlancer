@@ -1,11 +1,5 @@
 package sqlancer.common.oracle;
 
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import sqlancer.Main;
 import sqlancer.MainOptions;
 import sqlancer.SQLConnection;
@@ -14,6 +8,13 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryError;
 import sqlancer.common.schema.AbstractRelationalTable;
+import sqlancer.mysql.MySQLSchema.MySQLTables;
+
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * In DBMSs, SELECT, UPDATE and DELETE queries utilize predicates (i.e., WHERE clauses) to specify which rows to retrieve, update or delete, respectively.
@@ -53,6 +54,12 @@ public abstract class DQEBase<S extends SQLGlobalState<?, ?>> {
         this.logger = state.getLogger();
         this.options = state.getOptions();
     }
+
+    public abstract String generateSelectStatement(MySQLTables tables, String tableName, String whereClauseStr);
+
+    public abstract String generateUpdateStatement(MySQLTables tables, String tableName, String whereClauseStr);
+
+    public abstract String generateDeleteStatement(MySQLTables tables, String tableName, String whereClauseStr);
 
     /**
      * Add auxiliary columns to the database
@@ -132,5 +139,20 @@ public abstract class DQEBase<S extends SQLGlobalState<?, ?>> {
             return accessedRows.equals(that.getAccessedRows());
         }
 
+    }
+
+    public static class SQLQueryResultErrorCodeConstants {
+
+        // 1048, Column 'c0' cannot be null
+        public static int COLUMN_CANNOT_BE_NULL = 1048;
+
+        // 1062, Duplicate entry '2' for key 't1.i0
+        public static int DUPLICATE_ENTRY = 1062;
+
+        // 3105, The value specified for generated column 'c1' in table 't1' is not allowed
+        public static int GENERATED_COLUMN_ERROR = 3105;
+
+        // 1451, Cannot delete or update a parent row: a foreign key constraint fails
+        public static int FOREIGN_KEY_CONSTRAINT_FAILS = 1451;
     }
 }
