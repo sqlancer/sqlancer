@@ -1,13 +1,14 @@
 package sqlancer.postgres.gen;
 
+import java.util.Arrays;
+
 import sqlancer.Randomly;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
-import sqlancer.postgres.ast.PostgresSelect;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTables;
-import java.util.Arrays;
+import sqlancer.postgres.ast.PostgresSelect;
 
 public final class PostgresExplainGenerator {
 
@@ -22,11 +23,10 @@ public final class PostgresExplainGenerator {
         return sb.toString();
     }
 
-
     public static String explainGeneral(String selectStr) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("EXPLAIN ");
-        
+
         // Add various EXPLAIN options randomly
         if (Randomly.getBoolean()) {
             sb.append("(ANALYZE) ");
@@ -51,7 +51,7 @@ public final class PostgresExplainGenerator {
         if (Randomly.getBoolean()) {
             sb.append("(SUMMARY) ");
         }
-        
+
         sb.append(selectStr);
         return sb.toString();
     }
