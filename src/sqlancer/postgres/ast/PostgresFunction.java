@@ -18,7 +18,7 @@ public class PostgresFunction implements PostgresExpression {
 
     public PostgresFunction(PostgresFunctionWithUnknownResult f, PostgresDataType returnType,
             PostgresExpression... args) {
-        this.func = f.getName().equals("extract") ? "EXTRACT" : f.getName();
+        this.func = f.getName();
         this.returnType = returnType;
         this.args = args.clone();
     }
@@ -32,7 +32,72 @@ public class PostgresFunction implements PostgresExpression {
     }
 
     public boolean isExtractFunction() {
-        return func.equals("EXTRACT");
+        return false;
+    }
+
+    public String getArgString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < args.length; i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+
+            if (args[i].getExpressionType() == PostgresDataType.TIME
+                    || args[i].getExpressionType() == PostgresDataType.TIMESTAMP
+                    || args[i].getExpressionType() == PostgresDataType.DATE) {
+                sb.append("CAST(");
+                sb.append(args[i]);
+                sb.append(" AS ");
+                sb.append(args[i].getExpressionType().toString());
+                sb.append(")");
+            } else {
+                sb.append(args[i]);
+            }
+        }
+        return sb.toString();
+    }
+
+    public static class PostgresExtractFunction extends PostgresFunction {
+
+        public PostgresExtractFunction(PostgresFunctionWithUnknownResult f, PostgresDataType returnType,
+                PostgresExpression... args) {
+            super(f, returnType, args);
+        }
+
+        @Override
+        public String getFunctionName() {
+            return "EXTRACT";
+        }
+
+        @Override
+        public boolean isExtractFunction() {
+            return true;
+        }
+
+        @Override
+        public String getArgString() {
+            return String.format("%s FROM %s", getArguments()[0], getArguments()[1]);
+        }
+    }
+
+    @Override
+    public PostgresConstant getExpectedValue() {
+        if (functionWithKnownResult == null) {
+            return null;
+        }
+        PostgresConstant[] constants = new PostgresConstant[args.length];
+        for (int i = 0; i < constants.length; i++) {
+            constants[i] = args[i].getExpectedValue();
+            if (constants[i] == null) {
+                return null;
+            }
+        }
+        return functionWithKnownResult.apply(constants, args);
+    }
+
+    @Override
+    public PostgresDataType getExpressionType() {
+        return returnType;
     }
 
     public enum PostgresFunctionWithResult {
@@ -80,7 +145,6 @@ public class PostgresFunction implements PostgresExpression {
             public PostgresDataType[] getInputTypesForReturnType(PostgresDataType returnType, int nrArguments) {
                 return new PostgresDataType[] { PostgresDataType.TEXT };
             }
-
         },
         LENGTH(1, "length") {
             @Override
@@ -267,51 +331,6 @@ public class PostgresFunction implements PostgresExpression {
             return true;
         }
 
-    }
-
-    @Override
-    public PostgresConstant getExpectedValue() {
-        if (functionWithKnownResult == null) {
-            return null;
-        }
-        PostgresConstant[] constants = new PostgresConstant[args.length];
-        for (int i = 0; i < constants.length; i++) {
-            constants[i] = args[i].getExpectedValue();
-            if (constants[i] == null) {
-                return null;
-            }
-        }
-        return functionWithKnownResult.apply(constants, args);
-    }
-
-    @Override
-    public PostgresDataType getExpressionType() {
-        return returnType;
-    }
-
-    public String getArgString() {
-        if (func.equals("EXTRACT")) {
-            return String.format("%s FROM %s", args[0], args[1]);
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < args.length; i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-
-            if (args[i].getExpressionType() == PostgresDataType.TIME
-                    || args[i].getExpressionType() == PostgresDataType.TIMESTAMP
-                    || args[i].getExpressionType() == PostgresDataType.DATE) {
-                sb.append("CAST(");
-                sb.append(args[i]);
-                sb.append(" AS ");
-                sb.append(args[i].getExpressionType().toString());
-                sb.append(")");
-            } else {
-                sb.append(args[i]);
-            }
-        }
-        return sb.toString();
     }
 
 }

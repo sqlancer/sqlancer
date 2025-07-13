@@ -197,13 +197,11 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
 
     @Override
     public void visit(PostgresFunction f) {
-        sb.append(f.getFunctionName());
-        sb.append("(");
         if (f.isExtractFunction()) {
-            visit(f.getArguments()[0]);
-            sb.append(" FROM ");
-            visit(f.getArguments()[1]);
+            visitExtractFunction(f);
         } else {
+            sb.append(f.getFunctionName());
+            sb.append("(");
             int i = 0;
             for (PostgresExpression arg : f.getArguments()) {
                 if (i++ != 0) {
@@ -211,7 +209,16 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
                 }
                 visit(arg);
             }
+            sb.append(")");
         }
+    }
+
+    private void visitExtractFunction(PostgresFunction f) {
+        sb.append(f.getFunctionName());
+        sb.append("(");
+        visit(f.getArguments()[0]);
+        sb.append(" FROM ");
+        visit(f.getArguments()[1]);
         sb.append(")");
     }
 

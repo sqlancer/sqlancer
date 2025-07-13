@@ -142,7 +142,14 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             throw new IgnoreMeException();
         }
         PostgresFunctionWithUnknownResult randomFunction = Randomly.fromList(supportedFunctions);
-        return new PostgresFunction(randomFunction, type, randomFunction.getArguments(type, this, depth + 1));
+        PostgresExpression[] args = randomFunction.getArguments(type, this, depth + 1);
+
+        // Create the appropriate function type based on the function name
+        if (randomFunction.getName().equals("extract")) {
+            return new PostgresFunction.PostgresExtractFunction(randomFunction, type, args);
+        } else {
+            return new PostgresFunction(randomFunction, type, args);
+        }
     }
 
     private PostgresExpression generateFunctionWithKnownResult(int depth, PostgresDataType type) {
