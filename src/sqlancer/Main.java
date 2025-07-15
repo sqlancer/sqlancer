@@ -490,7 +490,7 @@ public final class Main {
                     reducer.reduce(state, reproducer, newGlobalState);
 
                     if (options.saveReducerContext()) {
-                        saveReducerContext("Oracle", null, null);
+                        saveReducerContext(ReducerContext.ErrorType.ORACLE, null, null, reproducer.getReproducerData());
                     }
 
                     if (options.reduceAST()) {
@@ -532,140 +532,36 @@ public final class Main {
             return stateToRepro;
         }
 
-        public void saveReducerContext(String errorType, String errorSQL, String errorMessage) {
-            ContextSerializer.serialize(errorType, errorSQL, errorMessage, stateToRepro, provider, databaseName,
-                    getLogger().getLoggerFilePath());
-        }
+        public void saveReducerContext(ReducerContext.ErrorType errorType, String errorSQL, String errorMessage,
+                Map<String, String> reproducerData) {
+            try {
+                String filePath = getLogger().getLoggerFilePath().replace(".log", ".ser");
 
-        private static class ContextSerializer {
-            static void serialize(String errorType, String errorSQL, String errorMessage, StateToReproduce stateToRepro,
-                    DatabaseProvider<?, ?, ?> provider, String databaseName, String logFilePath) {
-                try {
-                    String filePath = logFilePath.replace(".log", ".ser");
-                    SerializableReducerContext context = createContext(errorType, errorSQL, errorMessage, stateToRepro,
-                            provider, databaseName);
-                    saveToFile(context, filePath);
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-
-            private static SerializableReducerContext createContext(String errorType, String errorSQL,
-                    String errorMessage, StateToReproduce stateToRepro, DatabaseProvider<?, ?, ?> provider,
-                    String databaseName) {
-                List<String> sqlStatements = extractStatements(stateToRepro, errorSQL);
-                Set<String> expectedErrors = provider.getAllExpectedErrors().getErrors();
-
-                SerializableReducerContext context = new SerializableReducerContext(errorType,
-                        provider.getClass().getName(), provider.getDBMSName(), databaseName, sqlStatements,
-                        expectedErrors);
-
-                context.setErrorMessage(errorMessage);
-
-                if ("Oracle".equals(errorType)) {
-                    parseOracleInfo(context, sqlStatements);
-                }
-
-                return context;
-            }
-
-            private static List<String> extractStatements(StateToReproduce stateToRepro, String errorSQL) {
-                List<String> statements = new ArrayList<>();
+                // Extract statements
+                List<String> sqlStatements = new ArrayList<>();
                 for (Query<?> query : stateToRepro.getStatements()) {
-                    statements.add(query.getQueryString());
+                    sqlStatements.add(query.getQueryString());
                 }
                 if (errorSQL != null) {
-                    statements.add(errorSQL);
-                }
-                return statements;
-            }
-
-            private static void parseOracleInfo(SerializableReducerContext context, List<String> statements) {
-                for (String statement : statements) {
-                    if (statement.contains("the counts mismatch")) {
-                        parseNoRECOracle(context, statement);
-                        return;
-                    } else if (statement.contains("result sets mismatch")
-                            || statement.contains("Result sets do not match")) {
-                        parseTLPWhereOracle(context, statement);
-                        return;
-                    }
-                }
-            }
-
-            private static void parseNoRECOracle(SerializableReducerContext context, String errorMessage) {
-                context.setOracleType("NoREC");
-                String[] lines = errorMessage.split("\n");
-                String optimized = null, unoptimized = null;
-
-                for (String line : lines) {
-                    if (line.trim().startsWith("-- ") && line.trim().endsWith(";")) {
-                        String query = line.trim().substring(3, line.trim().length() - 1);
-                        if (optimized == null)
-                            optimized = query;
-                        else if (unoptimized == null) {
-                            unoptimized = query;
-                            break;
-                        }
-                    }
+                    sqlStatements.add(errorSQL);
                 }
 
-                if (optimized != null && unoptimized != null) {
-                    context.setOptimizedQueryString(optimized);
-                    context.setUnoptimizedQueryString(unoptimized);
-                    context.setShouldUseAggregate(hasAggregateFunction(optimized));
-                }
-            }
+                Set<String> expectedErrors = provider.getAllExpectedErrors().getErrors();
 
-            private static void parseTLPWhereOracle(SerializableReducerContext context, String errorMessage) {
-                context.setOracleType("TLPWhere");
-                String[] lines = errorMessage.split("\n");
-                String originalQuery = null;
-                boolean orderBy = false;
+                ReducerContext context = new ReducerContext(errorType, provider.getClass().getName(),
+                        provider.getDBMSName(), databaseName, sqlStatements, expectedErrors);
 
-                for (String line : lines) {
-                    line = line.trim();
-                    if (line.startsWith("-- Query: \"") && line.endsWith("\"")) {
-                        String query = line.substring(11, line.length() - 1);
-                        if (originalQuery == null) {
-                            originalQuery = query;
-                        } else {
-                            parseUnionQuery(context, query);
-                            break;
-                        }
-                    }
-                    if (line.contains("ORDER BY"))
-                        orderBy = true;
+                context.setErrorMessage(errorMessage);
+                if (reproducerData != null && !reproducerData.isEmpty()) {
+                    context.setReproducerData(reproducerData);
+                    context.setOracleType(ReducerContext.OracleType.valueOf(reproducerData.get("oracle")));
                 }
 
-                if (originalQuery != null) {
-                    context.setOriginalQueryString(originalQuery);
-                    context.setOrderBy(orderBy);
-                }
-            }
-
-            private static void parseUnionQuery(SerializableReducerContext context, String query) {
-                if (query.contains(" UNION ALL ")) {
-                    String[] parts = query.split(" UNION ALL ");
-                    if (parts.length >= 3) {
-                        context.setFirstQueryString(parts[0].trim());
-                        context.setSecondQueryString(parts[1].trim());
-                        context.setThirdQueryString(parts[2].trim());
-                    }
-                }
-            }
-
-            private static boolean hasAggregateFunction(String query) {
-                String lower = query.toLowerCase();
-                return lower.contains("count(") || lower.contains("sum(") || lower.contains("avg(")
-                        || lower.contains("max(") || lower.contains("min(") || lower.contains("group by")
-                        || lower.contains("having");
-            }
-
-            private static void saveToFile(SerializableReducerContext context, String filePath) throws IOException {
                 try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
                     oos.writeObject(context);
                 }
+            } catch (Exception e) {
+                // ignore
             }
         }
     }
@@ -828,7 +724,8 @@ public final class Main {
                             try {
                                 String errorMessage = reduce.getCause() != null ? reduce.getCause().getMessage()
                                         : reduce.getMessage();
-                                executor.saveReducerContext("Exception", reduce.getMessage(), errorMessage);
+                                executor.saveReducerContext(ReducerContext.ErrorType.EXCEPTION, reduce.getMessage(),
+                                        errorMessage, null);
                             } catch (Exception serializeException) {
                                 // ignore
                             }

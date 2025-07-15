@@ -1,7 +1,7 @@
 package reducer;
 
 import java.util.*;
-import sqlancer.SerializableReducerContext;
+import sqlancer.ReducerContext;
 
 public class TestSimpleReducer {
 
@@ -32,21 +32,21 @@ public class TestSimpleReducer {
     }
 
     private static void testException() throws Exception {
-        SerializableReducerContext context = createExceptionContext();
+        ReducerContext context = createExceptionContext();
         executeTest(context);
     }
 
     private static void testNoRECOracle() throws Exception {
-        SerializableReducerContext context = createNoRECOracleContext();
+        ReducerContext context = createNoRECOracleContext();
         executeTest(context);
     }
 
     private static void testTLPWhereOracle() throws Exception {
-        SerializableReducerContext context = createTLPWhereOracleContext();
+        ReducerContext context = createTLPWhereOracleContext();
         executeTest(context);
     }
 
-    private static void executeTest(SerializableReducerContext context) throws Exception {
+    private static void executeTest(ReducerContext context) throws Exception {
         SimpleReducer reducer = new SimpleReducer(context);
         List<String> result = reducer.reduce();
 
@@ -58,15 +58,7 @@ public class TestSimpleReducer {
 
     // sqlite3 version: 3.28.0
     // https://www.sqlite.org/src/tktview?name=771fe61761
-    private static SerializableReducerContext createExceptionContext() {
-        SerializableReducerContext context = new SerializableReducerContext();
-        context.setErrorType("Exception");
-        context.setProviderClassName("sqlancer.sqlite3.SQLite3Provider");
-        context.setDbmsName("sqlite3");
-        context.setDatabaseName("test_exception_db");
-        context.setErrorMessage(
-                "[SQLITE_CORRUPT]  The database disk image is malformed (database disk image is malformed)");
-
+    private static ReducerContext createExceptionContext() {
         List<String> sqlStatements = Arrays.asList("PRAGMA cache_size = 50000;", "PRAGMA temp_store=MEMORY;",
                 "PRAGMA synchronous=off;", "PRAGMA encoding = 'UTF-16be';",
                 "CREATE VIRTUAL TABLE vt0 USING fts4(c0 UNINDEXED, prefix=426, order=DESC);",
@@ -81,23 +73,19 @@ public class TestSimpleReducer {
                 "INSERT OR IGNORE INTO vt0(c0) VALUES (0.7581753911019898);",
                 "INSERT OR ABORT INTO vt0 VALUES (0.5674108139086818);",
                 "INSERT INTO vt0(vt0) VALUES('integrity-check');");
+        String errorMessage = "[SQLITE_CORRUPT]  The database disk image is malformed (database disk image is malformed)";
 
-        context.setSqlStatements(sqlStatements);
-        context.setExpectedErrors(createStandardExpectedErrors());
+        ReducerContext context = new ReducerContext(ReducerContext.ErrorType.EXCEPTION,
+                "sqlancer.sqlite3.SQLite3Provider", "sqlite3", "test_exception_db", sqlStatements,
+                createStandardExpectedErrors());
+        context.setErrorMessage(errorMessage);
 
         return context;
     }
 
     // sqlite3 version: 3.28.0
     // https://www.sqlite.org/src/tktview?name=a7debbe0ad
-    private static SerializableReducerContext createNoRECOracleContext() {
-        SerializableReducerContext context = new SerializableReducerContext();
-        context.setErrorType("Oracle");
-        context.setProviderClassName("sqlancer.sqlite3.SQLite3Provider");
-        context.setDbmsName("sqlite3");
-        context.setDatabaseName("test_norec_db");
-        context.setOracleType("NoREC");
-
+    private static ReducerContext createNoRECOracleContext() {
         List<String> sqlStatements = Arrays.asList("CREATE TABLE t0 (c0 INTEGER, c1 TEXT, c2 REAL);",
                 "INSERT INTO t0(c0) VALUES('');",
                 "CREATE VIEW v2(c0, c1) AS SELECT 'B' COLLATE NOCASE, 'a' FROM t0 ORDER BY t0.c0;",
@@ -108,40 +96,39 @@ public class TestSimpleReducer {
                 "SELECT UPPER('test');", "BEGIN TRANSACTION;", "ROLLBACK;", "SELECT (SELECT MAX(x) FROM t1) AS max_x;",
                 "CREATE INDEX idx_x ON t1(x);", "DROP INDEX idx_x;", "CREATE TEMP TABLE temp_tbl(z INT);",
                 "INSERT INTO temp_tbl(z) VALUES (10), (20);", "DROP TABLE temp_tbl;");
-
-        context.setSqlStatements(sqlStatements);
-        context.setOptimizedQueryString(
+        Map<String, String> reproducerData = new HashMap<>();
+        reproducerData.put("optimizedQuery",
                 "SELECT SUM(count) FROM (SELECT v2.c1 BETWEEN v2.c0 AND v2.c1 as count FROM v2);");
-        context.setUnoptimizedQueryString(
+        reproducerData.put("unoptimizedQuery",
                 "SELECT SUM(CASE WHEN v2.c1 COLLATE BINARY < v2.c0 COLLATE BINARY THEN 1 WHEN v2.c1 COLLATE BINARY > v2.c1 COLLATE BINARY THEN 1 ELSE 0 END) FROM v2;");
-        context.setShouldUseAggregate(true);
-        context.setExpectedErrors(createStandardExpectedErrors());
+        reproducerData.put("shouldUseAggregate", "true");
+
+        ReducerContext context = new ReducerContext(ReducerContext.ErrorType.ORACLE, "sqlancer.sqlite3.SQLite3Provider",
+                "sqlite3", "test_norec_db", sqlStatements, createStandardExpectedErrors());
+        context.setOracleType(ReducerContext.OracleType.NOREC);
+        context.setReproducerData(reproducerData);
 
         return context;
     }
 
     // duckdb version: 0.2.9
     // https://github.com/cwida/duckdb/issues/590
-    private static SerializableReducerContext createTLPWhereOracleContext() {
-        SerializableReducerContext context = new SerializableReducerContext();
-        context.setErrorType("Oracle");
-        context.setProviderClassName("sqlancer.duckdb.DuckDBProvider");
-        context.setDbmsName("duckdb");
-        context.setDatabaseName("test_tlp_db");
-        context.setOracleType("TLPWhere");
-
+    private static ReducerContext createTLPWhereOracleContext() {
         List<String> sqlStatements = Arrays.asList("CREATE TABLE t1(c1 VARCHAR);",
                 "INSERT INTO t1(c1) VALUES (DATE '2000-01-02');", "CREATE TABLE t0(c0 VARCHAR);",
                 "INSERT INTO t0(c0) VALUES (DATE '2000-01-02');", "INSERT INTO t0(c0) VALUES (DATE '2000-01-03');",
                 "INSERT INTO t0(c0) VALUES (DATE '2000-01-04');");
+        Map<String, String> reproducerData = new HashMap<>();
+        reproducerData.put("originalQuery", "SELECT * FROM t0;");
+        reproducerData.put("firstQuery", "SELECT * FROM t0 WHERE (DATE '2000-01-01' < t0.c0);");
+        reproducerData.put("secondQuery", "SELECT * FROM t0 WHERE (NOT(DATE '2000-01-01' < t0.c0));");
+        reproducerData.put("thirdQuery", "SELECT * FROM t0 WHERE ((DATE '2000-01-01' < t0.c0) IS NULL);");
+        reproducerData.put("orderBy", "false");
 
-        context.setSqlStatements(sqlStatements);
-        context.setOriginalQueryString("SELECT * FROM t0;");
-        context.setFirstQueryString("SELECT * FROM t0 WHERE (DATE '2000-01-01' < t0.c0);");
-        context.setSecondQueryString("SELECT * FROM t0 WHERE (NOT(DATE '2000-01-01' < t0.c0));");
-        context.setThirdQueryString("SELECT * FROM t0 WHERE ((DATE '2000-01-01' < t0.c0) IS NULL);");
-        context.setOrderBy(false);
-        context.setExpectedErrors(createStandardExpectedErrors());
+        ReducerContext context = new ReducerContext(ReducerContext.ErrorType.ORACLE, "sqlancer.duckdb.DuckDBProvider",
+                "duckdb", "test_tlp_db", sqlStatements, createStandardExpectedErrors());
+        context.setOracleType(ReducerContext.OracleType.TLP_WHERE);
+        context.setReproducerData(reproducerData);
 
         return context;
     }

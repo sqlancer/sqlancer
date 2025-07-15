@@ -5,16 +5,16 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
 import java.sql.SQLException;
 
-// SQLancer imports
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.SQLancerDBConnection;
 import sqlancer.common.query.Query;
 import sqlancer.GlobalState;
 import sqlancer.DatabaseProvider;
-import sqlancer.SerializableReducerContext;
+import sqlancer.ReducerContext;
 import sqlancer.Randomly;
 import sqlancer.StateToReproduce;
 import sqlancer.DBMSSpecificOptions;
@@ -36,18 +36,18 @@ import sqlancer.ComparatorHelper;
 public class SimpleReducer {
     private int partitionNum = 2;
     private boolean observedChange = false;
-    private SerializableReducerContext context;
+    private ReducerContext context;
     private DatabaseProvider<?, ?, ?> provider;
 
     public SimpleReducer() {
     }
 
-    public SimpleReducer(SerializableReducerContext context) throws Exception {
+    public SimpleReducer(ReducerContext context) throws Exception {
         this.context = context;
         this.provider = createProvider(context.getProviderClassName());
     }
 
-    public SimpleReducer(SerializableReducerContext context, DatabaseProvider<?, ?, ?> provider) {
+    public SimpleReducer(ReducerContext context, DatabaseProvider<?, ?, ?> provider) {
         this.context = context;
         this.provider = provider;
     }
@@ -114,7 +114,6 @@ public class SimpleReducer {
                 if (partitionNum == reducedStatements.size()) {
                     break;
                 }
-                // Increase granularity for more fine-grained reduction
                 partitionNum = Math.min(partitionNum * 2, reducedStatements.size());
             }
         }
@@ -125,7 +124,7 @@ public class SimpleReducer {
 
     public void loadContext(String filePath) throws Exception {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
-            this.context = (SerializableReducerContext) ois.readObject();
+            this.context = (ReducerContext) ois.readObject();
             this.context.setDatabaseName(this.context.getDatabaseName() + "-reduce");
 
             this.provider = (DatabaseProvider<?, ?, ?>) Class.forName(this.context.getProviderClassName())
@@ -150,7 +149,7 @@ public class SimpleReducer {
         }
     }
 
-    public void setContext(SerializableReducerContext context) {
+    public void setContext(ReducerContext context) {
         this.context = context;
     }
 
@@ -158,7 +157,7 @@ public class SimpleReducer {
         this.provider = provider;
     }
 
-    public SerializableReducerContext getContext() {
+    public ReducerContext getContext() {
         return context;
     }
 
@@ -190,19 +189,16 @@ public class SimpleReducer {
         return currentStatements;
     }
 
-    /**
-     * Tests whether the bug still exists with the given set of statements. Handles both Exception and Oracle type bugs.
-     *
-     * @return true if bug still exists, false otherwise
-     */
     private boolean testBugStillExists(List<String> statements) {
         try {
-            if ("Exception".equals(context.getErrorType())) {
+            switch (context.getErrorType()) {
+            case EXCEPTION:
                 return testExceptionStillExists(statements);
-            } else if ("Oracle".equals(context.getErrorType())) {
+            case ORACLE:
                 return testOracleStillExists(statements);
+            default:
+                return false;
             }
-            return false;
         } catch (Throwable e) {
             return false;
         }
@@ -275,24 +271,15 @@ public class SimpleReducer {
         }
     }
 
-    /**
-     * Checks if the specific oracle type still triggers with the current database state.
-     *
-     * @return true if oracle detects bug, false otherwise
-     */
     @SuppressWarnings("unchecked")
     private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean checkOracleStillTriggers(
             G globalState, DatabaseProvider<G, O, C> typedProvider) {
         try {
-            String oracleType = context.getOracleType();
-            if (oracleType == null)
-                return false;
-
-            switch (oracleType) {
-            case "NoREC":
+            switch (context.getOracleType()) {
+            case NOREC:
                 return globalState.getConnection() instanceof SQLConnection
                         ? checkNoRECOracle((GlobalState<O, ?, SQLConnection>) globalState) : false;
-            case "TLPWhere":
+            case TLP_WHERE:
                 return globalState.getConnection() instanceof SQLConnection && globalState instanceof SQLGlobalState
                         ? checkTLPWhereOracle((SQLGlobalState<O, ?>) globalState) : false;
             default:
@@ -309,12 +296,19 @@ public class SimpleReducer {
     private <G extends GlobalState<O, ?, SQLConnection>, O extends DBMSSpecificOptions<?>> boolean checkNoRECOracle(
             G globalState) {
         try {
-            String optimizedQuery = context.getOptimizedQueryString();
-            String unoptimizedQuery = context.getUnoptimizedQueryString();
-            boolean shouldUseAggregate = context.isShouldUseAggregate();
-
-            if (optimizedQuery == null || unoptimizedQuery == null)
+            Map<String, String> reproducerData = context.getReproducerData();
+            if (reproducerData == null) {
                 return false;
+            }
+
+            String optimizedQuery = reproducerData.get("optimizedQuery");
+            String unoptimizedQuery = reproducerData.get("unoptimizedQuery");
+            boolean shouldUseAggregate = Boolean
+                    .parseBoolean(reproducerData.getOrDefault("shouldUseAggregate", "false"));
+
+            if (optimizedQuery == null || unoptimizedQuery == null) {
+                return false;
+            }
 
             ExpectedErrors expectedErrors = createExpectedErrors();
 
@@ -336,17 +330,22 @@ public class SimpleReducer {
     private <G extends SQLGlobalState<O, ?>, O extends DBMSSpecificOptions<?>> boolean checkTLPWhereOracle(
             G globalState) {
         try {
-            String firstQuery = context.getFirstQueryString();
-            String secondQuery = context.getSecondQueryString();
-            String thirdQuery = context.getThirdQueryString();
-            String originalQuery = context.getOriginalQueryString();
+            Map<String, String> reproducerData = context.getReproducerData();
+            if (reproducerData == null) {
+                return false;
+            }
+
+            String firstQuery = reproducerData.get("firstQuery");
+            String secondQuery = reproducerData.get("secondQuery");
+            String thirdQuery = reproducerData.get("thirdQuery");
+            String originalQuery = reproducerData.get("originalQuery");
+            boolean orderBy = Boolean.parseBoolean(reproducerData.getOrDefault("orderBy", "false"));
 
             if (firstQuery == null || secondQuery == null || thirdQuery == null || originalQuery == null) {
                 return false;
             }
 
             ExpectedErrors expectedErrors = createExpectedErrors();
-            boolean orderBy = context.isOrderBy();
 
             List<String> combinedString = new ArrayList<>();
             List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, expectedErrors,
@@ -379,8 +378,8 @@ public class SimpleReducer {
 
     private void printInitialInfo(List<String> originalStatements) {
         System.out.println("Initial size: " + originalStatements.size() + " statements");
-        String targetInfo = "Exception".equals(context.getErrorType()) ? "Target error: " + context.getErrorMessage()
-                : "Target oracle: " + context.getOracleType();
+        String targetInfo = context.getErrorType() == ReducerContext.ErrorType.EXCEPTION
+                ? "Target error: " + context.getErrorMessage() : "Target oracle: " + context.getOracleType();
         System.out.println(targetInfo);
         System.out.println();
     }
