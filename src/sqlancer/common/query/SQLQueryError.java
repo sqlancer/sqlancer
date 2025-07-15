@@ -10,9 +10,8 @@ public class SQLQueryError implements Comparable<SQLQueryError> {
     private int code;
     private String message;
 
-    public void setLevel(String level) {
-        // value of is case-sensitive
-        this.level = ErrorLevel.valueOf(level.toUpperCase());
+    public void setLevel(ErrorLevel level) {
+        this.level = level;
     }
 
     public void setCode(int code) {
@@ -36,12 +35,10 @@ public class SQLQueryError implements Comparable<SQLQueryError> {
     }
 
     public boolean hasSameLevel(SQLQueryError that) {
-        if (level == null && that.getLevel() == null) {
-            return true;
-        } else if (level != null && level.equals(that.getLevel())) {
-            return true;
+        if (level == null) {
+            return that.getLevel() == null;
         } else {
-            return false;
+            return level.equals(that.getLevel());
         }
     }
 
@@ -49,12 +46,10 @@ public class SQLQueryError implements Comparable<SQLQueryError> {
         if (code != that.getCode()) {
             return false;
         }
-        if (message == null && that.getMessage() == null) {
-            return true;
-        } else if (message != null && message.equals(that.getMessage())) {
-            return true;
+        if (message == null) {
+            return that.getMessage() == null;
         } else {
-            return false;
+            return message.equals(that.getMessage());
         }
     }
 
@@ -65,9 +60,7 @@ public class SQLQueryError implements Comparable<SQLQueryError> {
         }
         if (that instanceof SQLQueryError) {
             SQLQueryError thatError = (SQLQueryError) that;
-            if (hasSameLevel(thatError) && hasSameCodeAndMessage(thatError)) {
-                return true;
-            }
+            return hasSameLevel(thatError) && hasSameCodeAndMessage(thatError);
         }
         return false;
     }
@@ -87,27 +80,27 @@ public class SQLQueryError implements Comparable<SQLQueryError> {
 
         if (level == null && that.getLevel() != null) {
             return -1;
-        }
-        if (level != null && that.getLevel() == null) {
-            return 1;
-        }
-        if (level != null && that.getLevel() != null) {
-            int res = level.compareTo(that.getLevel());
-            if (res != 0) {
-                return res;
+        } else {
+            if (that.getLevel() == null) {
+                return 1;
+            } else {
+                int res = level.compareTo(that.getLevel());
+                if (res != 0) {
+                    return res;
+                }
             }
         }
 
         if (message == null && that.getMessage() != null) {
             return -1;
-        }
-        if (message != null && that.getMessage() == null) {
-            return 1;
-        }
-        if (message != null && that.getMessage() != null) {
-            int res = message.compareTo(that.getMessage());
-            if (res != 0) {
-                return res;
+        } else {
+            if (that.getMessage() == null) {
+                return 1;
+            } else {
+                int res = message.compareTo(that.getMessage());
+                if (res != 0) {
+                    return res;
+                }
             }
         }
 

@@ -11,7 +11,7 @@ public class SQLQueryErrorTest {
     @Test
     public void testSettersAndGetters() {
         SQLQueryError error = new SQLQueryError();
-        error.setLevel("error");
+        error.setLevel(SQLQueryError.ErrorLevel.ERROR);
         error.setCode(123);
         error.setMessage("Test message");
         assertEquals(SQLQueryError.ErrorLevel.ERROR, error.getLevel());
@@ -23,10 +23,10 @@ public class SQLQueryErrorTest {
     public void testHasSameLevel() {
         SQLQueryError e1 = new SQLQueryError();
         SQLQueryError e2 = new SQLQueryError();
-        e1.setLevel("warning");
-        e2.setLevel("warning");
+        e1.setLevel(SQLQueryError.ErrorLevel.WARNING);
+        e2.setLevel(SQLQueryError.ErrorLevel.WARNING);
         assertTrue(e1.hasSameLevel(e2));
-        e2.setLevel("error");
+        e2.setLevel(SQLQueryError.ErrorLevel.ERROR);
         assertFalse(e1.hasSameLevel(e2));
     }
 
@@ -50,21 +50,21 @@ public class SQLQueryErrorTest {
     public void testEquals() {
         SQLQueryError e1 = new SQLQueryError();
         SQLQueryError e2 = new SQLQueryError();
-        e1.setLevel("error");
+        e1.setLevel(SQLQueryError.ErrorLevel.ERROR);
         e1.setCode(1);
         e1.setMessage("msg");
-        e2.setLevel("error");
+        e2.setLevel(SQLQueryError.ErrorLevel.ERROR);
         e2.setCode(1);
         e2.setMessage("msg");
         assertEquals(e1, e2);
-        e2.setLevel("warning");
+        e2.setLevel(SQLQueryError.ErrorLevel.WARNING);
         assertNotEquals(e1, e2);
     }
 
     @Test
     public void testToString() {
         SQLQueryError e = new SQLQueryError();
-        e.setLevel("error");
+        e.setLevel(SQLQueryError.ErrorLevel.ERROR);
         e.setCode(1);
         e.setMessage("msg");
         String str = e.toString();
@@ -81,10 +81,10 @@ public class SQLQueryErrorTest {
         e2.setCode(2);
         assertTrue(e1.compareTo(e2) < 0);
         e2.setCode(1);
-        e1.setLevel("error");
-        e2.setLevel("warning");
+        e1.setLevel(SQLQueryError.ErrorLevel.ERROR);
+        e2.setLevel(SQLQueryError.ErrorLevel.WARNING);
         assertTrue(e1.compareTo(e2) > 0 || e1.compareTo(e2) < 0);
-        e2.setLevel("error");
+        e2.setLevel(SQLQueryError.ErrorLevel.ERROR);
         e1.setMessage("a");
         e2.setMessage("b");
         assertTrue(e1.compareTo(e2) < 0);
