@@ -1,7 +1,6 @@
 package sqlancer;
 
 import sqlancer.common.log.LoggableFactory;
-import sqlancer.common.query.ExpectedErrors;
 
 public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> {
 
@@ -58,12 +57,4 @@ public interface DatabaseProvider<G extends GlobalState<O, ?, C>, O extends DBMS
 
     StateToReproduce getStateToReproduce(String databaseName);
 
-    /**
-     * Gets all expected errors for this database management system.
-     *
-     * @return ExpectedErrors object containing all expected error patterns for this DBMS
-     */
-    default ExpectedErrors getAllExpectedErrors() {
-        return new ExpectedErrors();
-    }
 }

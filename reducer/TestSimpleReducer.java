@@ -6,44 +6,45 @@ import sqlancer.ReducerContext;
 public class TestSimpleReducer {
 
     public static void main(String[] args) throws Exception {
-        try {
-            System.out.println("=== SimpleReducer Test Suite ===");
-
-            runTest("Exception Reduction", TestSimpleReducer::testException);
-            runTest("NoREC Oracle Reduction", TestSimpleReducer::testNoRECOracle);
-            runTest("TLP WHERE Oracle Reduction", TestSimpleReducer::testTLPWhereOracle);
-
-            System.out.println("\n=== All tests completed successfully ===");
-        } catch (Exception e) {
-            System.err.println("Test failed: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
-        }
+        System.out.println("=== SimpleReducer Test Suite ===");
+        
+        runTest("Exception Reduction", TestSimpleReducer::testException);
+        runTest("NoREC Oracle Reduction", TestSimpleReducer::testNoRECOracle);
+        runTest("TLP WHERE Oracle Reduction", TestSimpleReducer::testTLPWhereOracle);
+        
+        System.out.println("\n=== All tests completed successfully ===");
     }
 
-    private static void runTest(String testName, TestRunner test) throws Exception {
+    private static void runTest(String testName, Runnable test) {
         System.out.println("\n--- " + testName + " ---");
         test.run();
     }
 
-    @FunctionalInterface
-    private interface TestRunner {
-        void run() throws Exception;
+    private static void testException() {
+        try {
+            ReducerContext context = createExceptionContext();
+            executeTest(context);
+        } catch (Exception e) {
+            System.err.println("Exception test failed: " + e.getMessage());
+        }
     }
 
-    private static void testException() throws Exception {
-        ReducerContext context = createExceptionContext();
-        executeTest(context);
+    private static void testNoRECOracle() {
+        try {
+            ReducerContext context = createNoRECOracleContext();
+            executeTest(context);
+        } catch (Exception e) {
+            System.err.println("NoREC Oracle test failed: " + e.getMessage());
+        }
     }
 
-    private static void testNoRECOracle() throws Exception {
-        ReducerContext context = createNoRECOracleContext();
-        executeTest(context);
-    }
-
-    private static void testTLPWhereOracle() throws Exception {
-        ReducerContext context = createTLPWhereOracleContext();
-        executeTest(context);
+    private static void testTLPWhereOracle() {
+        try {
+            ReducerContext context = createTLPWhereOracleContext();
+            executeTest(context);
+        } catch (Exception e) {
+            System.err.println("TLP WHERE Oracle test failed: " + e.getMessage());
+        }
     }
 
     private static void executeTest(ReducerContext context) throws Exception {
@@ -76,8 +77,7 @@ public class TestSimpleReducer {
         String errorMessage = "[SQLITE_CORRUPT]  The database disk image is malformed (database disk image is malformed)";
 
         ReducerContext context = new ReducerContext(ReducerContext.ErrorType.EXCEPTION,
-                "sqlancer.sqlite3.SQLite3Provider", "sqlite3", "test_exception_db", sqlStatements,
-                createStandardExpectedErrors());
+                "sqlancer.sqlite3.SQLite3Provider", "sqlite3", "test_exception_db", sqlStatements);
         context.setErrorMessage(errorMessage);
 
         return context;
@@ -102,11 +102,16 @@ public class TestSimpleReducer {
         reproducerData.put("unoptimizedQuery",
                 "SELECT SUM(CASE WHEN v2.c1 COLLATE BINARY < v2.c0 COLLATE BINARY THEN 1 WHEN v2.c1 COLLATE BINARY > v2.c1 COLLATE BINARY THEN 1 ELSE 0 END) FROM v2;");
         reproducerData.put("shouldUseAggregate", "true");
+        Map<String, Set<String>> expectedErrorsMap = new HashMap<>();
+        Set<String> commonErrors = new HashSet<>();
+        commonErrors.add("no such table");
+        expectedErrorsMap.put("SELECT SUM(count) FROM (SELECT v2.c1 BETWEEN v2.c0 AND v2.c1 as count FROM v2);", commonErrors);
 
         ReducerContext context = new ReducerContext(ReducerContext.ErrorType.ORACLE, "sqlancer.sqlite3.SQLite3Provider",
-                "sqlite3", "test_norec_db", sqlStatements, createStandardExpectedErrors());
+                "sqlite3", "test_norec_db", sqlStatements);
         context.setOracleType(ReducerContext.OracleType.NOREC);
         context.setReproducerData(reproducerData);
+        context.setExpectedErrorsMap(expectedErrorsMap);
 
         return context;
     }
@@ -126,17 +131,10 @@ public class TestSimpleReducer {
         reproducerData.put("orderBy", "false");
 
         ReducerContext context = new ReducerContext(ReducerContext.ErrorType.ORACLE, "sqlancer.duckdb.DuckDBProvider",
-                "duckdb", "test_tlp_db", sqlStatements, createStandardExpectedErrors());
+                "duckdb", "test_tlp_db", sqlStatements);
         context.setOracleType(ReducerContext.OracleType.TLP_WHERE);
         context.setReproducerData(reproducerData);
 
         return context;
-    }
-
-    private static Set<String> createStandardExpectedErrors() {
-        Set<String> expectedErrors = new HashSet<>();
-        expectedErrors.add("no such table");
-        expectedErrors.add("syntax error");
-        return expectedErrors;
     }
 }

@@ -25,22 +25,25 @@ public class ReducerContext implements Serializable {
     private Set<String> expectedErrors;
 
     private String errorMessage; // for Exception type
+
     private OracleType oracleType; // for Oracle type
     private Map<String, String> reproducerData;
+    private Map<String, Set<String>> expectedErrorsMap;
 
     public ReducerContext() {
         this.reproducerData = new HashMap<>();
+        this.expectedErrorsMap = new HashMap<>();
     }
 
     public ReducerContext(ErrorType errorType, String providerClassName, String dbmsName, String databaseName,
-            List<String> sqlStatements, Set<String> expectedErrors) {
+            List<String> sqlStatements) {
         this.errorType = errorType;
         this.providerClassName = providerClassName;
         this.dbmsName = dbmsName;
         this.databaseName = databaseName;
         this.sqlStatements = sqlStatements;
-        this.expectedErrors = expectedErrors;
         this.reproducerData = new HashMap<>();
+        this.expectedErrorsMap = new HashMap<>();
     }
 
     public ErrorType getErrorType() {
@@ -93,5 +96,13 @@ public class ReducerContext implements Serializable {
 
     public void setReproducerData(Map<String, String> reproducerData) {
         this.reproducerData = reproducerData;
+    }
+
+    public Map<String, Set<String>> getExpectedErrorsMap() {
+        return expectedErrorsMap;
+    }
+
+    public void setExpectedErrorsMap(Map<String, Set<String>> expectedErrorsMap) {
+        this.expectedErrorsMap = expectedErrorsMap;
     }
 }

@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -403,6 +402,7 @@ public final class Main {
         private StateLogger logger;
         private StateToReproduce stateToRepro;
         private final Randomly r;
+        private G globalState;
 
         public DBMSExecutor(DatabaseProvider<G, O, C> provider, MainOptions options, O dbmsSpecificOptions,
                 String databaseName, Randomly r) {
@@ -434,6 +434,7 @@ public final class Main {
 
         public void run() throws Exception {
             G state = createGlobalState();
+            this.globalState = state;
             stateToRepro = provider.getStateToReproduce(databaseName);
             stateToRepro.seedValue = r.getSeed();
             state.setState(stateToRepro);
@@ -546,15 +547,16 @@ public final class Main {
                     sqlStatements.add(errorSQL);
                 }
 
-                Set<String> expectedErrors = provider.getAllExpectedErrors().getErrors();
-
                 ReducerContext context = new ReducerContext(errorType, provider.getClass().getName(),
-                        provider.getDBMSName(), databaseName, sqlStatements, expectedErrors);
+                        provider.getDBMSName(), databaseName, sqlStatements);
 
                 context.setErrorMessage(errorMessage);
                 if (reproducerData != null && !reproducerData.isEmpty()) {
                     context.setReproducerData(reproducerData);
                     context.setOracleType(ReducerContext.OracleType.valueOf(reproducerData.get("oracle")));
+                }
+                if (globalState != null) {
+                    context.setExpectedErrorsMap(globalState.getExpectedErrorsMap());
                 }
 
                 try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {

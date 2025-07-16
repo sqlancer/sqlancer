@@ -1,5 +1,10 @@
 package sqlancer;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractSchema;
@@ -16,6 +21,7 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
     private StateToReproduce state;
     private Main.QueryManager<C> manager;
     private String databaseName;
+    private Map<String, Set<String>> expectedErrorsMap = new HashMap<>();
 
     public void setConnection(C con) {
         this.databaseConnection = con;
@@ -80,6 +86,16 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
+    }
+
+    public void addExpectedError(String query, String errorMessage) {
+        if (query != null && errorMessage != null) {
+            expectedErrorsMap.computeIfAbsent(query, k -> new HashSet<>()).add(errorMessage);
+        }
+    }
+
+    public Map<String, Set<String>> getExpectedErrorsMap() {
+        return expectedErrorsMap;
     }
 
     private ExecutionTimer executePrologue(Query<?> q) throws Exception {

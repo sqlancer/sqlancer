@@ -103,19 +103,22 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
             return true;
         } catch (Exception e) {
             Main.nrUnsuccessfulActions.addAndGet(1);
-            checkException(e);
+            if(checkException(e)) {
+                String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+                globalState.addExpectedError(query, errorMessage);
+            }
             return false;
         } finally {
             s.close();
         }
     }
 
-    public void checkException(Exception e) throws AssertionError {
+    public boolean checkException(Exception e) throws AssertionError {
         Throwable ex = e;
 
         while (ex != null) {
             if (expectedErrors.errorIsExpected(ex.getMessage())) {
-                return;
+                return true;
             } else {
                 ex = ex.getCause();
             }
@@ -151,7 +154,10 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
         } catch (Exception e) {
             s.close();
             Main.nrUnsuccessfulActions.addAndGet(1);
-            checkException(e);
+            if(checkException(e)) {
+                String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+                globalState.addExpectedError(query, errorMessage);
+            }
         }
         return null;
     }

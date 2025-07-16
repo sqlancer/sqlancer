@@ -356,26 +356,4 @@ public class SQLite3Provider extends SQLProviderAdapter<SQLite3GlobalState, SQLi
 
         return true;
     }
-
-    @Override
-    public ExpectedErrors getAllExpectedErrors() {
-        ExpectedErrors errors = new ExpectedErrors();
-
-        SQLite3Errors.addExpectedExpressionErrors(errors);
-        SQLite3Errors.addMatchQueryErrors(errors);
-        SQLite3Errors.addQueryErrors(errors);
-        SQLite3Errors.addInsertUpdateErrors(errors);
-        SQLite3Errors.addDeleteErrors(errors);
-        SQLite3Errors.addTableManipulationErrors(errors);
-        SQLite3Errors.addInsertNowErrors(errors);
-
-        // add some common SQLite3 errors
-        errors.add("misuse of aggregate");
-        errors.add("misuse of window function");
-        errors.add("second argument to nth_value must be a positive integer");
-        errors.add("no such table");
-        errors.add("no query solution");
-        errors.add("unable to use function MATCH in the requested context");
-        return errors;
-    }
 }

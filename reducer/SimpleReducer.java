@@ -1,13 +1,8 @@
 package reducer;
 
 import java.io.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.sql.SQLException;
-
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.sqlite3.SQLite3GlobalState;
 import sqlancer.SQLancerDBConnection;
@@ -28,49 +23,27 @@ import sqlancer.SQLGlobalState;
 import sqlancer.SQLConnection;
 import sqlancer.ComparatorHelper;
 
-/**
- * SimpleReducer implements a partition-based SQL statement reduction algorithm similar to creduce. It systematically
- * removes unnecessary SQL statements while preserving the bug-triggering behavior for both exceptions and oracle-based
- * bugs.
- */
 public class SimpleReducer {
     private int partitionNum = 2;
     private boolean observedChange = false;
     private ReducerContext context;
     private DatabaseProvider<?, ?, ?> provider;
 
-    public SimpleReducer() {
-    }
-
     public SimpleReducer(ReducerContext context) throws Exception {
         this.context = context;
         this.provider = createProvider(context.getProviderClassName());
     }
 
-    public SimpleReducer(ReducerContext context, DatabaseProvider<?, ?, ?> provider) {
-        this.context = context;
-        this.provider = provider;
-    }
-
-    /**
-     * Command-line entry point for SimpleReducer. Usage: java SimpleReducer <context_file> <output_file>
-     */
     public static void main(String[] args) {
         if (args.length != 2) {
             System.exit(1);
         }
 
-        String objectPath = args[0];
-        String reducePath = args[1];
-
         try {
             SimpleReducer reducer = new SimpleReducer();
-            reducer.loadContext(objectPath);
+            reducer.loadContext(args[0]);
             List<String> result = reducer.reduce();
-            reducer.saveResults(result, reducePath);
-
-            System.out.println("Reduction completed successfully!");
-
+            reducer.saveResults(result, args[1]);
         } catch (Exception e) {
             System.err.println("ERROR: " + e.getMessage());
             System.exit(1);
@@ -83,12 +56,8 @@ public class SimpleReducer {
      * @return List of reduced SQL statements that still trigger the bug
      */
     public List<String> reduce() throws Exception {
-        validateState();
-
         List<String> originalStatements = context.getSqlStatements();
         if (originalStatements == null || originalStatements.size() <= 1) {
-            System.out.println("Nothing to reduce (statements: "
-                    + (originalStatements == null ? 0 : originalStatements.size()) + ")");
             return originalStatements;
         }
 
@@ -98,7 +67,6 @@ public class SimpleReducer {
         partitionNum = 2;
         int passCount = 1;
 
-        // Main reduction loop using partition-based algorithm
         while (reducedStatements.size() >= 2) {
             observedChange = false;
             System.out.print("Pass " + passCount + " (partition=" + partitionNum + "): ");
@@ -122,50 +90,6 @@ public class SimpleReducer {
         return reducedStatements;
     }
 
-    public void loadContext(String filePath) throws Exception {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
-            this.context = (ReducerContext) ois.readObject();
-            this.context.setDatabaseName(this.context.getDatabaseName() + "-reduce");
-
-            this.provider = (DatabaseProvider<?, ?, ?>) Class.forName(this.context.getProviderClassName())
-                    .getDeclaredConstructor().newInstance();
-        }
-    }
-
-    public void saveResults(List<String> reducedStatements, String logPath) {
-        try {
-            File logFile = new File(logPath);
-            logFile.getParentFile().mkdirs();
-
-            try (PrintWriter writer = new PrintWriter(new FileWriter(logFile))) {
-                for (String statement : reducedStatements) {
-                    writer.println(statement);
-                }
-            }
-
-            System.out.println("Results saved to: " + logPath);
-        } catch (IOException e) {
-            System.err.println("Failed to save results: " + e.getMessage());
-        }
-    }
-
-    public void setContext(ReducerContext context) {
-        this.context = context;
-    }
-
-    public void setProvider(DatabaseProvider<?, ?, ?> provider) {
-        this.provider = provider;
-    }
-
-    public ReducerContext getContext() {
-        return context;
-    }
-
-    /**
-     * Attempts reduction by partitioning statements and testing each partition removal.
-     *
-     * @return Reduced set of statements if successful, original set otherwise
-     */
     private List<String> tryReduction(List<String> statements) throws Exception {
         List<String> currentStatements = statements;
         int start = 0;
@@ -183,7 +107,7 @@ public class SimpleReducer {
                 break;
             }
 
-            start = start + subLength;
+            start += subLength;
         }
 
         return currentStatements;
@@ -210,8 +134,7 @@ public class SimpleReducer {
      * @return true if the expected exception is thrown
      */
     @SuppressWarnings("unchecked")
-    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean testExceptionStillExists(
-            List<String> statements) {
+    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean testExceptionStillExists(List<String> statements) {
         try {
             DatabaseProvider<G, O, C> typedProvider = (DatabaseProvider<G, O, C>) provider;
             G globalState = createGlobalState(typedProvider);
@@ -239,14 +162,8 @@ public class SimpleReducer {
         }
     }
 
-    /**
-     * Tests if the oracle-based bug still occurs with reduced statements.
-     *
-     * @return true if the oracle still detects inconsistency
-     */
     @SuppressWarnings("unchecked")
-    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean testOracleStillExists(
-            List<String> statements) {
+    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean testOracleStillExists(List<String> statements) {
         try {
             DatabaseProvider<G, O, C> typedProvider = (DatabaseProvider<G, O, C>) provider;
             G globalState = createGlobalState(typedProvider);
@@ -254,13 +171,12 @@ public class SimpleReducer {
             try (C connection = typedProvider.createDatabase(globalState)) {
                 globalState.setConnection(connection);
 
-                // Execute all statements first
                 for (String sql : statements) {
                     try {
                         Query<C> query = (Query<C>) typedProvider.getLoggableFactory().getQueryForStateToReproduce(sql);
                         query.execute(globalState);
                     } catch (Throwable ignored) {
-                        // Ignore execution errors during setup
+                        // ignore
                     }
                 }
 
@@ -272,8 +188,7 @@ public class SimpleReducer {
     }
 
     @SuppressWarnings("unchecked")
-    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean checkOracleStillTriggers(
-            G globalState, DatabaseProvider<G, O, C> typedProvider) {
+    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean checkOracleStillTriggers(G globalState, DatabaseProvider<G, O, C> typedProvider) {
         try {
             switch (context.getOracleType()) {
             case NOREC:
@@ -290,11 +205,7 @@ public class SimpleReducer {
         }
     }
 
-    /**
-     * Checks NoREC (Non-Equivalent Result Cardinality) oracle. Compares optimized vs unoptimized query results.
-     */
-    private <G extends GlobalState<O, ?, SQLConnection>, O extends DBMSSpecificOptions<?>> boolean checkNoRECOracle(
-            G globalState) {
+    private <G extends GlobalState<O, ?, SQLConnection>, O extends DBMSSpecificOptions<?>> boolean checkNoRECOracle(G globalState) {
         try {
             Map<String, String> reproducerData = context.getReproducerData();
             if (reproducerData == null) {
@@ -305,17 +216,17 @@ public class SimpleReducer {
             String unoptimizedQuery = reproducerData.get("unoptimizedQuery");
             boolean shouldUseAggregate = Boolean
                     .parseBoolean(reproducerData.getOrDefault("shouldUseAggregate", "false"));
-
+            
             if (optimizedQuery == null || unoptimizedQuery == null) {
                 return false;
             }
 
-            ExpectedErrors expectedErrors = createExpectedErrors();
-
-            int optimizedResult = shouldUseAggregate ? extractCounts(optimizedQuery, expectedErrors, globalState)
-                    : countRows(optimizedQuery, expectedErrors, globalState);
-
-            int unoptimizedResult = extractCounts(unoptimizedQuery, expectedErrors, globalState);
+            ExpectedErrors optimizedErrors = getExpectedErrors(optimizedQuery);
+            ExpectedErrors unoptimizedErrors = getExpectedErrors(unoptimizedQuery);
+            
+            int optimizedResult = shouldUseAggregate ? extractCounts(optimizedQuery, optimizedErrors, globalState)
+                    : countRows(optimizedQuery, optimizedErrors, globalState);
+            int unoptimizedResult = extractCounts(unoptimizedQuery, unoptimizedErrors, globalState);
 
             return optimizedResult != -1 && unoptimizedResult != -1 && optimizedResult != unoptimizedResult;
         } catch (Throwable e) {
@@ -323,12 +234,7 @@ public class SimpleReducer {
         }
     }
 
-    /**
-     * Checks TLP WHERE (Three-Valued Logic Partitioning) oracle. Verifies that WHERE clause partitioning maintains
-     * result set equivalence.
-     */
-    private <G extends SQLGlobalState<O, ?>, O extends DBMSSpecificOptions<?>> boolean checkTLPWhereOracle(
-            G globalState) {
+    private <G extends SQLGlobalState<O, ?>, O extends DBMSSpecificOptions<?>> boolean checkTLPWhereOracle(G globalState) {
         try {
             Map<String, String> reproducerData = context.getReproducerData();
             if (reproducerData == null) {
@@ -345,34 +251,20 @@ public class SimpleReducer {
                 return false;
             }
 
-            ExpectedErrors expectedErrors = createExpectedErrors();
+            ExpectedErrors originalErrors = getExpectedErrors(originalQuery);
+            ExpectedErrors combinedErrors = getExpectedErrors(originalQuery, firstQuery, secondQuery, thirdQuery);
 
             List<String> combinedString = new ArrayList<>();
-            List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, expectedErrors,
-                    globalState);
+            List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, originalErrors, globalState);
             List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQuery, secondQuery, thirdQuery,
-                    combinedString, !orderBy, globalState, expectedErrors);
+                    combinedString, !orderBy, globalState, combinedErrors);
 
-            ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQuery, combinedString,
-                    globalState);
+            ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQuery, combinedString, globalState);
             return false;
         } catch (AssertionError e) {
             return true;
         } catch (Throwable e) {
             return false;
-        }
-    }
-
-    private DatabaseProvider<?, ?, ?> createProvider(String providerClassName) throws Exception {
-        return (DatabaseProvider<?, ?, ?>) Class.forName(providerClassName).getDeclaredConstructor().newInstance();
-    }
-
-    private void validateState() {
-        if (context == null) {
-            throw new IllegalStateException("Context not set. Use constructor with context or call setContext()");
-        }
-        if (provider == null) {
-            throw new IllegalStateException("Provider not set. Use constructor with provider or call setProvider()");
         }
     }
 
@@ -392,46 +284,18 @@ public class SimpleReducer {
                 + "% reduction)");
     }
 
-    @SuppressWarnings("unchecked")
-    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> G createGlobalState(
-            DatabaseProvider<G, O, C> typedProvider) throws Exception {
-        G globalState = typedProvider.getGlobalStateClass().getDeclaredConstructor().newInstance();
-        MainOptions mainOptions = new MainOptions();
-        globalState.setMainOptions(mainOptions);
-        globalState.setStateLogger(new Main.StateLogger("temp", typedProvider, mainOptions));
-
-        O dbmsSpecificOptions = typedProvider.getOptionClass().getDeclaredConstructor().newInstance();
-
-        // SQLite-specific configuration
-        if ("sqlite3".equals(typedProvider.getDBMSName())) {
-            try {
-                dbmsSpecificOptions.getClass().getField("deleteIfExists").setBoolean(dbmsSpecificOptions, true);
-                dbmsSpecificOptions.getClass().getField("generateDatabase").setBoolean(dbmsSpecificOptions, true);
-            } catch (Exception ignored) {
-            }
-        }
-
-        globalState.setDbmsSpecificOptions(dbmsSpecificOptions);
-        StateToReproduce stateToRepro = typedProvider.getStateToReproduce(context.getDatabaseName());
-        globalState.setState(stateToRepro);
-        globalState.setDatabaseName(context.getDatabaseName());
-
-        return globalState;
-    }
-
-    private ExpectedErrors createExpectedErrors() {
+    private ExpectedErrors getExpectedErrors(String... queries) {
         ExpectedErrors expectedErrors = new ExpectedErrors();
-        Set<String> errorSet = context.getExpectedErrors();
-        if (errorSet != null) {
-            for (String error : errorSet) {
-                expectedErrors.add(error);
+        for (String query : queries) {
+            Set<String> errorSet = context.getExpectedErrorsMap().get(query);
+            if (errorSet != null) {
+                expectedErrors.addAll(errorSet);
             }
         }
         return expectedErrors;
     }
 
-    private <G extends GlobalState<?, ?, SQLConnection>> int countRows(String queryString, ExpectedErrors errors,
-            G state) {
+    private <G extends GlobalState<?, ?, SQLConnection>> int countRows(String queryString, ExpectedErrors errors, G state) {
         SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors, false, false);
         int count = 0;
         try (SQLancerResultSet rs = q.executeAndGet(state)) {
@@ -473,21 +337,70 @@ public class SimpleReducer {
         while (rootCause.getCause() != null) {
             rootCause = rootCause.getCause();
         }
-
         if (rootCause.getMessage() != null && !rootCause.getMessage().trim().isEmpty()) {
             return rootCause.getMessage();
         }
-
         if (e.getMessage() != null && !e.getMessage().trim().isEmpty()) {
             return e.getMessage();
         }
-
         return rootCause.getClass().getSimpleName();
     }
 
     private boolean isErrorMatched(String currentError, String originalError) {
-        if (currentError == null || originalError == null)
-            return false;
+        if (currentError == null || originalError == null) return false;
         return currentError.contains(originalError) || originalError.contains(currentError);
+    }
+
+    private DatabaseProvider<?, ?, ?> createProvider(String providerClassName) throws Exception {
+        return (DatabaseProvider<?, ?, ?>) Class.forName(providerClassName).getDeclaredConstructor().newInstance();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> G createGlobalState(DatabaseProvider<G, O, C> typedProvider) throws Exception {
+        G globalState = typedProvider.getGlobalStateClass().getDeclaredConstructor().newInstance();
+        MainOptions mainOptions = new MainOptions();
+        globalState.setMainOptions(mainOptions);
+        globalState.setStateLogger(new Main.StateLogger("temp", typedProvider, mainOptions));
+
+        O dbmsSpecificOptions = typedProvider.getOptionClass().getDeclaredConstructor().newInstance();
+        if ("sqlite3".equals(typedProvider.getDBMSName())) {
+            try {
+                dbmsSpecificOptions.getClass().getField("deleteIfExists").setBoolean(dbmsSpecificOptions, true);
+                dbmsSpecificOptions.getClass().getField("generateDatabase").setBoolean(dbmsSpecificOptions, true);
+            } catch (Exception ignored) {
+            }
+        }
+
+        globalState.setDbmsSpecificOptions(dbmsSpecificOptions);
+        StateToReproduce stateToRepro = typedProvider.getStateToReproduce(context.getDatabaseName());
+        globalState.setState(stateToRepro);
+        globalState.setDatabaseName(context.getDatabaseName());
+        return globalState;
+    }
+
+    public void loadContext(String filePath) throws Exception {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
+            this.context = (ReducerContext) ois.readObject();
+            this.context.setDatabaseName(this.context.getDatabaseName() + "-reduce");
+            this.provider = (DatabaseProvider<?, ?, ?>) Class.forName(this.context.getProviderClassName())
+                    .getDeclaredConstructor().newInstance();
+        }
+    }
+
+    public void saveResults(List<String> reducedStatements, String logPath) {
+        try {
+            File logFile = new File(logPath);
+            logFile.getParentFile().mkdirs();
+            try (PrintWriter writer = new PrintWriter(new FileWriter(logFile))) {
+                for (String statement : reducedStatements) {
+                    writer.println(statement);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save results: " + e.getMessage());
+        }
+    }
+
+    public SimpleReducer() {
     }
 }
