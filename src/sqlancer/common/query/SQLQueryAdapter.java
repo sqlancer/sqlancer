@@ -103,7 +103,7 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
             return true;
         } catch (Exception e) {
             Main.nrUnsuccessfulActions.addAndGet(1);
-            if(checkException(e)) {
+            if (checkException(e)) {
                 String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
                 globalState.addExpectedError(query, errorMessage);
             }
@@ -154,7 +154,7 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
         } catch (Exception e) {
             s.close();
             Main.nrUnsuccessfulActions.addAndGet(1);
-            if(checkException(e)) {
+            if (checkException(e)) {
                 String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
                 globalState.addExpectedError(query, errorMessage);
             }

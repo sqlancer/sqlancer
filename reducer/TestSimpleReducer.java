@@ -7,11 +7,11 @@ public class TestSimpleReducer {
 
     public static void main(String[] args) throws Exception {
         System.out.println("=== SimpleReducer Test Suite ===");
-        
+
         runTest("Exception Reduction", TestSimpleReducer::testException);
         runTest("NoREC Oracle Reduction", TestSimpleReducer::testNoRECOracle);
         runTest("TLP WHERE Oracle Reduction", TestSimpleReducer::testTLPWhereOracle);
-        
+
         System.out.println("\n=== All tests completed successfully ===");
     }
 
@@ -105,7 +105,8 @@ public class TestSimpleReducer {
         Map<String, Set<String>> expectedErrorsMap = new HashMap<>();
         Set<String> commonErrors = new HashSet<>();
         commonErrors.add("no such table");
-        expectedErrorsMap.put("SELECT SUM(count) FROM (SELECT v2.c1 BETWEEN v2.c0 AND v2.c1 as count FROM v2);", commonErrors);
+        expectedErrorsMap.put("SELECT SUM(count) FROM (SELECT v2.c1 BETWEEN v2.c0 AND v2.c1 as count FROM v2);",
+                commonErrors);
 
         ReducerContext context = new ReducerContext(ReducerContext.ErrorType.ORACLE, "sqlancer.sqlite3.SQLite3Provider",
                 "sqlite3", "test_norec_db", sqlStatements);

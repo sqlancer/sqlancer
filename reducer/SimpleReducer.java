@@ -134,7 +134,8 @@ public class SimpleReducer {
      * @return true if the expected exception is thrown
      */
     @SuppressWarnings("unchecked")
-    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean testExceptionStillExists(List<String> statements) {
+    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean testExceptionStillExists(
+            List<String> statements) {
         try {
             DatabaseProvider<G, O, C> typedProvider = (DatabaseProvider<G, O, C>) provider;
             G globalState = createGlobalState(typedProvider);
@@ -163,7 +164,8 @@ public class SimpleReducer {
     }
 
     @SuppressWarnings("unchecked")
-    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean testOracleStillExists(List<String> statements) {
+    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean testOracleStillExists(
+            List<String> statements) {
         try {
             DatabaseProvider<G, O, C> typedProvider = (DatabaseProvider<G, O, C>) provider;
             G globalState = createGlobalState(typedProvider);
@@ -188,7 +190,8 @@ public class SimpleReducer {
     }
 
     @SuppressWarnings("unchecked")
-    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean checkOracleStillTriggers(G globalState, DatabaseProvider<G, O, C> typedProvider) {
+    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> boolean checkOracleStillTriggers(
+            G globalState, DatabaseProvider<G, O, C> typedProvider) {
         try {
             switch (context.getOracleType()) {
             case NOREC:
@@ -205,7 +208,8 @@ public class SimpleReducer {
         }
     }
 
-    private <G extends GlobalState<O, ?, SQLConnection>, O extends DBMSSpecificOptions<?>> boolean checkNoRECOracle(G globalState) {
+    private <G extends GlobalState<O, ?, SQLConnection>, O extends DBMSSpecificOptions<?>> boolean checkNoRECOracle(
+            G globalState) {
         try {
             Map<String, String> reproducerData = context.getReproducerData();
             if (reproducerData == null) {
@@ -216,14 +220,14 @@ public class SimpleReducer {
             String unoptimizedQuery = reproducerData.get("unoptimizedQuery");
             boolean shouldUseAggregate = Boolean
                     .parseBoolean(reproducerData.getOrDefault("shouldUseAggregate", "false"));
-            
+
             if (optimizedQuery == null || unoptimizedQuery == null) {
                 return false;
             }
 
             ExpectedErrors optimizedErrors = getExpectedErrors(optimizedQuery);
             ExpectedErrors unoptimizedErrors = getExpectedErrors(unoptimizedQuery);
-            
+
             int optimizedResult = shouldUseAggregate ? extractCounts(optimizedQuery, optimizedErrors, globalState)
                     : countRows(optimizedQuery, optimizedErrors, globalState);
             int unoptimizedResult = extractCounts(unoptimizedQuery, unoptimizedErrors, globalState);
@@ -234,7 +238,8 @@ public class SimpleReducer {
         }
     }
 
-    private <G extends SQLGlobalState<O, ?>, O extends DBMSSpecificOptions<?>> boolean checkTLPWhereOracle(G globalState) {
+    private <G extends SQLGlobalState<O, ?>, O extends DBMSSpecificOptions<?>> boolean checkTLPWhereOracle(
+            G globalState) {
         try {
             Map<String, String> reproducerData = context.getReproducerData();
             if (reproducerData == null) {
@@ -255,11 +260,13 @@ public class SimpleReducer {
             ExpectedErrors combinedErrors = getExpectedErrors(originalQuery, firstQuery, secondQuery, thirdQuery);
 
             List<String> combinedString = new ArrayList<>();
-            List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, originalErrors, globalState);
+            List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQuery, originalErrors,
+                    globalState);
             List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQuery, secondQuery, thirdQuery,
                     combinedString, !orderBy, globalState, combinedErrors);
 
-            ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQuery, combinedString, globalState);
+            ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQuery, combinedString,
+                    globalState);
             return false;
         } catch (AssertionError e) {
             return true;
@@ -295,7 +302,8 @@ public class SimpleReducer {
         return expectedErrors;
     }
 
-    private <G extends GlobalState<?, ?, SQLConnection>> int countRows(String queryString, ExpectedErrors errors, G state) {
+    private <G extends GlobalState<?, ?, SQLConnection>> int countRows(String queryString, ExpectedErrors errors,
+            G state) {
         SQLQueryAdapter q = new SQLQueryAdapter(queryString, errors, false, false);
         int count = 0;
         try (SQLancerResultSet rs = q.executeAndGet(state)) {
@@ -347,7 +355,8 @@ public class SimpleReducer {
     }
 
     private boolean isErrorMatched(String currentError, String originalError) {
-        if (currentError == null || originalError == null) return false;
+        if (currentError == null || originalError == null)
+            return false;
         return currentError.contains(originalError) || originalError.contains(currentError);
     }
 
@@ -356,7 +365,8 @@ public class SimpleReducer {
     }
 
     @SuppressWarnings("unchecked")
-    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> G createGlobalState(DatabaseProvider<G, O, C> typedProvider) throws Exception {
+    private <G extends GlobalState<O, ?, C>, O extends DBMSSpecificOptions<?>, C extends SQLancerDBConnection> G createGlobalState(
+            DatabaseProvider<G, O, C> typedProvider) throws Exception {
         G globalState = typedProvider.getGlobalStateClass().getDeclaredConstructor().newInstance();
         MainOptions mainOptions = new MainOptions();
         globalState.setMainOptions(mainOptions);
