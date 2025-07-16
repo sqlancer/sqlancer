@@ -90,4 +90,3 @@ public class SQLQueryErrorTest {
         assertTrue(e1.compareTo(e2) < 0);
     }
 }
-
