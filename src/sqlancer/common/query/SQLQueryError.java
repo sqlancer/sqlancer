@@ -1,5 +1,7 @@
 package sqlancer.common.query;
 
+import java.util.Objects;
+
 public class SQLQueryError implements Comparable<SQLQueryError> {
 
     public enum ErrorLevel {
@@ -63,6 +65,11 @@ public class SQLQueryError implements Comparable<SQLQueryError> {
             return hasSameLevel(thatError) && hasSameCodeAndMessage(thatError);
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(level, code, message);
     }
 
     @Override
