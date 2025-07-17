@@ -103,7 +103,8 @@ public class YSQLTableGenerator {
             errors.add("constraints on permanent tables may reference only permanent tables");
             errors.add("cannot be implemented");
             errors.add("there is no unique constraint matching given keys for referenced table");
-            errors.add("cannot reference partitioned table");
+            // PostgreSQL 15+ and YugabyteDB now support foreign keys on partitioned tables
+            // errors.add("cannot reference partitioned table");
             errors.add("unsupported ON COMMIT and foreign key combination");
             errors.add("ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
             errors.add("exclusion constraints are not supported on partitioned tables");

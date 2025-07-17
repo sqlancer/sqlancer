@@ -55,7 +55,13 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
                 nrPerformed = r.getInteger(0, 5);
                 break;
             case COMMIT:
-                nrPerformed = r.getInteger(0, 0);
+                nrPerformed = r.getInteger(0, 3);
+                break;
+            case SET_TRANSACTION:
+                nrPerformed = r.getInteger(0, 2);
+                break;
+            case PARALLEL_QUERY_TEST:
+                nrPerformed = r.getInteger(0, 1);
                 break;
             case ALTER_TABLE:
                 nrPerformed = r.getInteger(0, 5);
@@ -347,6 +353,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             String sb = "SET CONSTRAINTS ALL " + Randomly.fromOptions("DEFERRED", "IMMEDIATE");
             return new SQLQueryAdapter(sb);
         }), //
+        SET_TRANSACTION(YSQLTransactionGenerator::setTransactionMode), //
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(YSQLCommentGenerator::generate), //
         RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
@@ -358,7 +365,8 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
 //        UNLISTEN((g) -> YSQLNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(YSQLSequenceGenerator::createSequence), //
         CREATE_VIEW(YSQLViewGenerator::create),
-        REFRESH_VIEW(YSQLMaterializedViewRefresh::create);
+        REFRESH_VIEW(YSQLMaterializedViewRefresh::create),
+        PARALLEL_QUERY_TEST(YSQLParallelQueryGenerator::generateParallelQueryTest);
 
         private final SQLQueryProvider<YSQLGlobalState> sqlQueryProvider;
 

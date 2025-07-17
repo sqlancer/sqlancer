@@ -85,6 +85,12 @@ public final class YSQLSetGenerator {
         YSQL_SESSION_MAX_BATCH_SIZE("ysql_session_max_batch_size",
                 (r) -> Randomly.getNotCachedInteger(1, 10000)),
         YSQL_MAX_IN_FLIGHT_OPS("ysql_max_in_flight_ops", (r) -> Randomly.getNotCachedInteger(1, Integer.MAX_VALUE)),
+        // YugabyteDB Read-Committed and Wait-on-Conflict settings
+        YB_ENABLE_READ_COMMITTED_ISOLATION("yb_enable_read_committed_isolation", 
+                (r) -> Randomly.fromOptions("false", "true")),
+        YB_READ_COMMITTED_ISOLATION_LEVEL("yb_read_committed_isolation_level",
+                (r) -> Randomly.fromOptions("READ COMMITTED", "READ_COMMITTED_INTERNAL")),
+        YB_ENABLE_WAIT_QUEUES("yb_enable_wait_queues", (r) -> Randomly.fromOptions("false", "true")),
         // https://www.postgresql.org/docs/11/runtime-config-wal.html
         // This parameter can only be set at server start.
         // WAL_LEVEL("wal_level", (r) -> Randomly.fromOptions("replica", "minimal", "logical")),

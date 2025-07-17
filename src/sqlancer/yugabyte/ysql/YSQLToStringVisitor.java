@@ -1,5 +1,6 @@
 package sqlancer.yugabyte.ysql;
 
+import java.util.List;
 import java.util.Optional;
 
 import sqlancer.Randomly;
@@ -9,6 +10,8 @@ import sqlancer.yugabyte.ysql.ast.YSQLAggregate;
 import sqlancer.yugabyte.ysql.ast.YSQLBetweenOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryLogicalOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLCastOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLJSONBOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLJSONBFunction;
 import sqlancer.yugabyte.ysql.ast.YSQLColumnValue;
 import sqlancer.yugabyte.ysql.ast.YSQLConstant;
 import sqlancer.yugabyte.ysql.ast.YSQLExpression;
@@ -272,6 +275,25 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
     public void visit(YSQLBinaryLogicalOperation op) {
         super.visit((BinaryOperation<YSQLExpression>) op);
     }
+    
+    @Override
+    public void visit(YSQLJSONBOperation op) {
+        super.visit((BinaryOperation<YSQLExpression>) op);
+    }
+    
+    @Override
+    public void visit(YSQLJSONBFunction func) {
+        sb.append(func.getFunctionName());
+        sb.append("(");
+        List<YSQLExpression> args = func.getArguments();
+        for (int i = 0; i < args.size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            visit(args.get(i));
+        }
+        sb.append(")");
+    }
 
     private void appendType(YSQLCastOperation cast) {
         YSQLCompoundDataType compoundType = cast.getCompoundType();
@@ -279,21 +301,80 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
         case BOOLEAN:
             sb.append("BOOLEAN");
             break;
-        case INT: // TODO support also other int types
+        case SMALLINT:
+            sb.append("SMALLINT");
+            break;
+        case INT:
             sb.append("INT");
             break;
-        case TEXT:
-            // TODO: append TEXT, CHAR
-            sb.append(Randomly.fromOptions("VARCHAR"));
+        case BIGINT:
+            sb.append("BIGINT");
             break;
-        case REAL:
-            sb.append("REAL");
+        case NUMERIC:
+            sb.append("NUMERIC");
             break;
         case DECIMAL:
             sb.append("DECIMAL");
             break;
+        case REAL:
+            sb.append("REAL");
+            break;
+        case DOUBLE_PRECISION:
+            sb.append("DOUBLE PRECISION");
+            break;
         case FLOAT:
             sb.append("FLOAT");
+            break;
+        case VARCHAR:
+            sb.append("VARCHAR");
+            break;
+        case CHAR:
+            sb.append("CHAR");
+            break;
+        case TEXT:
+            sb.append("TEXT");
+            break;
+        case DATE:
+            sb.append("DATE");
+            break;
+        case TIME:
+            sb.append("TIME");
+            break;
+        case TIMESTAMP:
+            sb.append("TIMESTAMP");
+            break;
+        case TIMESTAMPTZ:
+            sb.append("TIMESTAMPTZ");
+            break;
+        case INTERVAL:
+            sb.append("INTERVAL");
+            break;
+        case UUID:
+            sb.append("UUID");
+            break;
+        case JSON:
+            sb.append("JSON");
+            break;
+        case JSONB:
+            sb.append("JSONB");
+            break;
+        case INT4RANGE:
+            sb.append("int4range");
+            break;
+        case INT8RANGE:
+            sb.append("int8range");
+            break;
+        case NUMRANGE:
+            sb.append("numrange");
+            break;
+        case TSRANGE:
+            sb.append("tsrange");
+            break;
+        case TSTZRANGE:
+            sb.append("tstzrange");
+            break;
+        case DATERANGE:
+            sb.append("daterange");
             break;
         case RANGE:
             sb.append("int4range");
@@ -304,17 +385,48 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
         case INET:
             sb.append("INET");
             break;
+        case CIDR:
+            sb.append("CIDR");
+            break;
+        case MACADDR:
+            sb.append("MACADDR");
+            break;
+        case POINT:
+            sb.append("POINT");
+            break;
+        case LINE:
+            sb.append("LINE");
+            break;
+        case LSEG:
+            sb.append("LSEG");
+            break;
+        case BOX:
+            sb.append("BOX");
+            break;
+        case PATH:
+            sb.append("PATH");
+            break;
+        case POLYGON:
+            sb.append("POLYGON");
+            break;
+        case CIRCLE:
+            sb.append("CIRCLE");
+            break;
         case BIT:
             sb.append("BIT");
             break;
         case BYTEA:
             sb.append("BYTEA");
             break;
-        // if (Randomly.getBoolean()) {
-        // sb.append("(");
-        // sb.append(Randomly.getNotCachedInteger(1, 100));
-        // sb.append(")");
-        // }
+        case INT_ARRAY:
+            sb.append("INT[]");
+            break;
+        case TEXT_ARRAY:
+            sb.append("TEXT[]");
+            break;
+        case BOOLEAN_ARRAY:
+            sb.append("BOOLEAN[]");
+            break;
         default:
             throw new AssertionError(cast.getType());
         }

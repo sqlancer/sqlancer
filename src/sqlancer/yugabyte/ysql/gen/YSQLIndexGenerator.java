@@ -26,7 +26,8 @@ public final class YSQLIndexGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE");
-        if (Randomly.getBoolean()) {
+        boolean isUnique = Randomly.getBoolean();
+        if (isUnique) {
             sb.append(" UNIQUE");
         }
         sb.append(" INDEX ");
@@ -84,6 +85,12 @@ public final class YSQLIndexGenerator {
         }
 
         sb.append(")");
+        
+        // PostgreSQL 15 feature: NULLS NOT DISTINCT for unique indexes
+        if (isUnique && Randomly.getBoolean()) {
+            sb.append(" NULLS NOT DISTINCT");
+        }
+        
         if (Randomly.getBoolean() && method != IndexType.HASH) {
             sb.append(" INCLUDE(");
             List<YSQLColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
@@ -138,7 +145,7 @@ public final class YSQLIndexGenerator {
     }
 
     public enum IndexType {
-        BTREE, HASH, GIST, GIN
+        BTREE, HASH, GIST, GIN, LSM
     }
 
 }

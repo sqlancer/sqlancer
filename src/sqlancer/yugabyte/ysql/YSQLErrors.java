@@ -24,9 +24,41 @@ public final class YSQLErrors {
         errors.add("PRIMARY KEY containing column of type 'INET' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'VARBIT' not yet supported");
         errors.add("PRIMARY KEY containing column of type 'INT4RANGE' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'INT8RANGE' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'NUMRANGE' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'TSRANGE' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'TSTZRANGE' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'DATERANGE' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'JSON' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'JSONB' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'CIDR' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'MACADDR' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'POINT' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'LINE' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'LSEG' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'BOX' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'PATH' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'POLYGON' not yet supported");
+        errors.add("PRIMARY KEY containing column of type 'CIRCLE' not yet supported");
         errors.add("INDEX on column of type 'INET' not yet supported");
         errors.add("INDEX on column of type 'VARBIT' not yet supported");
         errors.add("INDEX on column of type 'INT4RANGE' not yet supported");
+        errors.add("INDEX on column of type 'INT8RANGE' not yet supported");
+        errors.add("INDEX on column of type 'NUMRANGE' not yet supported");
+        errors.add("INDEX on column of type 'TSRANGE' not yet supported");
+        errors.add("INDEX on column of type 'TSTZRANGE' not yet supported");
+        errors.add("INDEX on column of type 'DATERANGE' not yet supported");
+        errors.add("INDEX on column of type 'JSON' not yet supported");
+        errors.add("INDEX on column of type 'JSONB' not yet supported");
+        errors.add("INDEX on column of type 'CIDR' not yet supported");
+        errors.add("INDEX on column of type 'MACADDR' not yet supported");
+        errors.add("INDEX on column of type 'POINT' not yet supported");
+        errors.add("INDEX on column of type 'LINE' not yet supported");
+        errors.add("INDEX on column of type 'LSEG' not yet supported");
+        errors.add("INDEX on column of type 'BOX' not yet supported");
+        errors.add("INDEX on column of type 'PATH' not yet supported");
+        errors.add("INDEX on column of type 'POLYGON' not yet supported");
+        errors.add("INDEX on column of type 'CIRCLE' not yet supported");
         errors.add("cannot be changed");
         errors.add("cannot split table that does not have primary key");
     }
@@ -41,11 +73,37 @@ public final class YSQLErrors {
         errors.add("cannot insert a non-DEFAULT value into column");
         errors.add("Operation failed. Try again");
         errors.add("Value write after transaction start");
+        // YugabyteDB Read-Committed specific errors
+        errors.add("Read Committed isolation level not supported");
+        errors.add("yb_enable_read_committed_isolation must be enabled");
+        errors.add("could not serialize access due to read/write dependencies among transactions");
+        errors.add("Transaction aborted");
+        errors.add("Transaction conflicted");
+        // Wait-on-Conflict errors
+        errors.add("Wait queue operation failed");
+        errors.add("yb_enable_wait_queues must be enabled");
+        errors.add("Wait-on-Conflict mode requires Read Committed isolation");
+        errors.add("Deadlock detected");
+        errors.add("Statement timeout while waiting for lock");
     }
 
     public static void addCommonExpressionErrors(ExpectedErrors errors) {
         errors.add("non-integer constant in");
         errors.add("must appear in the GROUP BY clause or be used in an aggregate function");
+        // JSONB specific errors
+        errors.add("cannot extract elements from a scalar");
+        errors.add("cannot extract field from a non-object");
+        errors.add("cannot delete from scalar");
+        errors.add("path element at position");
+        errors.add("cannot index");
+        errors.add("jsonb array must have even number of elements");
+        errors.add("argument of json_build_object must be a string");
+        errors.add("could not determine data type of parameter");
+        errors.add("cannot call jsonb_");
+        errors.add("jsonb path is not an array");
+        errors.add("invalid input syntax for type json");
+        errors.add("token");
+        errors.add("JSON");
         errors.add("GROUP BY position");
         errors.add("must not be");
         errors.add("must be");

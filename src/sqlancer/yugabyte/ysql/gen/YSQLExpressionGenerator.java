@@ -25,6 +25,8 @@ import sqlancer.yugabyte.ysql.ast.YSQLBinaryComparisonOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryLogicalOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryRangeOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLCastOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLJSONBOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLJSONBFunction;
 import sqlancer.yugabyte.ysql.ast.YSQLColumnValue;
 import sqlancer.yugabyte.ysql.ast.YSQLConcatOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLConstant;
@@ -66,16 +68,50 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
     private static YSQLCompoundDataType getCompoundDataType(YSQLDataType type) {
         switch (type) {
         case BOOLEAN:
-        case DECIMAL: // TODO
-        case FLOAT:
+        case SMALLINT:
         case INT:
+        case BIGINT:
+        case NUMERIC:
+        case DECIMAL:
+        case FLOAT:
+        case REAL:
+        case DOUBLE_PRECISION:
         case MONEY:
         case RANGE:
-        case REAL:
+        case INT4RANGE:
+        case INT8RANGE:
+        case NUMRANGE:
+        case TSRANGE:
+        case TSTZRANGE:
+        case DATERANGE:
         case INET:
+        case CIDR:
+        case MACADDR:
         case BYTEA:
+        case DATE:
+        case TIME:
+        case TIMESTAMP:
+        case TIMESTAMPTZ:
+        case INTERVAL:
+        case UUID:
+        case JSON:
+        case JSONB:
+        case POINT:
+        case LINE:
+        case LSEG:
+        case BOX:
+        case PATH:
+        case POLYGON:
+        case CIRCLE:
+        case INT_ARRAY:
+        case TEXT_ARRAY:
+        case BOOLEAN_ARRAY:
             return YSQLCompoundDataType.create(type);
-        case TEXT: // TODO
+        case TEXT:
+            // TEXT type does not accept size modifier
+            return YSQLCompoundDataType.create(type);
+        case VARCHAR:
+        case CHAR:
         case BIT:
             if (Randomly.getBoolean()
                     || YSQLProvider.generateOnlyKnown /*
@@ -99,12 +135,16 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         // return YSQLConstant.createTextConstant(r.getString());
         // }
         switch (type) {
+        case SMALLINT:
+            return YSQLConstant.createIntConstant(r.getInteger(-32768, 32767));
         case INT:
             if (Randomly.getBooleanWithSmallProbability()) {
                 return YSQLConstant.createTextConstant(String.valueOf(r.getInteger()));
             } else {
                 return YSQLConstant.createIntConstant(r.getInteger());
             }
+        case BIGINT:
+            return YSQLConstant.createIntConstant(r.getLong(Long.MIN_VALUE, Long.MAX_VALUE));
         case BOOLEAN:
             if (Randomly.getBooleanWithSmallProbability() && !YSQLProvider.generateOnlyKnown) {
                 return YSQLConstant
@@ -112,15 +152,48 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             } else {
                 return YSQLConstant.createBooleanConstant(Randomly.getBoolean());
             }
+        case VARCHAR:
+        case CHAR:
         case TEXT:
             return YSQLConstant.createTextConstant(r.getString());
+        case NUMERIC:
         case DECIMAL:
             return YSQLConstant.createDecimalConstant(r.getRandomBigDecimal());
         case FLOAT:
             return YSQLConstant.createFloatConstant((float) r.getDouble());
         case REAL:
+            return YSQLConstant.createFloatConstant((float) r.getDouble());
+        case DOUBLE_PRECISION:
             return YSQLConstant.createDoubleConstant(r.getDouble());
+        case DATE:
+            // Generate dates between 1900 and 2100
+            return YSQLConstant.createTextConstant(String.format("%04d-%02d-%02d", 
+                r.getInteger(1900, 2100), r.getInteger(1, 12), r.getInteger(1, 28)));
+        case TIME:
+            return YSQLConstant.createTextConstant(String.format("%02d:%02d:%02d",
+                r.getInteger(0, 23), r.getInteger(0, 59), r.getInteger(0, 59)));
+        case TIMESTAMP:
+        case TIMESTAMPTZ:
+            return YSQLConstant.createTextConstant(String.format("%04d-%02d-%02d %02d:%02d:%02d",
+                r.getInteger(1900, 2100), r.getInteger(1, 12), r.getInteger(1, 28),
+                r.getInteger(0, 23), r.getInteger(0, 59), r.getInteger(0, 59)));
+        case UUID:
+            return YSQLConstant.createTextConstant(java.util.UUID.randomUUID().toString());
+        case JSON:
+        case JSONB:
+            // Simple JSON generation
+            return YSQLConstant.createTextConstant(
+                Randomly.fromOptions(
+                    "{\"key\": \"value\"}",
+                    "[1, 2, 3]",
+                    "{\"a\": 1, \"b\": \"text\"}",
+                    "null",
+                    "true",
+                    "42"
+                ));
         case RANGE:
+        case INT4RANGE:
+        case INT8RANGE:
             return YSQLConstant.createRange(r.getInteger(), Randomly.getBoolean(), r.getInteger(),
                     Randomly.getBoolean());
         case MONEY:
@@ -128,10 +201,69 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
                     getCompoundDataType(YSQLDataType.MONEY));
         case INET:
             return YSQLConstant.createInetConstant(getRandomInet(r));
+        case CIDR:
+            return YSQLConstant.createTextConstant(getRandomInet(r) + "/" + r.getInteger(0, 32));
+        case MACADDR:
+            return YSQLConstant.createTextConstant(String.format("%02x:%02x:%02x:%02x:%02x:%02x",
+                r.getInteger(0, 255), r.getInteger(0, 255), r.getInteger(0, 255),
+                r.getInteger(0, 255), r.getInteger(0, 255), r.getInteger(0, 255)));
         case BIT:
             return YSQLConstant.createBitConstant(r.getInteger());
         case BYTEA:
             return YSQLConstant.createByteConstant(String.valueOf(r.getInteger()));
+        case INTERVAL:
+            // Generate simple intervals
+            return YSQLConstant.createTextConstant(
+                r.getInteger(1, 100) + " " + 
+                Randomly.fromOptions("days", "hours", "minutes", "seconds", "months", "years"));
+        case INT_ARRAY:
+            // Generate simple integer arrays
+            return YSQLConstant.createTextConstant(
+                "{" + r.getInteger() + "," + r.getInteger() + "," + r.getInteger() + "}");
+        case TEXT_ARRAY:
+            return YSQLConstant.createTextConstant(
+                "{\"" + r.getString() + "\",\"" + r.getString() + "\"}");
+        case BOOLEAN_ARRAY:
+            return YSQLConstant.createTextConstant(
+                "{" + Randomly.fromOptions("true", "false") + "," + 
+                Randomly.fromOptions("true", "false") + "}");
+        case NUMRANGE:
+        case TSRANGE:
+        case TSTZRANGE:
+        case DATERANGE:
+            // For these range types, generate as text for now
+            return YSQLConstant.createTextConstant("[0,100]");
+        case POINT:
+            return YSQLConstant.createTextConstant(
+                "(" + (r.getDouble() * 360 - 180) + "," + (r.getDouble() * 180 - 90) + ")");
+        case LINE:
+            return YSQLConstant.createTextConstant(
+                "{" + r.getDouble() + "," + r.getDouble() + "," + r.getDouble() + "}");
+        case LSEG:
+            return YSQLConstant.createTextConstant(
+                "[(" + r.getDouble() + "," + r.getDouble() + ")," +
+                "(" + r.getDouble() + "," + r.getDouble() + ")]");
+        case BOX:
+            double x1 = r.getDouble();
+            double y1 = r.getDouble();
+            double x2 = r.getDouble();
+            double y2 = r.getDouble();
+            return YSQLConstant.createTextConstant(
+                "((" + Math.max(x1, x2) + "," + Math.max(y1, y2) + ")," +
+                "(" + Math.min(x1, x2) + "," + Math.min(y1, y2) + "))");
+        case PATH:
+            return YSQLConstant.createTextConstant(
+                "[(" + r.getDouble() + "," + r.getDouble() + ")," +
+                "(" + r.getDouble() + "," + r.getDouble() + ")," +
+                "(" + r.getDouble() + "," + r.getDouble() + ")]");
+        case POLYGON:
+            return YSQLConstant.createTextConstant(
+                "((" + r.getDouble() + "," + r.getDouble() + ")," +
+                "(" + r.getDouble() + "," + r.getDouble() + ")," +
+                "(" + r.getDouble() + "," + r.getDouble() + "))");
+        case CIRCLE:
+            return YSQLConstant.createTextConstant(
+                "<(" + r.getDouble() + "," + r.getDouble() + ")," + (r.getDouble() * 99.9 + 0.1) + ">");
         default:
             throw new AssertionError(type);
         }
@@ -354,22 +486,58 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             switch (dataType) {
             case BOOLEAN:
                 return generateBooleanExpression(depth);
+            case SMALLINT:
             case INT:
+            case BIGINT:
                 return generateIntExpression(depth);
+            case VARCHAR:
+            case CHAR:
             case TEXT:
                 return generateTextExpression(depth);
+            case NUMERIC:
             case DECIMAL:
             case REAL:
+            case DOUBLE_PRECISION:
             case FLOAT:
             case MONEY:
+            case DATE:
+            case TIME:
+            case TIMESTAMP:
+            case TIMESTAMPTZ:
+            case INTERVAL:
             case INET:
+            case CIDR:
+            case MACADDR:
+            case UUID:
+            case JSON:
+                return generateConstant(r, dataType);
+            case JSONB:
+                return generateJSONBExpression(depth);
+            case INT_ARRAY:
+            case TEXT_ARRAY:
+            case BOOLEAN_ARRAY:
                 return generateConstant(r, dataType);
             case BYTEA:
                 return generateByteExpression();
             case BIT:
                 return generateBitExpression(depth);
             case RANGE:
+            case INT4RANGE:
+            case INT8RANGE:
+            case NUMRANGE:
+            case TSRANGE:
+            case TSTZRANGE:
+            case DATERANGE:
                 return generateRangeExpression(depth);
+            case POINT:
+            case LINE:
+            case LSEG:
+            case BOX:
+            case PATH:
+            case POLYGON:
+            case CIRCLE:
+                // For now, treat geometric types as constants
+                return generateConstant(r, dataType);
             default:
                 throw new AssertionError(dataType);
             }
@@ -415,6 +583,126 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
 
     private YSQLExpression generateByteExpression() {
         return YSQLConstant.createByteConstant("Th\\000omas");
+    }
+    
+    private enum JSONBExpression {
+        CONSTANT, OPERATOR, FUNCTION, CAST, BUILD_FUNCTION
+    }
+    
+    private YSQLExpression generateJSONBExpression(int depth) {
+        if (depth >= maxDepth) {
+            return generateConstant(r, YSQLDataType.JSONB);
+        }
+        
+        JSONBExpression option = Randomly.fromOptions(JSONBExpression.values());
+        switch (option) {
+        case CONSTANT:
+            return generateConstant(r, YSQLDataType.JSONB);
+        case OPERATOR:
+            return generateJSONBOperator(depth);
+        case FUNCTION:
+            return generateJSONBFunction(depth);
+        case CAST:
+            return new YSQLCastOperation(generateExpression(depth + 1, YSQLDataType.TEXT), 
+                getCompoundDataType(YSQLDataType.JSONB));
+        case BUILD_FUNCTION:
+            return generateJSONBBuildFunction(depth);
+        default:
+            throw new AssertionError(option);
+        }
+    }
+    
+    private YSQLExpression generateJSONBOperator(int depth) {
+        YSQLJSONBOperation.YSQLJSONBOperator op = YSQLJSONBOperation.YSQLJSONBOperator.getRandom();
+        YSQLDataType[] inputTypes = op.getInputDataTypes();
+        
+        YSQLExpression left = generateExpression(depth + 1, inputTypes[0]);
+        YSQLExpression right;
+        
+        if (inputTypes[1] == YSQLDataType.TEXT_ARRAY) {
+            // Generate text array constant
+            List<String> keys = new ArrayList<>();
+            int numKeys = Randomly.smallNumber() + 1;
+            for (int i = 0; i < numKeys; i++) {
+                keys.add("\"key" + i + "\"");
+            }
+            right = YSQLConstant.createTextConstant("{" + String.join(",", keys) + "}");
+        } else {
+            right = generateExpression(depth + 1, inputTypes[1]);
+        }
+        
+        return new YSQLJSONBOperation(left, right, op);
+    }
+    
+    private YSQLExpression generateJSONBFunction(int depth) {
+        YSQLJSONBFunction.JSONBFunction func = YSQLJSONBFunction.JSONBFunction.getRandomNonAggregate();
+        List<YSQLExpression> args = new ArrayList<>();
+        
+        if (func.isVariadic()) {
+            // For variadic functions, generate 1-3 arguments
+            int numArgs = Randomly.smallNumber() + 1;
+            args.add(generateExpression(depth + 1, YSQLDataType.JSONB));
+            for (int i = 1; i < numArgs; i++) {
+                args.add(YSQLConstant.createTextConstant("path" + i));
+            }
+        } else {
+            // Generate required number of arguments
+            switch (func.getArity()) {
+            case 1:
+                args.add(generateExpression(depth + 1, YSQLDataType.JSONB));
+                break;
+            case 2:
+                if (func.getFunctionName().contains("path")) {
+                    args.add(generateExpression(depth + 1, YSQLDataType.JSONB));
+                    args.add(generateJSONPath());
+                } else {
+                    args.add(generateExpression(depth + 1, YSQLDataType.TEXT));
+                    args.add(generateExpression(depth + 1, YSQLDataType.TEXT));
+                }
+                break;
+            case 3:
+                args.add(generateExpression(depth + 1, YSQLDataType.JSONB));
+                args.add(YSQLConstant.createTextConstant("{key1,key2}"));
+                args.add(generateExpression(depth + 1, YSQLDataType.JSONB));
+                break;
+            default:
+                throw new AssertionError(func);
+            }
+        }
+        
+        return new YSQLJSONBFunction(func, args);
+    }
+    
+    private YSQLExpression generateJSONBBuildFunction(int depth) {
+        if (Randomly.getBoolean()) {
+            // jsonb_build_array
+            List<YSQLExpression> args = new ArrayList<>();
+            int numArgs = Randomly.smallNumber() + 1;
+            for (int i = 0; i < numArgs; i++) {
+                args.add(generateExpression(depth + 1));
+            }
+            return new YSQLJSONBFunction(YSQLJSONBFunction.JSONBFunction.JSONB_BUILD_ARRAY, args);
+        } else {
+            // jsonb_build_object
+            List<YSQLExpression> args = new ArrayList<>();
+            int numPairs = Randomly.smallNumber() + 1;
+            for (int i = 0; i < numPairs; i++) {
+                args.add(YSQLConstant.createTextConstant("key" + i));
+                args.add(generateExpression(depth + 1));
+            }
+            return new YSQLJSONBFunction(YSQLJSONBFunction.JSONBFunction.JSONB_BUILD_OBJECT, args);
+        }
+    }
+    
+    private YSQLConstant generateJSONPath() {
+        return YSQLConstant.createTextConstant(Randomly.fromOptions(
+            "$.key",
+            "$.key1.key2",
+            "$[0]",
+            "$.array[*]",
+            "$.key ? (@ > 5)",
+            "$.**"
+        ));
     }
 
     private YSQLExpression generateBitExpression(int depth) {

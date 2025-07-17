@@ -35,18 +35,28 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
             case "boolean":
                 return YSQLDataType.BOOLEAN;
             case "text":
-            case "character":
-            case "character varying":
             case "name":
                 return YSQLDataType.TEXT;
             case "numeric":
+                return YSQLDataType.NUMERIC;
+            case "decimal":
                 return YSQLDataType.DECIMAL;
             case "double precision":
-                return YSQLDataType.FLOAT;
+                return YSQLDataType.DOUBLE_PRECISION;
             case "real":
                 return YSQLDataType.REAL;
             case "int4range":
-                return YSQLDataType.RANGE;
+                return YSQLDataType.INT4RANGE;
+            case "int8range":
+                return YSQLDataType.INT8RANGE;
+            case "numrange":
+                return YSQLDataType.NUMRANGE;
+            case "tsrange":
+                return YSQLDataType.TSRANGE;
+            case "tstzrange":
+                return YSQLDataType.TSTZRANGE;
+            case "daterange":
+                return YSQLDataType.DATERANGE;
             case "money":
                 return YSQLDataType.MONEY;
             case "bytea":
@@ -56,6 +66,52 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
                 return YSQLDataType.BIT;
             case "inet":
                 return YSQLDataType.INET;
+            case "cidr":
+                return YSQLDataType.CIDR;
+            case "macaddr":
+                return YSQLDataType.MACADDR;
+            case "date":
+                return YSQLDataType.DATE;
+            case "time":
+            case "time without time zone":
+                return YSQLDataType.TIME;
+            case "timestamp":
+            case "timestamp without time zone":
+                return YSQLDataType.TIMESTAMP;
+            case "timestamp with time zone":
+                return YSQLDataType.TIMESTAMPTZ;
+            case "interval":
+                return YSQLDataType.INTERVAL;
+            case "uuid":
+                return YSQLDataType.UUID;
+            case "json":
+                return YSQLDataType.JSON;
+            case "jsonb":
+                return YSQLDataType.JSONB;
+            case "point":
+                return YSQLDataType.POINT;
+            case "line":
+                return YSQLDataType.LINE;
+            case "lseg":
+                return YSQLDataType.LSEG;
+            case "box":
+                return YSQLDataType.BOX;
+            case "path":
+                return YSQLDataType.PATH;
+            case "polygon":
+                return YSQLDataType.POLYGON;
+            case "circle":
+                return YSQLDataType.CIRCLE;
+            case "character varying":
+            case "varchar":
+                return YSQLDataType.VARCHAR;
+            case "character":
+            case "char":
+                return YSQLDataType.CHAR;
+            case "ARRAY":
+                // PostgreSQL array types are reported as "ARRAY" in information_schema
+                // We'll map to INT_ARRAY as a default for now
+                return YSQLDataType.INT_ARRAY;
             default:
                 throw new AssertionError(typeString);
         }
@@ -194,21 +250,81 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
     }
 
     public enum YSQLDataType {
-        // TODO: 23.02.2022 Planned types
-        // SMALLINT, INT, BIGINT, NUMERIC, DECIMAL, REAL, DOUBLE_PRECISION, VARCHAR, CHAR, TEXT, DATE, TIME,
-        // TIMESTAMP, TIMESTAMPZ, INTERVAL, INTEGER_ARR
-        INT, BOOLEAN, BYTEA, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
+        // Basic numeric types
+        SMALLINT, INT, BIGINT, NUMERIC, DECIMAL, REAL, DOUBLE_PRECISION, 
+        // Character types
+        VARCHAR, CHAR, TEXT, 
+        // Binary types
+        BYTEA, BIT,
+        // Date/Time types
+        DATE, TIME, TIMESTAMP, TIMESTAMPTZ, INTERVAL,
+        // Boolean
+        BOOLEAN,
+        // Network types
+        INET, CIDR, MACADDR,
+        // Geometric types
+        POINT, LINE, LSEG, BOX, PATH, POLYGON, CIRCLE,
+        // UUID
+        UUID,
+        // JSON types
+        JSON, JSONB,
+        // Range types
+        INT4RANGE, INT8RANGE, NUMRANGE, TSRANGE, TSTZRANGE, DATERANGE,
+        // Array types (PostgreSQL 15 feature)
+        INT_ARRAY, TEXT_ARRAY, BOOLEAN_ARRAY,
+        // Money type
+        MONEY,
+        // Legacy types kept for compatibility
+        FLOAT, RANGE;
 
         public static YSQLDataType getRandomType() {
             List<YSQLDataType> dataTypes = new ArrayList<>(Arrays.asList(values()));
             if (YSQLProvider.generateOnlyKnown) {
+                // Remove types that might not be fully supported in test oracles
                 dataTypes.remove(YSQLDataType.DECIMAL);
                 dataTypes.remove(YSQLDataType.FLOAT);
                 dataTypes.remove(YSQLDataType.REAL);
+                dataTypes.remove(YSQLDataType.DOUBLE_PRECISION);
+                dataTypes.remove(YSQLDataType.NUMERIC);
+                
+                // Remove network types
                 dataTypes.remove(YSQLDataType.INET);
+                dataTypes.remove(YSQLDataType.CIDR);
+                dataTypes.remove(YSQLDataType.MACADDR);
+                
+                // Remove geometric types
+                dataTypes.remove(YSQLDataType.POINT);
+                dataTypes.remove(YSQLDataType.LINE);
+                dataTypes.remove(YSQLDataType.LSEG);
+                dataTypes.remove(YSQLDataType.BOX);
+                dataTypes.remove(YSQLDataType.PATH);
+                dataTypes.remove(YSQLDataType.POLYGON);
+                dataTypes.remove(YSQLDataType.CIRCLE);
+                
+                // Remove range types (YugabyteDB has limited support)
                 dataTypes.remove(YSQLDataType.RANGE);
+                dataTypes.remove(YSQLDataType.INT4RANGE);
+                dataTypes.remove(YSQLDataType.INT8RANGE);
+                dataTypes.remove(YSQLDataType.NUMRANGE);
+                dataTypes.remove(YSQLDataType.TSRANGE);
+                dataTypes.remove(YSQLDataType.TSTZRANGE);
+                dataTypes.remove(YSQLDataType.DATERANGE);
+                
+                // Remove other complex types
                 dataTypes.remove(YSQLDataType.MONEY);
                 dataTypes.remove(YSQLDataType.BIT);
+                dataTypes.remove(YSQLDataType.UUID);
+                dataTypes.remove(YSQLDataType.JSON);
+                dataTypes.remove(YSQLDataType.JSONB);
+                
+                // Remove array types for now
+                dataTypes.remove(YSQLDataType.INT_ARRAY);
+                dataTypes.remove(YSQLDataType.TEXT_ARRAY);
+                dataTypes.remove(YSQLDataType.BOOLEAN_ARRAY);
+                
+                // Remove date/time types that need special handling
+                dataTypes.remove(YSQLDataType.TIME);
+                dataTypes.remove(YSQLDataType.INTERVAL);
             }
             return Randomly.fromList(dataTypes);
         }
@@ -253,14 +369,38 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
                         constant = YSQLConstant.createNullConstant();
                     } else {
                         switch (column.getType()) {
+                            case SMALLINT:
                             case INT:
+                            case BIGINT:
                                 constant = YSQLConstant.createIntConstant(randomRowValues.getLong(columnIndex));
                                 break;
                             case BOOLEAN:
                                 constant = YSQLConstant.createBooleanConstant(randomRowValues.getBoolean(columnIndex));
                                 break;
+                            case VARCHAR:
+                            case CHAR:
                             case TEXT:
                                 constant = YSQLConstant.createTextConstant(randomRowValues.getString(columnIndex));
+                                break;
+                            case NUMERIC:
+                            case DECIMAL:
+                                constant = YSQLConstant.createDecimalConstant(randomRowValues.getBigDecimal(columnIndex));
+                                break;
+                            case REAL:
+                            case FLOAT:
+                                constant = YSQLConstant.createFloatConstant(randomRowValues.getFloat(columnIndex));
+                                break;
+                            case DOUBLE_PRECISION:
+                                constant = YSQLConstant.createDoubleConstant(randomRowValues.getDouble(columnIndex));
+                                break;
+                            case DATE:
+                            case TIMESTAMP:
+                            case TIMESTAMPTZ:
+                                // For now, treat as text
+                                constant = YSQLConstant.createTextConstant(randomRowValues.getString(columnIndex));
+                                break;
+                            case BYTEA:
+                                constant = YSQLConstant.createByteConstant(randomRowValues.getString(columnIndex));
                                 break;
                             default:
                                 throw new IgnoreMeException();

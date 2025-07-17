@@ -13,7 +13,6 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
-import sqlancer.yugabyte.ysql.YSQLProvider;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLColumn;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
@@ -32,43 +31,145 @@ public final class YSQLCommon {
         case BOOLEAN:
             sb.append("boolean");
             break;
+        case SMALLINT:
+            sb.append("smallint");
+            break;
         case INT:
             if (Randomly.getBoolean() && allowSerial) {
                 serial = true;
                 sb.append(Randomly.fromOptions("serial", "bigserial"));
             } else {
-                sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
+                sb.append("integer");
             }
+            break;
+        case BIGINT:
+            sb.append("bigint");
+            break;
+        case VARCHAR:
+            sb.append("VARCHAR");
+            sb.append("(");
+            sb.append(ThreadLocalRandom.current().nextInt(1, 500));
+            sb.append(")");
+            break;
+        case CHAR:
+            sb.append("CHAR");
+            sb.append("(");
+            sb.append(ThreadLocalRandom.current().nextInt(1, 500));
+            sb.append(")");
             break;
         case TEXT:
             if (Randomly.getBoolean()) {
                 sb.append("TEXT");
-            } else if (Randomly.getBoolean()) {
-                // TODO: support CHAR (without VAR)
-                if (YSQLProvider.generateOnlyKnown || Randomly.getBoolean()) {
-                    sb.append("VAR");
-                }
-                sb.append("CHAR");
-                sb.append("(");
-                sb.append(ThreadLocalRandom.current().nextInt(1, 500));
-                sb.append(")");
             } else {
-                sb.append("name");
+                sb.append("name"); // PostgreSQL name type
+            }
+            break;
+        case NUMERIC:
+            sb.append("NUMERIC");
+            if (Randomly.getBoolean()) {
+                sb.append("(");
+                sb.append(Randomly.getNotCachedInteger(1, 38)); // precision
+                if (Randomly.getBoolean()) {
+                    sb.append(",");
+                    sb.append(Randomly.getNotCachedInteger(0, 30)); // scale
+                }
+                sb.append(")");
             }
             break;
         case DECIMAL:
             sb.append("DECIMAL");
-            break;
-        case FLOAT:
-        case REAL:
             if (Randomly.getBoolean()) {
-                sb.append("REAL");
-            } else {
-                sb.append("FLOAT");
+                sb.append("(");
+                sb.append(Randomly.getNotCachedInteger(1, 38)); // precision
+                if (Randomly.getBoolean()) {
+                    sb.append(",");
+                    sb.append(Randomly.getNotCachedInteger(0, 30)); // scale
+                }
+                sb.append(")");
             }
             break;
+        case REAL:
+            sb.append("REAL");
+            break;
+        case DOUBLE_PRECISION:
+            sb.append("DOUBLE PRECISION");
+            break;
+        case FLOAT:
+            sb.append("FLOAT");
+            if (Randomly.getBoolean()) {
+                sb.append("(");
+                sb.append(Randomly.getNotCachedInteger(1, 53));
+                sb.append(")");
+            }
+            break;
+        case DATE:
+            sb.append("DATE");
+            break;
+        case TIME:
+            sb.append("TIME");
+            if (Randomly.getBoolean()) {
+                sb.append("(");
+                sb.append(Randomly.getNotCachedInteger(0, 6)); // precision
+                sb.append(")");
+            }
+            break;
+        case TIMESTAMP:
+            sb.append("TIMESTAMP");
+            if (Randomly.getBoolean()) {
+                sb.append("(");
+                sb.append(Randomly.getNotCachedInteger(0, 6)); // precision
+                sb.append(")");
+            }
+            break;
+        case TIMESTAMPTZ:
+            sb.append("TIMESTAMPTZ");
+            if (Randomly.getBoolean()) {
+                sb.append("(");
+                sb.append(Randomly.getNotCachedInteger(0, 6)); // precision
+                sb.append(")");
+            }
+            break;
+        case INTERVAL:
+            sb.append("INTERVAL");
+            break;
+        case UUID:
+            sb.append("UUID");
+            break;
+        case JSON:
+            sb.append("JSON");
+            break;
+        case JSONB:
+            sb.append("JSONB");
+            break;
+        case INT4RANGE:
+            sb.append("int4range");
+            break;
+        case INT8RANGE:
+            sb.append("int8range");
+            break;
+        case NUMRANGE:
+            sb.append("numrange");
+            break;
+        case TSRANGE:
+            sb.append("tsrange");
+            break;
+        case TSTZRANGE:
+            sb.append("tstzrange");
+            break;
+        case DATERANGE:
+            sb.append("daterange");
+            break;
+        case INT_ARRAY:
+            sb.append("integer[]");
+            break;
+        case TEXT_ARRAY:
+            sb.append("text[]");
+            break;
+        case BOOLEAN_ARRAY:
+            sb.append("boolean[]");
+            break;
         case RANGE:
-            sb.append(Randomly.fromOptions("int4range", "int4range")); // , "int8range", "numrange"
+            sb.append(Randomly.fromOptions("int4range", "int8range", "numrange"));
             break;
         case MONEY:
             sb.append("money");
@@ -87,6 +188,33 @@ public final class YSQLCommon {
             break;
         case INET:
             sb.append("inet");
+            break;
+        case CIDR:
+            sb.append("cidr");
+            break;
+        case MACADDR:
+            sb.append("macaddr");
+            break;
+        case POINT:
+            sb.append("point");
+            break;
+        case LINE:
+            sb.append("line");
+            break;
+        case LSEG:
+            sb.append("lseg");
+            break;
+        case BOX:
+            sb.append("box");
+            break;
+        case PATH:
+            sb.append("path");
+            break;
+        case POLYGON:
+            sb.append("polygon");
+            break;
+        case CIRCLE:
+            sb.append("circle");
             break;
         default:
             throw new AssertionError(type);
