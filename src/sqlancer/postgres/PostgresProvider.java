@@ -40,6 +40,7 @@ import sqlancer.postgres.gen.PostgresDropIndexGenerator;
 import sqlancer.postgres.gen.PostgresExplainGenerator;
 import sqlancer.postgres.gen.PostgresIndexGenerator;
 import sqlancer.postgres.gen.PostgresInsertGenerator;
+import sqlancer.postgres.gen.PostgresMergeGenerator;
 import sqlancer.postgres.gen.PostgresNotifyGenerator;
 import sqlancer.postgres.gen.PostgresReindexGenerator;
 import sqlancer.postgres.gen.PostgresSequenceGenerator;
@@ -104,6 +105,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         DISCARD(PostgresDiscardGenerator::create), //
         DROP_INDEX(PostgresDropIndexGenerator::create), //
         INSERT(PostgresInsertGenerator::insert), //
+        MERGE(PostgresMergeGenerator::merge), //
         UPDATE(PostgresUpdateGenerator::create), //
         TRUNCATE(PostgresTruncateGenerator::create), //
         VACUUM(PostgresVacuumGenerator::create), //
@@ -192,6 +194,9 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             break;
         case UPDATE:
             nrPerformed = r.getInteger(0, 10);
+            break;
+        case MERGE:
+            nrPerformed = r.getInteger(0, 5);
             break;
         case INSERT:
             nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
