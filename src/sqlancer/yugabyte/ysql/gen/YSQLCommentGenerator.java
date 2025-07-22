@@ -62,7 +62,12 @@ public final class YSQLCommentGenerator {
             sb.append("NULL");
         } else {
             sb.append("'");
-            sb.append(globalState.getRandomly().getString().replace("'", "''"));
+            String comment = globalState.getRandomly().getString().replace("'", "''");
+            // Avoid empty string comments which cause syntax errors
+            if (comment.isEmpty()) {
+                comment = " "; // Use a single space instead of empty string
+            }
+            sb.append(comment);
             sb.append("'");
         }
         return new SQLQueryAdapter(sb.toString(), errors);
