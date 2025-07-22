@@ -51,7 +51,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
     private List<YSQLColumn> columns;
     private YSQLRowValue rw;
     private boolean expectedResult;
-    private YSQLGlobalState globalState;
+    public YSQLGlobalState globalState;
     private boolean allowAggregateFunctions;
 
     public YSQLExpressionGenerator(YSQLGlobalState globalState) {
@@ -140,9 +140,17 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             return YSQLConstant.createIntConstant(r.getInteger(-32768, 32767));
         case INT:
             if (Randomly.getBooleanWithSmallProbability()) {
-                return YSQLConstant.createTextConstant(String.valueOf(r.getInteger()));
+                // Ensure text constant is within valid INTEGER range
+                int validInt = r.getInteger(Integer.MIN_VALUE, Integer.MAX_VALUE);
+                return YSQLConstant.createTextConstant(String.valueOf(validInt));
             } else {
-                return YSQLConstant.createIntConstant(r.getInteger());
+                // Generate mostly positive integers to avoid negative index errors
+                if (r.getInteger(0, 10) < 8) {
+                    return YSQLConstant.createIntConstant(r.getInteger(0, 10000));
+                } else {
+                    // Ensure integer is within valid INTEGER range
+                    return YSQLConstant.createIntConstant(r.getInteger(Integer.MIN_VALUE, Integer.MAX_VALUE));
+                }
             }
         case BIGINT:
             return YSQLConstant.createIntConstant(r.getLong(Long.MIN_VALUE, Long.MAX_VALUE));
@@ -226,7 +234,10 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
                 r.getInteger(0, 255), r.getInteger(0, 255), r.getInteger(0, 255),
                 r.getInteger(0, 255), r.getInteger(0, 255), r.getInteger(0, 255)));
         case BIT:
-            return YSQLConstant.createBitConstant(r.getInteger());
+            // Generate bit constants with consistent sizes to avoid XOR errors
+            int bitSize = r.getInteger(1, 32);
+            int maxValue = (1 << bitSize) - 1;
+            return YSQLConstant.createBitConstant(r.getInteger(0, maxValue));
         case BYTEA:
             return YSQLConstant.createByteConstant(String.valueOf(r.getInteger()));
         case INTERVAL:
@@ -396,25 +407,27 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             }
             return first;
         case BINARY_COMPARISON:
-            YSQLDataType dataType = getMeaningfulType();
+            YSQLDataType dataType = getComparisonSafeType();
             return generateComparison(depth, dataType);
         case CAST:
             return new YSQLCastOperation(generateExpression(depth + 1), getCompoundDataType(YSQLDataType.BOOLEAN));
         case FUNCTION:
             return generateFunction(depth + 1, YSQLDataType.BOOLEAN);
         case BETWEEN:
-            YSQLDataType type = getMeaningfulType();
+            YSQLDataType type = getComparisonSafeType();
             return new YSQLBetweenOperation(generateExpression(depth + 1, type), generateExpression(depth + 1, type),
                     generateExpression(depth + 1, type), Randomly.getBoolean());
         case SIMILAR_TO:
             assert !expectedResult;
             // TODO also generate the escape character
+            // Use a safe regex pattern instead of arbitrary text to avoid "invalid repetition count(s)" errors
             return new YSQLSimilarTo(generateExpression(depth + 1, YSQLDataType.TEXT),
-                    generateExpression(depth + 1, YSQLDataType.TEXT), null);
+                    YSQLConstant.createTextConstant(YSQLRegexGenerator.generateValidRegex(r)), null);
         case POSIX_REGEX:
             assert !expectedResult;
-            return new YSQLPOSIXRegularExpression(generateExpression(depth + 1, YSQLDataType.TEXT),
-                    generateExpression(depth + 1, YSQLDataType.TEXT),
+            YSQLExpression text = generateExpression(depth + 1, YSQLDataType.TEXT);
+            YSQLExpression regex = YSQLConstant.createTextConstant(YSQLRegexGenerator.generateValidRegex(r));
+            return new YSQLPOSIXRegularExpression(text, regex,
                     YSQLPOSIXRegularExpression.POSIXRegex.getRandom());
         case BINARY_RANGE_COMPARISON:
             // TODO element check
@@ -436,6 +449,31 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         } else {
             return Randomly.fromList(columns).getType();
         }
+    }
+    
+    private YSQLDataType getComparisonSafeType() {
+        // Return types that support standard comparison operators (=, <, >, <=, >=, !=)
+        YSQLDataType[] comparisonSafeTypes = {
+            YSQLDataType.SMALLINT, YSQLDataType.INT, YSQLDataType.BIGINT,
+            YSQLDataType.NUMERIC, YSQLDataType.DECIMAL, YSQLDataType.REAL, 
+            YSQLDataType.DOUBLE_PRECISION, YSQLDataType.FLOAT,
+            YSQLDataType.VARCHAR, YSQLDataType.CHAR, YSQLDataType.TEXT,
+            YSQLDataType.DATE, YSQLDataType.TIME, YSQLDataType.TIMESTAMP, 
+            YSQLDataType.TIMESTAMPTZ, YSQLDataType.INTERVAL,
+            YSQLDataType.BOOLEAN, YSQLDataType.MONEY
+        };
+        
+        if (columns != null && !columns.isEmpty() && Randomly.getBoolean()) {
+            // Try to use column type if it's comparison-safe
+            YSQLDataType columnType = Randomly.fromList(columns).getType();
+            for (YSQLDataType safeType : comparisonSafeTypes) {
+                if (columnType == safeType) {
+                    return columnType;
+                }
+            }
+        }
+        
+        return Randomly.fromOptions(comparisonSafeTypes);
     }
 
     private YSQLExpression generateFunction(int depth, YSQLDataType type) {
@@ -546,7 +584,16 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
                                        dataType == YSQLDataType.CIRCLE;
                 
                 if (Randomly.getBoolean() && !isSpecialType) {
-                    return new YSQLCastOperation(generateExpression(depth + 1), getCompoundDataType(dataType));
+                    // For BIT type, only cast from compatible types
+                    if (dataType == YSQLDataType.BIT) {
+                        YSQLDataType sourceType = Randomly.fromOptions(
+                            YSQLDataType.INT, YSQLDataType.BIGINT, YSQLDataType.SMALLINT,
+                            YSQLDataType.BIT, YSQLDataType.VARCHAR, YSQLDataType.TEXT
+                        );
+                        return new YSQLCastOperation(generateExpression(depth + 1, sourceType), getCompoundDataType(dataType));
+                    } else {
+                        return new YSQLCastOperation(generateExpression(depth + 1), getCompoundDataType(dataType));
+                    }
                 } else {
                     return generateFunctionWithUnknownResult(depth, dataType);
                 }
@@ -634,7 +681,16 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
 
         switch (option) {
         case CAST:
-            return new YSQLCastOperation(generateExpression(depth + 1), getCompoundDataType(YSQLDataType.TEXT));
+            // Avoid casting bit operations to text as it can cause "invalid binary digit" errors
+            YSQLDataType sourceType = Randomly.fromOptions(
+                YSQLDataType.INT, YSQLDataType.BIGINT, YSQLDataType.SMALLINT,
+                YSQLDataType.FLOAT, YSQLDataType.REAL, YSQLDataType.DOUBLE_PRECISION,
+                YSQLDataType.NUMERIC, YSQLDataType.DECIMAL, YSQLDataType.BOOLEAN,
+                YSQLDataType.DATE, YSQLDataType.TIME, YSQLDataType.TIMESTAMP,
+                YSQLDataType.INTERVAL, YSQLDataType.MONEY, YSQLDataType.INET,
+                YSQLDataType.CIDR, YSQLDataType.VARCHAR, YSQLDataType.CHAR
+            );
+            return new YSQLCastOperation(generateExpression(depth + 1, sourceType), getCompoundDataType(YSQLDataType.TEXT));
         case FUNCTION:
             return generateFunction(depth + 1, YSQLDataType.TEXT);
         case CONCAT:
@@ -653,7 +709,35 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
     }
 
     private YSQLExpression generateByteExpression() {
-        return YSQLConstant.createByteConstant("Th\\000omas");
+        // Generate random bytea values
+        if (Randomly.getBoolean()) {
+            // Generate hex-encoded bytea
+            StringBuilder hex = new StringBuilder("\\x");
+            int length = r.getInteger(1, 20);
+            for (int i = 0; i < length; i++) {
+                hex.append(String.format("%02x", r.getInteger(0, 255)));
+            }
+            return YSQLConstant.createByteConstant(hex.toString());
+        } else {
+            // Generate escape-encoded bytea
+            StringBuilder escaped = new StringBuilder();
+            int length = r.getInteger(1, 20);
+            for (int i = 0; i < length; i++) {
+                int b = r.getInteger(0, 255);
+                if (b == 0) {
+                    escaped.append("\\000");
+                } else if (b == 39) { // single quote
+                    escaped.append("''");
+                } else if (b == 92) { // backslash
+                    escaped.append("\\\\");
+                } else if (b < 32 || b > 126) {
+                    escaped.append(String.format("\\%03o", b));
+                } else {
+                    escaped.append((char) b);
+                }
+            }
+            return YSQLConstant.createByteConstant(escaped.toString());
+        }
     }
     
     private enum JSONBExpression {
@@ -717,10 +801,19 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
                 args.add(YSQLConstant.createTextConstant("path" + i));
             }
         } else {
-            // Generate required number of arguments
+            // Generate required number of arguments with proper type validation
             switch (func.getArity()) {
             case 1:
-                args.add(generateExpression(depth + 1, YSQLDataType.JSONB));
+                // Array functions need array input, not scalar
+                if (func.getFunctionName().contains("array_elements") || func.getFunctionName().contains("array_length")) {
+                    // Generate a known JSON array instead of arbitrary JSONB
+                    args.add(YSQLConstant.createTextConstant("[1, 2, 3, \"test\"]"));
+                } else if (func.getFunctionName().contains("object_keys")) {
+                    // Object functions need object input, not scalar
+                    args.add(YSQLConstant.createTextConstant("{\"key1\": \"value1\", \"key2\": \"value2\"}"));
+                } else {
+                    args.add(generateExpression(depth + 1, YSQLDataType.JSONB));
+                }
                 break;
             case 2:
                 if (func.getFunctionName().contains("path")) {
@@ -781,8 +874,20 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         option = Randomly.fromOptions(BitExpression.values());
         switch (option) {
         case BINARY_OPERATION:
-            return new YSQLBinaryBitOperation(YSQLBinaryBitOperation.YSQLBinaryBitOperator.getRandom(),
-                    generateExpression(depth + 1, YSQLDataType.BIT), generateExpression(depth + 1, YSQLDataType.BIT));
+            YSQLBinaryBitOperation.YSQLBinaryBitOperator op = YSQLBinaryBitOperation.YSQLBinaryBitOperator.getRandom();
+            
+            // For XOR operations, ensure same bit string sizes
+            if (op == YSQLBinaryBitOperation.YSQLBinaryBitOperator.BITWISE_XOR) {
+                // Generate bit strings of the same size
+                int bitSize = r.getInteger(1, 32);
+                YSQLExpression left = YSQLConstant.createBitConstant(r.getInteger(0, (1 << bitSize) - 1));
+                YSQLExpression right = YSQLConstant.createBitConstant(r.getInteger(0, (1 << bitSize) - 1));
+                return new YSQLBinaryBitOperation(op, left, right);
+            } else {
+                return new YSQLBinaryBitOperation(op,
+                        generateExpression(depth + 1, YSQLDataType.BIT), 
+                        generateExpression(depth + 1, YSQLDataType.BIT));
+            }
         default:
             throw new AssertionError();
         }

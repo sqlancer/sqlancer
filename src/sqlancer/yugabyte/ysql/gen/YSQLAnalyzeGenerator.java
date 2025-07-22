@@ -33,7 +33,6 @@ public final class YSQLAnalyzeGenerator {
         }
 
         ExpectedErrors errors = ExpectedErrors.from("deadlock");
-        YSQLErrors.addTransactionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

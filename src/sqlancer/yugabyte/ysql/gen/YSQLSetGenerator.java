@@ -43,7 +43,10 @@ public final class YSQLSetGenerator {
         errors.add("not recognized");
         errors.add("SET LOCAL can only be used in transaction blocks");
         errors.add("This statement not supported yet");
+        errors.add("invalid input syntax for type");
+        errors.add("invalid value for parameter");
         YSQLErrors.addTransactionErrors(errors);
+        YSQLErrors.addCommonExpressionErrors(errors);
 
         return new SQLQueryAdapter(sb.toString(), errors);
     }

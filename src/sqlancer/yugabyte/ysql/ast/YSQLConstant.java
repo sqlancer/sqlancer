@@ -107,6 +107,14 @@ public abstract class YSQLConstant implements YSQLExpression {
         return false;
     }
 
+    public boolean isDouble() {
+        return false;
+    }
+
+    public double asDouble() {
+        throw new UnsupportedOperationException();
+    }
+
     protected abstract YSQLConstant isLessThan(YSQLConstant rightVal);
 
     @Override
@@ -375,6 +383,8 @@ public abstract class YSQLConstant implements YSQLExpression {
                 return YSQLConstant.createBooleanConstant(val == rightVal.asInt());
             } else if (rightVal.isString()) {
                 return YSQLConstant.createBooleanConstant(val == rightVal.cast(YSQLDataType.INT).asInt());
+            } else if (rightVal.isDouble()) {
+                return YSQLConstant.createBooleanConstant(val == rightVal.asDouble());
             } else {
                 throw new AssertionError(rightVal);
             }
@@ -522,6 +532,16 @@ public abstract class YSQLConstant implements YSQLExpression {
             return YSQLDataType.FLOAT;
         }
 
+        @Override
+        public boolean isDouble() {
+            return true;
+        }
+
+        @Override
+        public double asDouble() {
+            return val;
+        }
+
     }
 
     public static class DoubleConstant extends YSQLConstantBase {
@@ -546,6 +566,16 @@ public abstract class YSQLConstant implements YSQLExpression {
             return YSQLDataType.FLOAT;
         }
 
+        @Override
+        public boolean isDouble() {
+            return true;
+        }
+
+        @Override
+        public double asDouble() {
+            return val;
+        }
+
     }
 
     public static class BitConstant extends YSQLConstantBase {
@@ -558,7 +588,13 @@ public abstract class YSQLConstant implements YSQLExpression {
 
         @Override
         public String getTextRepresentation() {
-            return String.format("B'%s'", Long.toBinaryString(val));
+            // Always use 32-bit representation to avoid XOR size mismatch errors
+            String binary = Long.toBinaryString(val & 0xFFFFFFFFL);
+            // Pad to 32 bits
+            while (binary.length() < 32) {
+                binary = "0" + binary;
+            }
+            return String.format("B'%s'", binary);
         }
 
         @Override
