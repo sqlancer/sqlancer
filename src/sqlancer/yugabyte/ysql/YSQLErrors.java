@@ -327,11 +327,7 @@ public final class YSQLErrors {
         addViewErrors(errors);
         addLoadExtensionError(errors);
         
-        // Additional comprehensive patterns for zero noise
-        // Invalid input syntax - very broad to catch all variations
         errors.add("invalid input syntax for");
-        
-        // Syntax errors
         errors.add("syntax error at or near \"ATTACH\"");
         
         // Operator existence errors

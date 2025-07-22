@@ -140,15 +140,12 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             return YSQLConstant.createIntConstant(r.getInteger(-32768, 32767));
         case INT:
             if (Randomly.getBooleanWithSmallProbability()) {
-                // Ensure text constant is within valid INTEGER range
                 int validInt = r.getInteger(Integer.MIN_VALUE, Integer.MAX_VALUE);
                 return YSQLConstant.createTextConstant(String.valueOf(validInt));
             } else {
-                // Generate mostly positive integers to avoid negative index errors
                 if (r.getInteger(0, 10) < 8) {
                     return YSQLConstant.createIntConstant(r.getInteger(0, 10000));
                 } else {
-                    // Ensure integer is within valid INTEGER range
                     return YSQLConstant.createIntConstant(r.getInteger(Integer.MIN_VALUE, Integer.MAX_VALUE));
                 }
             }
@@ -419,14 +416,12 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
                     generateExpression(depth + 1, type), Randomly.getBoolean());
         case SIMILAR_TO:
             assert !expectedResult;
-            // TODO also generate the escape character
-            // Use a safe regex pattern instead of arbitrary text to avoid "invalid repetition count(s)" errors
             return new YSQLSimilarTo(generateExpression(depth + 1, YSQLDataType.TEXT),
-                    YSQLConstant.createTextConstant(YSQLRegexGenerator.generateValidRegex(r)), null);
+                    YSQLConstant.createTextConstant(Randomly.fromOptions("test", "[a-z]+", ".*", "[0-9]*", "abc")), null);
         case POSIX_REGEX:
             assert !expectedResult;
             YSQLExpression text = generateExpression(depth + 1, YSQLDataType.TEXT);
-            YSQLExpression regex = YSQLConstant.createTextConstant(YSQLRegexGenerator.generateValidRegex(r));
+            YSQLExpression regex = YSQLConstant.createTextConstant(Randomly.fromOptions("test", "[a-z]+", ".*", "[0-9]*", "abc"));
             return new YSQLPOSIXRegularExpression(text, regex,
                     YSQLPOSIXRegularExpression.POSIXRegex.getRandom());
         case BINARY_RANGE_COMPARISON:
@@ -452,7 +447,6 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
     }
     
     private YSQLDataType getComparisonSafeType() {
-        // Return types that support standard comparison operators (=, <, >, <=, >=, !=)
         YSQLDataType[] comparisonSafeTypes = {
             YSQLDataType.SMALLINT, YSQLDataType.INT, YSQLDataType.BIGINT,
             YSQLDataType.NUMERIC, YSQLDataType.DECIMAL, YSQLDataType.REAL, 
@@ -464,7 +458,6 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         };
         
         if (columns != null && !columns.isEmpty() && Randomly.getBoolean()) {
-            // Try to use column type if it's comparison-safe
             YSQLDataType columnType = Randomly.fromList(columns).getType();
             for (YSQLDataType safeType : comparisonSafeTypes) {
                 if (columnType == safeType) {
@@ -801,15 +794,11 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
                 args.add(YSQLConstant.createTextConstant("path" + i));
             }
         } else {
-            // Generate required number of arguments with proper type validation
             switch (func.getArity()) {
             case 1:
-                // Array functions need array input, not scalar
                 if (func.getFunctionName().contains("array_elements") || func.getFunctionName().contains("array_length")) {
-                    // Generate a known JSON array instead of arbitrary JSONB
                     args.add(YSQLConstant.createTextConstant("[1, 2, 3, \"test\"]"));
                 } else if (func.getFunctionName().contains("object_keys")) {
-                    // Object functions need object input, not scalar
                     args.add(YSQLConstant.createTextConstant("{\"key1\": \"value1\", \"key2\": \"value2\"}"));
                 } else {
                     args.add(generateExpression(depth + 1, YSQLDataType.JSONB));

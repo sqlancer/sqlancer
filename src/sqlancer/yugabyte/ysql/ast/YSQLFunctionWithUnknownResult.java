@@ -5,7 +5,6 @@ import java.util.List;
 
 import sqlancer.yugabyte.ysql.YSQLSchema.YSQLDataType;
 import sqlancer.yugabyte.ysql.gen.YSQLExpressionGenerator;
-import sqlancer.yugabyte.ysql.gen.YSQLStringFunctionGenerator;
 
 public enum YSQLFunctionWithUnknownResult {
 
@@ -62,7 +61,10 @@ public enum YSQLFunctionWithUnknownResult {
     LEFT("left", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.INT) {
         @Override  
         public YSQLExpression[] getArguments(YSQLDataType returnType, YSQLExpressionGenerator gen, int depth) {
-            return YSQLStringFunctionGenerator.generateLeftRightArgs(gen, depth, gen.globalState.getRandomly());
+            YSQLExpression[] args = new YSQLExpression[2];
+            args[0] = gen.generateExpression(depth + 1, YSQLDataType.TEXT);
+            args[1] = YSQLConstant.createIntConstant(gen.globalState.getRandomly().getInteger(0, 1000));
+            return args;
         }
     },
     LOWER("lower", YSQLDataType.TEXT, YSQLDataType.TEXT), MD5("md5", YSQLDataType.TEXT, YSQLDataType.TEXT),
@@ -78,7 +80,10 @@ public enum YSQLFunctionWithUnknownResult {
     RIGHT("right", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.INT) {
         @Override
         public YSQLExpression[] getArguments(YSQLDataType returnType, YSQLExpressionGenerator gen, int depth) {
-            return YSQLStringFunctionGenerator.generateLeftRightArgs(gen, depth, gen.globalState.getRandomly());
+            YSQLExpression[] args = new YSQLExpression[2];
+            args[0] = gen.generateExpression(depth + 1, YSQLDataType.TEXT);
+            args[1] = YSQLConstant.createIntConstant(gen.globalState.getRandomly().getInteger(0, 1000));
+            return args;
         }
     },
     RPAD("rpad", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.INT, YSQLDataType.TEXT),
@@ -88,7 +93,11 @@ public enum YSQLFunctionWithUnknownResult {
     SUBSTR("substr", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.INT, YSQLDataType.INT) {
         @Override
         public YSQLExpression[] getArguments(YSQLDataType returnType, YSQLExpressionGenerator gen, int depth) {
-            return YSQLStringFunctionGenerator.generateSubstringArgs(gen, depth, gen.globalState.getRandomly());
+            YSQLExpression[] args = new YSQLExpression[3];
+            args[0] = gen.generateExpression(depth + 1, YSQLDataType.TEXT);
+            args[1] = YSQLConstant.createIntConstant(gen.globalState.getRandomly().getInteger(1, 100));
+            args[2] = YSQLConstant.createIntConstant(gen.globalState.getRandomly().getInteger(0, 100));
+            return args;
         }
     },
     TO_ASCII("to_ascii", YSQLDataType.TEXT, YSQLDataType.TEXT), TO_HEX("to_hex", YSQLDataType.INT, YSQLDataType.TEXT),
@@ -134,13 +143,19 @@ public enum YSQLFunctionWithUnknownResult {
     GET_BIT("get_bit", YSQLDataType.INT, YSQLDataType.BYTEA, YSQLDataType.INT) {
         @Override
         public YSQLExpression[] getArguments(YSQLDataType returnType, YSQLExpressionGenerator gen, int depth) {
-            return YSQLStringFunctionGenerator.generateGetBitArgs(gen, depth, gen.globalState.getRandomly());
+            YSQLExpression[] args = new YSQLExpression[2];
+            args[0] = YSQLConstant.createByteConstant("\\x414243");
+            args[1] = YSQLConstant.createIntConstant(gen.globalState.getRandomly().getInteger(0, 23));
+            return args;
         }
     },
     GET_BYTE("get_byte", YSQLDataType.INT, YSQLDataType.BYTEA, YSQLDataType.INT) {
         @Override
         public YSQLExpression[] getArguments(YSQLDataType returnType, YSQLExpressionGenerator gen, int depth) {
-            return YSQLStringFunctionGenerator.generateGetByteArgs(gen, depth, gen.globalState.getRandomly());
+            YSQLExpression[] args = new YSQLExpression[2];
+            args[0] = YSQLConstant.createByteConstant("\\x414243");
+            args[1] = YSQLConstant.createIntConstant(gen.globalState.getRandomly().getInteger(0, 2));
+            return args;
         }
     },
 
