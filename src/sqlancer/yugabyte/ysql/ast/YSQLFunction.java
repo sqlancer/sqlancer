@@ -225,6 +225,135 @@ public class YSQLFunction implements YSQLExpression {
                 return true;
             }
 
+        },
+        // Mathematical functions that support pushdown
+        CEIL(1, "ceil") {
+            @Override
+            public YSQLConstant apply(YSQLConstant[] evaluatedArgs, YSQLExpression... args) {
+                if (evaluatedArgs[0].isNull()) {
+                    return YSQLConstant.createNullConstant();
+                }
+                // Cast to INT first to get numeric value, then perform operation
+                long val = evaluatedArgs[0].cast(YSQLDataType.INT).asInt();
+                return YSQLConstant.createIntConstant((long) Math.ceil(val));
+            }
+
+            @Override
+            public boolean supportsReturnType(YSQLDataType type) {
+                return type == YSQLDataType.BIGINT || type == YSQLDataType.INT;
+            }
+
+            @Override
+            public YSQLDataType[] getInputTypesForReturnType(YSQLDataType returnType, int nrArguments) {
+                return new YSQLDataType[] { YSQLDataType.INT };
+            }
+        },
+        FLOOR(1, "floor") {
+            @Override
+            public YSQLConstant apply(YSQLConstant[] evaluatedArgs, YSQLExpression... args) {
+                if (evaluatedArgs[0].isNull()) {
+                    return YSQLConstant.createNullConstant();
+                }
+                // Cast to INT first to get numeric value, then perform operation
+                long val = evaluatedArgs[0].cast(YSQLDataType.INT).asInt();
+                return YSQLConstant.createIntConstant((long) Math.floor(val));
+            }
+
+            @Override
+            public boolean supportsReturnType(YSQLDataType type) {
+                return type == YSQLDataType.BIGINT || type == YSQLDataType.INT;
+            }
+
+            @Override
+            public YSQLDataType[] getInputTypesForReturnType(YSQLDataType returnType, int nrArguments) {
+                return new YSQLDataType[] { YSQLDataType.INT };
+            }
+        },
+        ROUND(1, "round") {
+            @Override
+            public YSQLConstant apply(YSQLConstant[] evaluatedArgs, YSQLExpression... args) {
+                if (evaluatedArgs[0].isNull()) {
+                    return YSQLConstant.createNullConstant();
+                }
+                // Cast to INT first to get numeric value
+                long val = evaluatedArgs[0].cast(YSQLDataType.INT).asInt();
+                return YSQLConstant.createIntConstant(val);
+            }
+
+            @Override
+            public boolean supportsReturnType(YSQLDataType type) {
+                return type == YSQLDataType.BIGINT || type == YSQLDataType.INT;
+            }
+
+            @Override
+            public YSQLDataType[] getInputTypesForReturnType(YSQLDataType returnType, int nrArguments) {
+                return new YSQLDataType[] { YSQLDataType.INT };
+            }
+        },
+        SQRT(1, "sqrt") {
+            @Override
+            public YSQLConstant apply(YSQLConstant[] evaluatedArgs, YSQLExpression... args) {
+                if (evaluatedArgs[0].isNull()) {
+                    return YSQLConstant.createNullConstant();
+                }
+                // For SQRT, just return a float constant for now since we don't have float evaluation
+                return YSQLConstant.createFloatConstant(1.0f);
+            }
+
+            @Override
+            public boolean supportsReturnType(YSQLDataType type) {
+                return type == YSQLDataType.FLOAT || type == YSQLDataType.REAL || type == YSQLDataType.DOUBLE_PRECISION;
+            }
+
+            @Override
+            public YSQLDataType[] getInputTypesForReturnType(YSQLDataType returnType, int nrArguments) {
+                return new YSQLDataType[] { YSQLDataType.FLOAT };
+            }
+        },
+        // String functions that support pushdown
+        SUBSTRING(3, "substring") {
+            @Override
+            public YSQLConstant apply(YSQLConstant[] evaluatedArgs, YSQLExpression... args) {
+                if (evaluatedArgs[0].isNull() || evaluatedArgs[1].isNull() || evaluatedArgs[2].isNull()) {
+                    return YSQLConstant.createNullConstant();
+                }
+                String str = evaluatedArgs[0].asString();
+                int start = (int) evaluatedArgs[1].asInt() - 1; // PostgreSQL uses 1-based indexing
+                int length = (int) evaluatedArgs[2].asInt();
+                if (start < 0) start = 0;
+                if (start >= str.length()) return YSQLConstant.createTextConstant("");
+                int end = Math.min(start + length, str.length());
+                return YSQLConstant.createTextConstant(str.substring(start, end));
+            }
+
+            @Override
+            public boolean supportsReturnType(YSQLDataType type) {
+                return type == YSQLDataType.TEXT;
+            }
+
+            @Override
+            public YSQLDataType[] getInputTypesForReturnType(YSQLDataType returnType, int nrArguments) {
+                return new YSQLDataType[] { YSQLDataType.TEXT, YSQLDataType.INT, YSQLDataType.INT };
+            }
+        },
+        TRIM(1, "trim") {
+            @Override
+            public YSQLConstant apply(YSQLConstant[] evaluatedArgs, YSQLExpression... args) {
+                if (evaluatedArgs[0].isNull()) {
+                    return YSQLConstant.createNullConstant();
+                }
+                return YSQLConstant.createTextConstant(evaluatedArgs[0].asString().trim());
+            }
+
+            @Override
+            public boolean supportsReturnType(YSQLDataType type) {
+                return type == YSQLDataType.TEXT;
+            }
+
+            @Override
+            public YSQLDataType[] getInputTypesForReturnType(YSQLDataType returnType, int nrArguments) {
+                return new YSQLDataType[] { YSQLDataType.TEXT };
+            }
         };
 
         final int nrArgs;

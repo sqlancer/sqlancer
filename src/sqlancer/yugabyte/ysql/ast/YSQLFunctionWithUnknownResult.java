@@ -58,7 +58,7 @@ public enum YSQLFunctionWithUnknownResult {
     // segfault
     BIT_LENGTH("bit_length", YSQLDataType.INT, YSQLDataType.BYTEA),
     INITCAP("initcap", YSQLDataType.TEXT, YSQLDataType.TEXT),
-    LEFT("left", YSQLDataType.TEXT, YSQLDataType.INT, YSQLDataType.TEXT),
+    LEFT("left", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.INT),
     LOWER("lower", YSQLDataType.TEXT, YSQLDataType.TEXT), MD5("md5", YSQLDataType.TEXT, YSQLDataType.TEXT),
     UPPER("upper", YSQLDataType.TEXT, YSQLDataType.TEXT),
     // PG_CLIENT_ENCODING("pg_client_encoding", YSQLDataType.TEXT),
@@ -70,7 +70,7 @@ public enum YSQLFunctionWithUnknownResult {
     REPLACE("replace", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.TEXT),
     REVERSE("reverse", YSQLDataType.TEXT, YSQLDataType.TEXT),
     RIGHT("right", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.INT),
-    RPAD("rpad", YSQLDataType.TEXT, YSQLDataType.INT, YSQLDataType.TEXT),
+    RPAD("rpad", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.INT, YSQLDataType.TEXT),
     RTRIM("rtrim", YSQLDataType.TEXT, YSQLDataType.TEXT),
     SPLIT_PART("split_part", YSQLDataType.TEXT, YSQLDataType.TEXT, YSQLDataType.INT),
     STRPOS("strpos", YSQLDataType.INT, YSQLDataType.TEXT, YSQLDataType.TEXT),
@@ -130,9 +130,14 @@ public enum YSQLFunctionWithUnknownResult {
     RANGE_MERGE("range_merge", YSQLDataType.RANGE, YSQLDataType.RANGE, YSQLDataType.RANGE), //
 
     // https://www.postgresql.org/docs/devel/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE
-    GET_COLUMN_SIZE("get_column_size", YSQLDataType.INT, YSQLDataType.TEXT);
+    GET_COLUMN_SIZE("get_column_size", YSQLDataType.INT, YSQLDataType.TEXT),
     // PG_DATABASE_SIZE("pg_database_size", YSQLDataType.INT, YSQLDataType.INT);
     // PG_SIZE_BYTES("pg_size_bytes", YSQLDataType.INT, YSQLDataType.TEXT);
+    
+    // SQL/JSON path functions (PostgreSQL 15+)
+    JSON_EXISTS("json_exists", YSQLDataType.BOOLEAN, YSQLDataType.JSONB, YSQLDataType.TEXT),
+    JSON_VALUE("json_value", YSQLDataType.TEXT, YSQLDataType.JSONB, YSQLDataType.TEXT),
+    JSON_QUERY("json_query", YSQLDataType.JSONB, YSQLDataType.JSONB, YSQLDataType.TEXT);
 
     private final String functionName;
     private final YSQLDataType returnType;

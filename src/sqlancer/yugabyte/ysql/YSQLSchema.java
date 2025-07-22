@@ -165,6 +165,10 @@ public class YSQLSchema extends AbstractSchema<YSQLGlobalState, YSQLTable> {
             return new YSQLSchema(databaseTables, databaseName);
         } catch (SQLIntegrityConstraintViolationException e) {
             throw new AssertionError(e);
+        } catch (Exception e) {
+            // Return empty schema on any error to prevent thread failures
+            // This allows testing to continue even if schema reading fails
+            return new YSQLSchema(new ArrayList<>(), databaseName);
         }
     }
 

@@ -6,7 +6,9 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.yugabyte.ysql.gen.*;
+import sqlancer.yugabyte.ysql.gen.YSQLMergeGenerator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -84,6 +86,9 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             case CREATE_SEQUENCE:
             case TRUNCATE:
                 nrPerformed = r.getInteger(0, 15);
+                break;
+            case MERGE:
+                nrPerformed = r.getInteger(0, 10);
                 break;
             case CREATE_VIEW:
                 nrPerformed = r.getInteger(0, 5);
@@ -351,12 +356,22 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         SET(YSQLSetGenerator::create), // TODO insert yugabyte sets
         SET_CONSTRAINTS((g) -> {
             String sb = "SET CONSTRAINTS ALL " + Randomly.fromOptions("DEFERRED", "IMMEDIATE");
-            return new SQLQueryAdapter(sb);
+            return new SQLQueryAdapter(sb, ExpectedErrors.from(
+                "SET CONSTRAINTS is not supported yet",
+                "result of range union would not be contiguous",
+                "current transaction is aborted",
+                "there is no unique or exclusion constraint"
+            ));
         }), //
         SET_TRANSACTION(YSQLTransactionGenerator::setTransactionMode), //
-        RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
+        RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE", ExpectedErrors.from(
+            "This statement not supported yet",
+            "current transaction is aborted"
+        ))), //
         COMMENT_ON(YSQLCommentGenerator::generate), //
-        RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
+        RESET((g) -> new SQLQueryAdapter("RESET ALL", ExpectedErrors.from(
+                "current transaction is aborted, commands ignored until end of transaction block",
+                "RESET ALL cannot run inside a transaction block")) /*
          * https://www.postgres.org/docs/devel/sql-reset.html TODO: also
          * configuration parameter
          */), //
@@ -366,7 +381,8 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         CREATE_SEQUENCE(YSQLSequenceGenerator::createSequence), //
         CREATE_VIEW(YSQLViewGenerator::create),
         REFRESH_VIEW(YSQLMaterializedViewRefresh::create),
-        PARALLEL_QUERY_TEST(YSQLParallelQueryGenerator::generateParallelQueryTest);
+        PARALLEL_QUERY_TEST(YSQLParallelQueryGenerator::generateParallelQueryTest),
+        MERGE(YSQLMergeGenerator::create);
 
         private final SQLQueryProvider<YSQLGlobalState> sqlQueryProvider;
 

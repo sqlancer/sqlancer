@@ -21,7 +21,9 @@ public final class YSQLTruncateGenerator {
             sb.append(" TABLE");
         }
         sb.append(" ");
-        sb.append(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty().stream().map(AbstractTable::getName)
+        sb.append(globalState.getSchema().getDatabaseTablesRandomSubsetNotEmpty().stream()
+                .filter(t -> !t.isView())  // Exclude views from TRUNCATE
+                .map(AbstractTable::getName)
                 .collect(Collectors.joining(", ")));
         // TODO remove Restart read required after proper tx ddls
         ExpectedErrors errors = ExpectedErrors

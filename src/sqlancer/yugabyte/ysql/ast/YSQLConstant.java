@@ -438,22 +438,25 @@ public abstract class YSQLConstant implements YSQLExpression {
 
         @Override
         public String getUnquotedTextRepresentation() {
-            return null;
+            return getTextRepresentation();
         }
 
         @Override
         public YSQLConstant isEquals(YSQLConstant rightVal) {
-            return null;
+            // Return NULL constant instead of null to prevent NullPointerException
+            return YSQLConstant.createNullConstant();
         }
 
         @Override
         protected YSQLConstant isLessThan(YSQLConstant rightVal) {
-            return null;
+            // Return NULL constant instead of null to prevent NullPointerException
+            return YSQLConstant.createNullConstant();
         }
 
         @Override
         public YSQLConstant cast(YSQLDataType type) {
-            return null;
+            // Return NULL constant instead of null to prevent NullPointerException
+            return YSQLConstant.createNullConstant();
         }
     }
 

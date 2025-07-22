@@ -53,6 +53,14 @@ public final class YSQLTransactionGenerator {
             }
             sb.append(" ");
             sb.append(Randomly.fromOptions("DEFERRABLE", "NOT DEFERRABLE"));
+            addedProperty = true;
+        }
+        
+        // Ensure at least one property is set
+        if (!addedProperty) {
+            // Always add at least one property to avoid syntax error
+            sb.append(" ISOLATION LEVEL ");
+            sb.append(Randomly.fromOptions("SERIALIZABLE", "REPEATABLE READ", "READ COMMITTED"));
         }
         
         errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");

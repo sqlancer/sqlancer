@@ -87,11 +87,14 @@ public final class YSQLIndexGenerator {
         sb.append(")");
         
         // PostgreSQL 15 feature: NULLS NOT DISTINCT for unique indexes
-        if (isUnique && Randomly.getBoolean()) {
+        boolean hasNullsNotDistinct = isUnique && Randomly.getBoolean();
+        if (hasNullsNotDistinct) {
             sb.append(" NULLS NOT DISTINCT");
         }
         
-        if (Randomly.getBoolean() && method != IndexType.HASH) {
+        // YugabyteDB doesn't support NULLS NOT DISTINCT with INCLUDE clause
+        // Also, GIN and HASH indexes don't support INCLUDE at all
+        if (Randomly.getBoolean() && method != IndexType.HASH && method != IndexType.GIN && !hasNullsNotDistinct) {
             sb.append(" INCLUDE(");
             List<YSQLColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
             sb.append(columns.stream().map(AbstractTableColumn::getName).collect(Collectors.joining(", ")));

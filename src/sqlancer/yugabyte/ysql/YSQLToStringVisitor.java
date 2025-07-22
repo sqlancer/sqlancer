@@ -9,6 +9,7 @@ import sqlancer.common.visitor.ToStringVisitor;
 import sqlancer.yugabyte.ysql.ast.YSQLAggregate;
 import sqlancer.yugabyte.ysql.ast.YSQLBetweenOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryLogicalOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLCaseExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLCastOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLJSONBOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLJSONBFunction;
@@ -293,6 +294,36 @@ public final class YSQLToStringVisitor extends ToStringVisitor<YSQLExpression> i
             visit(args.get(i));
         }
         sb.append(")");
+    }
+    
+    @Override
+    public void visit(YSQLCaseExpression expr) {
+        sb.append("CASE ");
+        
+        // Simple CASE (CASE expr WHEN val1 THEN result1 ...)
+        if (expr.isSimpleCase()) {
+            visit(expr.getSwitchCondition());
+            sb.append(" ");
+        }
+        
+        List<YSQLExpression> conditions = expr.getConditions();
+        List<YSQLExpression> results = expr.getResults();
+        
+        for (int i = 0; i < conditions.size(); i++) {
+            sb.append("WHEN ");
+            visit(conditions.get(i));
+            sb.append(" THEN ");
+            visit(results.get(i));
+            sb.append(" ");
+        }
+        
+        if (expr.getElseResult() != null) {
+            sb.append("ELSE ");
+            visit(expr.getElseResult());
+            sb.append(" ");
+        }
+        
+        sb.append("END");
     }
 
     private void appendType(YSQLCastOperation cast) {

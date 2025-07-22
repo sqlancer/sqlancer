@@ -26,6 +26,7 @@ public final class YSQLInsertGenerator {
         YSQLErrors.addCommonInsertUpdateErrors(errors);
         YSQLErrors.addTransactionErrors(errors);
         errors.add("cannot insert into column");
+        errors.add("does not support Infinity yet");
         errors.add("cannot insert a non-DEFAULT value into column");
         errors.add("multiple assignments to same column");
         errors.add("violates foreign key constraint");

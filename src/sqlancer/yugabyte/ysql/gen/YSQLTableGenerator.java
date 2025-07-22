@@ -213,7 +213,15 @@ public class YSQLTableGenerator {
             case DEFAULT:
                 sb.append("DEFAULT");
                 sb.append(" (");
-                sb.append(YSQLVisitor.asString(YSQLExpressionGenerator.generateExpression(globalState, type)));
+                // For range types, generate constants to avoid type mismatches
+                if (type == YSQLDataType.RANGE || type == YSQLDataType.INT4RANGE || 
+                    type == YSQLDataType.INT8RANGE || type == YSQLDataType.NUMRANGE ||
+                    type == YSQLDataType.TSRANGE || type == YSQLDataType.TSTZRANGE || 
+                    type == YSQLDataType.DATERANGE) {
+                    sb.append(YSQLVisitor.asString(YSQLExpressionGenerator.generateConstant(globalState.getRandomly(), type)));
+                } else {
+                    sb.append(YSQLVisitor.asString(YSQLExpressionGenerator.generateExpression(globalState, type)));
+                }
                 sb.append(")");
                 errors.add("out of range");
                 errors.add("is a generated column");

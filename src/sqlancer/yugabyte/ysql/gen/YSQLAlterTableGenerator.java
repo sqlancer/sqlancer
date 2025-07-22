@@ -655,6 +655,41 @@ public class YSQLAlterTableGenerator {
         case JSON:
         case JSONB:
             return "'{\"key\": \"value\"}'";
+        case INT4RANGE:
+            return "'[1,10)'";
+        case INT8RANGE:
+            return "'[1,100)'";
+        case NUMRANGE:
+            return "'[0.0,1.0)'";
+        case TSRANGE:
+            return "'[2024-01-01 00:00:00,2024-01-02 00:00:00)'";
+        case TSTZRANGE:
+            return "'[2024-01-01 00:00:00+00,2024-01-02 00:00:00+00)'";
+        case DATERANGE:
+            return "'[2024-01-01,2024-01-02)'";
+        case RANGE:
+            // Generic range type - use int4range as default
+            return "'[1,10)'";
+        case CIDR:
+            return "'192.168.1.0/24'";
+        case INET:
+            return "'192.168.1.1'";
+        case MACADDR:
+            return "'08:00:2b:01:02:03'";
+        case POINT:
+            return "'(1,2)'";
+        case LINE:
+            return "'{1,2,3}'";
+        case LSEG:
+            return "'[(0,0),(1,1)]'";
+        case BOX:
+            return "'((0,0),(1,1))'";
+        case PATH:
+            return "'[(0,0),(1,1),(2,0)]'";
+        case POLYGON:
+            return "'((0,0),(1,1),(1,0))'";
+        case CIRCLE:
+            return "'<(0,0),1>'";
         default:
             return "NULL";
         }
@@ -694,6 +729,52 @@ public class YSQLAlterTableGenerator {
             return "json";
         case JSONB:
             return "jsonb";
+        case INT4RANGE:
+            return "int4range";
+        case INT8RANGE:
+            return "int8range";
+        case NUMRANGE:
+            return "numrange";
+        case TSRANGE:
+            return "tsrange";
+        case TSTZRANGE:
+            return "tstzrange";
+        case DATERANGE:
+            return "daterange";
+        case RANGE:
+            return "anyrange";
+        case CIDR:
+            return "cidr";
+        case INET:
+            return "inet";
+        case MACADDR:
+            return "macaddr";
+        case POINT:
+            return "point";
+        case LINE:
+            return "line";
+        case LSEG:
+            return "lseg";
+        case BOX:
+            return "box";
+        case PATH:
+            return "path";
+        case POLYGON:
+            return "polygon";
+        case CIRCLE:
+            return "circle";
+        case BYTEA:
+            return "bytea";
+        case BIT:
+            return "bit";
+        case FLOAT:
+            return "float";
+        case TIME:
+            return "time";
+        case INTERVAL:
+            return "interval";
+        case MONEY:
+            return "money";
         default:
             return "text";
         }

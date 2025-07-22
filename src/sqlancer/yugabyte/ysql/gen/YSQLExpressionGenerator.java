@@ -24,6 +24,7 @@ import sqlancer.yugabyte.ysql.ast.YSQLBinaryBitOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryComparisonOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryLogicalOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryRangeOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLCaseExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLCastOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLJSONBOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLJSONBFunction;
@@ -202,7 +203,24 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         case INET:
             return YSQLConstant.createInetConstant(getRandomInet(r));
         case CIDR:
-            return YSQLConstant.createTextConstant(getRandomInet(r) + "/" + r.getInteger(0, 32));
+            // Generate valid CIDR with proper masking
+            int maskBits = r.getInteger(0, 33); // 0-32 inclusive
+            if (maskBits == 0) {
+                return YSQLConstant.createTextConstant("0.0.0.0/0");
+            }
+            long ip = r.getInteger(0, Integer.MAX_VALUE) & 0xFFFFFFFFL;
+            // Zero out host bits
+            int hostBits = 32 - maskBits;
+            if (hostBits > 0) {
+                long mask = ~((1L << hostBits) - 1);
+                ip = ip & mask;
+            }
+            String ipStr = String.format("%d.%d.%d.%d",
+                    (ip >> 24) & 0xFF,
+                    (ip >> 16) & 0xFF,
+                    (ip >> 8) & 0xFF,
+                    ip & 0xFF);
+            return YSQLConstant.createTextConstant(ipStr + "/" + maskBits);
         case MACADDR:
             return YSQLConstant.createTextConstant(String.format("%02x:%02x:%02x:%02x:%02x:%02x",
                 r.getInteger(0, 255), r.getInteger(0, 255), r.getInteger(0, 255),
@@ -403,6 +421,8 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             return new YSQLBinaryRangeOperation(YSQLBinaryRangeOperation.YSQLBinaryRangeComparisonOperator.getRandom(),
                     generateExpression(depth + 1, YSQLDataType.RANGE),
                     generateExpression(depth + 1, YSQLDataType.RANGE));
+        case CASE_EXPRESSION:
+            return generateCaseExpression(depth + 1, YSQLDataType.BOOLEAN);
         default:
             throw new AssertionError();
         }
@@ -446,6 +466,35 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
         }
         return new YSQLInOperation(leftExpr, rightExpr, Randomly.getBoolean());
     }
+    
+    private YSQLExpression generateCaseExpression(int depth, YSQLDataType resultType) {
+        int numCases = Randomly.smallNumber() + 1;
+        List<YSQLExpression> conditions = new ArrayList<>();
+        List<YSQLExpression> results = new ArrayList<>();
+        
+        if (Randomly.getBoolean()) {
+            // Simple CASE
+            YSQLDataType switchType = getMeaningfulType();
+            YSQLExpression switchExpr = generateExpression(depth + 1, switchType);
+            
+            for (int i = 0; i < numCases; i++) {
+                conditions.add(generateExpression(depth + 1, switchType));
+                results.add(generateExpression(depth + 1, resultType));
+            }
+            
+            YSQLExpression elseResult = Randomly.getBoolean() ? generateExpression(depth + 1, resultType) : null;
+            return YSQLCaseExpression.createSimpleCase(switchExpr, conditions, results, elseResult);
+        } else {
+            // Searched CASE
+            for (int i = 0; i < numCases; i++) {
+                conditions.add(generateExpression(depth + 1, YSQLDataType.BOOLEAN));
+                results.add(generateExpression(depth + 1, resultType));
+            }
+            
+            YSQLExpression elseResult = Randomly.getBoolean() ? generateExpression(depth + 1, resultType) : null;
+            return YSQLCaseExpression.createSearchedCase(conditions, results, elseResult);
+        }
+    }
 
     public YSQLExpression generateExpression(int depth, YSQLDataType originalType) {
         YSQLDataType dataType = originalType;
@@ -476,7 +525,27 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
                     }
                 }
             } else {
-                if (Randomly.getBoolean()) {
+                // Don't generate CAST operations for types that can't be cast from arbitrary types
+                boolean isSpecialType = dataType == YSQLDataType.RANGE || 
+                                       dataType == YSQLDataType.INT4RANGE || 
+                                       dataType == YSQLDataType.INT8RANGE ||
+                                       dataType == YSQLDataType.NUMRANGE || 
+                                       dataType == YSQLDataType.TSRANGE ||
+                                       dataType == YSQLDataType.TSTZRANGE || 
+                                       dataType == YSQLDataType.DATERANGE ||
+                                       dataType == YSQLDataType.CIDR ||
+                                       dataType == YSQLDataType.INET ||
+                                       dataType == YSQLDataType.MACADDR ||
+                                       dataType == YSQLDataType.UUID ||
+                                       dataType == YSQLDataType.POINT ||
+                                       dataType == YSQLDataType.LINE ||
+                                       dataType == YSQLDataType.LSEG ||
+                                       dataType == YSQLDataType.BOX ||
+                                       dataType == YSQLDataType.PATH ||
+                                       dataType == YSQLDataType.POLYGON ||
+                                       dataType == YSQLDataType.CIRCLE;
+                
+                if (Randomly.getBoolean() && !isSpecialType) {
                     return new YSQLCastOperation(generateExpression(depth + 1), getCompoundDataType(dataType));
                 } else {
                     return generateFunctionWithUnknownResult(depth, dataType);
@@ -570,6 +639,8 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             return generateFunction(depth + 1, YSQLDataType.TEXT);
         case CONCAT:
             return generateConcat(depth);
+        case CASE_EXPRESSION:
+            return generateCaseExpression(depth + 1, YSQLDataType.TEXT);
         default:
             throw new AssertionError();
         }
@@ -733,6 +804,8 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             return new YSQLBinaryArithmeticOperation(generateExpression(depth + 1, YSQLDataType.INT),
                     generateExpression(depth + 1, YSQLDataType.INT),
                     YSQLBinaryArithmeticOperation.YSQLBinaryOperator.getRandom());
+        case CASE_EXPRESSION:
+            return generateCaseExpression(depth + 1, YSQLDataType.INT);
         default:
             throw new AssertionError();
         }
@@ -829,7 +902,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
 
     private enum BooleanExpression {
         POSTFIX_OPERATOR, NOT, BINARY_LOGICAL_OPERATOR, BINARY_COMPARISON, FUNCTION, CAST, BETWEEN, IN_OPERATION,
-        SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON
+        SIMILAR_TO, POSIX_REGEX, BINARY_RANGE_COMPARISON, CASE_EXPRESSION
     }
 
     private enum RangeExpression {
@@ -837,7 +910,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
     }
 
     private enum TextExpression {
-        CAST, FUNCTION, CONCAT
+        CAST, FUNCTION, CONCAT, CASE_EXPRESSION
     }
 
     private enum BitExpression {
@@ -845,7 +918,7 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
     }
 
     private enum IntExpression {
-        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
+        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION, CASE_EXPRESSION
     }
 
 }

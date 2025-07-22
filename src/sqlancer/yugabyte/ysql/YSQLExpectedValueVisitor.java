@@ -3,6 +3,7 @@ package sqlancer.yugabyte.ysql;
 import sqlancer.yugabyte.ysql.ast.YSQLAggregate;
 import sqlancer.yugabyte.ysql.ast.YSQLBetweenOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLBinaryLogicalOperation;
+import sqlancer.yugabyte.ysql.ast.YSQLCaseExpression;
 import sqlancer.yugabyte.ysql.ast.YSQLCastOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLJSONBOperation;
 import sqlancer.yugabyte.ysql.ast.YSQLJSONBFunction;
@@ -159,6 +160,23 @@ public final class YSQLExpectedValueVisitor implements YSQLVisitor {
         print(op);
         for (YSQLExpression arg : op.getArguments()) {
             visit(arg);
+        }
+    }
+    
+    @Override
+    public void visit(YSQLCaseExpression op) {
+        print(op);
+        if (op.getSwitchCondition() != null) {
+            visit(op.getSwitchCondition());
+        }
+        for (YSQLExpression condition : op.getConditions()) {
+            visit(condition);
+        }
+        for (YSQLExpression result : op.getResults()) {
+            visit(result);
+        }
+        if (op.getElseResult() != null) {
+            visit(op.getElseResult());
         }
     }
 

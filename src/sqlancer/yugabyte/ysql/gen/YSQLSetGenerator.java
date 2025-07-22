@@ -7,6 +7,7 @@ import java.util.function.Function;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.yugabyte.ysql.YSQLErrors;
 import sqlancer.yugabyte.ysql.YSQLGlobalState;
 
 public final class YSQLSetGenerator {
@@ -37,6 +38,12 @@ public final class YSQLSetGenerator {
         errors.add("Failed DDL operation as requested");
         errors.add("value not set when in binary upgrade mode");
         errors.add("cannot be changed");
+        errors.add("current transaction is aborted, commands ignored until end of transaction block");
+        errors.add("time zone");
+        errors.add("not recognized");
+        errors.add("SET LOCAL can only be used in transaction blocks");
+        errors.add("This statement not supported yet");
+        YSQLErrors.addTransactionErrors(errors);
 
         return new SQLQueryAdapter(sb.toString(), errors);
     }
@@ -74,7 +81,8 @@ public final class YSQLSetGenerator {
                 (r) -> Randomly.fromOptions("false", "true")),
         YB_INDEX_STATE_FLAGS_UPDATE_DELAY("yb_index_state_flags_update_delay",
                 (r) -> Randomly.getNotCachedInteger(200, 1000)),
-        YB_BNL_BATCH_SIZE("yb_bnl_batch_size", (r) -> Randomly.fromOptions(1, 512, 1024, 10000)),
+        YB_BNL_BATCH_SIZE("yb_bnl_batch_size", (r) -> Randomly.fromOptions(1, 128, 256, 512, 1024, 2048)),
+        YB_ENABLE_BATCHEDNL("yb_enable_batchednl", (r) -> Randomly.fromOptions("false", "true")),
         YB_PARALLEL_RANGE_ROWS("yb_parallel_range_rows", (r) -> Randomly.fromOptions(1, 512, 1024, 10000)),
         YB_FETCH_ROW_LIMIT("yb_fetch_row_limit", (r) -> Randomly.fromOptions(0, 1, 5, 10)),
         YB_USE_HASH_SPLITTING_BY_DEFAULT("yb_use_hash_splitting_by_default", (r) -> Randomly.fromOptions("false", "true")),
@@ -88,9 +96,19 @@ public final class YSQLSetGenerator {
         // YugabyteDB Read-Committed and Wait-on-Conflict settings
         YB_ENABLE_READ_COMMITTED_ISOLATION("yb_enable_read_committed_isolation", 
                 (r) -> Randomly.fromOptions("false", "true")),
-        YB_READ_COMMITTED_ISOLATION_LEVEL("yb_read_committed_isolation_level",
-                (r) -> Randomly.fromOptions("READ COMMITTED", "READ_COMMITTED_INTERNAL")),
+        YB_MAX_QUERY_LAYER_RETRIES("yb_max_query_layer_retries",
+                (r) -> Randomly.getNotCachedInteger(0, 60)),
         YB_ENABLE_WAIT_QUEUES("yb_enable_wait_queues", (r) -> Randomly.fromOptions("false", "true")),
+        
+        // Cost-Based Optimizer (CBO) settings for YugabyteDB 2024+
+        YB_ENABLE_OPTIMIZER("yb_enable_optimizer", (r) -> Randomly.fromOptions("false", "true")),
+        YB_ENABLE_INDEX_AGGREGATE_PUSHDOWN("yb_enable_index_aggregate_pushdown", (r) -> Randomly.fromOptions("false", "true")),
+        YB_ENABLE_DISTINCT_PUSHDOWN("yb_enable_distinct_pushdown", (r) -> Randomly.fromOptions("false", "true")),
+        YB_ENABLE_INDEX_FILTER_PUSHDOWN("yb_enable_index_filter_pushdown", (r) -> Randomly.fromOptions("false", "true")),
+        YB_PREFER_BNLOOKUP("yb_prefer_bnlookup", (r) -> Randomly.fromOptions("false", "true")),
+        YB_ENABLE_HASH_BATCH_EXECUTION("yb_enable_hash_batch_execution", (r) -> Randomly.fromOptions("false", "true")),
+        YB_ENABLE_LSM_INDEX_COST_FACTOR("yb_enable_lsm_index_cost_factor", (r) -> Randomly.fromOptions("false", "true")),
+        YB_LSM_SEEK_COST_COEFFICIENT("yb_lsm_seek_cost_coefficient", (r) -> Randomly.fromOptions(0.0, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0)),
         // https://www.postgresql.org/docs/11/runtime-config-wal.html
         // This parameter can only be set at server start.
         // WAL_LEVEL("wal_level", (r) -> Randomly.fromOptions("replica", "minimal", "logical")),
@@ -149,6 +167,8 @@ public final class YSQLSetGenerator {
         ENABLE_MERGEJOIN("enable_mergejoin", (r) -> Randomly.fromOptions(1, 0)),
         ENABLE_NESTLOOP("enable_nestloop", (r) -> Randomly.fromOptions(1, 0)),
         ENABLE_PARALLEL_APPEND("enable_parallel_append", (r) -> Randomly.fromOptions(1, 0)),
+        ENABLE_INCREMENTALSORT("enable_incrementalsort", (r) -> Randomly.fromOptions(1, 0)),
+        ENABLE_MEMOIZE("enable_memoize", (r) -> Randomly.fromOptions(1, 0)),
         ENABLE_PARALLEL_HASH("enable_parallel_hash", (r) -> Randomly.fromOptions(1, 0)),
         ENABLE_PARTITION_PRUNING("enable_partition_pruning", (r) -> Randomly.fromOptions(1, 0)),
         ENABLE_PARTITIONWISE_JOIN("enable_partitionwise_join", (r) -> Randomly.fromOptions(1, 0)),

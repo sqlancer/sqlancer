@@ -50,9 +50,11 @@ public class YSQLInOperation implements YSQLExpression {
             }
             if (rightExpectedValue.isNull()) {
                 isNull = true;
-            } else if (rightExpectedValue.isEquals(this.expr.getExpectedValue()).isBoolean()
-                    && rightExpectedValue.isEquals(this.expr.getExpectedValue()).asBoolean()) {
-                return YSQLConstant.createBooleanConstant(isTrue);
+            } else {
+                YSQLConstant equalityResult = rightExpectedValue.isEquals(this.expr.getExpectedValue());
+                if (equalityResult != null && equalityResult.isBoolean() && equalityResult.asBoolean()) {
+                    return YSQLConstant.createBooleanConstant(isTrue);
+                }
             }
         }
 
