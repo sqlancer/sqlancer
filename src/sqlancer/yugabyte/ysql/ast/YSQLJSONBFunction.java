@@ -15,18 +15,18 @@ public class YSQLJSONBFunction implements YSQLExpression {
         // Array functions
         JSON_ARRAY_LENGTH("json_array_length", 1, YSQLDataType.INT),
         JSONB_ARRAY_LENGTH("jsonb_array_length", 1, YSQLDataType.INT),
-        JSON_ARRAY_ELEMENTS("json_array_elements", 1, YSQLDataType.JSON),
-        JSONB_ARRAY_ELEMENTS("jsonb_array_elements", 1, YSQLDataType.JSONB),
-        JSON_ARRAY_ELEMENTS_TEXT("json_array_elements_text", 1, YSQLDataType.TEXT),
-        JSONB_ARRAY_ELEMENTS_TEXT("jsonb_array_elements_text", 1, YSQLDataType.TEXT),
+        // JSON_ARRAY_ELEMENTS("json_array_elements", 1, YSQLDataType.JSON),
+        // JSONB_ARRAY_ELEMENTS("jsonb_array_elements", 1, YSQLDataType.JSONB),
+        // JSON_ARRAY_ELEMENTS_TEXT("json_array_elements_text", 1, YSQLDataType.TEXT),
+        // JSONB_ARRAY_ELEMENTS_TEXT("jsonb_array_elements_text", 1, YSQLDataType.TEXT),
         
         // Object functions
-        JSON_OBJECT_KEYS("json_object_keys", 1, YSQLDataType.TEXT),
-        JSONB_OBJECT_KEYS("jsonb_object_keys", 1, YSQLDataType.TEXT),
-        JSON_EACH("json_each", 1, YSQLDataType.TEXT), // returns record
-        JSONB_EACH("jsonb_each", 1, YSQLDataType.TEXT), // returns record
-        JSON_EACH_TEXT("json_each_text", 1, YSQLDataType.TEXT), // returns record
-        JSONB_EACH_TEXT("jsonb_each_text", 1, YSQLDataType.TEXT), // returns record
+        // JSON_OBJECT_KEYS("json_object_keys", 1, YSQLDataType.TEXT),
+        // JSONB_OBJECT_KEYS("jsonb_object_keys", 1, YSQLDataType.TEXT),
+        // JSON_EACH("json_each", 1, YSQLDataType.TEXT), // returns record
+        // JSONB_EACH("jsonb_each", 1, YSQLDataType.TEXT), // returns record
+        // JSON_EACH_TEXT("json_each_text", 1, YSQLDataType.TEXT), // returns record
+        // JSONB_EACH_TEXT("jsonb_each_text", 1, YSQLDataType.TEXT), // returns record
         
         // Type checking
         JSON_TYPEOF("json_typeof", 1, YSQLDataType.TEXT),
@@ -62,7 +62,7 @@ public class YSQLJSONBFunction implements YSQLExpression {
         // Path query functions (PostgreSQL 12+)
         JSONB_PATH_EXISTS("jsonb_path_exists", 2, YSQLDataType.BOOLEAN), // jsonb, path
         JSONB_PATH_MATCH("jsonb_path_match", 2, YSQLDataType.BOOLEAN), // jsonb, path
-        JSONB_PATH_QUERY("jsonb_path_query", 2, YSQLDataType.JSONB), // jsonb, path
+        // JSONB_PATH_QUERY("jsonb_path_query", 2, YSQLDataType.JSONB), // jsonb, path - set-returning function
         JSONB_PATH_QUERY_ARRAY("jsonb_path_query_array", 2, YSQLDataType.JSONB), // jsonb, path
         JSONB_PATH_QUERY_FIRST("jsonb_path_query_first", 2, YSQLDataType.JSONB); // jsonb, path
         
@@ -105,8 +105,14 @@ public class YSQLJSONBFunction implements YSQLExpression {
             JSONBFunction func;
             do {
                 func = getRandom();
-            } while (func.isAggregate());
+            } while (func.isAggregate() || func.isSetReturning());
             return func;
+        }
+        
+        public boolean isSetReturning() {
+            // These functions return sets and cannot be used in regular expressions
+            // All set-returning functions have been commented out
+            return false;
         }
     }
     

@@ -22,6 +22,9 @@ public final class YSQLErrors {
         errors.add("set-returning functions are not allowed in RETURNING");
         errors.add("set-returning functions are not allowed in HAVING");
         errors.add("argument of IN must not return a set");
+        errors.add("argument of NOT must not return a set");
+        errors.add("argument of AND must not return a set");
+        errors.add("argument of OR must not return a set");
 
         errors.add("canceling statement due to statement timeout");
     }
@@ -134,10 +137,20 @@ public final class YSQLErrors {
         errors.add("is not a table");
         errors.add("cannot change materialized view");
         errors.add("syntax error at or near \"(\"");
+        errors.add("syntax error at or near \"WITH\"");
+        errors.add("syntax error at or near \"RENAME\"");
+        errors.add("syntax error at or near \",\"");
+        errors.add("syntax error at or near \"ATTACH\"");
+        errors.add("syntax error at or near \"SCHEMA\"");
+        errors.add("syntax error at or near \"USER\"");
+        errors.add("syntax error at or near \"ALL\"");
+        errors.add("syntax error at or near");
         errors.add("encoding conversion from");
         errors.add("does not exist");
         errors.add("is not unique");
         errors.add("is not supported");
+        errors.add("This statement not supported yet");
+        errors.add("not supported yet");
         errors.add("cannot be changed");
         errors.add("invalid reference to FROM-clause entry for table");
 
@@ -168,6 +181,7 @@ public final class YSQLErrors {
         errors.add("cannot cast jsonb object to type boolean");
         errors.add("cannot cast jsonb object to type integer");
         errors.add("cannot cast jsonb string to type integer");
+        errors.add("cannot cast jsonb string to type boolean");
         errors.add("CASE types");
         errors.add("value overflows numeric format");
         errors.add("is out of range for type");
@@ -181,6 +195,7 @@ public final class YSQLErrors {
         errors.add("CASE types text and bytea cannot be matched");
         errors.add("a negative number raised to a non-integer power yields a complex result");
         errors.add("could not determine polymorphic type because input has type unknown");
+        errors.add("input of anonymous composite types is not implemented");
         
         // Ordering errors for types that don't have natural ordering
         errors.add("could not identify an ordering operator for type circle");

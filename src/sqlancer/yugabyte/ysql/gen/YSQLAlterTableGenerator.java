@@ -273,6 +273,7 @@ public class YSQLAlterTableGenerator {
                 }
                 errors.add("column is not an identity column");
                 errors.add("is not an identity column");
+                errors.add("is not an identity column");
                 break;
                 
             // Constraint operations
@@ -533,6 +534,7 @@ public class YSQLAlterTableGenerator {
                 }
                 errors.add("does not inherit from table");
                 errors.add("cannot change inheritance of partitioned table");
+                errors.add("is not a parent of relation");
                 break;
                 
             case ATTACH_PARTITION:
