@@ -182,6 +182,7 @@ public final class YSQLMergeGenerator {
         
         // Add common MERGE errors
         errors.add("MERGE is not supported");
+        errors.add("This statement not supported yet"); // YugabyteDB specific error
         errors.add("MERGE command cannot affect row a second time");
         errors.add("MERGE is not supported on tables with rules");
         errors.add("MERGE is not supported on foreign tables");

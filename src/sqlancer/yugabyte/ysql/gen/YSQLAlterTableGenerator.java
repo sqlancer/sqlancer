@@ -75,6 +75,24 @@ public class YSQLAlterTableGenerator {
             action.remove(Action.SET_LOGGED);
             action.remove(Action.SET_UNLOGGED);
         }
+        
+        // Remove YugabyteDB unsupported actions
+        action.remove(Action.DISABLE_RULE);
+        action.remove(Action.ENABLE_RULE);
+        action.remove(Action.ENABLE_REPLICA_RULE);
+        action.remove(Action.ENABLE_ALWAYS_RULE);
+        action.remove(Action.ALTER_COLUMN_SET_STORAGE);
+        action.remove(Action.SET_WITHOUT_CLUSTER);
+        action.remove(Action.ATTACH_PARTITION);
+        action.remove(Action.DETACH_PARTITION);
+        action.remove(Action.SET_WITH_OIDS);
+        action.remove(Action.SET_WITHOUT_OIDS);
+        action.remove(Action.ALTER_COLUMN_RESTART_SEQUENCE);
+        action.remove(Action.SET_SCHEMA);
+        action.remove(Action.SET_TABLESPACE);
+        action.remove(Action.SET_ACCESS_METHOD);
+        action.remove(Action.SET_LOGGED);
+        action.remove(Action.SET_UNLOGGED);
         if (action.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -143,6 +161,7 @@ public class YSQLAlterTableGenerator {
                 errors.add("cannot drop column");
                 errors.add("cannot drop key column");
                 errors.add("cannot drop inherited column");
+                errors.add("is in a primary key");
                 break;
                 
             case ALTER_COLUMN_TYPE:
@@ -221,6 +240,7 @@ public class YSQLAlterTableGenerator {
                 sb.append(randomTable.getRandomColumn().getName()).append(" SET STORAGE ");
                 sb.append(Randomly.fromOptions("PLAIN", "EXTERNAL", "EXTENDED", "MAIN"));
                 errors.add("can only have storage PLAIN");
+                errors.add("ALTER action ALTER COLUMN ... SET STORAGE not supported yet");
                 break;
                 
             case ALTER_COLUMN_ADD_GENERATED:
@@ -252,6 +272,7 @@ public class YSQLAlterTableGenerator {
                     sb.append(" IF EXISTS");
                 }
                 errors.add("column is not an identity column");
+                errors.add("is not an identity column");
                 break;
                 
             // Constraint operations
@@ -393,6 +414,7 @@ public class YSQLAlterTableGenerator {
                 
             case SET_WITHOUT_CLUSTER:
                 sb.append("SET WITHOUT CLUSTER");
+                errors.add("ALTER action SET WITHOUT CLUSTER not supported yet");
                 break;
                 
             // Logging
@@ -462,22 +484,26 @@ public class YSQLAlterTableGenerator {
             case DISABLE_RULE:
                 sb.append("DISABLE RULE rule_").append(r.getAlphabeticChar());
                 errors.add("does not exist");
+                errors.add("ALTER action DISABLE RULE not supported yet");
                 break;
                 
             case ENABLE_RULE:
                 sb.append("ENABLE RULE ");
                 sb.append(Randomly.fromOptions("rule_" + r.getAlphabeticChar(), "ALL", "USER"));
                 errors.add("does not exist");
+                errors.add("ALTER action ENABLE RULE not supported yet");
                 break;
                 
             case ENABLE_REPLICA_RULE:
                 sb.append("ENABLE REPLICA RULE rule_").append(r.getAlphabeticChar());
                 errors.add("does not exist");
+                errors.add("ALTER action ENABLE REPLICA RULE not supported yet");
                 break;
                 
             case ENABLE_ALWAYS_RULE:
                 sb.append("ENABLE ALWAYS RULE rule_").append(r.getAlphabeticChar());
                 errors.add("does not exist");
+                errors.add("ALTER action ENABLE ALWAYS RULE not supported yet");
                 break;
                 
             // Inheritance and partitioning
@@ -625,6 +651,15 @@ public class YSQLAlterTableGenerator {
                 throw new AssertionError(a);
             }
         }
+        
+        // Add error for syntax issues when combining certain actions
+        if (action.size() > 1) {
+            errors.add("syntax error at or near");
+        }
+        
+        // Add general ALTER TABLE errors
+        errors.add("this ALTER TABLE command is not yet supported");
+        errors.add("child table");
 
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }

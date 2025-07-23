@@ -8,7 +8,7 @@ import sqlancer.common.query.SQLQueryProvider;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.yugabyte.ysql.gen.*;
-import sqlancer.yugabyte.ysql.gen.YSQLMergeGenerator;
+// import sqlancer.yugabyte.ysql.gen.YSQLMergeGenerator; // Commented out - MERGE not supported
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -87,9 +87,9 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             case TRUNCATE:
                 nrPerformed = r.getInteger(0, 15);
                 break;
-            case MERGE:
-                nrPerformed = r.getInteger(0, 10);
-                break;
+            // case MERGE:
+            //     nrPerformed = r.getInteger(0, 10);
+            //     break;
             case CREATE_VIEW:
                 nrPerformed = r.getInteger(0, 5);
                 break;
@@ -381,8 +381,8 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
         CREATE_SEQUENCE(YSQLSequenceGenerator::createSequence), //
         CREATE_VIEW(YSQLViewGenerator::create),
         REFRESH_VIEW(YSQLMaterializedViewRefresh::create),
-        PARALLEL_QUERY_TEST(YSQLParallelQueryGenerator::generateParallelQueryTest),
-        MERGE(YSQLMergeGenerator::create);
+        PARALLEL_QUERY_TEST(YSQLParallelQueryGenerator::generateParallelQueryTest);
+        // MERGE(YSQLMergeGenerator::create); // Disabled - YugabyteDB doesn't support MERGE yet
 
         private final SQLQueryProvider<YSQLGlobalState> sqlQueryProvider;
 

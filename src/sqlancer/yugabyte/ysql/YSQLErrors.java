@@ -15,6 +15,13 @@ public final class YSQLErrors {
         errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
         errors.add("but it cannot be referenced from this part of the query");
         errors.add("missing FROM-clause entry for table");
+        errors.add("set-returning functions are not allowed in JOIN conditions");
+        errors.add("set-returning functions are not allowed in WHERE");
+        errors.add("set-returning functions are not allowed in partition key expressions");
+        errors.add("set-returning functions are not allowed in VALUES");
+        errors.add("set-returning functions are not allowed in RETURNING");
+        errors.add("set-returning functions are not allowed in HAVING");
+        errors.add("argument of IN must not return a set");
 
         errors.add("canceling statement due to statement timeout");
     }
@@ -59,6 +66,10 @@ public final class YSQLErrors {
         errors.add("INDEX on column of type 'PATH' not yet supported");
         errors.add("INDEX on column of type 'POLYGON' not yet supported");
         errors.add("INDEX on column of type 'CIRCLE' not yet supported");
+        errors.add("INDEX on column of type 'INTERVAL' not yet supported");
+        errors.add("INDEX on column of type 'BOOLARRAY' not yet supported");
+        errors.add("INDEX on column of type 'INT4ARRAY' not yet supported");
+        errors.add("INDEX on column of type 'TEXTARRAY' not yet supported");
         errors.add("cannot be changed");
         errors.add("cannot split table that does not have primary key");
     }
@@ -73,12 +84,15 @@ public final class YSQLErrors {
         errors.add("cannot insert a non-DEFAULT value into column");
         errors.add("Operation failed. Try again");
         errors.add("Value write after transaction start");
+        errors.add("no partition of relation");
         // YugabyteDB Read-Committed specific errors
         errors.add("Read Committed isolation level not supported");
         errors.add("yb_enable_read_committed_isolation must be enabled");
         errors.add("could not serialize access due to read/write dependencies among transactions");
+        errors.add("could not serialize access due to concurrent update");
         errors.add("Transaction aborted");
         errors.add("Transaction conflicted");
+        errors.add("current transaction is aborted, commands ignored until end of transaction block");
         // Wait-on-Conflict errors
         errors.add("Wait queue operation failed");
         errors.add("yb_enable_wait_queues must be enabled");
@@ -98,6 +112,7 @@ public final class YSQLErrors {
         errors.add("cannot index");
         errors.add("jsonb array must have even number of elements");
         errors.add("argument of json_build_object must be a string");
+        errors.add("argument list must have even number of elements");
         errors.add("could not determine data type of parameter");
         errors.add("cannot call jsonb_");
         errors.add("jsonb path is not an array");
@@ -146,11 +161,43 @@ public final class YSQLErrors {
         errors.add("division by zero");
         errors.add("invalid input syntax for type money");
         errors.add("invalid input syntax for type");
+        errors.add("time zone");
+        errors.add("not recognized");
         errors.add("cannot cast type");
+        errors.add("cannot cast jsonb array to type");
+        errors.add("cannot cast jsonb object to type boolean");
+        errors.add("cannot cast jsonb object to type integer");
+        errors.add("cannot cast jsonb string to type integer");
+        errors.add("CASE types");
         errors.add("value overflows numeric format");
+        errors.add("is out of range for type");
+        errors.add("numeric field overflow");
         errors.add("is of type boolean but expression is of type text");
+        errors.add("but default expression is of type");
+        errors.add("but expression is of type");
+        errors.add("but default expression is of type");
+        errors.add("is of type numrange but default expression is of type int4range");
+        errors.add("is of type int8range but default expression is of type int4range");
+        errors.add("CASE types text and bytea cannot be matched");
         errors.add("a negative number raised to a non-integer power yields a complex result");
         errors.add("could not determine polymorphic type because input has type unknown");
+        
+        // Ordering errors for types that don't have natural ordering
+        errors.add("could not identify an ordering operator for type circle");
+        errors.add("could not identify an ordering operator for type");
+        errors.add("could not identify an equality operator for type json");
+        errors.add("could not identify an equality operator for type point");
+        errors.add("could not identify an equality operator for type circle");
+        errors.add("could not identify an equality operator for type box");
+        errors.add("could not identify an equality operator for type polygon");
+        errors.add("could not identify an equality operator for type lseg");
+        errors.add("could not identify an equality operator for type line");
+        errors.add("could not identify an equality operator for type path");
+        errors.add("cannot cast jsonb numeric to type boolean");
+        errors.add("cannot set path in scalar");
+        errors.add("cannot delete path in scalar");
+        errors.add("aggregate function calls cannot contain set-returning function calls");
+        errors.add("single boolean result is expected");
 
         addToCharFunctionErrors(errors);
         addBitStringOperationErrors(errors);
@@ -196,6 +243,7 @@ public final class YSQLErrors {
 
     public static void addCommonRegexExpressionErrors(ExpectedErrors errors) {
         errors.add("is not a valid hexadecimal digit");
+        errors.add("malformed array literal");
     }
 
     public static void addCommonRangeExpressionErrors(ExpectedErrors errors) {

@@ -56,6 +56,7 @@ public class YSQLTableGenerator {
         errors.add("has no default operator class for access method");
         errors.add("does not exist for access method");
         errors.add("does not accept data type");
+        errors.add("operator class");
         errors.add("but default expression is of type text");
         errors.add("has pseudo-type unknown");
         errors.add("Cannot split table that does not have primary key");
@@ -155,6 +156,7 @@ public class YSQLTableGenerator {
         errors.add("does not accept data type");
         int n = partitionOption.contentEquals("LIST") ? 1 : Randomly.smallNumber() + 1;
         YSQLErrors.addCommonExpressionErrors(errors);
+        YSQLErrors.addCommonRangeExpressionErrors(errors);
         YSQLErrors.addTransactionErrors(errors);
         for (int i = 0; i < n; i++) {
             if (i != 0) {
