@@ -24,6 +24,7 @@ public final class YSQLInsertGenerator {
         ExpectedErrors errors = new ExpectedErrors();
         YSQLErrors.addCommonExpressionErrors(errors);
         YSQLErrors.addCommonInsertUpdateErrors(errors);
+        YSQLErrors.addCommonFetchErrors(errors);
         YSQLErrors.addTransactionErrors(errors);
         errors.add("cannot insert into column");
         errors.add("does not support Infinity yet");

@@ -25,6 +25,8 @@ public final class YSQLErrors {
         errors.add("argument of NOT must not return a set");
         errors.add("argument of AND must not return a set");
         errors.add("argument of OR must not return a set");
+        errors.add("set-returning functions are not allowed in CASE");
+        errors.add("set-returning functions are not allowed in expressions");
 
         errors.add("canceling statement due to statement timeout");
     }
@@ -213,6 +215,7 @@ public final class YSQLErrors {
         errors.add("cannot delete path in scalar");
         errors.add("aggregate function calls cannot contain set-returning function calls");
         errors.add("single boolean result is expected");
+        errors.add("cannot deconstruct a scalar");
 
         addToCharFunctionErrors(errors);
         addBitStringOperationErrors(errors);
