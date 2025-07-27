@@ -103,14 +103,10 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
             return true;
         } catch (Exception e) {
             Main.nrUnsuccessfulActions.addAndGet(1);
-            try {
-                checkException(e);
-                if (globalState != null && globalState.getState() != null) {
-                    String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-                    globalState.getState().addExpectedError(query, errorMessage);
-                }
-            } catch (AssertionError ae) {
-                throw ae;
+            checkException(e);
+            if (globalState != null && globalState.getState() != null) {
+                String errorMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+                globalState.getState().addExpectedError(query, errorMessage);
             }
             return false;
         } finally {

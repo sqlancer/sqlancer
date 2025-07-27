@@ -473,13 +473,11 @@ public final class Main {
                     throw new AssertionError(e);
                 }
 
-                if (options.serializeReproduceState()) {
-                    if (reproducer != null) {
-                        Map<String, String> reproducerData = reproducer.getReproducerData();
-                        stateToRepro.setErrorType(StateToReproduce.ErrorType.valueOf(reproducerData.get("errorType")));
-                        stateToRepro.setReproducerData(reproducerData);
-                        stateToRepro.serialize(logger.getReproduceFilename());
-                    }
+                if (options.serializeReproduceState() && reproducer != null) {
+                    Map<String, String> reproducerData = reproducer.getReproducerData();
+                    stateToRepro.setErrorType(StateToReproduce.ErrorType.valueOf(reproducerData.get("errorType")));
+                    stateToRepro.setReproducerData(reproducerData);
+                    stateToRepro.serialize(logger.getReproduceFilename());
                 }
                 if (options.reduceAST() && !options.useReducer()) {
                     throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
