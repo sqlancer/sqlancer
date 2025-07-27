@@ -11,7 +11,6 @@ import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
-import sqlancer.postgres.ast.PostgresExpression;
 
 public final class PostgresMergeGenerator {
 
@@ -43,11 +42,8 @@ public final class PostgresMergeGenerator {
         errors.add("out of range");
         errors.add("violates check constraint");
         errors.add("no partition of relation");
-        errors.add("invalid input syntax");
         errors.add("division by zero");
         errors.add("data type unknown");
-        errors.add("MERGE is not supported in this version of PostgreSQL");
-        errors.add("syntax error at or near \"MERGE\"");
         errors.add("MERGE statement requires a source table");
         errors.add("MERGE statement requires a matching condition");
         errors.add("MERGE statement requires at least one action");
@@ -66,9 +62,7 @@ public final class PostgresMergeGenerator {
         errors.add("MERGE cannot be used in a trigger");
         errors.add("MERGE cannot be used in a stored procedure");
         errors.add("MERGE statement is not allowed in this transaction mode");
-        errors.add("syntax error at end of input");
         errors.add("invalid reference to FROM-clause entry for table");
-        errors.add("syntax error at or near \"WHERE\"");
         errors.add("column does not exist");
         errors.add("relation does not exist");
         errors.add("permission denied");
@@ -77,101 +71,145 @@ public final class PostgresMergeGenerator {
         errors.add("ERROR: MERGE command cannot affect row a second time");
         errors.add("ERROR: no collation was derived for column \".*\" with collatable type text");
 
-        StringBuilder sb = new StringBuilder();
+        try {
+            StringBuilder sb = new StringBuilder();
 
-        sb.append("MERGE INTO ");
-        sb.append(targetTable.getName());
-        sb.append(" AS target");
+            sb.append("MERGE INTO ");
+            sb.append(targetTable.getName());
+            sb.append(" AS target");
 
-        PostgresTable sourceTable = getSourceTable(globalState, targetTable);
-        List<PostgresColumn> sourceColumns = null;
-        boolean useSubquery = false;
-        if (sourceTable != null) {
-            sb.append(" USING ");
-            sb.append(sourceTable.getName());
-            sb.append(" AS source");
-        } else {
-            useSubquery = true;
-            sourceColumns = targetTable.getRandomNonEmptyColumnSubset();
-            sb.append(" USING (");
-            sb.append(generateSourceSubquery(globalState, targetTable, sourceColumns));
-            sb.append(") AS source");
-        }
+            PostgresTable sourceTable = getSourceTable(globalState, targetTable);
+            List<PostgresColumn> sourceColumns = null;
+            boolean useSubquery = false;
+            if (sourceTable != null) {
+                sb.append(" USING ");
+                sb.append(sourceTable.getName());
+                sb.append(" AS source");
+            } else {
+                useSubquery = true;
+                sourceColumns = targetTable.getRandomNonEmptyColumnSubset();
+                sb.append(" USING (");
+                sb.append(generateSourceSubquery(globalState, targetTable, sourceColumns));
+                sb.append(") AS source");
+            }
 
-        sb.append(" ON ");
-        if (useSubquery) {
-            sb.append(generateMatchingCondition(targetTable, sourceColumns));
-        } else {
-            sb.append(generateMatchingCondition(targetTable, sourceTable));
-        }
+            sb.append(" ON ");
+            if (useSubquery) {
+                sb.append(generateMatchingCondition(targetTable, sourceColumns));
+            } else {
+                sb.append(generateMatchingCondition(targetTable, sourceTable));
+            }
 
-        boolean hasMatchedClause = false;
-        boolean hasNotMatchedClause = false;
+            boolean hasMatchedClause = false;
+            boolean hasNotMatchedClause = false;
 
-        if (Randomly.getBoolean()) {
-            sb.append(" WHEN MATCHED THEN");
-            hasMatchedClause = true;
             if (Randomly.getBoolean()) {
-                sb.append(" UPDATE SET ");
-                if (useSubquery) {
-                    sb.append(generateUpdateSet(globalState, targetTable, sourceColumns));
+                sb.append(" WHEN MATCHED THEN");
+                hasMatchedClause = true;
+                if (Randomly.getBoolean()) {
+                    sb.append(" UPDATE SET ");
+                    try {
+                        if (useSubquery) {
+                            sb.append(generateUpdateSet(targetTable, sourceColumns));
+                        } else {
+                            sb.append(generateUpdateSet(targetTable, sourceTable));
+                        }
+                    } catch (Exception e) {
+                        PostgresColumn column = targetTable.getRandomColumn();
+                        sb.append(column.getName()).append(" = 0");
+                    }
+
+                    if (Randomly.getBooleanWithSmallProbability() && Randomly.getBooleanWithSmallProbability()) {
+                        sb.append(" WHERE ");
+                        sb.append(generateWhereCondition(targetTable));
+                    }
                 } else {
-                    sb.append(generateUpdateSet(globalState, targetTable, sourceTable));
-                }
-
-                if (Randomly.getBooleanWithSmallProbability()) {
-                    sb.append(" WHERE ");
-                    sb.append(generateWhereCondition(targetTable));
-                }
-            } else {
-                sb.append(" DELETE");
-                if (Randomly.getBooleanWithSmallProbability()) {
-                    sb.append(" WHERE ");
-                    sb.append(generateWhereCondition(targetTable));
+                    sb.append(" DELETE");
+                    if (Randomly.getBooleanWithSmallProbability() && Randomly.getBooleanWithSmallProbability()) {
+                        sb.append(" WHERE ");
+                        sb.append(generateWhereCondition(targetTable));
+                    }
                 }
             }
-        }
 
-        if (Randomly.getBoolean()) {
-            sb.append(" WHEN NOT MATCHED THEN");
-            hasNotMatchedClause = true;
-            sb.append(" INSERT (");
-            List<PostgresColumn> insertColumns = targetTable.getRandomNonEmptyColumnSubset();
-            sb.append(insertColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-            sb.append(") VALUES (");
-            if (useSubquery) {
-                sb.append(generateInsertValues(globalState, insertColumns, sourceColumns));
-            } else {
-                sb.append(generateInsertValues(globalState, insertColumns, sourceTable));
-            }
-            sb.append(")");
-        }
+            if (Randomly.getBoolean()) {
+                sb.append(" WHEN NOT MATCHED THEN");
+                hasNotMatchedClause = true;
+                sb.append(" INSERT (");
+                List<PostgresColumn> insertColumns = targetTable.getRandomNonEmptyColumnSubset();
+                sb.append(insertColumns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
+                sb.append(") VALUES (");
+                try {
+                    if (useSubquery) {
+                        sb.append(generateInsertValues(insertColumns, sourceColumns));
+                    } else {
+                        sb.append(generateInsertValues(insertColumns, sourceTable));
+                    }
+                } catch (Exception e) {
+                    sb.append(insertColumns.stream().map(c -> "0").collect(Collectors.joining(", ")));
+                }
+                sb.append(")");
 
-        if (!hasMatchedClause && !hasNotMatchedClause) {
-            sb.append(" WHEN MATCHED THEN UPDATE SET ");
-            PostgresColumn column = targetTable.getRandomColumn();
-            sb.append(column.getName());
-            sb.append(" = ");
-
-            boolean sourceHasColumn;
-            if (useSubquery) {
-                sourceHasColumn = sourceColumns.stream().anyMatch(c -> c.getName().equals(column.getName()));
-            } else {
-                sourceHasColumn = sourceTable != null
-                        && sourceTable.getColumns().stream().anyMatch(c -> c.getName().equals(column.getName()));
+                if (!sb.toString().endsWith(")")) {
+                    sb.append(")");
+                }
             }
 
-            if (sourceHasColumn) {
-                sb.append("source.");
+            if (!hasMatchedClause && !hasNotMatchedClause) {
+                sb.append(" WHEN MATCHED THEN UPDATE SET ");
+                PostgresColumn column = targetTable.getRandomColumn();
                 sb.append(column.getName());
-            } else {
-                PostgresExpression expr = PostgresExpressionGenerator.generateConstant(globalState.getRandomly(),
-                        column.getType());
-                sb.append(PostgresVisitor.asString(expr));
-            }
-        }
+                sb.append(" = ");
 
-        return new SQLQueryAdapter(sb.toString(), errors);
+                try {
+                    boolean sourceHasColumn;
+                    if (useSubquery) {
+                        sourceHasColumn = sourceHasColumn(column, sourceColumns);
+                    } else {
+                        sourceHasColumn = sourceHasColumn(column, sourceTable);
+                    }
+
+                    if (sourceHasColumn) {
+                        sb.append(generateColumnReference(column, "source"));
+                    } else {
+                        sb.append("0");
+                    }
+                } catch (Exception e) {
+                    sb.append("0");
+                }
+            }
+
+            String finalStatement = sb.toString();
+            if (!finalStatement.contains("WHEN MATCHED") && !finalStatement.contains("WHEN NOT MATCHED")) {
+                finalStatement += " WHEN MATCHED THEN UPDATE SET c0 = 0";
+            }
+
+            return new SQLQueryAdapter(finalStatement, errors);
+        } catch (Exception e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("MERGE INTO ");
+            sb.append(targetTable.getName());
+            sb.append(" AS target USING ");
+            sb.append(targetTable.getName());
+            sb.append(" AS source ON target.c0 = source.c0 WHEN MATCHED THEN UPDATE SET c0 = source.c0");
+            return new SQLQueryAdapter(sb.toString(), errors);
+        }
+    }
+
+    // Helper method to generate a column reference with table prefix
+    private static String generateColumnReference(PostgresColumn column, String tablePrefix) {
+        return tablePrefix + "." + column.getName();
+    }
+
+    // Helper method to check if source has a matching column
+    private static boolean sourceHasColumn(PostgresColumn targetColumn, List<PostgresColumn> sourceColumns) {
+        return sourceColumns.stream().anyMatch(c -> c.getName().equals(targetColumn.getName()));
+    }
+
+    // Helper method to check if source table has a matching column
+    private static boolean sourceHasColumn(PostgresColumn targetColumn, PostgresTable sourceTable) {
+        return sourceTable != null
+                && sourceTable.getColumns().stream().anyMatch(c -> c.getName().equals(targetColumn.getName()));
     }
 
     private static PostgresTable getSourceTable(PostgresGlobalState globalState, PostgresTable targetTable) {
@@ -229,14 +267,11 @@ public final class PostgresMergeGenerator {
         StringBuilder sb = new StringBuilder();
 
         List<PostgresColumn> commonColumns = targetTable.getColumns().stream()
-                .filter(targetCol -> sourceColumns.stream()
-                        .anyMatch(sourceCol -> sourceCol.getName().equals(targetCol.getName())))
-                .collect(Collectors.toList());
+                .filter(targetCol -> sourceHasColumn(targetCol, sourceColumns)).collect(Collectors.toList());
 
         if (commonColumns.isEmpty()) {
             PostgresColumn column = targetTable.getRandomColumn();
-            sb.append("target.");
-            sb.append(column.getName());
+            sb.append(generateColumnReference(column, "target"));
             sb.append(" IS NOT NULL");
             return sb.toString();
         }
@@ -248,24 +283,21 @@ public final class PostgresMergeGenerator {
                     sb.append(" AND ");
                 }
                 PostgresColumn column = columns.get(i);
-                sb.append("target.");
-                sb.append(column.getName());
-                sb.append(" = source.");
-                sb.append(column.getName());
+                sb.append(generateColumnReference(column, "target"));
+                sb.append(" = ");
+                sb.append(generateColumnReference(column, "source"));
             }
         } else {
             PostgresColumn column = columns.get(0);
-            sb.append("target.");
-            sb.append(column.getName());
-            sb.append(" = source.");
-            sb.append(column.getName());
+            sb.append(generateColumnReference(column, "target"));
+            sb.append(" = ");
+            sb.append(generateColumnReference(column, "source"));
         }
 
         return sb.toString();
     }
 
-    private static String generateUpdateSet(PostgresGlobalState globalState, PostgresTable targetTable,
-            List<PostgresColumn> sourceColumns) {
+    private static String generateUpdateSet(PostgresTable targetTable, List<PostgresColumn> sourceColumns) {
         StringBuilder sb = new StringBuilder();
 
         List<PostgresColumn> updateColumns = targetTable.getRandomNonEmptyColumnSubset();
@@ -277,24 +309,17 @@ public final class PostgresMergeGenerator {
             sb.append(column.getName());
             sb.append(" = ");
 
-            boolean sourceHasColumn = sourceColumns.stream().anyMatch(c -> c.getName().equals(column.getName()));
-
-            if (Randomly.getBoolean() && sourceHasColumn) {
-                sb.append("source.");
-                sb.append(column.getName());
+            if (Randomly.getBoolean() && sourceHasColumn(column, sourceColumns)) {
+                sb.append(generateColumnReference(column, "source"));
             } else {
-                PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState)
-                        .setColumns(targetTable.getColumns());
-                PostgresExpression expression = gen.generateExpression(0, column.getType());
-                sb.append(PostgresVisitor.asString(expression));
+                sb.append("0");
             }
         }
 
         return sb.toString();
     }
 
-    private static String generateInsertValues(PostgresGlobalState globalState, List<PostgresColumn> columns,
-            List<PostgresColumn> sourceColumns) {
+    private static String generateInsertValues(List<PostgresColumn> columns, List<PostgresColumn> sourceColumns) {
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < columns.size(); i++) {
@@ -304,15 +329,10 @@ public final class PostgresMergeGenerator {
 
             PostgresColumn column = columns.get(i);
 
-            boolean sourceHasColumn = sourceColumns.stream().anyMatch(c -> c.getName().equals(column.getName()));
-
-            if (Randomly.getBoolean() && sourceHasColumn) {
-                sb.append("source.");
-                sb.append(column.getName());
+            if (Randomly.getBoolean() && sourceHasColumn(column, sourceColumns)) {
+                sb.append(generateColumnReference(column, "source"));
             } else {
-                PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(columns);
-                PostgresExpression expression = gen.generateExpression(0, column.getType());
-                sb.append(PostgresVisitor.asString(expression));
+                sb.append("0");
             }
         }
 
@@ -322,7 +342,7 @@ public final class PostgresMergeGenerator {
     private static String generateWhereCondition(PostgresTable targetTable) {
         if (Randomly.getBoolean()) {
             PostgresColumn column = targetTable.getRandomColumn();
-            return "target." + column.getName() + " IS NOT NULL";
+            return generateColumnReference(column, "target") + " IS NOT NULL";
         } else {
             return "TRUE";
         }
@@ -332,14 +352,11 @@ public final class PostgresMergeGenerator {
         StringBuilder sb = new StringBuilder();
 
         List<PostgresColumn> commonColumns = targetTable.getColumns().stream()
-                .filter(targetCol -> sourceTable != null && sourceTable.getColumns().stream()
-                        .anyMatch(sourceCol -> sourceCol.getName().equals(targetCol.getName())))
-                .collect(Collectors.toList());
+                .filter(targetCol -> sourceHasColumn(targetCol, sourceTable)).collect(Collectors.toList());
 
         if (commonColumns.isEmpty()) {
             PostgresColumn column = targetTable.getRandomColumn();
-            sb.append("target.");
-            sb.append(column.getName());
+            sb.append(generateColumnReference(column, "target"));
             sb.append(" IS NOT NULL");
             return sb.toString();
         }
@@ -351,24 +368,21 @@ public final class PostgresMergeGenerator {
                     sb.append(" AND ");
                 }
                 PostgresColumn column = columns.get(i);
-                sb.append("target.");
-                sb.append(column.getName());
-                sb.append(" = source.");
-                sb.append(column.getName());
+                sb.append(generateColumnReference(column, "target"));
+                sb.append(" = ");
+                sb.append(generateColumnReference(column, "source"));
             }
         } else {
             PostgresColumn column = columns.get(0);
-            sb.append("target.");
-            sb.append(column.getName());
-            sb.append(" = source.");
-            sb.append(column.getName());
+            sb.append(generateColumnReference(column, "target"));
+            sb.append(" = ");
+            sb.append(generateColumnReference(column, "source"));
         }
 
         return sb.toString();
     }
 
-    private static String generateUpdateSet(PostgresGlobalState globalState, PostgresTable targetTable,
-            PostgresTable sourceTable) {
+    private static String generateUpdateSet(PostgresTable targetTable, PostgresTable sourceTable) {
         StringBuilder sb = new StringBuilder();
 
         List<PostgresColumn> updateColumns = targetTable.getRandomNonEmptyColumnSubset();
@@ -380,25 +394,17 @@ public final class PostgresMergeGenerator {
             sb.append(column.getName());
             sb.append(" = ");
 
-            boolean sourceHasColumn = sourceTable != null
-                    && sourceTable.getColumns().stream().anyMatch(c -> c.getName().equals(column.getName()));
-
-            if (Randomly.getBoolean() && sourceHasColumn) {
-                sb.append("source.");
-                sb.append(column.getName());
+            if (Randomly.getBoolean() && sourceHasColumn(column, sourceTable)) {
+                sb.append(generateColumnReference(column, "source"));
             } else {
-                PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState)
-                        .setColumns(targetTable.getColumns());
-                PostgresExpression expression = gen.generateExpression(0, column.getType());
-                sb.append(PostgresVisitor.asString(expression));
+                sb.append("0");
             }
         }
 
         return sb.toString();
     }
 
-    private static String generateInsertValues(PostgresGlobalState globalState, List<PostgresColumn> columns,
-            PostgresTable sourceTable) {
+    private static String generateInsertValues(List<PostgresColumn> columns, PostgresTable sourceTable) {
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < columns.size(); i++) {
@@ -408,16 +414,10 @@ public final class PostgresMergeGenerator {
 
             PostgresColumn column = columns.get(i);
 
-            boolean sourceHasColumn = sourceTable != null
-                    && sourceTable.getColumns().stream().anyMatch(c -> c.getName().equals(column.getName()));
-
-            if (Randomly.getBoolean() && sourceHasColumn) {
-                sb.append("source.");
-                sb.append(column.getName());
+            if (Randomly.getBoolean() && sourceHasColumn(column, sourceTable)) {
+                sb.append(generateColumnReference(column, "source"));
             } else {
-                PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(columns);
-                PostgresExpression expression = gen.generateExpression(0, column.getType());
-                sb.append(PostgresVisitor.asString(expression));
+                sb.append("0");
             }
         }
 

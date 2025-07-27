@@ -284,7 +284,6 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }
         Connection con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
         globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-
         String dropCommand = "DROP DATABASE";
         boolean forceDrop = Randomly.getBoolean();
         if (forceDrop) {
