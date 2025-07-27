@@ -13,7 +13,6 @@ public class PostgresTableSpaceGenerator {
     public PostgresTableSpaceGenerator(PostgresGlobalState globalState) {
         this.globalState = globalState;
         errors.addRegexString("ERROR: (?:tablespace )?directory \".*[\\\\/]tablespace\\d+\" does not exist");
-        errors.add("ERROR: permission denied");
         errors.add("ERROR: already exists");
         errors.add("ERROR: is not empty");
         errors.add("ERROR: cannot be created because system does not support tablespaces");
