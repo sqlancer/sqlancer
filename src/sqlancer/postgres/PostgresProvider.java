@@ -126,6 +126,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
+        EXPLAIN(PostgresExplainGenerator::create), //
         CREATE_VIEW(PostgresViewGenerator::create);
 
         private final SQLQueryProvider<PostgresGlobalState> sqlQueryProvider;
@@ -195,6 +196,9 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             break;
         case INSERT:
             nrPerformed = r.getInteger(0, globalState.getOptions().getMaxNumberInserts());
+            break;
+        case EXPLAIN:
+            nrPerformed = r.getInteger(0, 1);
             break;
         default:
             throw new AssertionError(a);
