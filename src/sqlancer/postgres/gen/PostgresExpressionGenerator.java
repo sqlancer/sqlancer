@@ -145,7 +145,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         PostgresExpression[] args = randomFunction.getArguments(type, this, depth + 1);
 
         // Create the appropriate function type based on the function name
-        if (randomFunction.getName().equals("extract")) {
+        if (randomFunction == PostgresFunctionWithUnknownResult.EXTRACT) {
             return new PostgresFunction.PostgresExtractFunction(randomFunction, type, args);
         } else {
             return new PostgresFunction(randomFunction, type, args);
@@ -632,8 +632,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
                             r.getInteger(0, 59) // second
                     ));
         case TIME:
+            // Generate valid timezone offset in format +/-HH:MM
             String sign = Randomly.fromOptions("+", "-");
-            int hours = r.getInteger(0, "+".equals(sign) ? 14 : 12);
+            int hours = r.getInteger(0, 12); // Valid timezone hours: 0-12
             int minutes = r.getInteger(0, 59);
             String tz = String.format("%s%02d:%02d", sign, hours, minutes);
             return PostgresConstant.createTextConstant(String.format("%02d:%02d:%02d%s", r.getInteger(0, 23), // hour

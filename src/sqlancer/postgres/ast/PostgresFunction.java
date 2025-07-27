@@ -41,20 +41,24 @@ public class PostgresFunction implements PostgresExpression {
             if (i != 0) {
                 sb.append(", ");
             }
-
-            if (args[i].getExpressionType() == PostgresDataType.TIME
-                    || args[i].getExpressionType() == PostgresDataType.TIMESTAMP
-                    || args[i].getExpressionType() == PostgresDataType.DATE) {
-                sb.append("CAST(");
-                sb.append(args[i]);
-                sb.append(" AS ");
-                sb.append(args[i].getExpressionType().toString());
-                sb.append(")");
-            } else {
-                sb.append(args[i]);
-            }
+            sb.append(formatArgumentForPostgresFunction(args[i]));
         }
         return sb.toString();
+    }
+
+    /**
+     * Formats an argument for use in PostgreSQL function calls
+     * Date or time values need explicit CAST statements because they are stored as text
+     * but PostgreSQL requires proper type annotations for function parameters.
+     */
+    private String formatArgumentForPostgresFunction(PostgresExpression arg) {
+        if (arg.getExpressionType() == PostgresDataType.TIME
+                || arg.getExpressionType() == PostgresDataType.TIMESTAMP
+                || arg.getExpressionType() == PostgresDataType.DATE) {
+            return String.format("CAST(%s AS %s)", arg, arg.getExpressionType().toString());
+        } else {
+            return arg.toString();
+        }
     }
 
     public static class PostgresExtractFunction extends PostgresFunction {
