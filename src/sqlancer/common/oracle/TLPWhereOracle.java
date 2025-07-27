@@ -2,12 +2,15 @@ package sqlancer.common.oracle;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import sqlancer.ComparatorHelper;
 import sqlancer.Randomly;
 import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
+import sqlancer.StateToReproduce;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.common.ast.newast.Select;
@@ -60,6 +63,18 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
             } catch (SQLException ignored) {
             }
             return false;
+        }
+
+        @Override
+        public Map<String, String> getReproducerData() {
+            Map<String, String> data = new HashMap<>();
+            data.put("errorType", StateToReproduce.ErrorType.TLP_WHERE.name());
+            data.put("firstQueryString", firstQueryString);
+            data.put("secondQueryString", secondQueryString);
+            data.put("thirdQueryString", thirdQueryString);
+            data.put("originalQueryString", originalQueryString);
+            data.put("orderBy", String.valueOf(orderBy));
+            return data;
         }
     }
 
