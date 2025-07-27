@@ -47,13 +47,16 @@ public class PostgresFunction implements PostgresExpression {
     }
 
     /**
-     * Formats an argument for use in PostgreSQL function calls
-     * Date or time values need explicit CAST statements because they are stored as text
-     * but PostgreSQL requires proper type annotations for function parameters.
+     * Formats an argument for use in PostgreSQL function calls. Date or time values need explicit CAST statements
+     * because they are stored as text but PostgreSQL requires proper type annotations for function parameters.
+     *
+     * @param arg
+     *            the expression to format
+     *
+     * @return the formatted argument string
      */
     private String formatArgumentForPostgresFunction(PostgresExpression arg) {
-        if (arg.getExpressionType() == PostgresDataType.TIME
-                || arg.getExpressionType() == PostgresDataType.TIMESTAMP
+        if (arg.getExpressionType() == PostgresDataType.TIME || arg.getExpressionType() == PostgresDataType.TIMESTAMP
                 || arg.getExpressionType() == PostgresDataType.DATE) {
             return String.format("CAST(%s AS %s)", arg, arg.getExpressionType().toString());
         } else {
