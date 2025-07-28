@@ -47,7 +47,7 @@ public final class TiDBSetGenerator {
         // java.sql.SQLException: Fast analyze hasn't reached General Availability and only support analyze version 1
         // currently
         TIDB_WAIT_SPLIT_REGION_FINISH("tidb_wait_split_region_finish", (r) -> Randomly.fromOptions(0, 1)),
-        TIDB_SCATTER_REGION("global.tidb_scatter_region", (r) -> Randomly.fromOptions("", "table", "global")),
+        TIDB_SCATTER_REGION("global.tidb_scatter_region", (r) -> Randomly.fromOptions("", "`table`", "global")),
         TIDB_ENABLE_STMT_SUMMARY("global.tidb_enable_stmt_summary", (r) -> Randomly.fromOptions(0, 1)), //
         TIDB_ENABLE_CHUNK_RPC("tidb_enable_chunk_rpc", (r) -> Randomly.fromOptions(0, 1));
 
