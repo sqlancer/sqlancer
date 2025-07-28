@@ -1,9 +1,12 @@
 package sqlancer;
 
 import java.io.Closeable;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,9 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import sqlancer.common.query.Query;
 
@@ -44,10 +44,12 @@ public class StateToReproduce {
 
     public OracleRunReproductionState localState;
 
-    private static class StateToReproduceSerializor {
+    private static class StateToReproduceSerializor implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         List<String> statements;
         String databaseName;
-        String databaseProvider;
+        String DBMSName;
         ErrorType errorType;
         Map<String, Set<String>> expectedErrorsMap;
         Map<String, String> reproducerData;
@@ -64,34 +66,32 @@ public class StateToReproduce {
         serializor.statements = this.statements.stream().map(Query::getLogString).collect(Collectors.toList());
         serializor.databaseName = this.databaseName;
         if (this.databaseProvider != null) {
-            serializor.databaseProvider = this.databaseProvider.getClass().getName();
+            serializor.DBMSName = this.databaseProvider.getDBMSName();
         }
         serializor.errorType = this.errorType;
         serializor.expectedErrorsMap = this.expectedErrorsMap;
         serializor.reproducerData = this.reproducerData;
         serializor.exception = this.exception;
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try (FileWriter writer = new FileWriter(fileName)) {
-            writer.write(gson.toJson(serializor));
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+            oos.writeObject(serializor);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new AssertionError(e);
         }
     }
 
     public static StateToReproduce deserialize(String fileName) {
-        Gson gson = new Gson();
-        StateToReproduceSerializor serializor = new StateToReproduceSerializor();
-        try (FileReader reader = new FileReader(fileName)) {
-            serializor = gson.fromJson(reader, StateToReproduceSerializor.class);
-        } catch (IOException e) {
-            e.printStackTrace();
+        StateToReproduceSerializor serializor;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+            serializor = (StateToReproduceSerializor) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new AssertionError(e);
         }
 
         DatabaseProvider<?, ?, ?> provider = null;
         List<DatabaseProvider<?, ?, ?>> providers = Main.getDBMSProviders();
         for (DatabaseProvider<?, ?, ?> p : providers) {
-            if (p.getClass().getName().equals(serializor.databaseProvider)) {
+            if (p.getDBMSName().equals(serializor.DBMSName)) {
                 provider = p;
                 break;
             }
@@ -119,24 +119,12 @@ public class StateToReproduce {
         }
     }
 
-    public String getException() {
-        return exception;
-    }
-
     public String getDatabaseName() {
         return databaseName;
     }
 
     public String getDatabaseVersion() {
         return databaseVersion;
-    }
-
-    public ErrorType getErrorType() {
-        return errorType;
-    }
-
-    public Map<String, String> getReproducerData() {
-        return reproducerData;
     }
 
     public void setStatements(List<Query<?>> statements) {

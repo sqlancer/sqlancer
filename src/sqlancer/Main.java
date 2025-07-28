@@ -135,7 +135,7 @@ public final class Main {
                 if (!reproduceFileDir.exists()) {
                     reproduceFileDir.mkdir();
                 }
-                reproduceFilename = reproduceFileDir.getAbsolutePath() + "/" + databaseName + ".json";
+                reproduceFilename = reproduceFileDir.getAbsolutePath() + "/" + databaseName + ".ser";
             }
             this.databaseProvider = provider;
         }
