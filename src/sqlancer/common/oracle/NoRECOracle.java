@@ -1,6 +1,8 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -8,6 +10,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
+import sqlancer.StateToReproduce;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.common.ast.newast.Select;
@@ -34,15 +37,32 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
     private static class NoRECReproducer<G extends SQLGlobalState<?, ?>> implements Reproducer<G> {
         private final Function<G, Integer> optimizedQuery;
         private final Function<G, Integer> unoptimizedQuery;
+        private final String optimizedQueryString;
+        private final String unoptimizedQueryString;
+        private final boolean shouldUseAggregate;
 
-        NoRECReproducer(Function<G, Integer> optimizedQuery, Function<G, Integer> unoptimizedQuery) {
+        NoRECReproducer(Function<G, Integer> optimizedQuery, Function<G, Integer> unoptimizedQuery,
+                String optimizedQueryString, String unoptimizedQueryString, boolean shouldUseAggregate) {
             this.optimizedQuery = optimizedQuery;
             this.unoptimizedQuery = unoptimizedQuery;
+            this.optimizedQueryString = optimizedQueryString;
+            this.unoptimizedQueryString = unoptimizedQueryString;
+            this.shouldUseAggregate = shouldUseAggregate;
         }
 
         @Override
         public boolean bugStillTriggers(G globalState) {
             return !Objects.equals(optimizedQuery.apply(globalState), unoptimizedQuery.apply(globalState));
+        }
+
+        @Override
+        public Map<String, String> getReproducerData() {
+            Map<String, String> data = new HashMap<>();
+            data.put("errorType", StateToReproduce.ErrorType.NOREC.name());
+            data.put("optimizedQueryString", optimizedQueryString);
+            data.put("unoptimizedQueryString", unoptimizedQueryString);
+            data.put("shouldUseAggregate", String.valueOf(shouldUseAggregate));
+            return data;
         }
     }
 
@@ -96,7 +116,8 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
                     : countRows(optimizedQueryString, errors, state);
 
             Function<G, Integer> unoptimizedQuery = state -> extractCounts(unoptimizedQueryString, errors, state);
-            reproducer = new NoRECReproducer<>(optimizedQuery, unoptimizedQuery);
+            reproducer = new NoRECReproducer<>(optimizedQuery, unoptimizedQuery, optimizedQueryString,
+                    unoptimizedQueryString, shouldUseAggregate);
 
             String queryFormatString = "-- %s;\n-- count: %d";
             String firstQueryStringWithCount = String.format(queryFormatString, optimizedQueryString, optimizedCount);

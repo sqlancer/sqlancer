@@ -78,6 +78,7 @@ public final class Main {
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
         private FileWriter reduceFileWriter;
+        private String reproduceFilename;
 
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
@@ -128,6 +129,13 @@ public final class Main {
                 }
                 this.reduceFile = new File(reduceFileDir, databaseName + "-reduce.log");
 
+            }
+            if (options.serializeReproduceState()) {
+                File reproduceFileDir = new File(dir, "reproduce");
+                if (!reproduceFileDir.exists()) {
+                    reproduceFileDir.mkdir();
+                }
+                reproduceFilename = reproduceFileDir.getAbsolutePath() + "/" + databaseName + ".ser";
             }
             this.databaseProvider = provider;
         }
@@ -341,6 +349,10 @@ public final class Main {
             result = result.replaceAll("i[0-9]+", "i0"); // Avoid duplicate indexes
             return result + "\n";
         }
+
+        public String getReproduceFilename() {
+            return reproduceFilename;
+        }
     }
 
     public static class QueryManager<C extends SQLancerDBConnection> {
@@ -461,6 +473,12 @@ public final class Main {
                     throw new AssertionError(e);
                 }
 
+                if (options.serializeReproduceState() && reproducer != null) {
+                    Map<String, String> reproducerData = reproducer.getReproducerData();
+                    stateToRepro.setErrorType(StateToReproduce.ErrorType.valueOf(reproducerData.get("errorType")));
+                    stateToRepro.setReproducerData(reproducerData);
+                    stateToRepro.serialize(logger.getReproduceFilename());
+                }
                 if (options.reduceAST() && !options.useReducer()) {
                     throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
                 }
@@ -672,9 +690,16 @@ public final class Main {
                         return true;
                     } catch (Throwable reduce) {
                         reduce.printStackTrace();
-                        executor.getStateToReproduce().exception = reduce.getMessage();
+                        StateToReproduce stateToReproduce = executor.getStateToReproduce();
+                        stateToReproduce
+                                .setException(reduce.getCause() != null ? reduce.getCause().getMessage() : null);
                         executor.getLogger().logFileWriter = null;
-                        executor.getLogger().logException(reduce, executor.getStateToReproduce());
+                        executor.getLogger().logException(reduce, stateToReproduce);
+                        if (options.serializeReproduceState()) {
+                            stateToReproduce.setErrorType(StateToReproduce.ErrorType.EXCEPTION);
+                            stateToReproduce.logStatement(reduce.getMessage()); // Add the exception statement
+                            stateToReproduce.serialize(executor.getLogger().getReproduceFilename());
+                        }
                         return false;
                     } finally {
                         try {
