@@ -46,6 +46,7 @@ import sqlancer.postgres.gen.PostgresSequenceGenerator;
 import sqlancer.postgres.gen.PostgresSetGenerator;
 import sqlancer.postgres.gen.PostgresStatisticsGenerator;
 import sqlancer.postgres.gen.PostgresTableGenerator;
+import sqlancer.postgres.gen.PostgresTableSpaceGenerator;
 import sqlancer.postgres.gen.PostgresTransactionGenerator;
 import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
@@ -126,7 +127,8 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
-        CREATE_VIEW(PostgresViewGenerator::create);
+        CREATE_VIEW(PostgresViewGenerator::create), //
+        CREATE_TABLESPACE(PostgresTableSpaceGenerator::generate);
 
         private final SQLQueryProvider<PostgresGlobalState> sqlQueryProvider;
 
@@ -188,6 +190,9 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             nrPerformed = r.getInteger(0, 2);
             break;
         case CREATE_VIEW:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case CREATE_TABLESPACE:
             nrPerformed = r.getInteger(0, 2);
             break;
         case UPDATE:
