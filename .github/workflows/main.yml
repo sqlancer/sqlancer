@@ -608,8 +608,8 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Set up TiDB
         run: |
-          docker pull hawkingrei/tidb-playground:v8.5.2
-          docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:v8.5.2
+          docker pull pingcap/tidb:latest
+          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:v7.5.1
           sleep 10
       - name: Create SQLancer user
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
