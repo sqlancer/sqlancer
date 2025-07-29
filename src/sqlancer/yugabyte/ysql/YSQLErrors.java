@@ -77,6 +77,7 @@ public final class YSQLErrors {
         errors.add("INDEX on column of type 'TEXTARRAY' not yet supported");
         errors.add("cannot be changed");
         errors.add("cannot split table that does not have primary key");
+        errors.add("exceed the safe system maximum");
     }
 
     public static void addTransactionErrors(ExpectedErrors errors) {
