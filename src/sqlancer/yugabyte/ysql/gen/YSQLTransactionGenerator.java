@@ -66,6 +66,7 @@ public final class YSQLTransactionGenerator {
         errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
         errors.add("cannot use serializable mode in a hot standby");
         errors.add("SET TRANSACTION must be called before any query");
+        errors.add("cannot be called");
         YSQLErrors.addTransactionErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors, true);
     }

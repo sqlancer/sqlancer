@@ -207,6 +207,7 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
                         || e.getMessage().contains("could not serialize access due to concurrent update")
                         || e.getMessage().contains("not onlined")
                         || e.getMessage().contains("is being accessed by other users")
+                        || e.getMessage().contains("Timed out waiting")
                         || e.getMessage().contains("Restarting a DDL transaction not supported"))
                         && counter < 20) {
                     counter++;
@@ -285,6 +286,8 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
             }
         });
         se.executeStatements();
+        ExpectedErrors errors = new ExpectedErrors();
+        YSQLErrors.addTransactionErrors(errors);
         globalState.executeStatement(new SQLQueryAdapter("COMMIT", true));
         globalState.executeStatement(new SQLQueryAdapter("SET SESSION statement_timeout = 15000;\n"));
     }

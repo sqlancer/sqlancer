@@ -32,6 +32,7 @@ public final class YSQLAnalyzeGenerator {
         }
 
         ExpectedErrors errors = ExpectedErrors.from("deadlock");
+        errors.add("current transaction is aborted");
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

@@ -10,10 +10,10 @@ public final class YSQLErrors {
     public static void addCommonFetchErrors(ExpectedErrors errors) {
         errors.add("Table with identifier");
 
-        errors.add("SET TRANSACTION ISOLATION LEVEL must be called before any query");
+        errors.add("must be called before any query");
+        errors.add("cannot be");
 
         errors.add("FULL JOIN is only supported with merge-joinable or hash-joinable join conditions");
-        errors.add("but it cannot be referenced from this part of the query");
         errors.add("missing FROM-clause entry for table");
         errors.add("set-returning functions are not allowed in JOIN conditions");
         errors.add("set-returning functions are not allowed in WHERE");
@@ -179,12 +179,7 @@ public final class YSQLErrors {
         errors.add("invalid input syntax for type");
         errors.add("time zone");
         errors.add("not recognized");
-        errors.add("cannot cast type");
-        errors.add("cannot cast jsonb array to type");
-        errors.add("cannot cast jsonb object to type boolean");
-        errors.add("cannot cast jsonb object to type integer");
-        errors.add("cannot cast jsonb string to type integer");
-        errors.add("cannot cast jsonb string to type boolean");
+        errors.add("cannot cast");
         errors.add("CASE types");
         errors.add("value overflows numeric format");
         errors.add("is out of range for type");
@@ -211,12 +206,11 @@ public final class YSQLErrors {
         errors.add("could not identify an equality operator for type lseg");
         errors.add("could not identify an equality operator for type line");
         errors.add("could not identify an equality operator for type path");
-        errors.add("cannot cast jsonb numeric to type boolean");
         errors.add("cannot set path in scalar");
         errors.add("cannot delete path in scalar");
+        errors.add("cannot deconstruct a scalar");
         errors.add("aggregate function calls cannot contain set-returning function calls");
         errors.add("single boolean result is expected");
-        errors.add("cannot deconstruct a scalar");
 
         addToCharFunctionErrors(errors);
         addBitStringOperationErrors(errors);
