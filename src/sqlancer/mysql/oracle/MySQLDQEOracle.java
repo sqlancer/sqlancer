@@ -171,7 +171,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         errorMessage += compareSelectAndDelete == null ? "" : compareSelectAndDelete + "\n";
         errorMessage += compareUpdateAndDelete == null ? "" : compareUpdateAndDelete + "\n";
 
-        if (!errorMessage.equals("")) {
+        if (!errorMessage.isEmpty()) {
             throw new AssertionError(errorMessage);
         } else {
             state.getState().getLocalState().log("PASS");
@@ -190,7 +190,6 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             if (!selectResult.hasSameAccessedRows(updateResult)) {
                 return "SELECT accessed different rows from UPDATE.";
             }
-            return null;
         } else { // update has errors
             if (hasUpdateSpecificErrors(updateResult)) {
                 if (updateResult.hasAccessedRows()) {
@@ -202,19 +201,10 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             }
 
             // update errors should all appear in the select errors
-            List<SQLQueryError> queryErrors = new ArrayList<>(selectResult.getQueryErrors());
+            List<SQLQueryError> selectErrors = new ArrayList<>(selectResult.getQueryErrors());
             for (int i = 0; i < updateResult.getQueryErrors().size(); i++) {
                 SQLQueryError updateError = updateResult.getQueryErrors().get(i);
-                boolean found = false;
-                for (int j = 0; j < queryErrors.size(); j++) {
-                    SQLQueryError selectError = queryErrors.get(j);
-                    if (selectError.hasSameCodeAndMessage(updateError)) {
-                        queryErrors.remove(selectError);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
+                if (!isFound(selectErrors, updateError)) {
                     return "SELECT has different errors from UPDATE.";
                 }
             }
@@ -227,11 +217,28 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 if (!selectResult.hasSameAccessedRows(updateResult)) {
                     return "SELECT accessed different rows from UPDATE when errors happen.";
                 }
-
             }
-
-            return null;
         }
+        return null;
+    }
+
+    /**
+     *
+     * @param selectErrors selectQueryErrors
+     * @param targetError update or delete queryError
+     * @return is targetError found in selectQueryErrors
+     */
+    private static boolean isFound(List<SQLQueryError> selectErrors, SQLQueryError targetError) {
+        boolean found = false;
+        for (int i = 0; i < selectErrors.size(); i++) {
+            SQLQueryError selectError = selectErrors.get(i);
+            if (selectError.hasSameCodeAndMessage(targetError)) {
+                selectErrors.remove(i);
+                found = true;
+                break;
+            }
+        }
+        return found;
     }
 
     public String compareSelectAndDelete(SQLQueryResult selectResult, SQLQueryResult deleteResult) {
@@ -242,7 +249,6 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             if (!selectResult.hasSameAccessedRows(deleteResult)) {
                 return "SELECT accessed different rows from DELETE.";
             }
-            return null;
         } else { // delete has errors
             if (hasDeleteSpecificErrors(deleteResult)) {
                 if (deleteResult.hasAccessedRows()) {
@@ -254,19 +260,10 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             }
 
             // delete errors should all appear in the select errors
-            List<SQLQueryError> queryErrors = new ArrayList<>(selectResult.getQueryErrors());
+            List<SQLQueryError> selectErrors = new ArrayList<>(selectResult.getQueryErrors());
             for (int i = 0; i < deleteResult.getQueryErrors().size(); i++) {
                 SQLQueryError deleteError = deleteResult.getQueryErrors().get(i);
-                boolean found = false;
-                for (int j = 0; j < queryErrors.size(); j++) {
-                    SQLQueryError selectError = queryErrors.get(j);
-                    if (selectError.hasSameCodeAndMessage(deleteError)) {
-                        queryErrors.remove(deleteError);
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
+                if (!isFound(selectErrors, deleteError)) {
                     return "SELECT has different errors from DELETE.";
                 }
             }
@@ -280,9 +277,8 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                     return "SELECT accessed different rows from DELETE when errors happen.";
                 }
             }
-
-            return null;
         }
+        return null;
     }
 
     public String compareUpdateAndDelete(SQLQueryResult updateResult, SQLQueryResult deleteResult) {
