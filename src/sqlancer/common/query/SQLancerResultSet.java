@@ -4,8 +4,6 @@ import java.io.Closeable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import sqlancer.common.query.SQLQueryError.ErrorLevel;
-
 public class SQLancerResultSet implements Closeable {
 
     ResultSet rs;
@@ -42,15 +40,6 @@ public class SQLancerResultSet implements Closeable {
         } catch (NumberFormatException e) {
             throw new SQLException(e);
         }
-    }
-
-    // This method is to fetch the result of SQL: "SHOW WARNINGS;"
-    public ErrorLevel getErrorLevel(String colName) throws SQLException {
-        String res = rs.getString(colName);
-        if (res == null) {
-            return ErrorLevel.WARNING;
-        }
-        return "ERROR".equalsIgnoreCase(res.trim()) ? ErrorLevel.ERROR : ErrorLevel.WARNING;
     }
 
     public String getString(String colName) throws SQLException {

@@ -1,5 +1,7 @@
 package sqlancer.mysql.oracle;
 
+import static sqlancer.ComparatorHelper.getResultSetFirstColumnAsString;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -136,13 +138,10 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         // Especially, in MySQLUnaryPostfixOperation and MySQLUnaryPrefixOperation
         String whereClauseStr = MySQLVisitor.asString(whereClause);
 
-        // Generate a SELECT statement
         String selectStmt = generateSelectStatement(tables, tableName, whereClauseStr);
 
-        // Generate an UPDATE statement
         String updateStmt = generateUpdateStatement(tables, tableName, whereClauseStr);
 
-        // Generate a DELETE statement
         String deleteStmt = generateDeleteStatement(tables, tableName, whereClauseStr);
 
         for (MySQLTable table : tables.getTables()) {
@@ -401,14 +400,8 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 String updated = tableName + "." + COLUMN_UPDATED;
                 String selectRowIdWithUpdated = String.format("SELECT %s FROM %s WHERE %s = 1", rowId, tableName,
                         updated);
-                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowIdWithUpdated).executeAndGet(state, false);
-                HashSet<String> rows = new HashSet<>();
-                if (resultSet != null) {
-                    while (resultSet.next()) {
-                        rows.add(resultSet.getString(rowId));
-                    }
-                    resultSet.close();
-                }
+                HashSet<String> rows = new HashSet<>(
+                        getResultSetFirstColumnAsString(selectRowIdWithUpdated, updateExpectedErrors, state));
                 accessedRows.put(table, rows);
             }
 
@@ -426,14 +419,8 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 String tableName = table.getName();
                 String rowId = tableName + "." + COLUMN_ROWID;
                 String selectRowId = String.format("SELECT %s FROM %s", rowId, tableName);
-                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowId).executeAndGet(state, false);
-                HashSet<String> rows = new HashSet<>();
-                if (resultSet != null) {
-                    while (resultSet.next()) {
-                        rows.add(resultSet.getString(rowId));
-                    }
-                    resultSet.close();
-                }
+                HashSet<String> rows = new HashSet<>(
+                        getResultSetFirstColumnAsString(selectRowId, deleteExpectedErrors, state));
                 accessedRows.put(table, rows);
             }
 
@@ -448,15 +435,8 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
                 String tableName = table.getName();
                 String rowId = tableName + "." + COLUMN_ROWID;
                 String selectRowId = String.format("SELECT %s FROM %s", rowId, tableName);
-                SQLancerResultSet resultSet = new SQLQueryAdapter(selectRowId).executeAndGet(state, false);
-                HashSet<String> rows = new HashSet<>();
-                if (resultSet != null) {
-                    while (resultSet.next()) {
-                        rows.add(resultSet.getString(rowId));
-                    }
-                    resultSet.close();
-                }
-
+                HashSet<String> rows = new HashSet<>(
+                        getResultSetFirstColumnAsString(selectRowId, deleteExpectedErrors, state));
                 accessedRows.get(table).removeAll(rows);
             }
 
@@ -472,7 +452,8 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         if (resultSet != null) {
             while (resultSet.next()) {
                 SQLQueryError queryError = new SQLQueryError();
-                queryError.setLevel(resultSet.getErrorLevel("Level"));
+                queryError.setLevel(resultSet.getString("Level").equalsIgnoreCase("ERROR")
+                        ? SQLQueryError.ErrorLevel.ERROR : SQLQueryError.ErrorLevel.WARNING);
                 queryError.setCode(resultSet.getInt("Code"));
                 queryError.setMessage(resultSet.getString("Message"));
                 queryErrors.add(queryError);
