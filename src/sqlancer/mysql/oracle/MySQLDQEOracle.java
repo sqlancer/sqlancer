@@ -224,8 +224,11 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
 
     /**
      *
-     * @param selectErrors selectQueryErrors
-     * @param targetError update or delete queryError
+     * @param selectErrors
+     *            selectQueryErrors
+     * @param targetError
+     *            update or delete queryError
+     *
      * @return is targetError found in selectQueryErrors
      */
     private static boolean isFound(List<SQLQueryError> selectErrors, SQLQueryError targetError) {
