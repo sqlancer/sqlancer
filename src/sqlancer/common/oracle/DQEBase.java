@@ -1,7 +1,6 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -117,16 +116,10 @@ public abstract class DQEBase<S extends SQLGlobalState<?, ?>> {
             return queryErrors.isEmpty();
         }
 
-        public boolean hasErrors() {
-            return !hasEmptyErrors();
-        }
-
         public boolean hasSameErrors(SQLQueryResult that) {
             if (queryErrors.size() != that.getQueryErrors().size()) {
                 return false;
             } else {
-                Collections.sort(queryErrors);
-                Collections.sort(that.getQueryErrors());
                 for (int i = 0; i < queryErrors.size(); i++) {
                     if (!queryErrors.get(i).equals(that.getQueryErrors().get(i))) {
                         return false;

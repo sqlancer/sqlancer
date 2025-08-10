@@ -4,6 +4,7 @@ import static sqlancer.ComparatorHelper.getResultSetFirstColumnAsString;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,9 +50,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         MySQLErrors.addExpressionErrors(selectExpectedErrors);
 
         MySQLErrors.addExpressionErrors(updateExpectedErrors);
-        updateExpectedErrors.add("cannot be null");
-        updateExpectedErrors.add("Duplicate entry");
-        updateExpectedErrors.add("The value specified for generated column");
+        MySQLErrors.addInsertUpdateErrors(updateExpectedErrors);
 
         MySQLErrors.addExpressionErrors(deleteExpectedErrors);
         deleteExpectedErrors.add("a foreign key constraint fails");
@@ -173,8 +172,6 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
 
         if (!errorMessage.isEmpty()) {
             throw new AssertionError(errorMessage);
-        } else {
-            state.getState().getLocalState().log("PASS");
         }
 
         for (MySQLTable table : tables.getTables()) {
@@ -184,7 +181,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
 
     public String compareSelectAndUpdate(SQLQueryResult selectResult, SQLQueryResult updateResult) {
         if (updateResult.hasEmptyErrors()) {
-            if (selectResult.hasErrors()) {
+            if (!selectResult.hasEmptyErrors()) {
                 return "SELECT has errors, but UPDATE does not.";
             }
             if (!selectResult.hasSameAccessedRows(updateResult)) {
@@ -246,7 +243,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
 
     public String compareSelectAndDelete(SQLQueryResult selectResult, SQLQueryResult deleteResult) {
         if (deleteResult.hasEmptyErrors()) {
-            if (selectResult.hasErrors()) {
+            if (!selectResult.hasEmptyErrors()) {
                 return "SELECT has errors, but DELETE does not.";
             }
             if (!selectResult.hasSameAccessedRows(deleteResult)) {
@@ -459,7 +456,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             }
             resultSet.close();
         }
-
+        Collections.sort(queryErrors);
         return queryErrors;
     }
 
