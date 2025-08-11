@@ -119,16 +119,8 @@ public final class PostgresMergeGenerator {
                         sb.append(column.getName()).append(" = 0");
                     }
 
-                    if (Randomly.getBooleanWithSmallProbability() && Randomly.getBooleanWithSmallProbability()) {
-                        sb.append(" WHERE ");
-                        sb.append(generateWhereCondition(targetTable));
-                    }
                 } else {
                     sb.append(" DELETE");
-                    if (Randomly.getBooleanWithSmallProbability() && Randomly.getBooleanWithSmallProbability()) {
-                        sb.append(" WHERE ");
-                        sb.append(generateWhereCondition(targetTable));
-                    }
                 }
             }
 
@@ -212,6 +204,44 @@ public final class PostgresMergeGenerator {
                 && sourceTable.getColumns().stream().anyMatch(c -> c.getName().equals(targetColumn.getName()));
     }
 
+    // Helper method to append column equality conditions
+    private static void appendColumnEqualityConditions(StringBuilder sb, List<PostgresColumn> columns) {
+        if (columns.size() > 1) {
+            for (int i = 0; i < columns.size(); i++) {
+                if (i > 0) {
+                    sb.append(" AND ");
+                }
+                PostgresColumn column = columns.get(i);
+                sb.append(generateColumnReference(column, "target"));
+                sb.append(" = ");
+                sb.append(generateColumnReference(column, "source"));
+            }
+        } else {
+            PostgresColumn column = columns.get(0);
+            sb.append(generateColumnReference(column, "target"));
+            sb.append(" = ");
+            sb.append(generateColumnReference(column, "source"));
+        }
+    }
+
+    // Helper method to get column value based on source type
+    private static String getColumnValue(PostgresColumn column, List<PostgresColumn> sourceColumns,
+            PostgresTable sourceTable) {
+        if (sourceColumns != null) {
+            if (Randomly.getBoolean() && sourceHasColumn(column, sourceColumns)) {
+                return generateColumnReference(column, "source");
+            } else {
+                return "0";
+            }
+        } else {
+            if (Randomly.getBoolean() && sourceHasColumn(column, sourceTable)) {
+                return generateColumnReference(column, "source");
+            } else {
+                return "0";
+            }
+        }
+    }
+
     private static PostgresTable getSourceTable(PostgresGlobalState globalState, PostgresTable targetTable) {
         List<PostgresTable> availableTables = globalState.getSchema().getDatabaseTables().stream()
                 .filter(t -> !t.getName().equals(targetTable.getName()) && t.isInsertable())
@@ -277,75 +307,9 @@ public final class PostgresMergeGenerator {
         }
 
         List<PostgresColumn> columns = Randomly.nonEmptySubset(commonColumns);
-        if (columns.size() > 1) {
-            for (int i = 0; i < columns.size(); i++) {
-                if (i > 0) {
-                    sb.append(" AND ");
-                }
-                PostgresColumn column = columns.get(i);
-                sb.append(generateColumnReference(column, "target"));
-                sb.append(" = ");
-                sb.append(generateColumnReference(column, "source"));
-            }
-        } else {
-            PostgresColumn column = columns.get(0);
-            sb.append(generateColumnReference(column, "target"));
-            sb.append(" = ");
-            sb.append(generateColumnReference(column, "source"));
-        }
+        appendColumnEqualityConditions(sb, columns);
 
         return sb.toString();
-    }
-
-    private static String generateUpdateSet(PostgresTable targetTable, List<PostgresColumn> sourceColumns) {
-        StringBuilder sb = new StringBuilder();
-
-        List<PostgresColumn> updateColumns = targetTable.getRandomNonEmptyColumnSubset();
-        for (int i = 0; i < updateColumns.size(); i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            PostgresColumn column = updateColumns.get(i);
-            sb.append(column.getName());
-            sb.append(" = ");
-
-            if (Randomly.getBoolean() && sourceHasColumn(column, sourceColumns)) {
-                sb.append(generateColumnReference(column, "source"));
-            } else {
-                sb.append("0");
-            }
-        }
-
-        return sb.toString();
-    }
-
-    private static String generateInsertValues(List<PostgresColumn> columns, List<PostgresColumn> sourceColumns) {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < columns.size(); i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-
-            PostgresColumn column = columns.get(i);
-
-            if (Randomly.getBoolean() && sourceHasColumn(column, sourceColumns)) {
-                sb.append(generateColumnReference(column, "source"));
-            } else {
-                sb.append("0");
-            }
-        }
-
-        return sb.toString();
-    }
-
-    private static String generateWhereCondition(PostgresTable targetTable) {
-        if (Randomly.getBoolean()) {
-            PostgresColumn column = targetTable.getRandomColumn();
-            return generateColumnReference(column, "target") + " IS NOT NULL";
-        } else {
-            return "TRUE";
-        }
     }
 
     private static String generateMatchingCondition(PostgresTable targetTable, PostgresTable sourceTable) {
@@ -362,29 +326,22 @@ public final class PostgresMergeGenerator {
         }
 
         List<PostgresColumn> columns = Randomly.nonEmptySubset(commonColumns);
-        if (columns.size() > 1) {
-            for (int i = 0; i < columns.size(); i++) {
-                if (i > 0) {
-                    sb.append(" AND ");
-                }
-                PostgresColumn column = columns.get(i);
-                sb.append(generateColumnReference(column, "target"));
-                sb.append(" = ");
-                sb.append(generateColumnReference(column, "source"));
-            }
-        } else {
-            PostgresColumn column = columns.get(0);
-            sb.append(generateColumnReference(column, "target"));
-            sb.append(" = ");
-            sb.append(generateColumnReference(column, "source"));
-        }
+        appendColumnEqualityConditions(sb, columns);
 
         return sb.toString();
     }
 
     private static String generateUpdateSet(PostgresTable targetTable, PostgresTable sourceTable) {
-        StringBuilder sb = new StringBuilder();
+        return appendSourceColumn(targetTable, null, sourceTable);
+    }
 
+    private static String generateUpdateSet(PostgresTable targetTable, List<PostgresColumn> sourceColumns) {
+        return appendSourceColumn(targetTable, sourceColumns, null);
+    }
+
+    private static String appendSourceColumn(PostgresTable targetTable, List<PostgresColumn> sourceColumns,
+            PostgresTable sourceTable) {
+        StringBuilder sb = new StringBuilder();
         List<PostgresColumn> updateColumns = targetTable.getRandomNonEmptyColumnSubset();
         for (int i = 0; i < updateColumns.size(); i++) {
             if (i > 0) {
@@ -393,34 +350,29 @@ public final class PostgresMergeGenerator {
             PostgresColumn column = updateColumns.get(i);
             sb.append(column.getName());
             sb.append(" = ");
-
-            if (Randomly.getBoolean() && sourceHasColumn(column, sourceTable)) {
-                sb.append(generateColumnReference(column, "source"));
-            } else {
-                sb.append("0");
-            }
+            sb.append(getColumnValue(column, sourceColumns, sourceTable));
         }
-
         return sb.toString();
     }
 
     private static String generateInsertValues(List<PostgresColumn> columns, PostgresTable sourceTable) {
-        StringBuilder sb = new StringBuilder();
+        return appendInsertValues(columns, null, sourceTable);
+    }
 
+    private static String generateInsertValues(List<PostgresColumn> columns, List<PostgresColumn> sourceColumns) {
+        return appendInsertValues(columns, sourceColumns, null);
+    }
+
+    private static String appendInsertValues(List<PostgresColumn> columns, List<PostgresColumn> sourceColumns,
+            PostgresTable sourceTable) {
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < columns.size(); i++) {
             if (i > 0) {
                 sb.append(", ");
             }
-
             PostgresColumn column = columns.get(i);
-
-            if (Randomly.getBoolean() && sourceHasColumn(column, sourceTable)) {
-                sb.append(generateColumnReference(column, "source"));
-            } else {
-                sb.append("0");
-            }
+            sb.append(getColumnValue(column, sourceColumns, sourceTable));
         }
-
         return sb.toString();
     }
 }
