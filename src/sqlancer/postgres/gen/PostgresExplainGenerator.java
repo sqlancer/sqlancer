@@ -51,6 +51,9 @@ public final class PostgresExplainGenerator {
         if (Randomly.getBoolean()) {
             sb.append("(SUMMARY) ");
         }
+        if (Randomly.getBoolean()) {
+            sb.append("(GENERIC_PLAN) ");
+        }
 
         sb.append(selectStr);
         return sb.toString();
