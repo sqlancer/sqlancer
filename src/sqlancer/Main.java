@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -78,6 +79,7 @@ public final class Main {
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
         private FileWriter reduceFileWriter;
+        private Path reproduceFilePath;
 
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
@@ -127,7 +129,13 @@ public final class Main {
                     reduceFileDir.mkdir();
                 }
                 this.reduceFile = new File(reduceFileDir, databaseName + "-reduce.log");
-
+            }
+            if (options.serializeReproduceState()) {
+                File reproduceFileDir = new File(dir, "reproduce");
+                if (!reproduceFileDir.exists()) {
+                    reproduceFileDir.mkdir();
+                }
+                reproduceFilePath = new File(reproduceFileDir, databaseName + ".ser").toPath();
             }
             this.databaseProvider = provider;
         }
@@ -341,6 +349,10 @@ public final class Main {
             result = result.replaceAll("i[0-9]+", "i0"); // Avoid duplicate indexes
             return result + "\n";
         }
+
+        public Path getReproduceFilePath() {
+            return reproduceFilePath;
+        }
     }
 
     public static class QueryManager<C extends SQLancerDBConnection> {
@@ -461,6 +473,9 @@ public final class Main {
                     throw new AssertionError(e);
                 }
 
+                if (options.serializeReproduceState() && reproducer != null) {
+                    stateToRepro.serialize(logger.getReproduceFilePath());
+                }
                 if (options.reduceAST() && !options.useReducer()) {
                     throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
                 }
@@ -675,6 +690,9 @@ public final class Main {
                         executor.getStateToReproduce().exception = reduce.getMessage();
                         executor.getLogger().logFileWriter = null;
                         executor.getLogger().logException(reduce, executor.getStateToReproduce());
+                        if (options.serializeReproduceState()) {
+                            executor.getStateToReproduce().serialize(executor.getLogger().getReproduceFilePath());
+                        }
                         return false;
                     } finally {
                         try {
