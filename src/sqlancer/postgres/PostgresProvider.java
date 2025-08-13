@@ -279,14 +279,14 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }
         Connection con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
         globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-        
+
         String dropCommand = "DROP DATABASE";
         boolean forceDrop = Randomly.getBoolean();
         if (forceDrop) {
             dropCommand += " FORCE";
         }
         dropCommand += " IF EXISTS " + databaseName;
-        
+
         globalState.getState().logStatement(dropCommand + ";");
         try (Statement s = con.createStatement()) {
             s.execute(dropCommand);
@@ -302,7 +302,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                 throw e;
             }
         }
-        
+
         // Create database section
         createDatabaseCommand = getCreateDatabaseCommand(globalState);
         globalState.getState().logStatement(createDatabaseCommand + ";");

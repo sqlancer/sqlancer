@@ -1,122 +1,38 @@
 package sqlancer;
 
 import java.io.Closeable;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import sqlancer.common.query.Query;
 
-public class StateToReproduce {
+public class StateToReproduce implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public enum ErrorType {
-        EXCEPTION, NOREC, TLP_WHERE
-    }
-
-    private List<Query<?>> statements = new ArrayList<>();
+    private transient List<Query<?>> statements = new ArrayList<>();
 
     private final String databaseName;
 
-    private final DatabaseProvider<?, ?, ?> databaseProvider;
+    private transient DatabaseProvider<?, ?, ?> databaseProvider;
 
-    private ErrorType errorType;
-
-    private Map<String, Set<String>> expectedErrorsMap = new HashMap<>();
-
-    private Map<String, String> reproducerData;
-
-    private String exception;
+    public String exception;
 
     public String databaseVersion;
 
     protected long seedValue;
 
-    public OracleRunReproductionState localState;
-
-    private static class StateToReproduceSerializor implements Serializable {
-        private static final long serialVersionUID = 1L;
-
-        List<String> statements;
-        String databaseName;
-        String DBMSName;
-        ErrorType errorType;
-        Map<String, Set<String>> expectedErrorsMap;
-        Map<String, String> reproducerData;
-        String exception;
-    }
+    public transient OracleRunReproductionState localState;
 
     public StateToReproduce(String databaseName, DatabaseProvider<?, ?, ?> databaseProvider) {
         this.databaseName = databaseName;
         this.databaseProvider = databaseProvider;
-    }
-
-    public void serialize(String fileName) {
-        StateToReproduceSerializor serializor = new StateToReproduceSerializor();
-        serializor.statements = this.statements.stream().map(Query::getLogString).collect(Collectors.toList());
-        serializor.databaseName = this.databaseName;
-        if (this.databaseProvider != null) {
-            serializor.DBMSName = this.databaseProvider.getDBMSName();
-        }
-        serializor.errorType = this.errorType;
-        serializor.expectedErrorsMap = this.expectedErrorsMap;
-        serializor.reproducerData = this.reproducerData;
-        serializor.exception = this.exception;
-
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
-            oos.writeObject(serializor);
-        } catch (IOException e) {
-            throw new AssertionError(e);
-        }
-    }
-
-    public static StateToReproduce deserialize(String fileName) {
-        StateToReproduceSerializor serializor;
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
-            serializor = (StateToReproduceSerializor) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new AssertionError(e);
-        }
-
-        DatabaseProvider<?, ?, ?> provider = null;
-        List<DatabaseProvider<?, ?, ?>> providers = Main.getDBMSProviders();
-        for (DatabaseProvider<?, ?, ?> p : providers) {
-            if (p.getDBMSName().equals(serializor.DBMSName)) {
-                provider = p;
-                break;
-            }
-        }
-
-        StateToReproduce state = new StateToReproduce(serializor.databaseName, provider);
-        List<Query<?>> queries = new ArrayList<>();
-        if (serializor.statements != null) {
-            for (String s : serializor.statements) {
-                queries.add(provider.getLoggableFactory().getQueryForStateToReproduce(s));
-            }
-        }
-        state.setStatements(queries);
-        state.setErrorType(serializor.errorType);
-        state.setExpectedErrorsMap(serializor.expectedErrorsMap);
-        state.setReproducerData(serializor.reproducerData);
-        state.setException(serializor.exception);
-
-        return state;
-    }
-
-    public void addExpectedError(String query, String errorMessage) {
-        if (query != null && errorMessage != null) {
-            expectedErrorsMap.computeIfAbsent(query, k -> new HashSet<>()).add(errorMessage);
-        }
     }
 
     public String getDatabaseName() {
@@ -129,22 +45,6 @@ public class StateToReproduce {
 
     public void setStatements(List<Query<?>> statements) {
         this.statements = statements;
-    }
-
-    public void setException(String exception) {
-        this.exception = exception;
-    }
-
-    public void setErrorType(ErrorType errorType) {
-        this.errorType = errorType;
-    }
-
-    public void setExpectedErrorsMap(Map<String, Set<String>> expectedErrorsMap) {
-        this.expectedErrorsMap = expectedErrorsMap;
-    }
-
-    public void setReproducerData(Map<String, String> reproducerData) {
-        this.reproducerData = reproducerData;
     }
 
     /**
@@ -236,5 +136,59 @@ public class StateToReproduce {
 
     public OracleRunReproductionState createLocalState() {
         return new OracleRunReproductionState();
+    }
+
+    public void serialize(Path path) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
+            oos.writeObject(this);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public static StateToReproduce deserialize(Path path) {
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
+            return (StateToReproduce) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+
+        List<String> statementStrings = new ArrayList<>();
+        for (Query<?> q : this.statements) {
+            statementStrings.add(q.getLogString());
+        }
+        out.writeObject(statementStrings);
+        out.writeObject(this.databaseProvider != null ? this.databaseProvider.getDBMSName() : null);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.statements = new ArrayList<>();
+        List<String> statementStrings = (List<String>) in.readObject();
+        String dbmsName = (String) in.readObject();
+
+        DatabaseProvider<?, ?, ?> provider = null;
+        if (dbmsName != null) {
+            List<DatabaseProvider<?, ?, ?>> providers = Main.getDBMSProviders();
+            for (DatabaseProvider<?, ?, ?> p : providers) {
+                if (p.getDBMSName().equals(dbmsName)) {
+                    provider = p;
+                    break;
+                }
+            }
+        }
+
+        if (provider == null || statementStrings == null) {
+            throw new AssertionError("Database provider or statement is null");
+        }
+        this.databaseProvider = provider;
+        for (String s : statementStrings) {
+            this.statements.add(provider.getLoggableFactory().getQueryForStateToReproduce(s));
+        }
     }
 }

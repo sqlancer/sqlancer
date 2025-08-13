@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public final class Main {
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
         private FileWriter reduceFileWriter;
-        private String reproduceFilename;
+        private Path reproduceFilePath;
 
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
@@ -135,7 +136,7 @@ public final class Main {
                 if (!reproduceFileDir.exists()) {
                     reproduceFileDir.mkdir();
                 }
-                reproduceFilename = reproduceFileDir.getAbsolutePath() + "/" + databaseName + ".ser";
+                reproduceFilePath = new File(reproduceFileDir, databaseName + ".ser").toPath();
             }
             this.databaseProvider = provider;
         }
@@ -350,8 +351,8 @@ public final class Main {
             return result + "\n";
         }
 
-        public String getReproduceFilename() {
-            return reproduceFilename;
+        public Path getReproduceFilePath() {
+            return reproduceFilePath;
         }
     }
 
@@ -474,10 +475,7 @@ public final class Main {
                 }
 
                 if (options.serializeReproduceState() && reproducer != null) {
-                    Map<String, String> reproducerData = reproducer.getReproducerData();
-                    stateToRepro.setErrorType(StateToReproduce.ErrorType.valueOf(reproducerData.get("errorType")));
-                    stateToRepro.setReproducerData(reproducerData);
-                    stateToRepro.serialize(logger.getReproduceFilename());
+                    stateToRepro.serialize(logger.getReproduceFilePath());
                 }
                 if (options.reduceAST() && !options.useReducer()) {
                     throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
@@ -690,15 +688,11 @@ public final class Main {
                         return true;
                     } catch (Throwable reduce) {
                         reduce.printStackTrace();
-                        StateToReproduce stateToReproduce = executor.getStateToReproduce();
-                        stateToReproduce
-                                .setException(reduce.getCause() != null ? reduce.getCause().getMessage() : null);
+                        executor.getStateToReproduce().exception = reduce.getMessage();
                         executor.getLogger().logFileWriter = null;
-                        executor.getLogger().logException(reduce, stateToReproduce);
+                        executor.getLogger().logException(reduce, executor.getStateToReproduce());
                         if (options.serializeReproduceState()) {
-                            stateToReproduce.setErrorType(StateToReproduce.ErrorType.EXCEPTION);
-                            stateToReproduce.logStatement(reduce.getMessage()); // Add the exception statement
-                            stateToReproduce.serialize(executor.getLogger().getReproduceFilename());
+                            executor.getStateToReproduce().serialize(executor.getLogger().getReproduceFilePath());
                         }
                         return false;
                     } finally {

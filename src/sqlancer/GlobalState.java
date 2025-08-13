@@ -82,10 +82,6 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
         this.databaseName = databaseName;
     }
 
-    public void addExpectedError(String query, String errorMessage) {
-        state.addExpectedError(query, errorMessage);
-    }
-
     private ExecutionTimer executePrologue(Query<?> q) throws Exception {
         boolean logExecutionTime = getOptions().logExecutionTime();
         ExecutionTimer timer = null;
