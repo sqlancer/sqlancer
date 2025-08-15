@@ -16,7 +16,7 @@ import sqlancer.common.query.Query;
 public class StateToReproduce implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private transient List<Query<?>> statements = new ArrayList<>();
+    private List<Query<?>> statements = new ArrayList<>();
 
     private final String databaseName;
 
@@ -157,19 +157,11 @@ public class StateToReproduce implements Serializable {
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
 
-        List<String> statementStrings = new ArrayList<>();
-        for (Query<?> q : this.statements) {
-            statementStrings.add(q.getLogString());
-        }
-        out.writeObject(statementStrings);
         out.writeObject(this.databaseProvider != null ? this.databaseProvider.getDBMSName() : null);
     }
 
-    @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        this.statements = new ArrayList<>();
-        List<String> statementStrings = (List<String>) in.readObject();
         String dbmsName = (String) in.readObject();
 
         DatabaseProvider<?, ?, ?> provider = null;
@@ -182,14 +174,7 @@ public class StateToReproduce implements Serializable {
                 }
             }
         }
-
-        if (provider == null || statementStrings == null) {
-            throw new AssertionError("Database provider or statement is null");
-        }
         this.databaseProvider = provider;
-        for (String s : statementStrings) {
-            this.statements.add(provider.getLoggableFactory().getQueryForStateToReproduce(s));
-        }
     }
 
     public void setStatements(List<Query<?>> statements) {
