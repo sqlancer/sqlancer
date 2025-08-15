@@ -1,5 +1,7 @@
 package sqlancer.common.log;
 
-public interface Loggable {
+import java.io.Serializable;
+
+public interface Loggable extends Serializable {
     String getLogString();
 }
