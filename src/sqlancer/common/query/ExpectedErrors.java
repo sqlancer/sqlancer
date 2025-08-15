@@ -1,5 +1,6 @@
 package sqlancer.common.query;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -11,7 +12,8 @@ import java.util.regex.Pattern;
  * result in an error "UNIQUE constraint violated" when it attempts to insert a duplicate value in a column declared as
  * UNIQUE.
  */
-public class ExpectedErrors {
+public class ExpectedErrors implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final Set<String> errors;
     private final Set<Pattern> regexes;

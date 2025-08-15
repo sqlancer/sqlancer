@@ -1,35 +1,38 @@
 package sqlancer;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import sqlancer.common.query.Query;
 
-public class StateToReproduce {
+public class StateToReproduce implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private List<Query<?>> statements = new ArrayList<>();
 
     private final String databaseName;
 
-    private final DatabaseProvider<?, ?, ?> databaseProvider;
+    private transient DatabaseProvider<?, ?, ?> databaseProvider;
+
+    public String exception;
 
     public String databaseVersion;
 
     protected long seedValue;
 
-    String exception;
-
-    public OracleRunReproductionState localState;
+    public transient OracleRunReproductionState localState;
 
     public StateToReproduce(String databaseName, DatabaseProvider<?, ?, ?> databaseProvider) {
         this.databaseName = databaseName;
         this.databaseProvider = databaseProvider;
-    }
-
-    public String getException() {
-        return exception;
     }
 
     public String getDatabaseName() {
@@ -38,6 +41,10 @@ public class StateToReproduce {
 
     public String getDatabaseVersion() {
         return databaseVersion;
+    }
+
+    public void setStatements(List<Query<?>> statements) {
+        this.statements = statements;
     }
 
     /**
@@ -131,8 +138,42 @@ public class StateToReproduce {
         return new OracleRunReproductionState();
     }
 
-    public void setStatements(List<Query<?>> statements) {
-        this.statements = statements;
+    public void serialize(Path path) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
+            oos.writeObject(this);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
     }
 
+    public static StateToReproduce deserialize(Path path) {
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
+            return (StateToReproduce) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+
+        out.writeObject(this.databaseProvider != null ? this.databaseProvider.getDBMSName() : null);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        String dbmsName = (String) in.readObject();
+
+        DatabaseProvider<?, ?, ?> provider = null;
+        if (dbmsName != null) {
+            List<DatabaseProvider<?, ?, ?>> providers = Main.getDBMSProviders();
+            for (DatabaseProvider<?, ?, ?> p : providers) {
+                if (p.getDBMSName().equals(dbmsName)) {
+                    provider = p;
+                    break;
+                }
+            }
+        }
+        this.databaseProvider = provider;
+    }
 }
