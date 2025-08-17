@@ -7,6 +7,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLancerResultSet;
 
 public class CnosDBSelectQuery extends CnosDBQueryAdapter {
+    private static final long serialVersionUID = 1L;
     CnosDBResultSet resultSet;
 
     public CnosDBSelectQuery(String query, ExpectedErrors errors) {

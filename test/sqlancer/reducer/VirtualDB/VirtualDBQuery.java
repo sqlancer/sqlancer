@@ -7,6 +7,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import java.sql.SQLException;
 
 public class VirtualDBQuery extends SQLQueryAdapter {
+    private static final long serialVersionUID = 1L;
 
     public VirtualDBQuery(String query) {
         // Since the base class must check the format

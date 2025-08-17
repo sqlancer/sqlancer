@@ -9,6 +9,7 @@ import sqlancer.GlobalState;
 import sqlancer.SQLConnection;
 
 public class SQLQueryResultCheckAdapter extends SQLQueryAdapter {
+    private static final long serialVersionUID = 1L;
 
     private final Consumer<ResultSet> rsChecker;
 

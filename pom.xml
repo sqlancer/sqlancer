@@ -114,7 +114,6 @@
           <target>11</target>
           <compilerArguments>
             <properties>${project.basedir}/.settings/org.eclipse.jdt.core.prefs</properties>
-            <arg>-Xlint:-serial</arg>
           </compilerArguments>
           <compilerId>eclipse</compilerId>
           <showWarnings>true</showWarnings>
