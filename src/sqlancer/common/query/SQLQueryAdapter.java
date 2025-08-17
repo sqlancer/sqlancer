@@ -1,5 +1,6 @@
 package sqlancer.common.query;
 
+import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,7 +10,8 @@ import sqlancer.GlobalState;
 import sqlancer.Main;
 import sqlancer.SQLConnection;
 
-public class SQLQueryAdapter extends Query<SQLConnection> {
+public class SQLQueryAdapter extends Query<SQLConnection> implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final String query;
     private final ExpectedErrors expectedErrors;
