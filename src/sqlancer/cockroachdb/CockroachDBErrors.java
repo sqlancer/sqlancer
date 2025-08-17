@@ -190,6 +190,9 @@ public final class CockroachDBErrors {
         if (CockroachDBBugs.bug88037) {
             errors.add("expected required columns to be a subset of output columns");
         }
+        if (CockroachDBBugs.bug141593) {
+            errors.add("at or near \"collate\": syntax error");
+        }
 
         errors.add("unable to vectorize execution plan"); // SET vectorize=experimental_always;
         errors.add(" mismatched physical types at index"); // SET vectorize=experimental_always;
