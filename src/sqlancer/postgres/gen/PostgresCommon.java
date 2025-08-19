@@ -287,6 +287,21 @@ public final class PostgresCommon {
         case INET:
             sb.append("inet");
             break;
+        case DATE:
+            sb.append("DATE");
+            break;
+        case TIME:
+            sb.append("TIME");
+            if (!generateOnlyKnown && Randomly.getBoolean()) {
+                sb.append(" WITH TIME ZONE");
+            }
+            break;
+        case TIMESTAMP:
+            sb.append("TIMESTAMP");
+            if (!generateOnlyKnown && Randomly.getBoolean()) {
+                sb.append(" WITH TIME ZONE");
+            }
+            break;
         default:
             throw new AssertionError(type);
         }
