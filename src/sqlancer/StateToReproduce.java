@@ -47,6 +47,10 @@ public class StateToReproduce implements Serializable {
         return databaseVersion;
     }
 
+    public DatabaseProvider<?, ?, ?> getDatabaseProvider() {
+        return databaseProvider;
+    }
+
     /**
      * Logs the statement string without executing the corresponding statement.
      *
