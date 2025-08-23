@@ -24,6 +24,7 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
     private ForClause forClause;
     private List<PostgresExpression> windowFunctions = new ArrayList<>();
     private final Map<String, WindowDefinition> windowDefinitions = new HashMap<>();
+    private PostgresWithClause withClause;
 
     public enum ForClause {
         UPDATE("UPDATE"), NO_KEY_UPDATE("NO KEY UPDATE"), SHARE("SHARE"), KEY_SHARE("KEY SHARE");
@@ -189,6 +190,14 @@ public class PostgresSelect extends SelectBase<PostgresExpression>
 
     public ForClause getForClause() {
         return forClause;
+    }
+
+    public PostgresWithClause getWithClause() {
+        return withClause;
+    }
+
+    public void setWithClause(PostgresWithClause withClause) {
+        this.withClause = withClause;
     }
 
     @Override
