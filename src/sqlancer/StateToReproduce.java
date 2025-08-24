@@ -28,7 +28,7 @@ public class StateToReproduce implements Serializable {
 
     String exception;
 
-    public OracleRunReproductionState localState;
+    public transient OracleRunReproductionState localState;
 
     public StateToReproduce(String databaseName, DatabaseProvider<?, ?, ?> databaseProvider) {
         this.databaseName = databaseName;
