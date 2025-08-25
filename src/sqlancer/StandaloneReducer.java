@@ -1,5 +1,7 @@
 package sqlancer;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -14,13 +16,16 @@ public class StandaloneReducer {
     private int partitionNum = 2;
     private final StateToReproduce originalState;
     private final DatabaseProvider<?, ?, ?> databaseProvider;
+    private final Path outputPath;
 
-    public StandaloneReducer(Path serFilePath) throws Exception {
-        this.originalState = StateToReproduce.deserialize(serFilePath);
+    public StandaloneReducer(Path inputPath, Path outputPath) throws Exception {
+        this.originalState = StateToReproduce.deserialize(inputPath);
         this.databaseProvider = originalState.getDatabaseProvider();
         if (this.databaseProvider == null) {
             throw new IllegalStateException("Failed to get database provider from .ser file");
         }
+        this.outputPath = outputPath != null ? outputPath
+                : Paths.get(inputPath.toString().replaceAll("\\.ser$", ".sql"));
     }
 
     /**
@@ -54,14 +59,15 @@ public class StandaloneReducer {
             }
         }
 
-        System.out.println("Reduction completed successfully!");
+        try (PrintWriter writer = new PrintWriter(new FileWriter(outputPath.toFile()))) {
+            for (Query<?> query : queries) {
+                writer.println(query.getQueryString());
+            }
+        }
+        System.out.println("Reduction completed successfully! SQL statements written to: " + outputPath.toString());
         System.out.println("Final size: " + queries.size() + " statements ("
                 + String.format("%.1f", (1.0 - (double) queries.size() / originalState.getStatements().size()) * 100)
                 + "% reduction)");
-        System.out.println("Final queries:");
-        for (Query<?> query : queries) {
-            System.out.println(query.getQueryString());
-        }
 
         return queries;
     }
@@ -100,7 +106,8 @@ public class StandaloneReducer {
                         Query<C> typedQuery = (Query<C>) query;
                         typedQuery.execute(globalState);
                     } catch (Throwable e) {
-                        // Any exception is considered a success
+                        // Any exception not declared as an expected error by the query indicates that an (unexpected)
+                        // exception still exists
                         return true;
                     }
                 }
@@ -116,10 +123,13 @@ public class StandaloneReducer {
         try {
             if (args.length == 0) {
                 System.err.println(
-                        "Usage: java -cp target/sqlancer-2.0.0.jar sqlancer.StandaloneReducer <path-to-ser-file>");
+                        "Usage: java -cp target/sqlancer-2.0.0.jar sqlancer.StandaloneReducer <path-to-ser-file> [output-file]");
                 System.exit(1);
             }
-            StandaloneReducer reducer = new StandaloneReducer(Paths.get(args[0]));
+            Path inputPath = Paths.get(args[0]);
+            Path outputPath = args.length > 1 ? Paths.get(args[1]) : null;
+
+            StandaloneReducer reducer = new StandaloneReducer(inputPath, outputPath);
             reducer.reduce();
         } catch (Throwable e) {
             System.err.println("ERROR: " + e.getMessage());
