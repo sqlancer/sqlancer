@@ -22,6 +22,7 @@ import sqlancer.common.query.SQLQueryError;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractTable;
+import sqlancer.common.schema.AbstractTables;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema;
@@ -57,16 +58,17 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
     }
 
     @Override
-    public String generateSelectStatement(MySQLTables tables, String tableName, String whereClauseStr) {
+    public String generateSelectStatement(AbstractTables<?, ?> tables, String tableName, String whereClauseStr) {
         operateOnSingleTable = tables.getTables().size() == 1;
         List<String> selectColumns = new ArrayList<>();
-        for (MySQLTable table : tables.getTables()) {
+        MySQLTables mySQLTables = (MySQLTables) tables;
+        for (MySQLTable table : mySQLTables.getTables()) {
             selectColumns.add(table.getName() + "." + COLUMN_ROWID);
         }
         if (operateOnSingleTable && Randomly.getBooleanWithSmallProbability()) {
             generateOrderBy = true;
             // generate order by columns
-            for (MySQLColumn column : Randomly.nonEmptySubset(tables.getColumns())) {
+            for (MySQLColumn column : Randomly.nonEmptySubset(mySQLTables.getColumns())) {
                 orderColumns.add(column.getFullQualifiedName());
             }
 
@@ -88,9 +90,10 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
     }
 
     @Override
-    public String generateUpdateStatement(MySQLTables tables, String tableName, String whereClauseStr) {
+    public String generateUpdateStatement(AbstractTables<?, ?> tables, String tableName, String whereClauseStr) {
         List<String> updateColumns = new ArrayList<>();
-        for (MySQLTable table : tables.getTables()) {
+        MySQLTables mySQLTables = (MySQLTables) tables;
+        for (MySQLTable table : mySQLTables.getTables()) {
             updateColumns.add(String.format("%s = 1", table.getName() + "." + COLUMN_UPDATED));
         }
         String updateStmt = String.format("UPDATE %s SET %s WHERE %s", tableName, Strings.join(",", updateColumns),
@@ -105,7 +108,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
     }
 
     @Override
-    public String generateDeleteStatement(MySQLTables tables, String tableName, String whereClauseStr) {
+    public String generateDeleteStatement(String tableName, String whereClauseStr) {
         String deleteStmt;
         if (operateOnSingleTable) {
             deleteStmt = String.format("DELETE FROM %s WHERE %s", tableName, whereClauseStr);
@@ -141,7 +144,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
 
         String updateStmt = generateUpdateStatement(tables, tableName, whereClauseStr);
 
-        String deleteStmt = generateDeleteStatement(tables, tableName, whereClauseStr);
+        String deleteStmt = generateDeleteStatement(tableName, whereClauseStr);
 
         for (MySQLTable table : tables.getTables()) {
             addAuxiliaryColumns(table);

@@ -13,7 +13,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLQueryError;
 import sqlancer.common.schema.AbstractRelationalTable;
-import sqlancer.mysql.MySQLSchema.MySQLTables;
+import sqlancer.common.schema.AbstractTables;
 
 /*
  * In DBMSs, SELECT, UPDATE and DELETE queries utilize predicates (i.e., WHERE clauses) to specify which rows to retrieve, update or delete, respectively.
@@ -54,19 +54,15 @@ public abstract class DQEBase<S extends SQLGlobalState<?, ?>> {
         this.options = state.getOptions();
     }
 
-    public abstract String generateSelectStatement(MySQLTables tables, String tableName, String whereClauseStr);
+    public abstract String generateSelectStatement(AbstractTables<?, ?> tables, String tableName,
+            String whereClauseStr);
 
-    public abstract String generateUpdateStatement(MySQLTables tables, String tableName, String whereClauseStr);
+    public abstract String generateUpdateStatement(AbstractTables<?, ?> tables, String tableName,
+            String whereClauseStr);
 
-    public abstract String generateDeleteStatement(MySQLTables tables, String tableName, String whereClauseStr);
+    public abstract String generateDeleteStatement(String tableName, String whereClauseStr);
 
-    /**
-     * Add auxiliary columns to the database A abstract method, subclasses need to implement it.
-     *
-     * @param table
-     *
-     * @throws SQLException
-     */
+    // Add auxiliary columns to the database A abstract method, subclasses need to implement it.
     public abstract void addAuxiliaryColumns(AbstractRelationalTable<?, ?, ?> table) throws SQLException;
 
     public void dropAuxiliaryColumns(AbstractRelationalTable<?, ?, ?> table) throws SQLException {
