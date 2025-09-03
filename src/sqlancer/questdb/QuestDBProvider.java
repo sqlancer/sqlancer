@@ -116,13 +116,13 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
 
         Connection con = DriverManager.getConnection(url, properties);
         // QuestDB cannot create or drop `DATABASE`, can only create or drop `TABLE`
-        globalState.getState().logStatement("DROP TABLE IF EXISTS " + tableName + " CASCADE");
+        globalState.getState().logStatement("DROP ALL TABLES");
         SQLQueryAdapter createTableCommand = new QuestDBTableGenerator().getQuery(globalState, tableName);
         globalState.getState().logStatement(createTableCommand);
         globalState.getState().logStatement("DROP TABLE IF EXISTS " + tableName);
 
         try (Statement s = con.createStatement()) {
-            s.execute("DROP TABLE IF EXISTS " + tableName);
+            s.execute("DROP ALL TABLES");
         }
         // TODO(anxing): Drop all previous tables in db
         // List<String> tableNames =
