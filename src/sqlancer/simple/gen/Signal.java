@@ -1,0 +1,5 @@
+package sqlancer.simple.gen;
+
+public enum Signal {
+    EXPRESSION, EXPRESSION_LIST, COLUMN_NAME, COLUMN_NAME_LIST, TABLE_NAME, TABLE_NAME_LIST, CONSTANT_VALUE, TYPE_NAME
+}
