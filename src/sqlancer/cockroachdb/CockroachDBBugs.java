@@ -68,6 +68,9 @@ public final class CockroachDBBugs {
     // https://github.com/cockroachdb/cockroach/issues/131875
     public static boolean bug131875 = true;
 
+    // https://github.com/cockroachdb/cockroach/issues/141593
+    public static boolean bug141593 = true;
+
     private CockroachDBBugs() {
     }
 
