@@ -333,6 +333,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
                 return generateTextExpression(depth);
             case DECIMAL:
             case REAL:
+                return generateDoubleExpression(depth);
             case FLOAT:
             case MONEY:
             case INET:
@@ -526,6 +527,30 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         case BINARY_ARITHMETIC_EXPRESSION:
             return new PostgresBinaryArithmeticOperation(generateExpression(depth + 1, PostgresDataType.INT),
                     generateExpression(depth + 1, PostgresDataType.INT), PostgresBinaryOperator.getRandom());
+        default:
+            throw new AssertionError();
+        }
+    }
+
+    private enum DoubleExpression {
+        UNARY_OPERATION, FUNCTION, CAST, BINARY_ARITHMETIC_EXPRESSION
+    }
+
+    private PostgresExpression generateDoubleExpression(int depth) {
+        DoubleExpression option;
+        option = Randomly.fromOptions(DoubleExpression.values());
+        switch (option) {
+        case CAST:
+            return new PostgresCastOperation(generateExpression(depth + 1), getCompoundDataType(PostgresDataType.REAL));
+        case UNARY_OPERATION:
+            PostgresExpression floatExpression = generateExpression(depth + 1, PostgresDataType.FLOAT);
+            return new PostgresPrefixOperation(floatExpression,
+                    Randomly.getBoolean() ? PrefixOperator.UNARY_PLUS : PrefixOperator.UNARY_MINUS);
+        case FUNCTION:
+            return generateFunction(depth + 1, PostgresDataType.REAL);
+        case BINARY_ARITHMETIC_EXPRESSION:
+            return new PostgresBinaryArithmeticOperation(generateExpression(depth + 1, PostgresDataType.REAL),
+                    generateExpression(depth + 1, PostgresDataType.REAL), PostgresBinaryOperator.getRandom());
         default:
             throw new AssertionError();
         }
