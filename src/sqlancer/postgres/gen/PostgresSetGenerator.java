@@ -13,8 +13,8 @@ public final class PostgresSetGenerator {
     private PostgresSetGenerator() {
     }
 
-    private enum ConfigurationOption {
-        // https://www.postgresql.org/docs/13/runtime-config-wal.html
+    enum ConfigurationOption {
+        // https://www.postgresql.org/docs/11/runtime-config-wal.html
         // This parameter can only be set at server start.
         // WAL_LEVEL("wal_level", (r) -> Randomly.fromOptions("replica", "minimal", "logical")),
         // FSYNC("fsync", (r) -> Randomly.fromOptions(1, 0)),
@@ -122,6 +122,10 @@ public final class PostgresSetGenerator {
         ConfigurationOption(String optionName, Function<Randomly, Object> op) {
             this.optionName = optionName;
             this.op = op;
+        }
+
+        String getOptionName() {
+            return this.optionName;
         }
     }
 
