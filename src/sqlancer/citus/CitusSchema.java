@@ -63,8 +63,11 @@ public class CitusSchema extends PostgresSchema {
                 "SELECT table_name, column_to_column_name(logicalrelid, partkey) AS dist_col_name, colocationid FROM information_schema.tables LEFT OUTER JOIN pg_dist_partition ON logicalrelid=table_name::regclass WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%';")) {
             while (rs.next()) {
                 String tableName = rs.getString("table_name");
-                /* citus_tables is a helper view, we don't need to test with it so we let's ignore it */
-                if (tableName.equals("citus_tables")) {
+                /*
+                 * citus_tables and citus_schemas are helper views, we don't need to test with them so we let's ignore
+                 * them
+                 */
+                if (tableName.equals("citus_tables") || tableName.equals("citus_schemas")) {
                     continue;
                 }
                 String distributionColumnName = rs.getString("dist_col_name");
