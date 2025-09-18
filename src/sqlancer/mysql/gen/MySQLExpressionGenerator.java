@@ -156,6 +156,66 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         }
     }
 
+    private String generateStringLiteral() {
+        String baseString = state.getRandomly().getString();
+        StringBuilder result = new StringBuilder();
+
+        // Randomly choose between single and double quotes
+        char quoteChar = Randomly.getBoolean() ? '\'' : '"';
+        result.append(quoteChar);
+
+        for (int i = 0; i < baseString.length(); i++) {
+            char c = baseString.charAt(i);
+            switch (c) {
+            case '\n':
+                result.append("\\n");
+                break;
+            case '\r':
+                result.append("\\r");
+                break;
+            case '\t':
+                result.append("\\t");
+                break;
+            case '\b':
+                result.append("\\b");
+                break;
+            case '\0':
+                result.append("\\0");
+                break;
+            case '\u001a':
+                result.append("\\Z");
+                break;
+            case '\\':
+                result.append("\\\\");
+                break;
+            case '\'':
+                if (quoteChar == '\'') {
+                    result.append("\\'");
+                } else {
+                    result.append(c);
+                }
+                break;
+            case '"':
+                if (quoteChar == '"') {
+                    result.append("\\\"");
+                } else {
+                    result.append(c);
+                }
+                break;
+            default:
+                // Only escape non-printable characters
+                if (c < 32 || c > 126) {
+                    result.append(String.format("\\x%02x", (int) c));
+                } else {
+                    result.append(c);
+                }
+            }
+        }
+
+        result.append(quoteChar);
+        return result.toString();
+    }
+
     @Override
     public MySQLExpression generateConstant() {
         ConstantType[] values;
@@ -170,9 +230,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         case NULL:
             return MySQLConstant.createNullConstant();
         case STRING:
-            /* Replace characters that still trigger open bugs in MySQL */
-            String string = state.getRandomly().getString().replace("\\", "").replace("\n", "");
-            return MySQLConstant.createStringConstant(string);
+            return MySQLConstant.createStringConstant(generateStringLiteral());
         case DOUBLE:
             double val = state.getRandomly().getDouble();
             return new MySQLDoubleConstant(val);
