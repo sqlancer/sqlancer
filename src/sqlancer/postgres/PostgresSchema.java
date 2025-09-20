@@ -31,7 +31,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
     private final String databaseName;
 
     public enum PostgresDataType {
-        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET;
+        INT, BOOLEAN, TEXT, DECIMAL, FLOAT, REAL, RANGE, MONEY, BIT, INET, TIMESTAMP, DATE, TIME;
 
         public static PostgresDataType getRandomType() {
             List<PostgresDataType> dataTypes = new ArrayList<>(Arrays.asList(values()));
@@ -43,8 +43,45 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
                 dataTypes.remove(PostgresDataType.RANGE);
                 dataTypes.remove(PostgresDataType.MONEY);
                 dataTypes.remove(PostgresDataType.BIT);
+                dataTypes.remove(PostgresDataType.TIMESTAMP);
+                dataTypes.remove(PostgresDataType.DATE);
+                dataTypes.remove(PostgresDataType.TIME);
             }
             return Randomly.fromList(dataTypes);
+        }
+
+        @Override
+        public String toString() {
+            switch (this) {
+            case INT:
+                return "INTEGER";
+            case BOOLEAN:
+                return "BOOLEAN";
+            case TEXT:
+                return "TEXT";
+            case DECIMAL:
+                return "DECIMAL";
+            case FLOAT:
+                return "FLOAT";
+            case REAL:
+                return "REAL";
+            case RANGE:
+                return "INT4RANGE";
+            case MONEY:
+                return "MONEY";
+            case BIT:
+                return "BIT";
+            case INET:
+                return "INET";
+            case TIMESTAMP:
+                return "TIMESTAMP";
+            case DATE:
+                return "DATE";
+            case TIME:
+                return "TIME WITH TIME ZONE";
+            default:
+                throw new AssertionError(this);
+            }
         }
     }
 
@@ -141,6 +178,17 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
             return PostgresDataType.BIT;
         case "inet":
             return PostgresDataType.INET;
+
+        case "timestamp":
+        case "timestamp with time zone":
+        case "timestamp without time zone":
+            return PostgresDataType.TIMESTAMP;
+        case "date":
+            return PostgresDataType.DATE;
+        case "time":
+        case "time with time zone":
+        case "time without time zone":
+            return PostgresDataType.TIME;
         default:
             throw new AssertionError(typeString);
         }
