@@ -7,7 +7,7 @@ public class TiDBColumnReference implements TiDBExpression {
     private final TiDBColumn c;
     private final TiDBConstant value;
 
-    public TiDBColumnReference(TiDBColumn c,TiDBConstant value) {
+    public TiDBColumnReference(TiDBColumn c, TiDBConstant value) {
         this.c = c;
         this.value = value;
     }
@@ -24,7 +24,7 @@ public class TiDBColumnReference implements TiDBExpression {
         return value;
     }
 
-        @Override
+    @Override
     public TiDBConstant getExpectedValue() {
         return value;
     }

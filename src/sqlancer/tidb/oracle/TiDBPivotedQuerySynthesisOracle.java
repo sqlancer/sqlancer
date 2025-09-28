@@ -1,6 +1,5 @@
 package sqlancer.tidb.oracle;
 
-
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.oracle.PivotedQuerySynthesisBase;
@@ -15,8 +14,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TiDBPivotedQuerySynthesisOracle
-        extends PivotedQuerySynthesisBase<TiDBProvider.TiDBGlobalState, TiDBSchema.TiDBRowValue, TiDBExpression, SQLConnection> {
+public class TiDBPivotedQuerySynthesisOracle extends
+        PivotedQuerySynthesisBase<TiDBProvider.TiDBGlobalState, TiDBSchema.TiDBRowValue, TiDBExpression, SQLConnection> {
 
     private List<TiDBExpression> fetchColumns;
     private List<TiDBSchema.TiDBColumn> columns;
@@ -53,8 +52,7 @@ public class TiDBPivotedQuerySynthesisOracle
         }
         List<String> modifiers = Randomly.subset("STRAIGHT_JOIN", "SQL_SMALL_RESULT", "SQL_BIG_RESULT", "SQL_NO_CACHE");
         selectStatement.setModifiers(modifiers);
-        List<TiDBExpression> orderBy = new TiDBExpressionGenerator(globalState).setColumns(columns)
-                .generateOrderBys();
+        List<TiDBExpression> orderBy = new TiDBExpressionGenerator(globalState).setColumns(columns).generateOrderBys();
         selectStatement.setOrderByClauses(orderBy);
 
         return new SQLQueryAdapter(TiDBVisitor.asString(selectStatement), errors);
@@ -85,13 +83,14 @@ public class TiDBPivotedQuerySynthesisOracle
         }
     }
 
-    private TiDBExpression generateRectifiedExpression(List<TiDBSchema.TiDBColumn> columns, TiDBSchema.TiDBRowValue rw) {
+    private TiDBExpression generateRectifiedExpression(List<TiDBSchema.TiDBColumn> columns,
+            TiDBSchema.TiDBRowValue rw) {
         TiDBExpression expression = new TiDBExpressionGenerator(globalState).setRowVal(rw).setColumns(columns)
                 .generateExpression();
         TiDBConstant expectedValue = expression.getExpectedValue();
         TiDBExpression result;
         if (expectedValue.isNull()) {
-            result = new TiDBUnaryPostfixOperation(expression, TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator.IS_NULL, false);
+            result = new TiDBUnaryPostfixOperation(expression, TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator.IS_NULL);
         } else if (expectedValue.asBooleanNotNull()) {
             result = expression;
         } else {

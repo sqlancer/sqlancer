@@ -48,35 +48,35 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
 
         public boolean isNumeric() {
             switch (this) {
-                case INT:
-                case DECIMAL:
-                case FLOATING:
-                case BOOL:
-                case NUMERIC:
-                    return true;
-                case CHAR:
-                case TEXT:
-                case BLOB:
-                    return false;
-                default:
-                    throw new AssertionError(this);
+            case INT:
+            case DECIMAL:
+            case FLOATING:
+            case BOOL:
+            case NUMERIC:
+                return true;
+            case CHAR:
+            case TEXT:
+            case BLOB:
+                return false;
+            default:
+                throw new AssertionError(this);
             }
         }
 
         public boolean canHaveDefault() {
             switch (this) {
-                case INT:
-                case DECIMAL:
-                case FLOATING:
-                case BOOL:
-                case CHAR:
-                    return true;
-                case NUMERIC:
-                case TEXT:
-                case BLOB:
-                    return false;
-                default:
-                    throw new AssertionError(this);
+            case INT:
+            case DECIMAL:
+            case FLOATING:
+            case BOOL:
+            case CHAR:
+                return true;
+            case NUMERIC:
+            case TEXT:
+            case BLOB:
+                return false;
+            default:
+                throw new AssertionError(this);
             }
         }
     }
@@ -116,14 +116,14 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             TiDBDataType primitiveType = TiDBDataType.getRandom();
             int size = -1;
             switch (primitiveType) {
-                case INT:
-                    size = Randomly.fromOptions(1, 2, 4, 8);
-                    break;
-                case FLOATING:
-                    size = Randomly.fromOptions(4, 8);
-                    break;
-                default:
-                    break;
+            case INT:
+                size = Randomly.fromOptions(1, 2, 4, 8);
+                break;
+            case FLOATING:
+                size = Randomly.fromOptions(4, 8);
+                break;
+            default:
+                break;
             }
             return new TiDBCompositeDataType(primitiveType, size);
         }
@@ -131,32 +131,32 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
         @Override
         public String toString() {
             switch (getPrimitiveDataType()) {
-                case INT:
-                    switch (size) {
-                        case 1:
-                            return "TINYINT";
-                        case 2:
-                            return "SMALLINT";
-                        case 3:
-                            return "MEDIUMINT";
-                        case 4:
-                            return "INTEGER";
-                        case 8:
-                            return "BIGINT";
-                        default:
-                            throw new AssertionError(size);
-                    }
-                case FLOATING:
-                    switch (size) {
-                        case 4:
-                            return "FLOAT";
-                        case 8:
-                            return "DOUBLE";
-                        default:
-                            throw new AssertionError(size);
-                    }
+            case INT:
+                switch (size) {
+                case 1:
+                    return "TINYINT";
+                case 2:
+                    return "SMALLINT";
+                case 3:
+                    return "MEDIUMINT";
+                case 4:
+                    return "INTEGER";
+                case 8:
+                    return "BIGINT";
                 default:
-                    return getPrimitiveDataType().toString();
+                    throw new AssertionError(size);
+                }
+            case FLOATING:
+                switch (size) {
+                case 4:
+                    return "FLOAT";
+                case 8:
+                    return "DOUBLE";
+                default:
+                    throw new AssertionError(size);
+                }
+            default:
+                return getPrimitiveDataType().toString();
             }
         }
 
@@ -169,7 +169,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
         private final boolean hasDefault;
 
         public TiDBColumn(String name, TiDBCompositeDataType columnType, boolean isPrimaryKey, boolean isNullable,
-                          boolean hasDefault) {
+                boolean hasDefault) {
             super(name, null, columnType);
             this.isPrimaryKey = isPrimaryKey;
             this.isNullable = isNullable;
@@ -197,7 +197,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
 
         public TiDBRowValue getRandomRowValue(SQLConnection con) throws SQLException {
             String randomRow = String.format("SELECT %s FROM %s ORDER BY RAND() LIMIT 1", columnNamesAsString(
-                            c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
+                    c -> c.getTable().getName() + "." + c.getName() + " AS " + c.getTable().getName() + c.getName()),
                     tableNamesAsString());
             Map<TiDBColumn, TiDBConstant> values = new HashMap<>();
             try (Statement s = con.createStatement()) {
@@ -283,65 +283,65 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             size = 8;
         } else {
             switch (trimmedStringType) {
-                case "text":
-                case "mediumtext":
-                case "longtext":
-                case "tinytext":
-                    primitiveType = TiDBDataType.TEXT;
-                    break;
-                case "float":
-                    size = 4;
-                    primitiveType = TiDBDataType.FLOATING;
-                    break;
-                case "double":
-                case "double(8,6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
-                case "double(23,16)":
-                    size = 8;
-                    primitiveType = TiDBDataType.FLOATING;
-                    break;
-                case "tinyint(1)":
-                    primitiveType = TiDBDataType.BOOL;
-                    size = 1;
-                    break;
-                case "null":
-                    primitiveType = TiDBDataType.INT;
-                    size = 1;
-                    break;
-                case "tinyint":
-                case "tinyint(2)":
-                case "tinyint(3)":
-                case "tinyint(4)":
-                    primitiveType = TiDBDataType.INT;
-                    size = 1;
-                    break;
-                case "smallint":
-                case "smallint(5)":
-                case "smallint(6)":
-                    primitiveType = TiDBDataType.INT;
-                    size = 2;
-                    break;
-                case "int":
-                case "int(10)":
-                case "int(11)":
-                    primitiveType = TiDBDataType.INT;
-                    size = 4;
-                    break;
-                case "blob":
-                case "mediumblob":
-                case "longblob":
-                case "tinyblob":
-                    primitiveType = TiDBDataType.BLOB;
-                    break;
-                case "date":
-                case "datetime":
-                case "datetime(6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
-                case "timestamp":
-                case "time":
-                case "year":
-                    primitiveType = TiDBDataType.NUMERIC;
-                    break;
-                default:
-                    throw new AssertionError(trimmedStringType);
+            case "text":
+            case "mediumtext":
+            case "longtext":
+            case "tinytext":
+                primitiveType = TiDBDataType.TEXT;
+                break;
+            case "float":
+                size = 4;
+                primitiveType = TiDBDataType.FLOATING;
+                break;
+            case "double":
+            case "double(8,6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
+            case "double(23,16)":
+                size = 8;
+                primitiveType = TiDBDataType.FLOATING;
+                break;
+            case "tinyint(1)":
+                primitiveType = TiDBDataType.BOOL;
+                size = 1;
+                break;
+            case "null":
+                primitiveType = TiDBDataType.INT;
+                size = 1;
+                break;
+            case "tinyint":
+            case "tinyint(2)":
+            case "tinyint(3)":
+            case "tinyint(4)":
+                primitiveType = TiDBDataType.INT;
+                size = 1;
+                break;
+            case "smallint":
+            case "smallint(5)":
+            case "smallint(6)":
+                primitiveType = TiDBDataType.INT;
+                size = 2;
+                break;
+            case "int":
+            case "int(10)":
+            case "int(11)":
+                primitiveType = TiDBDataType.INT;
+                size = 4;
+                break;
+            case "blob":
+            case "mediumblob":
+            case "longblob":
+            case "tinyblob":
+                primitiveType = TiDBDataType.BLOB;
+                break;
+            case "date":
+            case "datetime":
+            case "datetime(6)": // workaround to address https://github.com/sqlancer/sqlancer/issues/669
+            case "timestamp":
+            case "time":
+            case "year":
+                primitiveType = TiDBDataType.NUMERIC;
+                break;
+            default:
+                throw new AssertionError(trimmedStringType);
             }
         }
         return new TiDBCompositeDataType(primitiveType, size);
