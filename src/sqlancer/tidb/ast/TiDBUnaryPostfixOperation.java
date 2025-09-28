@@ -8,6 +8,9 @@ import sqlancer.tidb.ast.TiDBUnaryPostfixOperation.TiDBUnaryPostfixOperator;
 public class TiDBUnaryPostfixOperation extends UnaryOperatorNode<TiDBExpression, TiDBUnaryPostfixOperator>
         implements TiDBExpression {
 
+    private final TiDBExpression expression;
+    private final TiDBUnaryPostfixOperator operator;
+
     public enum TiDBUnaryPostfixOperator implements Operator {
         IS_NULL("IS NULL"), //
         IS_NOT_NULL("IS NOT NULL"); //
@@ -25,6 +28,20 @@ public class TiDBUnaryPostfixOperation extends UnaryOperatorNode<TiDBExpression,
         @Override
         public String getTextRepresentation() {
             return s;
+        }
+
+        @Override
+        public TiDBConstant getExpectedValue() {
+            boolean val;
+            TiDBConstant expectedValue = expression.getExpectedValue();
+            switch (operator) {
+                case IS_NULL:
+                    val = expectedValue.isNull();
+                    break;
+                default:
+                    throw new AssertionError(operator);
+            }
+            return TiDBConstant.createIntConstant(val ? 1 : 0);
         }
     }
 

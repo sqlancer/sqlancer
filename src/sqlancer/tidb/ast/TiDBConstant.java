@@ -5,6 +5,14 @@ public class TiDBConstant implements TiDBExpression {
     private TiDBConstant() {
     }
 
+    public boolean isInt() {
+        return false;
+    }
+
+    public boolean isNull() {
+        return false;
+    }
+
     public static class TiDBNullConstant extends TiDBConstant {
 
         @Override
