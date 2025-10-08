@@ -21,8 +21,8 @@ public final class MariaDBDeleteGenerator {
 
         MariaDBExpressionGenerator expressionGenerator = new MariaDBExpressionGenerator(r);
 
-        AbstractTables<MariaDBTable, MariaDBColumn> tablesAndColumns =
-                new AbstractTables<>(Collections.singletonList(table));
+        AbstractTables<MariaDBTable, MariaDBColumn> tablesAndColumns = new AbstractTables<>(
+                Collections.singletonList(table));
         expressionGenerator.setTablesAndColumns(tablesAndColumns);
 
         ExpectedErrors errors = new ExpectedErrors();
@@ -51,13 +51,9 @@ public final class MariaDBDeleteGenerator {
         if (Randomly.getBoolean()) {
             sb.append(" WHERE ");
             if (Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(MariaDBVisitor.asString(
-                        MariaDBExpressionGenerator.getRandomConstant(r)
-                ));
+                sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r)));
             } else {
-                sb.append(MariaDBVisitor.asString(
-                        expressionGenerator.getRandomExpression()
-                ));
+                sb.append(MariaDBVisitor.asString(expressionGenerator.getRandomExpression()));
             }
         }
 
@@ -79,13 +75,9 @@ public final class MariaDBDeleteGenerator {
         if (Randomly.getBooleanWithRatherLowProbability()) {
             sb.append(" RETURNING ");
             if (Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(MariaDBVisitor.asString(
-                        MariaDBExpressionGenerator.getRandomConstant(r)
-                ));
+                sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r)));
             } else {
-                sb.append(MariaDBVisitor.asString(
-                        expressionGenerator.getRandomExpression()
-                ));
+                sb.append(MariaDBVisitor.asString(expressionGenerator.getRandomExpression()));
             }
         }
 
