@@ -1,13 +1,12 @@
 package sqlancer.questdb;
 
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.query.Query;
 import java.util.List;
 
 public class QuestDBQueryGenerator {
 
     // Generate a simple SELECT query for QuestDB
-    public Query generateSelect(String tableName, List<String> columns) {
+    public SQLQueryAdapter generateSelect(String tableName, List<String> columns) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
         for (int i = 0; i < columns.size(); i++) {

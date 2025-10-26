@@ -23,23 +23,22 @@ import sqlancer.questdb.gen.QuestDBAlterIndexGenerator;
 import sqlancer.questdb.gen.QuestDBInsertGenerator;
 import sqlancer.questdb.gen.QuestDBTableGenerator;
 import sqlancer.questdb.gen.QuestDBTruncateGenerator;
+import sqlancer.questdb.gen.QuestDBUpdateGenerator;
+import sqlancer.questdb.gen.QuestDBViewGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, QuestDBOptions> {
     public QuestDBProvider() {
         super(QuestDBGlobalState.class, QuestDBOptions.class);
-        this.generator = new QuestDBQueryGenerator();
     }
-    private QuestDBQueryGenerator generator;
 
 
     public enum Action implements AbstractAction<QuestDBGlobalState> {
         INSERT(QuestDBInsertGenerator::getQuery), //
         ALTER_INDEX(QuestDBAlterIndexGenerator::getQuery), //
-        TRUNCATE(QuestDBTruncateGenerator::generate); //
-        // TODO (anxing): maybe implement these later
-        // UPDATE(QuestDBUpdateGenerator::getQuery), //
-        // CREATE_VIEW(QuestDBViewGenerator::generate), //
+        TRUNCATE(QuestDBTruncateGenerator::generate), //
+        UPDATE(QuestDBUpdateGenerator::getQuery), //
+        CREATE_VIEW(QuestDBViewGenerator::generate); //
 
         private final SQLQueryProvider<QuestDBGlobalState> sqlQueryProvider;
 
@@ -62,6 +61,10 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
             return r.getInteger(0, 3);
         case TRUNCATE:
             return r.getInteger(0, 5);
+        case UPDATE:
+            return r.getInteger(0, 3);
+        case CREATE_VIEW:
+            return r.getInteger(0, 2);
         default:
             throw new AssertionError("Unknown action: " + a);
         }
