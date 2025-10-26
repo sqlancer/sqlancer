@@ -28,7 +28,10 @@ import sqlancer.questdb.gen.QuestDBTruncateGenerator;
 public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, QuestDBOptions> {
     public QuestDBProvider() {
         super(QuestDBGlobalState.class, QuestDBOptions.class);
+        this.generator = new QuestDBQueryGenerator();
     }
+    private QuestDBQueryGenerator generator;
+
 
     public enum Action implements AbstractAction<QuestDBGlobalState> {
         INSERT(QuestDBInsertGenerator::getQuery), //
@@ -72,6 +75,7 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
         }
 
     }
+    
 
     @Override
     public void generateDatabase(QuestDBGlobalState globalState) throws Exception {
