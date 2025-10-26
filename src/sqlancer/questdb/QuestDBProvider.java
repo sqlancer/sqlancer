@@ -111,46 +111,46 @@ public class QuestDBProvider extends SQLProviderAdapter<QuestDBGlobalState, Ques
         if (port == sqlancer.MainOptions.NO_SET_PORT) {
             port = QuestDBOptions.DEFAULT_PORT;
         }
-        // TODO(anxing): maybe not hardcode here...
+        
         String databaseName = "qdb";
-        String tableName = "sqlancer_test";
         String url = String.format("jdbc:postgresql://%s:%d/%s", host, port, databaseName);
-        // use QuestDB default username & password for Postgres JDBC
+        
+        // Use QuestDB default username & password for Postgres JDBC
         Properties properties = new Properties();
         properties.setProperty("user", globalState.getDbmsSpecificOptions().getUserName());
         properties.setProperty("password", globalState.getDbmsSpecificOptions().getPassword());
         properties.setProperty("sslmode", "disable");
 
         Connection con = DriverManager.getConnection(url, properties);
-        // QuestDB cannot create or drop `DATABASE`, can only create or drop `TABLE`
-        globalState.getState().logStatement("DROP TABLE IF EXISTS " + tableName + " CASCADE");
+        
+        // QuestDB cannot create or drop DATABASE, can only create or drop TABLE
+        // Clean up any existing test tables
+        cleanupTestTables(con);
+        
+        // Create a test table to verify connection
+        String tableName = "sqlancer_test";
         SQLQueryAdapter createTableCommand = new QuestDBTableGenerator().getQuery(globalState, tableName);
         globalState.getState().logStatement(createTableCommand);
-        globalState.getState().logStatement("DROP TABLE IF EXISTS " + tableName);
-
-        try (Statement s = con.createStatement()) {
-            s.execute("DROP TABLE IF EXISTS " + tableName);
-        }
-        // TODO(anxing): Drop all previous tables in db
-        // List<String> tableNames =
-        // globalState.getSchema().getDatabaseTables().stream().map(AbstractTable::getName).collect(Collectors.toList());
-        // for (String tName : tableNames) {
-        // try (Statement s = con.createStatement()) {
-        // String query = "DROP TABLE IF EXISTS " + tName;
-        // globalState.getState().logStatement(query);
-        // s.execute(query);
-        // }
-        // }
+        
         try (Statement s = con.createStatement()) {
             s.execute(createTableCommand.getQueryString());
         }
-        // drop test table
+        
+        // Drop the test table after creation
         try (Statement s = con.createStatement()) {
             s.execute("DROP TABLE IF EXISTS " + tableName);
         }
+        
         con.close();
         con = DriverManager.getConnection(url, properties);
         return new SQLConnection(con);
+    }
+    
+    private void cleanupTestTables(Connection con) throws SQLException {
+        // Clean up any existing tables that might interfere with testing
+        try (Statement s = con.createStatement()) {
+            s.execute("DROP TABLE IF EXISTS sqlancer_test CASCADE");
+        }
     }
 
     @Override
