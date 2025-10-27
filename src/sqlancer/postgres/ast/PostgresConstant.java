@@ -74,6 +74,11 @@ public abstract class PostgresConstant implements PostgresExpression {
                 return PostgresConstant.createIntConstant(value ? 1 : 0);
             case TEXT:
                 return PostgresConstant.createTextConstant(value ? "true" : "false");
+            case REAL:
+                return PostgresConstant.createDoubleConstant(value ? 1 : 0);
+            case FLOAT:
+                return PostgresConstant.createFloatConstant(value ? 1 : 0);
+
             default:
                 return null;
             }
@@ -211,6 +216,18 @@ public abstract class PostgresConstant implements PostgresExpression {
                 }
             case TEXT:
                 return this;
+            case REAL:
+                try {
+                    return PostgresConstant.createDoubleConstant(Double.parseDouble(s));
+                } catch (NumberFormatException e) {
+                    return PostgresConstant.createDoubleConstant(-1);
+                }
+            case FLOAT:
+                try {
+                    return PostgresConstant.createFloatConstant(Float.parseFloat(s));
+                } catch (NumberFormatException e) {
+                    return PostgresConstant.createFloatConstant(-1);
+                }
             default:
                 return null;
             }
@@ -306,6 +323,11 @@ public abstract class PostgresConstant implements PostgresExpression {
                 return this;
             case TEXT:
                 return PostgresConstant.createTextConstant(String.valueOf(val));
+            case FLOAT:
+                return PostgresConstant.createFloatConstant(val);
+            case REAL:
+                return PostgresConstant.createDoubleConstant(val);
+
             default:
                 return null;
             }
@@ -363,6 +385,18 @@ public abstract class PostgresConstant implements PostgresExpression {
         throw new UnsupportedOperationException(this.toString());
     }
 
+    public double asReal() {
+        throw new UnsupportedOperationException(this.toString());
+    }
+
+    public boolean isReal() {
+        return false;
+    }
+
+    public float asFloat() {
+        throw new UnsupportedOperationException(this.toString());
+    }
+
     public boolean isBoolean() {
         return false;
     }
@@ -370,6 +404,10 @@ public abstract class PostgresConstant implements PostgresExpression {
     public abstract PostgresConstant isEquals(PostgresConstant rightVal);
 
     public boolean isInt() {
+        return false;
+    }
+
+    public boolean isFloat() {
         return false;
     }
 
@@ -458,6 +496,16 @@ public abstract class PostgresConstant implements PostgresExpression {
         }
 
         @Override
+        public float asFloat() {
+            return val;
+        }
+
+        @Override
+        public boolean isFloat() {
+            return true;
+        }
+
+        @Override
         public String getTextRepresentation() {
             if (Double.isFinite(val)) {
                 return String.valueOf(val);
@@ -471,6 +519,25 @@ public abstract class PostgresConstant implements PostgresExpression {
             return PostgresDataType.FLOAT;
         }
 
+        @Override
+        public PostgresConstant cast(PostgresDataType type) {
+            switch (type) {
+            case BOOLEAN:
+                return PostgresConstant.createBooleanConstant(val != 0f);
+            case INT:
+                return PostgresConstant.createIntConstant((int) val);
+            case TEXT:
+                return PostgresConstant.createTextConstant(String.valueOf(val));
+            case FLOAT:
+                return this;
+            case REAL:
+                return PostgresConstant.createDoubleConstant(val);
+
+            default:
+                return null;
+            }
+
+        }
     }
 
     public static class DoubleConstant extends PostgresConstantBase {
@@ -482,6 +549,16 @@ public abstract class PostgresConstant implements PostgresExpression {
         }
 
         @Override
+        public double asReal() {
+            return val;
+        }
+
+        @Override
+        public boolean isReal() {
+            return true;
+        }
+
+        @Override
         public String getTextRepresentation() {
             if (Double.isFinite(val)) {
                 return String.valueOf(val);
@@ -495,6 +572,24 @@ public abstract class PostgresConstant implements PostgresExpression {
             return PostgresDataType.FLOAT;
         }
 
+        @Override
+        public PostgresConstant cast(PostgresDataType type) {
+            switch (type) {
+            case BOOLEAN:
+                return PostgresConstant.createBooleanConstant(val != 0.0);
+            case INT:
+                return PostgresConstant.createIntConstant((int) val);
+            case TEXT:
+                return PostgresConstant.createTextConstant(String.valueOf(val));
+            case FLOAT:
+                return this;
+            case REAL:
+                return PostgresConstant.createDoubleConstant(val);
+
+            default:
+                return null;
+            }
+        }
     }
 
     public static class BitConstant extends PostgresConstantBase {
