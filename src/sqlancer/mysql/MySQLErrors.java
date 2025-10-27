@@ -40,6 +40,7 @@ public final class MySQLErrors {
     public static void addExpressionErrors(ExpectedErrors errors) {
         errors.addAll(getExpressionErrors());
         errors.addAllRegexes(getExpressionRegexErrors());
+
     }
 
     public static List<String> getInsertUpdateErrors() {
@@ -60,6 +61,18 @@ public final class MySQLErrors {
 
     public static void addInsertUpdateErrors(ExpectedErrors errors) {
         errors.addAll(getInsertUpdateErrors());
+    }
+
+    public static List<String> getCompressionError() {
+        // Prominent in Windows with its default settings
+        /*
+         * ref : https://dev.mysql.com/doc/refman/8.4/en/innodb-page-compression.html#:~:text=Hole%20Punch%20Size%20on%
+         * 20Windows,value%20of%2016K%20or%20greater
+         */
+        ArrayList<String> errors = new ArrayList<>();
+        errors.add(
+                "Compression failed with the following error : Punch hole not supported by the filesystem or the tablespace page size is not large enough");
+        return errors;
     }
 
 }
