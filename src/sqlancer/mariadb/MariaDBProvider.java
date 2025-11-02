@@ -19,7 +19,14 @@ import sqlancer.SQLProviderAdapter;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
-import sqlancer.mariadb.gen.*;
+import sqlancer.mariadb.gen.MariaDBDeleteGenerator;
+import sqlancer.mariadb.gen.MariaDBIndexGenerator;
+import sqlancer.mariadb.gen.MariaDBInsertGenerator;
+import sqlancer.mariadb.gen.MariaDBSetGenerator;
+import sqlancer.mariadb.gen.MariaDBTableAdminCommandGenerator;
+import sqlancer.mariadb.gen.MariaDBTableGenerator;
+import sqlancer.mariadb.gen.MariaDBTruncateGenerator;
+import sqlancer.mariadb.gen.MariaDBUpdateGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, MariaDBOptions> {

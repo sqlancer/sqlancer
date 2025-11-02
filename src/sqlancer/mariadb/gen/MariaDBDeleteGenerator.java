@@ -1,15 +1,15 @@
 package sqlancer.mariadb.gen;
 
+import java.util.Collections;
+
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.mariadb.MariaDBSchema;
-import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
+import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.ast.MariaDBVisitor;
-
-import java.util.Collections;
 
 public final class MariaDBDeleteGenerator {
 
@@ -81,6 +81,13 @@ public final class MariaDBDeleteGenerator {
             }
         }
 
-        return new SQLQueryAdapter(sb.toString(), errors);
+        String query = sb.toString();
+        if (query.contains("RLIKE") || query.contains("REGEXP")) {
+            errors.add("Regex error");
+            errors.add("quantifier does not follow a repeatable item");
+            errors.add("Got error");
+        }
+
+        return new SQLQueryAdapter(query, errors);
     }
 }
