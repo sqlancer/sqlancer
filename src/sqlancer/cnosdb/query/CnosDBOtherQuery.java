@@ -6,6 +6,8 @@ import sqlancer.cnosdb.client.CnosDBConnection;
 import sqlancer.common.query.ExpectedErrors;
 
 public class CnosDBOtherQuery extends CnosDBQueryAdapter {
+    private static final long serialVersionUID = 1L;
+
     public CnosDBOtherQuery(String query, ExpectedErrors errors) {
         super(query, errors);
     }

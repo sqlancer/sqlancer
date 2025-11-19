@@ -46,6 +46,7 @@ import sqlancer.postgres.gen.PostgresSequenceGenerator;
 import sqlancer.postgres.gen.PostgresSetGenerator;
 import sqlancer.postgres.gen.PostgresStatisticsGenerator;
 import sqlancer.postgres.gen.PostgresTableGenerator;
+import sqlancer.postgres.gen.PostgresTableSpaceGenerator;
 import sqlancer.postgres.gen.PostgresTransactionGenerator;
 import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
@@ -99,6 +100,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }), //
         CREATE_STATISTICS(PostgresStatisticsGenerator::insert), //
         DROP_STATISTICS(PostgresStatisticsGenerator::remove), //
+        ALTER_STATISTICS(PostgresStatisticsGenerator::alter), //
         DELETE(PostgresDeleteGenerator::create), //
         DISCARD(PostgresDiscardGenerator::create), //
         DROP_INDEX(PostgresDropIndexGenerator::create), //
@@ -118,14 +120,15 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         RESET_ROLE((g) -> new SQLQueryAdapter("RESET ROLE")), //
         COMMENT_ON(PostgresCommentGenerator::generate), //
         RESET((g) -> new SQLQueryAdapter("RESET ALL") /*
-                                                       * https://www.postgresql.org/docs/devel/sql-reset.html TODO: also
+                                                       * https://www.postgresql.org/docs/13/sql-reset.html TODO: also
                                                        * configuration parameter
                                                        */), //
         NOTIFY(PostgresNotifyGenerator::createNotify), //
         LISTEN((g) -> PostgresNotifyGenerator.createListen()), //
         UNLISTEN((g) -> PostgresNotifyGenerator.createUnlisten()), //
         CREATE_SEQUENCE(PostgresSequenceGenerator::createSequence), //
-        CREATE_VIEW(PostgresViewGenerator::create);
+        CREATE_VIEW(PostgresViewGenerator::create), //
+        CREATE_TABLESPACE(PostgresTableSpaceGenerator::generate);
 
         private final SQLQueryProvider<PostgresGlobalState> sqlQueryProvider;
 
@@ -149,6 +152,9 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             break;
         case CREATE_STATISTICS:
             nrPerformed = r.getInteger(0, 5);
+            break;
+        case ALTER_STATISTICS:
+            nrPerformed = r.getInteger(0, 2);
             break;
         case DISCARD:
         case DROP_INDEX:
@@ -184,6 +190,9 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             nrPerformed = r.getInteger(0, 2);
             break;
         case CREATE_VIEW:
+            nrPerformed = r.getInteger(0, 2);
+            break;
+        case CREATE_TABLESPACE:
             nrPerformed = r.getInteger(0, 2);
             break;
         case UPDATE:
@@ -275,12 +284,33 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         }
         Connection con = DriverManager.getConnection("jdbc:" + entryURL, username, password);
         globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-        globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        createDatabaseCommand = getCreateDatabaseCommand(globalState);
-        globalState.getState().logStatement(createDatabaseCommand);
-        try (Statement s = con.createStatement()) {
-            s.execute("DROP DATABASE IF EXISTS " + databaseName);
+
+        String dropCommand = "DROP DATABASE";
+        boolean forceDrop = Randomly.getBoolean();
+        if (forceDrop) {
+            dropCommand += " FORCE";
         }
+        dropCommand += " IF EXISTS " + databaseName;
+
+        globalState.getState().logStatement(dropCommand + ";");
+        try (Statement s = con.createStatement()) {
+            s.execute(dropCommand);
+        } catch (SQLException e) {
+            // If force fails, fall back to regular drop
+            if (forceDrop) {
+                String fallbackDrop = "DROP DATABASE IF EXISTS " + databaseName;
+                globalState.getState().logStatement(fallbackDrop + ";");
+                try (Statement s = con.createStatement()) {
+                    s.execute(fallbackDrop);
+                }
+            } else {
+                throw e;
+            }
+        }
+
+        // Create database section
+        createDatabaseCommand = getCreateDatabaseCommand(globalState);
+        globalState.getState().logStatement(createDatabaseCommand + ";");
         try (Statement s = con.createStatement()) {
             s.execute(createDatabaseCommand);
         }
@@ -340,9 +370,13 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                     sb.append(Randomly.fromOptions("utf8"));
                     sb.append("' ");
                 }
-                for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
-                    if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
-                        sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+                if (Randomly.getBoolean() && !state.getCollates().isEmpty()) {
+                    sb.append(String.format(" LOCALE = '%s' ", Randomly.fromList(state.getCollates())));
+                } else {
+                    for (String lc : Arrays.asList("LC_COLLATE", "LC_CTYPE")) {
+                        if (!state.getCollates().isEmpty() && Randomly.getBoolean()) {
+                            sb.append(String.format(" %s = '%s'", lc, Randomly.fromList(state.getCollates())));
+                        }
                     }
                 }
                 sb.append(" TEMPLATE template0");

@@ -1,5 +1,6 @@
 package sqlancer.common.query;
 
+import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,7 +10,8 @@ import sqlancer.GlobalState;
 import sqlancer.Main;
 import sqlancer.SQLConnection;
 
-public class SQLQueryAdapter extends Query<SQLConnection> {
+public class SQLQueryAdapter extends Query<SQLConnection> implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final String query;
     private final ExpectedErrors expectedErrors;
@@ -81,17 +83,55 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
         return result;
     }
 
+    /**
+     * This method is used to mostly oracles, which need to report exceptions. We set the reportException parameter to
+     * true by default meaning that exceptions are reported.
+     *
+     * @param globalState
+     * @param fills
+     *
+     * @return whether the query was executed successfully
+     *
+     * @param <G>
+     *
+     * @throws SQLException
+     */
     @Override
     public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, String... fills)
             throws SQLException {
+        return execute(globalState, true, fills);
+    }
+
+    /**
+     * This method is used to DQE oracles, DQE does not check exception separately, while other testing methods may
+     * need. We use reportException to control this behavior. For a specific DBMS used DQE oracle, we call this method
+     * and pass a boolean value of false as an argument.
+     *
+     * @param globalState
+     * @param reportException
+     * @param fills
+     *
+     * @return whether the query was executed successfully
+     *
+     * @param <G>
+     *
+     * @throws SQLException
+     */
+    public <G extends GlobalState<?, ?, SQLConnection>> boolean execute(G globalState, boolean reportException,
+            String... fills) throws SQLException {
+        return internalExecute(globalState.getConnection(), reportException, fills);
+    }
+
+    protected <G extends GlobalState<?, ?, SQLConnection>> boolean internalExecute(SQLConnection connection,
+            boolean reportException, String... fills) throws SQLException {
         Statement s;
         if (fills.length > 0) {
-            s = globalState.getConnection().prepareStatement(fills[0]);
+            s = connection.prepareStatement(fills[0]);
             for (int i = 1; i < fills.length; i++) {
                 ((PreparedStatement) s).setString(i, fills[i]);
             }
         } else {
-            s = globalState.getConnection().createStatement();
+            s = connection.createStatement();
         }
         try {
             if (fills.length > 0) {
@@ -103,7 +143,9 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
             return true;
         } catch (Exception e) {
             Main.nrUnsuccessfulActions.addAndGet(1);
-            checkException(e);
+            if (reportException) {
+                checkException(e);
+            }
             return false;
         } finally {
             s.close();
@@ -127,14 +169,24 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
     @Override
     public <G extends GlobalState<?, ?, SQLConnection>> SQLancerResultSet executeAndGet(G globalState, String... fills)
             throws SQLException {
+        return executeAndGet(globalState, true, fills);
+    }
+
+    public <G extends GlobalState<?, ?, SQLConnection>> SQLancerResultSet executeAndGet(G globalState,
+            boolean reportException, String... fills) throws SQLException {
+        return internalExecuteAndGet(globalState.getConnection(), reportException, fills);
+    }
+
+    protected <G extends GlobalState<?, ?, SQLConnection>> SQLancerResultSet internalExecuteAndGet(
+            SQLConnection connection, boolean reportException, String... fills) throws SQLException {
         Statement s;
         if (fills.length > 0) {
-            s = globalState.getConnection().prepareStatement(fills[0]);
+            s = connection.prepareStatement(fills[0]);
             for (int i = 1; i < fills.length; i++) {
                 ((PreparedStatement) s).setString(i, fills[i]);
             }
         } else {
-            s = globalState.getConnection().createStatement();
+            s = connection.createStatement();
         }
         ResultSet result;
         try {
@@ -151,9 +203,11 @@ public class SQLQueryAdapter extends Query<SQLConnection> {
         } catch (Exception e) {
             s.close();
             Main.nrUnsuccessfulActions.addAndGet(1);
-            checkException(e);
+            if (reportException) {
+                checkException(e);
+            }
+            return null;
         }
-        return null;
     }
 
     @Override

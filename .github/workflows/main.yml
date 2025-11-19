@@ -297,6 +297,42 @@ jobs:
       - name: Run Tests
         run: mvn -Dtest=TestH2 test
 
+  hive:
+    name: DBMS Tests (Hive)
+    runs-on: ubuntu-latest
+    services:
+      metastore:
+        image: apache/hive:4.0.1
+        env:
+          SERVICE_NAME: 'metastore'
+        ports:
+          - 9083:9083
+        volumes:
+          - warehouse:/opt/hive/data/warehouse
+      hiveserver2:
+        image: apache/hive:4.0.1
+        env:
+          SERVICE_NAME: 'hiveserver2'
+        ports:
+          - 10000:10000
+          - 10002:10002
+        volumes:
+          - warehouse:/opt/hive/data/warehouse
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: HIVE_AVAILABLE=true mvn -Dtest=TestHiveTLP test
+
   hsqldb:
     name: DBMS Tests (HSQLB)
     runs-on: ubuntu-latest
@@ -431,6 +467,7 @@ jobs:
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
           MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLCERT
+          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLDQE
 
   oceanbase:
     name: DBMS Tests (OceanBase)
@@ -533,6 +570,7 @@ jobs:
           mvn -Dtest=TestSQLitePQS test
           mvn -Dtest=TestSQLiteTLP test
           mvn -Dtest=TestSQLiteNoREC test
+          mvn -Dtest=TestSQLiteCODDTest test
 
   sqlite-qpg:
     name: QPG Tests (SQLite)
@@ -571,8 +609,8 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Set up TiDB
         run: |
-          docker pull pingcap/tidb:latest
-          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:v7.5.1
+          docker pull hawkingrei/tidb-playground:nightly-2025-09-16
+          docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:nightly-2025-09-16
           sleep 10
       - name: Create SQLancer user
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
@@ -598,8 +636,8 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Set up TiDB
         run: |
-          docker pull pingcap/tidb:latest
-          docker run --name tidb-server -d -p 4000:4000 pingcap/tidb:latest
+          docker pull hawkingrei/tidb-playground:nightly-2025-09-16
+          docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:nightly-2025-09-16
           sleep 10
       - name: Create SQLancer user
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"

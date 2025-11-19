@@ -51,7 +51,7 @@ public class SQLite3ColumnBuilder {
         if (Randomly.getBooleanWithRatherLowProbability()) {
             List<Constraints> constraints = Randomly.subset(Constraints.values());
             if (!Randomly.getBooleanWithSmallProbability()
-                    || globalState.getDbmsSpecificOptions().testGeneratedColumns) {
+                    || !globalState.getDbmsSpecificOptions().testGeneratedColumns) {
                 constraints.remove(Constraints.GENERATED_AS);
             }
             if (constraints.contains(Constraints.GENERATED_AS)) {
