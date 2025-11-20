@@ -80,7 +80,7 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
                 nrPerformed = globalState.getRandomly().getInteger(0, 2);
                 break;
             case DELETE:
-                nrPerformed = 10;
+                nrPerformed = globalState.getRandomly().getInteger(0, 2);
                 break;
             case SET:
                 nrPerformed = 20;
