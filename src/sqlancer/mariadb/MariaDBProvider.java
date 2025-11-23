@@ -19,6 +19,7 @@ import sqlancer.SQLProviderAdapter;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBProvider.MariaDBGlobalState;
+import sqlancer.mariadb.gen.MariaDBDeleteGenerator;
 import sqlancer.mariadb.gen.MariaDBIndexGenerator;
 import sqlancer.mariadb.gen.MariaDBInsertGenerator;
 import sqlancer.mariadb.gen.MariaDBSetGenerator;
@@ -47,6 +48,7 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
         SET, //
         TRUNCATE, //
         UPDATE, //
+        DELETE,
     }
 
     @Override
@@ -75,6 +77,9 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
             case ANALYZE_TABLE:
             case UPDATE:
             case CREATE_INDEX:
+                nrPerformed = globalState.getRandomly().getInteger(0, 2);
+                break;
+            case DELETE:
                 nrPerformed = globalState.getRandomly().getInteger(0, 2);
                 break;
             case SET:
@@ -139,6 +144,9 @@ public class MariaDBProvider extends SQLProviderAdapter<MariaDBGlobalState, Mari
                     break;
                 case SET:
                     query = MariaDBSetGenerator.set(globalState.getRandomly(), options);
+                    break;
+                case DELETE:
+                    query = MariaDBDeleteGenerator.delete(globalState.getSchema(), globalState.getRandomly());
                     break;
                 default:
                     throw new AssertionError(nextAction);
