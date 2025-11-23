@@ -227,6 +227,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
     public static DuckDBSchema fromConnection(SQLConnection con, String databaseName) throws SQLException {
         List<DuckDBTable> databaseTables = new ArrayList<>();
         List<String> tableNames = getTableNames(con);
+        DuckDBGlobalState globalState = (DuckDBGlobalState) con.getGlobalState();
         for (String tableName : tableNames) {
             if (DBMSCommon.matchesIndexName(tableName)) {
                 continue; // TODO: unexpected?
@@ -272,8 +273,10 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
         if (columns.stream().noneMatch(c -> c.isPrimaryKey()) && !AbstractSchema.matchesViewName(tableName)) {
             // https://github.com/cwida/duckdb/issues/589
             // https://github.com/cwida/duckdb/issues/588
-            // TODO: implement an option to enable/disable rowids
-            columns.add(new DuckDBColumn("rowid", new DuckDBCompositeDataType(DuckDBDataType.INT, 4), false, false));
+            DuckDBGlobalState globalState = (DuckDBGlobalState) con.getGlobalState();
+            if (globalState.getDbmsSpecificOptions().testRowid) {
+                columns.add(new DuckDBColumn("rowid", new DuckDBCompositeDataType(DuckDBDataType.INT, 4), false, false));
+            }
         }
         return columns;
     }

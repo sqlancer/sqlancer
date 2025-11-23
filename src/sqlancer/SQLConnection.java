@@ -8,9 +8,18 @@ import java.sql.Statement;
 public class SQLConnection implements SQLancerDBConnection {
 
     private final Connection connection;
+    private GlobalState<?, ?, ?> globalState;
 
     public SQLConnection(Connection connection) {
         this.connection = connection;
+    }
+
+    public void setGlobalState(GlobalState<?, ?, ?> globalState) {
+        this.globalState = globalState;
+    }
+
+    public GlobalState<?, ?, ?> getGlobalState() {
+        return globalState;
     }
 
     @Override
