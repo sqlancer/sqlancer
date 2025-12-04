@@ -250,16 +250,6 @@ public class CockroachDBProvider extends SQLProviderAdapter<CockroachDBGlobalSta
             }
             total--;
         }
-
-        if (globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
-                .anyMatch((o) -> o == CockroachDBOracleFactory.CERT)) {
-            // Enfore statistic collected for all tables
-            ExpectedErrors errors = new ExpectedErrors();
-            CockroachDBErrors.addExpressionErrors(errors);
-            for (CockroachDBTable table : globalState.getSchema().getDatabaseTables()) {
-                globalState.executeStatement(new SQLQueryAdapter("ANALYZE " + table.getName() + ";", errors));
-            }
-        }
     }
 
     @Override

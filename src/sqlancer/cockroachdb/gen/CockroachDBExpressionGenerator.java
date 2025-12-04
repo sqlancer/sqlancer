@@ -2,11 +2,9 @@ package sqlancer.cockroachdb.gen;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.cockroachdb.CockroachDBBugs;
 import sqlancer.cockroachdb.CockroachDBCommon;
 import sqlancer.cockroachdb.CockroachDBProvider.CockroachDBGlobalState;
 import sqlancer.cockroachdb.CockroachDBSchema.CockroachDBColumn;
@@ -47,7 +45,6 @@ import sqlancer.cockroachdb.ast.CockroachDBTableReference;
 import sqlancer.cockroachdb.ast.CockroachDBTypeAnnotation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation;
 import sqlancer.cockroachdb.ast.CockroachDBUnaryPostfixOperation.CockroachDBUnaryPostfixOperator;
-import sqlancer.common.gen.CERTGenerator;
 import sqlancer.common.gen.NoRECGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
@@ -56,8 +53,7 @@ import sqlancer.common.schema.AbstractTables;
 public class CockroachDBExpressionGenerator extends
         TypedExpressionGenerator<CockroachDBExpression, CockroachDBColumn, CockroachDBCompositeDataType> implements
         NoRECGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn>,
-        TLPWhereGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn>,
-        CERTGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
+        TLPWhereGenerator<CockroachDBSelect, CockroachDBJoin, CockroachDBExpression, CockroachDBTable, CockroachDBColumn> {
 
     private List<CockroachDBTable> tables;
     private final CockroachDBGlobalState globalState;
@@ -462,31 +458,6 @@ public class CockroachDBExpressionGenerator extends
         }
         return Randomly.nonEmptySubset(columns).stream().map(c -> new CockroachDBColumnReference(c))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public String generateExplainQuery(CockroachDBSelect select) {
-        return "EXPLAIN " + select.asString();
-    }
-
-    @Override
-    public boolean mutate(CockroachDBSelect select) {
-        List<Function<CockroachDBSelect, Boolean>> mutators = new ArrayList<>();
-
-        if (!CockroachDBBugs.bug131647) {
-            mutators.add(this::mutateJoin);
-        }
-        mutators.add(this::mutateGroupBy);
-        mutators.add(this::mutateHaving);
-        mutators.add(this::mutateAnd);
-        if (!CockroachDBBugs.bug131640) {
-            mutators.add(this::mutateWhere);
-            mutators.add(this::mutateOr);
-        }
-        // mutators.add(this::mutateLimit);
-        mutators.add(this::mutateDistinct);
-
-        return Randomly.fromList(mutators).apply(select);
     }
 
     boolean mutateJoin(CockroachDBSelect select) {
