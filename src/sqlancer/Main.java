@@ -48,6 +48,7 @@ import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
 import sqlancer.yugabyte.ycql.YCQLProvider;
 import sqlancer.yugabyte.ysql.YSQLProvider;
+import sqlancer.spark.SparkProvider;
 
 public final class Main {
 
@@ -756,6 +757,7 @@ public final class Main {
             providers.add(new DuckDBProvider());
             providers.add(new H2Provider());
             providers.add(new HiveProvider());
+            providers.add(new SparkProvider());
             providers.add(new HSQLDBProvider());
             providers.add(new MariaDBProvider());
             providers.add(new MaterializeProvider());
