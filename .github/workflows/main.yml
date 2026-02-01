@@ -89,6 +89,17 @@ jobs:
           psql -c "CREATE EXTENSION citus;" -p 9702 -U $USER -d test
           psql -c "SELECT * from citus_add_node('localhost', 9701);" -p 9700 -U $USER -d test
           psql -c "SELECT * from citus_add_node('localhost', 9702);" -p 9700 -U $USER -d test
+      - name: Wait for Citus to be ready
+        run: |
+          echo "Waiting for Citus coordinator to be ready..."
+          for i in {1..30}; do
+            if psql -p 9700 -U $USER -d test -c "SELECT count(*) FROM pg_dist_node;" >/dev/null 2>&1; then
+              echo "Citus is ready."
+              break
+            fi
+            echo "Citus not ready yet, retrying..."
+            sleep 2
+          done
       - name: Run Tests
         run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
 
