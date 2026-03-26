@@ -605,9 +605,14 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Set up TiDB
         run: |
-          docker pull hawkingrei/tidb-playground:nightly-2025-09-16
-          docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:nightly-2025-09-16
-          sleep 10
+          docker pull hawkingrei/tidb-playground:v7.1.0
+          docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:v7.1.0
+      - name: Wait for TiDB
+        run: |
+          for i in {1..30}; do
+            mysql -h 127.0.0.1 -P 4000 -u root -e "SELECT 1" && break
+            sleep 2
+          done
       - name: Create SQLancer user
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
@@ -632,9 +637,14 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Set up TiDB
         run: |
-          docker pull hawkingrei/tidb-playground:nightly-2025-09-16
-          docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:nightly-2025-09-16
-          sleep 10
+          docker pull hawkingrei/tidb-playground:v7.1.0
+          docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:v7.1.0
+      - name: Wait for TiDB
+        run: |
+          for i in {1..30}; do
+            mysql -h 127.0.0.1 -P 4000 -u root -e "SELECT 1" && break
+            sleep 2
+          done
       - name: Create SQLancer user
         run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
