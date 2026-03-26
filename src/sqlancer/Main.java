@@ -716,6 +716,7 @@ public final class Main {
                 execService.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
             } else {
                 execService.awaitTermination(options.getTimeoutSeconds(), TimeUnit.SECONDS);
+                execService.shutdownNow();
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
