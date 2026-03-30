@@ -41,7 +41,11 @@ public class AbstractSchema<G extends GlobalState<?, ?, ?>, A extends AbstractTa
     }
 
     public A getRandomTable(Predicate<A> predicate) {
-        return Randomly.fromList(getDatabaseTables().stream().filter(predicate).collect(Collectors.toList()));
+        List<A> filteredTables = getDatabaseTables().stream().filter(predicate).collect(Collectors.toList());
+        if (filteredTables.isEmpty()) {
+            throw new IgnoreMeException();
+        }
+        return Randomly.fromList(filteredTables);
     }
 
     public A getRandomTableOrBailout(Function<A, Boolean> f) {
