@@ -28,7 +28,7 @@ public class SparkProvider extends SQLProviderAdapter<SparkGlobalState, SparkOpt
     }
 
     public enum Action implements AbstractAction<SparkGlobalState> {
-        INSERT(SparkInsertGenerator::getQuery); // You will need to create this class
+        INSERT(SparkInsertGenerator::getQuery);
 
         private final SQLQueryProvider<SparkGlobalState> sqlQueryProvider;
 

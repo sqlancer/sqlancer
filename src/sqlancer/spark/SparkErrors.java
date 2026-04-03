@@ -35,8 +35,6 @@ public final class SparkErrors {
         errors.add("expression is neither present in the group by");
         errors.add("is not a valid grouping expression");
         errors.add("is not contained in either an aggregate function or the GROUP BY clause");
-        errors.add("PARSE_SYNTAX_ERROR");
-        errors.add("Syntax error");
 
         return errors;
     }
