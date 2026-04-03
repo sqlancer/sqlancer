@@ -127,6 +127,9 @@ public class PostgresAlterTableGenerator {
         if (!randomTable.hasIndexes()) {
             action.remove(Action.ADD_TABLE_CONSTRAINT_USING_INDEX);
         }
+        if (randomTable.isPartitioned()) {
+            action.remove(Action.SET_LOGGED_UNLOGGED);
+        }
         if (action.isEmpty()) {
             throw new IgnoreMeException();
         }
@@ -235,6 +238,8 @@ public class PostgresAlterTableGenerator {
                     errors.add("is in a primary key");
                     errors.add("is an identity column");
                     errors.add("is in index used as replica identity");
+                    // PG18 update: otherwise we need to encode contraint inheritance info in PostgreColumn
+                    errors.add("cannot drop inherited constraint");
                 }
                 break;
             case ALTER_COLUMN_SET_STATISTICS:

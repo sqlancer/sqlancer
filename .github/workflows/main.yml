@@ -24,11 +24,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -48,11 +46,9 @@ jobs:
     name: DBMS Tests (Citus)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -96,11 +92,9 @@ jobs:
     name: DBMS Tests (CnosDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -111,7 +105,7 @@ jobs:
         run: |
           docker pull cnosdb/cnosdb:community-latest
           docker run --name cnosdb -p 8902:8902 -d cnosdb/cnosdb:community-latest
-          sleep 5
+          until nc -z 127.0.0.1 8902 2>/dev/null; do sleep 1; done
       - name: Run Tests
         run: |
           CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBNoREC test
@@ -122,11 +116,9 @@ jobs:
     name: DBMS Tests (ClickHouse)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -137,7 +129,7 @@ jobs:
         run: |
           docker pull clickhouse/clickhouse-server:24.3.1.2672
           docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:24.3.1.2672
-          sleep 5
+          until curl -sf http://127.0.0.1:8123/ping 2>/dev/null; do sleep 1; done
       - name: Run Tests
         run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
       - name: Show fatal errors
@@ -151,11 +143,9 @@ jobs:
     name: DBMS Tests (CockroachDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -166,7 +156,7 @@ jobs:
         run: |
           wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
           cd  cockroach-v24.2.0.linux-amd64/ && ./cockroach start-single-node --insecure &
-          sleep 10
+          until cockroach-v24.2.0.linux-amd64/cockroach sql --insecure -e "SELECT 1" 2>/dev/null; do sleep 2; done
       - name: Create SQLancer user
         run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
@@ -179,11 +169,9 @@ jobs:
     name: QPG Tests (CockroachDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -194,7 +182,7 @@ jobs:
         run: |
           wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
           cd  cockroach-v24.2.0.linux-amd64/ && ./cockroach start-single-node --insecure &
-          sleep 10
+          until cockroach-v24.2.0.linux-amd64/cockroach sql --insecure -e "SELECT 1" 2>/dev/null; do sleep 2; done
       - name: Create SQLancer user
         run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
@@ -213,11 +201,9 @@ jobs:
           - 8000:8000
           - 3307:3307
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -234,9 +220,7 @@ jobs:
     name: DBMS Tests (DataFusion)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -247,7 +231,7 @@ jobs:
           cd src/sqlancer/datafusion/server/datafusion_server
           cargo run & sleep 300
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -263,11 +247,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -283,11 +265,9 @@ jobs:
     name: DBMS Tests (H2)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -319,11 +299,9 @@ jobs:
         volumes:
           - warehouse:/opt/hive/data/warehouse
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -375,11 +353,9 @@ jobs:
     name: DBMS Tests (HSQLB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -404,11 +380,9 @@ jobs:
         options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=10
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -424,18 +398,14 @@ jobs:
     name: DBMS Tests (Materialize)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up Materialize
         run: |
           docker pull materialize/materialized:latest
-          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
-          sleep 5
-          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
-          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+          docker run -d -p6875:6875 -p6877:6877 materialize/materialized:latest
+          until pg_isready -h localhost -p 6875 -U materialize; do sleep 1; done
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -452,18 +422,14 @@ jobs:
     name: QPG Tests (Materialize)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up Materialize
         run: |
           docker pull materialize/materialized:latest
-          docker run -d -p6875:6875 -p6877:6877 -p 26257:26257 materialize/materialized:latest
-          sleep 5
-          # Workaround for https://github.com/cockroachdb/cockroach/issues/93892
-          psql postgres://root@localhost:26257 -c "SET CLUSTER SETTING sql.stats.forecasts.enabled = false"
+          docker run -d -p6875:6875 -p6877:6877 materialize/materialized:latest
+          until pg_isready -h localhost -p 6875 -U materialize; do sleep 1; done
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -480,18 +446,16 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8.0.36
+        image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=10
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -511,11 +475,9 @@ jobs:
     name: DBMS Tests (OceanBase)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -525,7 +487,7 @@ jobs:
       - name: Set up OceanBase
         run: |
           docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce:4.2.1-lts
-          sleep 120
+          until mysql -h127.1 -uroot@test -P2881 --connect-timeout=3 -Doceanbase -A -e "SELECT 1" 2>/dev/null; do sleep 5; done
           mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
       - name: Run Tests
         run: |
@@ -536,18 +498,16 @@ jobs:
     name: DBMS Tests (PostgreSQL)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up PostgreSQL
         uses: harmon758/postgresql-action@v1.0.0
         with:
-          postgresql version: '13'
+          postgresql version: '18'
           postgresql user: 'sqlancer'
           postgresql password: 'sqlancer'
           postgresql db: 'test'
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -565,11 +525,9 @@ jobs:
     name: DBMS Tests (Presto)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -579,24 +537,22 @@ jobs:
           docker pull prestodb/presto:latest
           echo "connector.name=memory" >> memory.properties
           docker run -p 8080:8080 -d -v ./memory.properties:/opt/presto-server/etc/catalog/memory.properties --name presto prestodb/presto:latest
-          sleep 30
+          until curl -sf http://127.0.0.1:8080/v1/info 2>/dev/null; do sleep 2; done
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
           PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoNoREC test
-          docker restart presto && sleep 30
+          docker restart presto && until curl -sf http://127.0.0.1:8080/v1/info 2>/dev/null; do sleep 2; done
           PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoTLP test
   sqlite:
     name: DBMS Tests (SQLite)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -615,11 +571,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -634,11 +588,9 @@ jobs:
     name: DBMS Tests (TiDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -649,9 +601,9 @@ jobs:
         run: |
           docker pull hawkingrei/tidb-playground:nightly-2025-09-16
           docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:nightly-2025-09-16
-          sleep 10
+          until mysql -h 127.0.0.1 -P 4000 -u root --connect-timeout=3 -e "SELECT 1" 2>/dev/null; do sleep 3; done
       - name: Create SQLancer user
-        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+        run: mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
         run: |
           TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test
@@ -661,11 +613,9 @@ jobs:
     name: QPG Tests (TiDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -676,9 +626,9 @@ jobs:
         run: |
           docker pull hawkingrei/tidb-playground:nightly-2025-09-16
           docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:nightly-2025-09-16
-          sleep 10
+          until mysql -h 127.0.0.1 -P 4000 -u root --connect-timeout=3 -e "SELECT 1" 2>/dev/null; do sleep 3; done
       - name: Create SQLancer user
-        run: sudo mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+        run: mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
         run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDBQPG test
 
@@ -686,11 +636,9 @@ jobs:
     name: DBMS Tests (YugabyteDB)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -701,7 +649,7 @@ jobs:
         run: |
           docker pull yugabytedb/yugabyte:latest
           docker run -d --name yugabyte -p7000:7000 -p9000:9000 -p5433:5433 -p9042:9042 yugabytedb/yugabyte:latest bin/yugabyted start --daemon=false
-          sleep 5
+          until pg_isready -h localhost -p 5433; do sleep 1; done
       - name: Run Tests
         run: |
           YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLNoREC test
@@ -713,11 +661,9 @@ jobs:
     name: DBMS Tests (Apache Doris)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -738,7 +684,7 @@ jobs:
           cd ../be
           ./bin/start_be.sh --daemon
 
-          sleep 30
+          until mysql -u root -h 127.0.0.1 --port 9030 --connect-timeout=3 -e "SELECT 1" 2>/dev/null; do sleep 3; done
           IP=$(hostname -I | awk '{print $1}')
           mysql -u root -h 127.0.0.1 --port 9030 -e "ALTER SYSTEM ADD BACKEND '${IP}:9050';"
           mysql -u root -h 127.0.0.1 --port 9030 -e "CREATE USER 'sqlancer' IDENTIFIED BY 'sqlancer'; GRANT ALL ON *.* TO sqlancer;"
@@ -755,11 +701,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'

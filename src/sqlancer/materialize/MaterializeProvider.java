@@ -240,12 +240,17 @@ public class MaterializeProvider extends SQLProviderAdapter<MaterializeGlobalSta
     }
 
     protected void createTables(MaterializeGlobalState globalState, int numTables) throws Exception {
-        while (globalState.getSchema().getDatabaseTables().size() < numTables) {
+        int existingTables = globalState.getSchema().getDatabaseTables().size();
+        int createdTables = 0;
+        int nextTableIndex = existingTables;
+        while (existingTables + createdTables < numTables) {
             try {
-                String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
+                String tableName = DBMSCommon.createTableName(nextTableIndex++);
                 SQLQueryAdapter createTable = MaterializeTableGenerator.generate(tableName, globalState.getSchema(),
                         generateOnlyKnown, globalState);
-                globalState.executeStatement(createTable);
+                if (globalState.executeStatement(createTable)) {
+                    createdTables++;
+                }
             } catch (IgnoreMeException e) {
 
             }

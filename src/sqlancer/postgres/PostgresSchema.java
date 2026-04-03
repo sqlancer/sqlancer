@@ -164,6 +164,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
         private final TableType tableType;
         private final List<PostgresStatisticsObject> statistics;
         private final boolean isInsertable;
+        private final boolean isPartitioned;
 
         public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
                 TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable) {
@@ -171,6 +172,18 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
             this.statistics = statistics;
             this.isInsertable = isInsertable;
             this.tableType = tableType;
+            // TODO: simple adapter for other implementations
+            this.isPartitioned = false;
+        }
+
+        public PostgresTable(String tableName, List<PostgresColumn> columns, List<PostgresIndex> indexes,
+                TableType tableType, List<PostgresStatisticsObject> statistics, boolean isView, boolean isInsertable,
+                boolean isPartitioned) {
+            super(tableName, columns, indexes, isView);
+            this.statistics = statistics;
+            this.isInsertable = isInsertable;
+            this.tableType = tableType;
+            this.isPartitioned = isPartitioned;
         }
 
         public List<PostgresStatisticsObject> getStatistics() {
@@ -183,6 +196,10 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
 
         public boolean isInsertable() {
             return isInsertable;
+        }
+
+        public boolean isPartitioned() {
+            return isPartitioned;
         }
 
     }
@@ -225,11 +242,12 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
             List<PostgresTable> databaseTables = new ArrayList<>();
             try (Statement s = con.createStatement()) {
                 try (ResultSet rs = s.executeQuery(
-                        "SELECT table_name, table_schema, table_type, is_insertable_into FROM information_schema.tables WHERE table_schema='public' OR table_schema LIKE 'pg_temp_%' ORDER BY table_name;")) {
+                        "SELECT t.table_name, t.table_schema, t.table_type, t.is_insertable_into, c.relkind FROM information_schema.tables t JOIN pg_class c ON c.relname = t.table_name JOIN pg_namespace n ON n.oid = c.relnamespace AND n.nspname = t.table_schema WHERE t.table_schema='public' OR t.table_schema LIKE 'pg_temp_%' ORDER BY t.table_name;")) {
                     while (rs.next()) {
                         String tableName = rs.getString("table_name");
                         String tableTypeSchema = rs.getString("table_schema");
                         boolean isInsertable = rs.getBoolean("is_insertable_into");
+                        boolean isPartitioned = "p".equals(rs.getString("relkind"));
                         // TODO: also check insertable
                         // TODO: insert into view?
                         boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
@@ -240,7 +258,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
                         List<PostgresIndex> indexes = getIndexes(con, tableName);
                         List<PostgresStatisticsObject> statistics = getStatistics(con);
                         PostgresTable t = new PostgresTable(tableName, databaseColumns, indexes, tableType, statistics,
-                                isView, isInsertable);
+                                isView, isInsertable, isPartitioned);
                         for (PostgresColumn c : databaseColumns) {
                             c.setTable(t);
                         }

@@ -48,6 +48,7 @@ public final class PostgresCommon {
 
         errors.add("is not commutative"); // exclude
         errors.add("operator requires run-time type coercion"); // exclude
+        errors.add("partitioned tables cannot be unlogged");
 
         return errors;
     }
@@ -59,6 +60,8 @@ public final class PostgresCommon {
     public static List<String> getCommonExpressionErrors() {
         ArrayList<String> errors = new ArrayList<>();
 
+        errors.add("for encoding \"SQL_ASCII\" does not exist");
+        errors.add("invalid byte sequence for encoding");
         errors.add("You might need to add explicit type casts");
         errors.add("invalid regular expression");
         errors.add("could not determine which collation to use");

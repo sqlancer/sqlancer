@@ -26,7 +26,7 @@ public final class MaterializeInsertGenerator {
         MaterializeCommon.addCommonExpressionErrors(errors);
         errors.add("multiple assignments to same column");
         errors.add("violates foreign key constraint");
-        errors.add("value too long for type character varying");
+        errors.add("value too long for type character");
         errors.add("conflicting key value violates exclusion constraint");
         errors.add("violates not-null constraint");
         errors.add("current transaction is aborted");

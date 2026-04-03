@@ -38,6 +38,7 @@ public class MySQLPivotedQuerySynthesisOracle
         super(globalState);
         MySQLErrors.addExpressionErrors(errors);
         errors.add("in 'order clause'"); // e.g., Unknown column '2067708013' in 'order clause'
+        errors.add("in 'EXISTS subquery'"); // e.g., Unknown column '2067708013' in 'EXISTS subquery' (MySQL 8.4+)
     }
 
     @Override
