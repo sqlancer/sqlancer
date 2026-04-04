@@ -226,10 +226,14 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - name: Run DataFusion Server
+      - name: Build DataFusion Server
         run: |
           cd src/sqlancer/datafusion/server/datafusion_server
-          cargo run & sleep 300
+          cargo build
+      - name: Start DataFusion Server
+        run: |
+          cd src/sqlancer/datafusion/server/datafusion_server
+          cargo run &
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
@@ -238,6 +242,18 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
+      - name: Wait for DataFusion Server
+        run: |
+          for i in $(seq 1 30); do
+            if nc -z 127.0.0.1 50051 2>/dev/null; then
+              echo "DataFusion server is ready"
+              exit 0
+            fi
+            echo "Waiting for DataFusion server... ($i/30)"
+            sleep 10
+          done
+          echo "DataFusion server failed to start within 300s"
+          exit 1
       - name: Run Tests
         run: |
           DATAFUSION_AVAILABLE=true mvn test -Pdatafusion-tests
