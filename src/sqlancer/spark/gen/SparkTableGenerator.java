@@ -19,8 +19,10 @@ public class SparkTableGenerator {
 
     private enum ColumnConstraints {
         NOT_NULL, DEFAULT
-        // PRIMARY KEY and UNIQUE are often not supported in standard Spark file sources (Parquet/ORC)
-        // without specific catalogs (like Delta/Iceberg), so we limit to constraints Spark SQL widely accepts.
+        // PRIMARY KEY and UNIQUE are often not supported in standard Spark file sources
+        // (Parquet/ORC)
+        // without specific catalogs (like Delta/Iceberg), so we limit to constraints
+        // Spark SQL widely accepts.
     }
 
     private final SparkGlobalState globalState;

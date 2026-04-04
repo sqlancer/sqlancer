@@ -109,7 +109,8 @@ public class SparkProvider extends SQLProviderAdapter<SparkGlobalState, SparkOpt
         con = DriverManager.getConnection(String.format("jdbc:hive2://%s:%d/%s", host, port, databaseName), username,
                 password);
         try (Statement s = con.createStatement()) {
-            // This allows casting things like BOOLEAN to DATE/TIMESTAMP, which the generator loves to do.
+            // This allows casting things like BOOLEAN to DATE/TIMESTAMP, which the
+            // generator loves to do.
             s.execute("SET spark.sql.ansi.enabled=false");
         }
         return new SQLConnection(con);

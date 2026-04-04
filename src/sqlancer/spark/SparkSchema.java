@@ -85,8 +85,9 @@ public class SparkSchema extends AbstractSchema<SparkGlobalState, SparkTable> {
                     String columnName = rs.getString("col_name");
                     String dataType = rs.getString("data_type");
                     // Filter out Spark partition info or comments usually at bottom of describe
-                    if (columnName.startsWith("#") || columnName.isEmpty())
+                    if (columnName.startsWith("#") || columnName.isEmpty()) {
                         continue;
+                    }
 
                     columns.add(new SparkColumn(columnName, null, getColumnType(dataType)));
                 }
@@ -97,18 +98,25 @@ public class SparkSchema extends AbstractSchema<SparkGlobalState, SparkTable> {
 
     private static SparkDataType getColumnType(String typeString) {
         String upper = typeString.toUpperCase();
-        if (upper.startsWith("STRING") || upper.startsWith("VARCHAR") || upper.startsWith("CHAR"))
+        if (upper.startsWith("STRING") || upper.startsWith("VARCHAR") || upper.startsWith("CHAR")) {
             return SparkDataType.STRING;
-        if (upper.startsWith("INT") || upper.startsWith("BIGINT") || upper.startsWith("SMALLINT"))
+        }
+        if (upper.startsWith("INT") || upper.startsWith("BIGINT") || upper.startsWith("SMALLINT")) {
             return SparkDataType.INTEGER;
-        if (upper.startsWith("DOUBLE") || upper.startsWith("FLOAT") || upper.startsWith("DECIMAL"))
+        }
+        if (upper.startsWith("DOUBLE") || upper.startsWith("FLOAT") || upper.startsWith("DECIMAL")) {
             return SparkDataType.DOUBLE;
-        if (upper.startsWith("BOOLEAN"))
+        }
+        if (upper.startsWith("BOOLEAN")) {
             return SparkDataType.BOOLEAN;
-        if (upper.startsWith("TIMESTAMP"))
+        }
+        if (upper.startsWith("TIMESTAMP")) {
             return SparkDataType.TIMESTAMP;
-        if (upper.startsWith("DATE"))
+        }
+        if (upper.startsWith("DATE")) {
             return SparkDataType.DATE;
+        }
         return SparkDataType.STRING; // Fallback
     }
+
 }

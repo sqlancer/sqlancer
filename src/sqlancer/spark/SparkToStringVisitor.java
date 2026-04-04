@@ -63,7 +63,8 @@ public class SparkToStringVisitor extends NewToStringVisitor<SparkExpression> {
             sb.append(" LIMIT ");
             visit(select.getLimitClause());
         }
-        // Spark supports OFFSET, though strictly usually with LIMIT or in newer versions
+        // Spark supports OFFSET, though strictly usually with LIMIT or in newer
+        // versions
         if (select.getOffsetClause() != null) {
             sb.append(" OFFSET ");
             visit(select.getOffsetClause());
