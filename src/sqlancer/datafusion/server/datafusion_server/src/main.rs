@@ -215,6 +215,11 @@ impl FlightSqlService for FlightSqlServiceImpl {
 
             let mut ctx_guard = self.ctx.lock().await; // Use `lock()` for async Mutex
             *ctx_guard = new_ctx;
+
+            // Clear leaked state from previous round
+            self.statements.clear();
+            self.results.clear();
+            self.contexts.clear();
         }
         // no authentication actually takes place here
         // see Ballista implementation for example of basic auth
