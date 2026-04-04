@@ -101,11 +101,19 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Set up ClickHouse
+      - name: Set up CnosDB
         run: |
           docker pull cnosdb/cnosdb:community-latest
           docker run --name cnosdb -p 8902:8902 -d cnosdb/cnosdb:community-latest
-          until nc -z 127.0.0.1 8902 2>/dev/null; do sleep 1; done
+          for i in $(seq 1 30); do
+            if curl -sf -u "root:" -H "Content-Type: application/json" \
+              "http://127.0.0.1:8902/api/v1/sql?db=public" -d "SELECT 1" >/dev/null 2>&1; then
+              echo "CnosDB is ready"
+              break
+            fi
+            echo "Waiting for CnosDB... ($i/30)"
+            sleep 10
+          done
       - name: Run Tests
         run: |
           CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBNoREC test
