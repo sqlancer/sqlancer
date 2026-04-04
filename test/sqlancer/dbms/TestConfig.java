@@ -11,6 +11,7 @@ public class TestConfig {
     public static final String DATAFUSION_ENV = "DATAFUSION_AVAILABLE";
     public static final String DORIS_ENV = "DORIS_AVAILABLE";
     public static final String HIVE_ENV = "HIVE_AVAILABLE";
+    public static final String SPARK_ENV = "SPARK_AVAILABLE";
     public static final String MARIADB_ENV = "MARIADB_AVAILABLE";
     public static final String MATERIALIZE_ENV = "MATERIALIZE_AVAILABLE";
     public static final String MYSQL_ENV = "MYSQL_AVAILABLE";

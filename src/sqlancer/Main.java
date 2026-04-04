@@ -44,6 +44,7 @@ import sqlancer.oceanbase.OceanBaseProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.presto.PrestoProvider;
 import sqlancer.questdb.QuestDBProvider;
+import sqlancer.spark.SparkProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
 import sqlancer.yugabyte.ycql.YCQLProvider;
@@ -756,6 +757,7 @@ public final class Main {
             providers.add(new DuckDBProvider());
             providers.add(new H2Provider());
             providers.add(new HiveProvider());
+            providers.add(new SparkProvider());
             providers.add(new HSQLDBProvider());
             providers.add(new MariaDBProvider());
             providers.add(new MaterializeProvider());
