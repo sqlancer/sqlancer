@@ -1,7 +1,6 @@
 package sqlancer.postgres.gen;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -39,7 +38,7 @@ public final class PostgresReindexGenerator {
             if (indexes.isEmpty()) {
                 throw new IgnoreMeException();
             }
-            sb.append(indexes.stream().map(i -> i.getIndexName()).collect(Collectors.joining()));
+            sb.append(Randomly.fromList(indexes).getIndexName());
             break;
         case TABLE:
             sb.append("TABLE ");
