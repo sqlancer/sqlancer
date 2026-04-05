@@ -15,8 +15,8 @@ public class TestCnosDBTLP {
         // Run with 0 queries as current implementation is resulting in database crashes
         assertEquals(0,
                 Main.executeMain(new String[] { "--host", "127.0.0.1", "--port", "8902", "--username", "root",
-                        "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-queries", "0", "cnosdb",
-                        "--oracle", "QUERY_PARTITIONING" }));
+                        "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS, "--num-queries", "0",
+                        "--num-threads", "1", "cnosdb", "--oracle", "QUERY_PARTITIONING" }));
     }
 
 }

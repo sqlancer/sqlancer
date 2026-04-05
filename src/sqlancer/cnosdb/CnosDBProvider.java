@@ -66,13 +66,17 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
         host = globalState.getOptions().getHost();
         port = globalState.getOptions().getPort();
         databaseName = globalState.getDatabaseName();
+        // Use a client connected to "public" for DROP/CREATE operations,
+        // since CnosDB cannot drop a database from its own connection context.
+        CnosDBClient adminClient = new CnosDBClient(host, port, username, password, "public");
+        adminClient.execute("DROP DATABASE IF EXISTS " + databaseName);
+        globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+        adminClient.execute("CREATE DATABASE " + databaseName);
+        globalState.getState().logStatement("CREATE DATABASE " + databaseName);
+        adminClient.close();
+
         CnosDBClient client = new CnosDBClient(host, port, username, password, databaseName);
         CnosDBConnection connection = new CnosDBConnection(client);
-        client.execute("DROP DATABASE IF EXISTS " + databaseName);
-        globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        client.execute("CREATE DATABASE " + databaseName);
-        globalState.getState().logStatement("CREATE DATABASE " + databaseName);
-
         return connection;
     }
 
