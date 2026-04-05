@@ -89,7 +89,7 @@ jobs:
         run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
 
   cnosdb:
-    name: DBMS Tests (CnosDB)
+    name: DBMS Tests (CnosDB, creation only)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -374,7 +374,7 @@ jobs:
         run: SPARK_AVAILABLE=true mvn -Dtest=TestSparkTLP test
 
   hsqldb:
-    name: DBMS Tests (HSQLB)
+    name: DBMS Tests (HSQLDB)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -466,7 +466,7 @@ jobs:
           MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQueryPlan
 
   mysql:
-    name: DBMS Tests (MySQL)
+    name: DBMS Tests (MySQL, CERT creation only)
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -609,7 +609,7 @@ jobs:
           mvn -Dtest=TestSQLiteQPG test
 
   tidb:
-    name: DBMS Tests (TiDB)
+    name: DBMS Tests (TiDB, TLP creation only)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
