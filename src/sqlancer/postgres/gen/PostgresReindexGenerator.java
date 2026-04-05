@@ -58,7 +58,6 @@ public final class PostgresReindexGenerator {
             throw new AssertionError(scope);
         }
         errors.add("already contains data"); // FIXME bug report
-        errors.add("does not exist"); // internal index
         errors.add("REINDEX is not yet implemented for partitioned indexes");
         return new SQLQueryAdapter(sb.toString(), errors);
     }
