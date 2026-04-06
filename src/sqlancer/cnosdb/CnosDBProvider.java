@@ -73,9 +73,8 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
         // Use a client connected to "public" for DROP/CREATE operations,
         // since CnosDB cannot drop a database from its own connection context.
         CnosDBClient adminClient = new CnosDBClient(host, port, username, password, "public");
-        executeWithRetry(adminClient, "DROP DATABASE IF EXISTS " + databaseName);
+        dropAndCreateDatabase(adminClient, databaseName);
         globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
-        executeWithRetry(adminClient, "CREATE DATABASE " + databaseName);
         globalState.getState().logStatement("CREATE DATABASE " + databaseName);
         adminClient.close();
 
@@ -104,13 +103,37 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
     }
 
     /**
-     * Executes a query with retries to work around CnosDB storage layer initialization delays.
+     * Drops and recreates a database, retrying the entire DROP+CREATE sequence on transient errors.
      *
      * CnosDB's Tskv index storage may not be fully ready even after the HTTP API responds to simple queries. DDL
-     * operations like DROP/CREATE DATABASE can fail with: {@code "grpc client request error: Tskv: Index: index storage
-     * error: Resource temporarily unavailable (os error 11)"}. Additionally, a newly created database may not be
-     * immediately queryable, causing {@code "Database not found"} errors. DROP DATABASE may also be delayed, causing
-     * a subsequent CREATE DATABASE to fail with {@code "Database already exists"}.
+     * operations can fail with: {@code "grpc client request error: Tskv: Index: index storage error: Resource
+     * temporarily unavailable (os error 11)"}. DROP DATABASE may also appear to succeed but not yet propagate, causing
+     * CREATE DATABASE to fail with {@code "Database already exists"}. Retrying just the CREATE is futile in that case,
+     * so we retry the DROP+CREATE pair together.
+     */
+    private static void dropAndCreateDatabase(CnosDBClient client, String databaseName) throws Exception {
+        String dropQuery = "DROP DATABASE IF EXISTS " + databaseName;
+        String createQuery = "CREATE DATABASE " + databaseName;
+        for (int i = 0; i < DB_READY_RETRIES; i++) {
+            try {
+                client.execute(dropQuery);
+                client.execute(createQuery);
+                return;
+            } catch (CnosDBException e) {
+                boolean isRetryable = e.getMessage().contains("Resource temporarily unavailable")
+                        || e.getMessage().contains("already exists");
+                if (!isRetryable || i == DB_READY_RETRIES - 1) {
+                    throw e;
+                }
+                Thread.sleep(DB_READY_SLEEP_MS);
+            }
+        }
+    }
+
+    /**
+     * Executes a query with retries to work around CnosDB storage layer initialization delays.
+     *
+     * A newly created database may not be immediately queryable, causing {@code "Database not found"} errors.
      */
     private static void executeWithRetry(CnosDBClient client, String query) throws Exception {
         for (int i = 0; i < DB_READY_RETRIES; i++) {
@@ -118,9 +141,7 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
                 client.execute(query);
                 return;
             } catch (CnosDBException e) {
-                boolean isRetryable = e.getMessage().contains("Resource temporarily unavailable")
-                        || e.getMessage().contains("Database not found")
-                        || e.getMessage().contains("already exists");
+                boolean isRetryable = e.getMessage().contains("Database not found");
                 if (!isRetryable || i == DB_READY_RETRIES - 1) {
                     throw e;
                 }
