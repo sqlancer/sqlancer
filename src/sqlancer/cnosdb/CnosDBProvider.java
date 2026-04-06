@@ -109,7 +109,8 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
      * CnosDB's Tskv index storage may not be fully ready even after the HTTP API responds to simple queries. DDL
      * operations like DROP/CREATE DATABASE can fail with: {@code "grpc client request error: Tskv: Index: index storage
      * error: Resource temporarily unavailable (os error 11)"}. Additionally, a newly created database may not be
-     * immediately queryable, causing {@code "Database not found"} errors.
+     * immediately queryable, causing {@code "Database not found"} errors. DROP DATABASE may also be delayed, causing
+     * a subsequent CREATE DATABASE to fail with {@code "Database already exists"}.
      */
     private static void executeWithRetry(CnosDBClient client, String query) throws Exception {
         for (int i = 0; i < DB_READY_RETRIES; i++) {
@@ -118,7 +119,8 @@ public class CnosDBProvider extends ProviderAdapter<CnosDBGlobalState, CnosDBOpt
                 return;
             } catch (CnosDBException e) {
                 boolean isRetryable = e.getMessage().contains("Resource temporarily unavailable")
-                        || e.getMessage().contains("Database not found");
+                        || e.getMessage().contains("Database not found")
+                        || e.getMessage().contains("already exists");
                 if (!isRetryable || i == DB_READY_RETRIES - 1) {
                     throw e;
                 }
