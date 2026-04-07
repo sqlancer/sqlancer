@@ -40,7 +40,6 @@ public final class DuckDBIndexGenerator {
             }
         }
         sb.append(")");
-        // errors.add("already exists!");
         if (globalState.getDbmsSpecificOptions().testRowid) {
             errors.add("cannot create an index on the rowid");
         }
