@@ -304,6 +304,7 @@ public class PostgresAlterTableGenerator {
                 errors.add("multiple primary keys for table");
                 errors.add("could not create unique index");
                 errors.add("contains null values");
+                errors.add("is not marked NOT NULL");
                 errors.add("cannot cast type");
                 errors.add("unsupported PRIMARY KEY constraint with partition key definition");
                 errors.add("unsupported UNIQUE constraint with partition key definition");
@@ -342,6 +343,7 @@ public class PostgresAlterTableGenerator {
                 errors.add("appears twice in unique constraint");
                 errors.add("appears twice in primary key constraint");
                 errors.add("contains null values");
+                errors.add("is not marked NOT NULL");
                 errors.add("insufficient columns in PRIMARY KEY constraint definition");
                 errors.add("which is part of the partition key");
                 break;
