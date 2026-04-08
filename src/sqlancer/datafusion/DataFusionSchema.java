@@ -37,7 +37,7 @@ public class DataFusionSchema extends AbstractSchema<DataFusionGlobalState, Data
 
         for (String tableName : tableNames) {
             List<DataFusionColumn> databaseColumns = getTableColumns(con, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             DataFusionTable t = new DataFusionTable(tableName, databaseColumns, isView);
             for (DataFusionColumn c : databaseColumns) {
                 c.setTable(t);

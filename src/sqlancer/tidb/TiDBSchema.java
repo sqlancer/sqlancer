@@ -313,7 +313,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
                 continue;
             }
             List<TableIndex> indexes = getIndexes(con, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             TiDBTable t = new TiDBTable(tableName, databaseColumns, indexes, isView);
             for (TiDBColumn c : databaseColumns) {
                 c.setTable(t);

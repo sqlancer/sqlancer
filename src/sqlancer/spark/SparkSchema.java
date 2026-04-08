@@ -54,7 +54,7 @@ public class SparkSchema extends AbstractSchema<SparkGlobalState, SparkTable> {
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             List<SparkColumn> databaseColumns = getTableColumns(con, tableName);
-            boolean isView = tableName.toLowerCase().startsWith("v");
+            boolean isView = matchesViewName(tableName);
             SparkTable t = new SparkTable(tableName, databaseColumns, isView);
             for (SparkColumn c : databaseColumns) {
                 c.setTable(t);

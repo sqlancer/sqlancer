@@ -59,7 +59,7 @@ public class HiveSchema extends AbstractSchema<HiveGlobalState, HiveTable> {
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             List<HiveColumn> databaseColumns = getTableColumns(con, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             HiveTable t = new HiveTable(tableName, databaseColumns, isView);
             for (HiveColumn c : databaseColumns) {
                 c.setTable(t);

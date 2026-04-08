@@ -231,7 +231,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
                 continue; // TODO: unexpected?
             }
             List<DuckDBColumn> databaseColumns = getTableColumns(con, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             List<TableIndex> indexes = getIndexes(con, tableName);
             DuckDBTable t = new DuckDBTable(tableName, databaseColumns, indexes, isView);
             for (DuckDBColumn c : databaseColumns) {

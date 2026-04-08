@@ -250,7 +250,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
                         boolean isPartitioned = "p".equals(rs.getString("relkind"));
                         // TODO: also check insertable
                         // TODO: insert into view?
-                        boolean isView = tableName.startsWith("v"); // tableTypeStr.contains("VIEW") ||
+                        boolean isView = matchesViewName(tableName); // tableTypeStr.contains("VIEW") ||
                                                                     // tableTypeStr.contains("LOCAL TEMPORARY") &&
                                                                     // !isInsertable;
                         PostgresTable.TableType tableType = getTableType(tableTypeSchema);
