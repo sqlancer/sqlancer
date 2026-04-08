@@ -42,7 +42,7 @@ public class TestMaterializeQueryPlan {
         String queryPlan = provider.getQueryPlan("SELECT * FROM t1 RIGHT JOIN t2 ON a<>0;", state);
 
         assertEquals(
-                "Return // { arity: 3 };Union // { arity: 3 };Get l0 // { arity: 3 };Project (#2{c}, #3, #0) // { arity: 3 };Union // { arity: 1 };Negate // { arity: 1 };Project (#2) // { arity: 1 };ReadStorage queryplan.public.t2 // { arity: 1 };ReadStorage queryplan.public.t2 // { arity: 1 };With;ReadStorage queryplan.public.t1 // { arity: 2 };ReadStorage queryplan.public.t2 // { arity: 1 };;Source queryplan.public.t1;Source queryplan.public.t2;;Target cluster: quickstart;",
+                "With;ReadStorage queryplan.public.t1 // { arity: 2 };ReadStorage queryplan.public.t2 // { arity: 1 };Return // { arity: 3 };Union // { arity: 3 };Get l0 // { arity: 3 };Project (#2, #3, #0{c}) // { arity: 3 };Union // { arity: 1 };Negate // { arity: 1 };Project (#2{c}) // { arity: 1 };ReadStorage queryplan.public.t2 // { arity: 1 };ReadStorage queryplan.public.t2 // { arity: 1 };;Source queryplan.public.t1;Source queryplan.public.t2;;Target cluster: quickstart;",
                 queryPlan);
     }
 
