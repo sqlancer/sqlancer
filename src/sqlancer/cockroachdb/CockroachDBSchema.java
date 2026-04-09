@@ -292,7 +292,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
         for (String tableName : tableNames) {
             List<CockroachDBColumn> databaseColumns = getTableColumns(con, tableName);
             List<TableIndex> indexes = getIndexes(con, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             CockroachDBTable t = new CockroachDBTable(tableName, databaseColumns, indexes, isView);
             for (CockroachDBColumn c : databaseColumns) {
                 c.setTable(t);

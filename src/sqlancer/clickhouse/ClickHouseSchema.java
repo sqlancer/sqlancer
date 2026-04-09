@@ -216,7 +216,7 @@ public class ClickHouseSchema extends AbstractSchema<ClickHouseGlobalState, Clic
         for (String tableName : tableNames) {
             List<ClickHouseColumn> databaseColumns = getTableColumns(con, tableName);
             List<TableIndex> indexes = Collections.emptyList();
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             ClickHouseTable t = new ClickHouseTable(tableName, databaseColumns, indexes, isView);
             for (ClickHouseColumn c : databaseColumns) {
                 c.setTable(t);

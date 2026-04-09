@@ -29,7 +29,7 @@ public class HSQLDBSchema extends AbstractSchema<HSQLDBProvider.HSQLDBGlobalStat
                 continue; // TODO: unexpected?
             }
             List<HSQLDBSchema.HSQLDBColumn> databaseColumns = getTableColumns(connection, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             HSQLDBSchema.HSQLDBTable t = new HSQLDBSchema.HSQLDBTable(tableName, databaseColumns, isView);
             for (HSQLDBSchema.HSQLDBColumn c : databaseColumns) {
                 c.setTable(t);

@@ -27,7 +27,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
         List<String> tableNames = getTableNames(con);
         for (String tableName : tableNames) {
             List<PrestoColumn> databaseColumns = getTableColumns(con, databaseName, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             PrestoTable t = new PrestoTable(tableName, databaseColumns, isView);
             for (PrestoColumn c : databaseColumns) {
                 c.setTable(t);

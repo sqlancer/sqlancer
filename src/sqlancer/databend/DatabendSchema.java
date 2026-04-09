@@ -321,7 +321,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
         List<String> tableNames = getTableNames(con, databaseName);
         for (String tableName : tableNames) {
             List<DatabendColumn> databaseColumns = getTableColumns(con, tableName, databaseName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             DatabendTable t = new DatabendTable(tableName, databaseColumns, isView);
             for (DatabendColumn c : databaseColumns) {
                 c.setTable(t);
