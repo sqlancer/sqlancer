@@ -170,6 +170,7 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
             this.hasDefault = hasDefault;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }
@@ -295,10 +296,6 @@ public class TiDBSchema extends AbstractSchema<TiDBGlobalState, TiDBTable> {
 
         public TiDBTable(String tableName, List<TiDBColumn> columns, List<TableIndex> indexes, boolean isView) {
             super(tableName, columns, indexes, isView);
-        }
-
-        public boolean hasPrimaryKey() {
-            return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
         }
 
     }

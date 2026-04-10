@@ -126,6 +126,7 @@ public class YCQLSchema extends AbstractSchema<YCQLGlobalState, YCQLTable> {
             this.isNullable = isNullable;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }

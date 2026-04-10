@@ -78,6 +78,7 @@ public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Tab
             this.generated = generated;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }

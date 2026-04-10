@@ -182,6 +182,7 @@ public class CockroachDBSchema extends AbstractSchema<CockroachDBGlobalState, Co
             this.isNullable = isNullable;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }

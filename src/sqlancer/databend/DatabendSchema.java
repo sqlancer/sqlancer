@@ -148,6 +148,7 @@ public class DatabendSchema extends AbstractSchema<DatabendGlobalState, Databend
             this.isNullable = isNullable;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }

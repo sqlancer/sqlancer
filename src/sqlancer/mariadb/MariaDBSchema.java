@@ -51,6 +51,7 @@ public class MariaDBSchema extends AbstractSchema<MariaDBGlobalState, MariaDBTab
             return precision;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }

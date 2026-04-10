@@ -453,6 +453,7 @@ public class PrestoSchema extends AbstractSchema<PrestoGlobalState, PrestoSchema
             this.isNullable = isNullable;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }

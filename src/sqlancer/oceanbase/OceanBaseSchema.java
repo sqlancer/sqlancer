@@ -81,6 +81,7 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
             return precision;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }
@@ -193,10 +194,6 @@ public class OceanBaseSchema extends AbstractSchema<OceanBaseGlobalState, OceanB
 
         public OceanBaseTable(String tableName, List<OceanBaseColumn> columns, List<OceanBaseIndex> indexes) {
             super(tableName, columns, indexes, false);
-        }
-
-        public boolean hasPrimaryKey() {
-            return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
         }
 
     }

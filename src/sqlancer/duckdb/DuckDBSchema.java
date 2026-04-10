@@ -132,6 +132,7 @@ public class DuckDBSchema extends AbstractSchema<DuckDBGlobalState, DuckDBTable>
             this.isNullable = isNullable;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }
