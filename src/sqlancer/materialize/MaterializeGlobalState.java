@@ -266,6 +266,21 @@ public class MaterializeGlobalState extends SQLGlobalState<MaterializeOptions, M
 
     @Override
     public MaterializeSchema readSchema() throws SQLException {
+        // Materialize exhibits eventual consistency: a table can appear in
+        // information_schema.tables before its columns are visible in
+        // INFORMATION_SCHEMA.COLUMNS. Retry until the snapshot is consistent.
+        for (int tries = 0; tries < 30; tries++) {
+            MaterializeSchema schema = MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
+            if (schema.getDatabaseTables().stream().noneMatch(t -> t.getColumns().isEmpty())) {
+                return schema;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
         return MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
     }
 
