@@ -23,10 +23,10 @@ public final class CitusCommon {
         errors.add("non-IMMUTABLE functions are not allowed in the RETURNING clause");
         errors.add("functions used in UPDATE queries on distributed tables must not be VOLATILE");
         errors.add("STABLE functions used in UPDATE queries cannot be called with column references");
-        errors.add(
-                "functions used in the WHERE clause of modification queries on distributed tables must not be VOLATILE");
+        errors.add("of modification queries on distributed tables must not be VOLATILE");
         errors.add("cannot execute ADD CONSTRAINT command with other subcommands");
         errors.add("cannot execute ALTER TABLE command involving partition column");
+        errors.add("alter table command is currently unsupported");
         errors.add("could not run distributed query with FOR UPDATE/SHARE commands");
         errors.add("is not a regular, foreign or partitioned table");
         errors.add("must be a distributed table or a reference table");
@@ -53,7 +53,8 @@ public final class CitusCommon {
         errors.add("direct joins between distributed and local tables are not supported");
         errors.add("unlogged columnar tables are not supported");
         errors.add("UPDATE and CTID scans not supported for ColumnarScan");
-        errors.add("indexes not supported for columnar tables");
+        errors.add("unsupported access method for the index on columnar table");
+        errors.add("BRIN indexes on columnar tables are not supported");
         errors.add("invalid byte sequence for encoding \"UTF8\": 0x00");
         errors.add("columnar_tuple_insert_speculative not implemented");
         errors.add("row field count is 1, expected 2");
