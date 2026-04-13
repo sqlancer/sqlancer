@@ -27,6 +27,7 @@ public final class CitusCommon {
         errors.add("cannot execute ADD CONSTRAINT command with other subcommands");
         errors.add("cannot execute ALTER TABLE command involving partition column");
         errors.add("alter table command is currently unsupported");
+        errors.add("on distributed partitioned tables are not supported");
         errors.add("could not run distributed query with FOR UPDATE/SHARE commands");
         errors.add("is not a regular, foreign or partitioned table");
         errors.add("must be a distributed table or a reference table");
@@ -61,6 +62,7 @@ public final class CitusCommon {
         errors.add("incorrect binary data format");
         errors.add("invalid sign in external \"numeric\" value");
         errors.add("Foreign keys and AFTER ROW triggers are not supported for columnar tables");
+        errors.addAll(getColumnarOidErrors());
 
         // current errors in Citus (to be removed once fixed)
         if (CitusBugs.bug3957) {
@@ -85,6 +87,19 @@ public final class CitusCommon {
         if (CitusBugs.bug4079) {
             errors.add("aggregate function calls cannot be nested");
         }
+        return errors;
+    }
+
+    /**
+     * Citus can fail with "could not open relation with OID 0" when operating on columnar temporary tables (e.g., USING
+     * columnar ON COMMIT DROP), during VACUUM, DISCARD TEMPORARY, or INSERT operations where Citus cannot resolve the
+     * relation OID.
+     *
+     * @return the list of expected error substrings for columnar OID resolution failures.
+     */
+    public static List<String> getColumnarOidErrors() {
+        List<String> errors = new ArrayList<>();
+        errors.add("could not open relation with OID 0");
         return errors;
     }
 

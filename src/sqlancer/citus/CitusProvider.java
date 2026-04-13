@@ -21,11 +21,15 @@ import sqlancer.StatementExecutor;
 import sqlancer.citus.gen.CitusAlterTableGenerator;
 import sqlancer.citus.gen.CitusCommon;
 import sqlancer.citus.gen.CitusDeleteGenerator;
+import sqlancer.citus.gen.CitusDiscardGenerator;
 import sqlancer.citus.gen.CitusIndexGenerator;
 import sqlancer.citus.gen.CitusInsertGenerator;
+import sqlancer.citus.gen.CitusReindexGenerator;
 import sqlancer.citus.gen.CitusSetGenerator;
 import sqlancer.citus.gen.CitusTableGenerator;
+import sqlancer.citus.gen.CitusTruncateGenerator;
 import sqlancer.citus.gen.CitusUpdateGenerator;
+import sqlancer.citus.gen.CitusVacuumGenerator;
 import sqlancer.citus.gen.CitusViewGenerator;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.oracle.CompositeTestOracle;
@@ -44,15 +48,11 @@ import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.gen.PostgresAnalyzeGenerator;
 import sqlancer.postgres.gen.PostgresClusterGenerator;
 import sqlancer.postgres.gen.PostgresCommentGenerator;
-import sqlancer.postgres.gen.PostgresDiscardGenerator;
 import sqlancer.postgres.gen.PostgresDropIndexGenerator;
 import sqlancer.postgres.gen.PostgresNotifyGenerator;
-import sqlancer.postgres.gen.PostgresReindexGenerator;
 import sqlancer.postgres.gen.PostgresSequenceGenerator;
 import sqlancer.postgres.gen.PostgresStatisticsGenerator;
 import sqlancer.postgres.gen.PostgresTransactionGenerator;
-import sqlancer.postgres.gen.PostgresTruncateGenerator;
-import sqlancer.postgres.gen.PostgresVacuumGenerator;
 
 @AutoService(DatabaseProvider.class)
 public class CitusProvider extends PostgresProvider {
@@ -82,13 +82,13 @@ public class CitusProvider extends PostgresProvider {
         CREATE_STATISTICS(PostgresStatisticsGenerator::insert), //
         DROP_STATISTICS(PostgresStatisticsGenerator::remove), //
         DELETE(CitusDeleteGenerator::create), //
-        DISCARD(PostgresDiscardGenerator::create), //
+        DISCARD(CitusDiscardGenerator::create), //
         DROP_INDEX(PostgresDropIndexGenerator::create), //
         INSERT(CitusInsertGenerator::insert), //
         UPDATE(CitusUpdateGenerator::create), //
-        TRUNCATE(PostgresTruncateGenerator::create), //
-        VACUUM(PostgresVacuumGenerator::create), //
-        REINDEX(PostgresReindexGenerator::create), //
+        TRUNCATE(CitusTruncateGenerator::create), //
+        VACUUM(CitusVacuumGenerator::create), //
+        REINDEX(CitusReindexGenerator::create), //
         SET(CitusSetGenerator::create), //
         CREATE_INDEX(CitusIndexGenerator::generate), //
         SET_CONSTRAINTS((g) -> {
