@@ -125,6 +125,12 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
         case "character varying":
         case "name":
         case "regclass":
+        case "regnamespace":
+        case "regrole":
+        case "regtype":
+        case "regproc":
+        case "regprocedure":
+        case "regoper":
             return PostgresDataType.TEXT;
         case "numeric":
             return PostgresDataType.DECIMAL;
