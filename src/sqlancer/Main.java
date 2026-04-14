@@ -626,7 +626,11 @@ public final class Main {
             }
         }
 
-        ExecutorService execService = Executors.newFixedThreadPool(options.getNumberConcurrentThreads());
+        ExecutorService execService = Executors.newFixedThreadPool(options.getNumberConcurrentThreads(), r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        });
         DBMSExecutorFactory<?, ?, ?> executorFactory = nameToProvider.get(jc.getParsedCommand());
 
         if (options.performConnectionTest()) {
@@ -784,7 +788,11 @@ public final class Main {
         } else {
             progressMonitorStarted = true;
         }
-        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, r -> {
+            Thread t = new Thread(r, "SQLancer-progress-monitor");
+            t.setDaemon(true);
+            return t;
+        });
         scheduler.scheduleAtFixedRate(new Runnable() {
 
             private long timeMillis = System.currentTimeMillis();
