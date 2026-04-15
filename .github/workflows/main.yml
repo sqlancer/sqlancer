@@ -34,7 +34,7 @@ jobs:
       - name: Verify
         run: mvn -B verify -DskipTests=true
       - name: Misc Tests
-        run: mvn -B '-Dtest=!sqlancer.dbms.**,!sqlancer.qpg.**' test
+        run: mvn -Djacoco.skip=true -B '-Dtest=!sqlancer.dbms.**,!sqlancer.qpg.**' test
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -88,7 +88,7 @@ jobs:
           psql -c "SELECT * from citus_add_node('localhost', 9701);" -p 9700 -U $USER -d test
           psql -c "SELECT * from citus_add_node('localhost', 9702);" -p 9700 -U $USER -d test
       - name: Run Tests
-        run: CITUS_AVAILABLE=true mvn -Dtest=TestCitus test
+        run: CITUS_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCitus test
 
   cnosdb:
     name: DBMS Tests (CnosDB, creation only)
@@ -110,9 +110,9 @@ jobs:
           until nc -z 127.0.0.1 8902 2>/dev/null; do sleep 1; done
       - name: Run Tests
         run: |
-          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBNoREC test
+          CNOSDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCnosDBNoREC test
           sleep 20
-          CNOSDB_AVAILABLE=true mvn -Dtest=TestCnosDBTLP test
+          CNOSDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCnosDBTLP test
 
   clickhouse:
     name: DBMS Tests (ClickHouse)
@@ -133,7 +133,7 @@ jobs:
           docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:24.3.1.2672
           until curl -sf http://127.0.0.1:8123/ping 2>/dev/null; do sleep 1; done
       - name: Run Tests
-        run: CLICKHOUSE_AVAILABLE=true mvn -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
+        run: CLICKHOUSE_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=ClickHouseBinaryComparisonOperationTest,TestClickHouse,ClickHouseOperatorsVisitorTest,ClickHouseToStringVisitorTest test
       - name: Show fatal errors
         run: docker exec clickhouse-server grep Fatal /var/log/clickhouse-server/clickhouse-server.log || echo No Fatal Errors found
       - name: Teardown ClickHouse server
@@ -163,9 +163,9 @@ jobs:
         run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
         run: |
-          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBNoREC test
-          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBTLP test
-          COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBCERT test
+          COCKROACHDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCockroachDBNoREC test
+          COCKROACHDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCockroachDBTLP test
+          COCKROACHDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCockroachDBCERT test
 
   cockroachdb-qpg:
     name: QPG Tests (CockroachDB)
@@ -188,7 +188,7 @@ jobs:
       - name: Create SQLancer user
         run: cd cockroach-v24.2.0.linux-amd64/ && ./cockroach sql --insecure -e "CREATE USER sqlancer; GRANT admin to sqlancer" && cd ..
       - name: Run Tests
-        run: COCKROACHDB_AVAILABLE=true mvn -Dtest=TestCockroachDBQPG test
+        run: COCKROACHDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCockroachDBQPG test
 
   databend:
     name: DBMS Tests (Databend)
@@ -214,9 +214,9 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
-          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendTLP test
-          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendNoREC test
-          DATABEND_AVAILABLE=true mvn -Dtest=TestDatabendPQS test
+          DATABEND_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDatabendTLP test
+          DATABEND_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDatabendNoREC test
+          DATABEND_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDatabendPQS test
 
   datafusion:
     name: DBMS Tests (DataFusion)
@@ -258,7 +258,7 @@ jobs:
           exit 1
       - name: Run Tests
         run: |
-          DATAFUSION_AVAILABLE=true mvn test -Pdatafusion-tests
+          DATAFUSION_AVAILABLE=true mvn -Djacoco.skip=true test -Pdatafusion-tests
 
   duckdb:
     name: DBMS Tests (DuckDB)
@@ -276,8 +276,8 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: DuckDB Tests
         run: |
-          mvn -Dtest=TestDuckDBTLP test
-          mvn -Dtest=TestDuckDBNoREC test
+          mvn -Djacoco.skip=true -Dtest=TestDuckDBTLP test
+          mvn -Djacoco.skip=true -Dtest=TestDuckDBNoREC test
 
   h2:
     name: DBMS Tests (H2)
@@ -293,7 +293,7 @@ jobs:
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
-        run: mvn -Dtest=TestH2 test
+        run: mvn -Djacoco.skip=true -Dtest=TestH2 test
 
   hive:
     name: DBMS Tests (Hive)
@@ -327,7 +327,7 @@ jobs:
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Run Tests
-        run: HIVE_AVAILABLE=true mvn -Dtest=TestHiveTLP test
+        run: HIVE_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestHiveTLP test
 
   spark:
     name: DBMS Tests (Spark)
@@ -365,7 +365,7 @@ jobs:
         run: mvn -B package -DskipTests=true
         
       - name: Run Tests
-        run: SPARK_AVAILABLE=true mvn -Dtest=TestSparkTLP test
+        run: SPARK_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestSparkTLP test
 
   hsqldb:
     name: DBMS Tests (HSQLDB)
@@ -382,8 +382,8 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
-          mvn -Dtest=TestHSQLDBNoREC test
-          mvn -Dtest=TestHSQLDBTLP test
+          mvn -Djacoco.skip=true -Dtest=TestHSQLDBNoREC test
+          mvn -Djacoco.skip=true -Dtest=TestHSQLDBTLP test
 
   mariadb:
     name: DBMS Tests (MariaDB)
@@ -410,7 +410,7 @@ jobs:
       - name: Create SQLancer User
         run: sudo mysql -h 127.0.0.1 -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
       - name: Run Tests
-        run: MARIADB_AVAILABLE=true mvn -Dtest=TestMariaDB test
+        run: MARIADB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestMariaDB test
 
   materialize:
     name: DBMS Tests (Materialize)
@@ -432,9 +432,9 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeNoREC
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeTLP
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializePQS
+          MATERIALIZE_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMaterializeNoREC
+          MATERIALIZE_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMaterializeTLP
+          MATERIALIZE_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMaterializePQS
 
   materialize-qpg:
     name: QPG Tests (Materialize)
@@ -456,8 +456,8 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQPG
-          MATERIALIZE_AVAILABLE=true mvn test -Dtest=TestMaterializeQueryPlan
+          MATERIALIZE_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMaterializeQPG
+          MATERIALIZE_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMaterializeQueryPlan
 
   mysql:
     name: DBMS Tests (MySQL, CERT creation only)
@@ -484,10 +484,10 @@ jobs:
         run: mysql -h 127.0.0.1  -uroot -proot -e "CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
       - name: Run Tests
         run: |
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLPQS
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLTLP
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLCERT
-          MYSQL_AVAILABLE=true mvn test -Dtest=TestMySQLDQE
+          MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLPQS
+          MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLTLP
+          MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLCERT
+          MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLDQE
 
   oceanbase:
     name: DBMS Tests (OceanBase)
@@ -509,9 +509,9 @@ jobs:
           mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
       - name: Run Tests
         run: |
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseNoREC
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBasePQS
-          OCEANBASE_AVAILABLE=true mvn test -Dtest=TestOceanBaseTLP
+          OCEANBASE_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestOceanBaseNoREC
+          OCEANBASE_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestOceanBasePQS
+          OCEANBASE_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestOceanBaseTLP
   postgres:
     name: DBMS Tests (PostgreSQL)
     runs-on: ubuntu-latest
@@ -534,10 +534,10 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
-          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresPQS test
-          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresTLP test
-          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresNoREC test
-          POSTGRES_AVAILABLE=true mvn -Dtest=TestPostgresCERT test
+          POSTGRES_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestPostgresPQS test
+          POSTGRES_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestPostgresTLP test
+          POSTGRES_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestPostgresNoREC test
+          POSTGRES_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestPostgresCERT test
 
   presto:
     name: DBMS Tests (Presto)
@@ -560,9 +560,9 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
-          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoNoREC test
+          PRESTO_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestPrestoNoREC test
           docker restart presto && until curl -sf http://127.0.0.1:8080/v1/info 2>/dev/null; do sleep 2; done
-          PRESTO_AVAILABLE=true mvn -Dtest=TestPrestoTLP test
+          PRESTO_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestPrestoTLP test
   sqlite:
     name: DBMS Tests (SQLite)
     runs-on: ubuntu-latest
@@ -579,10 +579,10 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests
         run: |
-          mvn -Dtest=TestSQLitePQS test
-          mvn -Dtest=TestSQLiteTLP test
-          mvn -Dtest=TestSQLiteNoREC test
-          mvn -Dtest=TestSQLiteCODDTest test
+          mvn -Djacoco.skip=true -Dtest=TestSQLitePQS test
+          mvn -Djacoco.skip=true -Dtest=TestSQLiteTLP test
+          mvn -Djacoco.skip=true -Dtest=TestSQLiteNoREC test
+          mvn -Djacoco.skip=true -Dtest=TestSQLiteCODDTest test
 
   sqlite-qpg:
     name: QPG Tests (SQLite)
@@ -600,7 +600,7 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: SQLite Tests for QPG
         run: |
-          mvn -Dtest=TestSQLiteQPG test
+          mvn -Djacoco.skip=true -Dtest=TestSQLiteQPG test
 
   tidb:
     name: DBMS Tests (TiDB, TLP creation only)
@@ -624,8 +624,8 @@ jobs:
         run: mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
         run: |
-          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBTLP test
-          TIDB_AVAILABLE=true mvn -Dtest=TestTiDBCERT test
+          TIDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestTiDBTLP test
+          TIDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestTiDBCERT test
 
   tidb-qpg:
     name: QPG Tests (TiDB)
@@ -648,7 +648,7 @@ jobs:
       - name: Create SQLancer user
         run: mysql -h 127.0.0.1 -P 4000 -u root -D test -e "CREATE USER 'sqlancer'@'%' IDENTIFIED WITH mysql_native_password BY 'sqlancer'; GRANT ALL PRIVILEGES ON *.* TO 'sqlancer'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
       - name: Run Tests
-        run: TIDB_AVAILABLE=true mvn -Dtest=TestTiDBQPG test
+        run: TIDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestTiDBQPG test
 
   yugabyte:
     name: DBMS Tests (YugabyteDB)
@@ -670,10 +670,10 @@ jobs:
           until pg_isready -h localhost -p 5433; do sleep 1; done
       - name: Run Tests
         run: |
-          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLNoREC test
-          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLTLP test
-          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYSQLPQS test
-          YUGABYTE_AVAILABLE=true mvn -Dtest=TestYCQL test
+          YUGABYTE_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestYSQLNoREC test
+          YUGABYTE_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestYSQLTLP test
+          YUGABYTE_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestYSQLPQS test
+          YUGABYTE_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestYCQL test
 
   doris:
     name: DBMS Tests (Apache Doris)
@@ -710,6 +710,6 @@ jobs:
         run: mvn -B package -DskipTests=true
       - name: Run Tests
         run: |
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisNoREC test
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisPQS test
-          DORIS_AVAILABLE=true mvn -Dtest=TestDorisTLP test
+          DORIS_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDorisNoREC test
+          DORIS_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDorisPQS test
+          DORIS_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDorisTLP test
