@@ -204,11 +204,11 @@ public class YSQLProvider extends SQLProviderAdapter<YSQLGlobalState, YSQLOption
 
             Connection con = createConnectionSafely(entryURL, username, password);
             globalState.getState().logStatement(String.format("\\c %s;", entryDatabaseName));
-            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName);
+            globalState.getState().logStatement("DROP DATABASE IF EXISTS " + databaseName + " WITH (FORCE)");
             createDatabaseCommand = getCreateDatabaseCommand(globalState);
             globalState.getState().logStatement(createDatabaseCommand);
             try (Statement s = con.createStatement()) {
-                s.execute("DROP DATABASE IF EXISTS " + databaseName);
+                s.execute("DROP DATABASE IF EXISTS " + databaseName + " WITH (FORCE)");
             }
             try (Statement s = con.createStatement()) {
                 s.execute(createDatabaseCommand);
