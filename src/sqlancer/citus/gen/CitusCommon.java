@@ -18,6 +18,7 @@ public final class CitusCommon {
         errors.add("cannot perform an INSERT without a partition column value");
         errors.add("cannot perform an INSERT with NULL in the partition column");
         errors.add("recursive CTEs are not supported in distributed queries");
+        errors.add("recursive CTEs are only supported when they contain a filter on the distribution column");
         errors.add("could not run distributed query with GROUPING SETS, CUBE, or ROLLUP");
         errors.add("Subqueries in HAVING cannot refer to outer query");
         errors.add("non-IMMUTABLE functions are not allowed in the RETURNING clause");
