@@ -70,11 +70,12 @@ public final class ComparatorHelper {
                 throw e;
             }
 
-            if (e.getMessage() == null) {
-                throw new AssertionError(queryString, e);
-            }
-            if (errors.errorIsExpected(e.getMessage())) {
-                throw new IgnoreMeException();
+            Throwable current = e;
+            while (current != null) {
+                if (current.getMessage() != null && errors.errorIsExpected(current.getMessage())) {
+                    throw new IgnoreMeException();
+                }
+                current = current.getCause();
             }
             throw new AssertionError(queryString, e);
         } finally {
