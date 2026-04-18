@@ -77,7 +77,17 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
         }
 
         List<Expression> possibleOptions = new ArrayList<>(Arrays.asList(Expression.values()));
-        // TODO: remove some of the possible expression types according to options.
+        if (HiveBugs.bugNonBooleanWhereClause) {
+            possibleOptions.remove(Expression.CAST);
+            possibleOptions.remove(Expression.FUNC);
+            possibleOptions.remove(Expression.BINARY_ARITHMETIC);
+        }
+        if (HiveBugs.bugInBooleanEvaluation) {
+            possibleOptions.remove(Expression.IN);
+        }
+        if (HiveBugs.bugBetweenMixedTypes) {
+            possibleOptions.remove(Expression.BETWEEN);
+        }
 
         Expression expr = Randomly.fromList(possibleOptions);
         switch (expr) {
