@@ -47,6 +47,13 @@ public final class PrestoErrors {
         }
         errors.add("Cannot cast java.lang.String to java.util.List");
         errors.add("Unexpected subquery expression in logical plan");
+        if (PrestoBugs.bugVerifyError) {
+            errors.add("VerifyError");
+        }
+        if (PrestoBugs.bugCompilerFailed) {
+            errors.add("Compiler failed");
+            errors.add("Error processing class definition");
+        }
 
         // 9223372036854775808
         errors.add("Invalid numeric literal");
