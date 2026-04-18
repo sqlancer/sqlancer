@@ -15,6 +15,7 @@ public final class OceanBaseErrors {
         ArrayList<String> errors = new ArrayList<>();
 
         errors.add("BIGINT value is out of range"); // e.g., CAST(-('-1e500') AS SIGNED)
+        errors.add("value is out of range");
         errors.add("is not valid for CHARACTER SET");
         errors.add("The observer or zone is not the master");
         errors.add("Incorrect integer value");
