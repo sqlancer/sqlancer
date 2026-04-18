@@ -5,12 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.ast.BinaryOperatorNode.Operator;
 import sqlancer.common.ast.newast.NewOrderingTerm.Ordering;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
+import sqlancer.hive.HiveBugs;
 import sqlancer.hive.HiveGlobalState;
 import sqlancer.hive.HiveSchema.HiveColumn;
 import sqlancer.hive.HiveSchema.HiveDataType;
@@ -80,7 +82,12 @@ public class HiveExpressionGenerator extends UntypedExpressionGenerator<HiveExpr
         Expression expr = Randomly.fromList(possibleOptions);
         switch (expr) {
         case UNARY_PREFIX:
-            return new HiveUnaryPrefixOperation(generateExpression(depth + 1), HiveUnaryPrefixOperator.getRandom());
+            HiveUnaryPrefixOperator prefixOp = HiveUnaryPrefixOperator.getRandom();
+            if (HiveBugs.bugNegationNullability
+                    && (prefixOp == HiveUnaryPrefixOperator.MINUS || prefixOp == HiveUnaryPrefixOperator.PLUS)) {
+                throw new IgnoreMeException();
+            }
+            return new HiveUnaryPrefixOperation(generateExpression(depth + 1), prefixOp);
         case UNARY_POSTFIX:
             return new HiveUnaryPostfixOperation(generateExpression(depth + 1), HiveUnaryPostfixOperator.getRandom());
         case BINARY_COMPARISON:
