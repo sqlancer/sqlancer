@@ -17,7 +17,7 @@ public enum OceanBaseOracleFactory implements OracleFactory<OceanBaseGlobalState
         public TestOracle<OceanBaseGlobalState> create(OceanBaseGlobalState globalState) throws SQLException {
             OceanBaseExpressionGenerator gen = new OceanBaseExpressionGenerator(globalState);
             ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(OceanBaseErrors.getExpressionErrors())
-                    .withRegex(OceanBaseErrors.getExpressionErrorsRegex()).with("value is out of range").build();
+                    .withRegex(OceanBaseErrors.getExpressionErrorsRegex()).build();
 
             return new TLPWhereOracle<>(globalState, gen, expectedErrors);
         }
