@@ -27,6 +27,8 @@ public class MaterializeGlobalState extends SQLGlobalState<MaterializeOptions, M
     // store and allow filtering by function volatility classifications
     private final Map<String, Character> functionsAndTypes = new HashMap<>();
     private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
+    private int lastKnownTableCount;
+    private int readSchemaCallCount;
 
     @Override
     public void setConnection(SQLConnection con) {
@@ -266,7 +268,30 @@ public class MaterializeGlobalState extends SQLGlobalState<MaterializeOptions, M
 
     @Override
     public MaterializeSchema readSchema() throws SQLException {
-        return MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
+        // Materialize's information_schema is eventually consistent: tables and columns
+        // may not be visible immediately after creation. Retry until the snapshot is
+        // consistent.
+        readSchemaCallCount++;
+        for (int tries = 0; tries < 30; tries++) {
+            MaterializeSchema schema = MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
+            boolean hasTableWithEmptyColumns = schema.getDatabaseTables().stream()
+                    .anyMatch(t -> t.getColumns().isEmpty());
+            boolean tableCountRegressed = schema.getDatabaseTables().size() < lastKnownTableCount;
+            boolean suspiciouslyEmpty = readSchemaCallCount > 1 && schema.getDatabaseTables().isEmpty();
+            if (!hasTableWithEmptyColumns && !tableCountRegressed && !suspiciouslyEmpty) {
+                lastKnownTableCount = schema.getDatabaseTables().size();
+                return schema;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        MaterializeSchema schema = MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
+        lastKnownTableCount = schema.getDatabaseTables().size();
+        return schema;
     }
 
     public void addFunctionAndType(String functionName, Character functionType) {
