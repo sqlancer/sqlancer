@@ -47,10 +47,6 @@ public final class DatabendErrors {
         if (DatabendBugs.bug15568) {
             errors.add("Decimal overflow at line : 723 while evaluating function `to_decimal");
         }
-        if (DatabendBugs.bug19738) {
-            errors.add("UnwindError");
-            errors.add("unable to cast `NULL`");
-        }
 
         /*
          * TODO column为not null 时，注意default不能为null DROP DATABASE IF EXISTS databend2; CREATE DATABASE databend2; USE

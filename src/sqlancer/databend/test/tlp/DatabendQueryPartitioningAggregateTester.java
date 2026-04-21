@@ -10,7 +10,6 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.query.SQLancerResultSet;
-import sqlancer.databend.DatabendBugs;
 import sqlancer.databend.DatabendErrors;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
 import sqlancer.databend.DatabendSchema.DatabendCompositeDataType;
@@ -48,9 +47,7 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
         List<DatabendAggregateFunction> aggregateFunctions = new ArrayList<>(List.of(DatabendAggregateFunction.MAX,
                 DatabendAggregateFunction.MIN, DatabendAggregateFunction.SUM, DatabendAggregateFunction.COUNT
         /* , DatabendAggregateFunction.STDDEV_POP */));
-        if (!DatabendBugs.bug19738) {
-            aggregateFunctions.add(DatabendAggregateFunction.AVG);
-        }
+        aggregateFunctions.add(DatabendAggregateFunction.AVG);
         DatabendAggregateFunction aggregateFunction = Randomly.fromList(aggregateFunctions);
         DatabendFunctionOperation<DatabendAggregateFunction> aggregate = (DatabendAggregateOperation) gen
                 .generateArgsForAggregate(aggregateFunction);
