@@ -14,7 +14,7 @@ import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Column> {
+public final class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Column> {
 
     private final SQLite3GlobalState globalState;
     private final Randomly r;
