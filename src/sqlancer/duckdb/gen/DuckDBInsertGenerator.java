@@ -1,11 +1,9 @@
 package sqlancer.duckdb.gen;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractInsertGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -16,7 +14,6 @@ import sqlancer.duckdb.DuckDBToStringVisitor;
 public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn> {
 
     private final DuckDBGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
 
     public DuckDBInsertGenerator(DuckDBGlobalState globalState) {
         this.globalState = globalState;
@@ -27,15 +24,9 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
     }
 
     private SQLQueryAdapter generate() {
-        sb.append("INSERT INTO ");
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubsetFilter(p -> !p.getName().equals("rowid"));
-        sb.append(table.getName());
-        sb.append("(");
-        sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-        sb.append(")");
-        sb.append(" VALUES ");
-        insertColumns(columns);
+        buildInsertInto(table.getName(), columns);
         DuckDBErrors.addInsertErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors);
     }

@@ -11,13 +11,11 @@ import sqlancer.clickhouse.ClickHouseSchema.ClickHouseColumn;
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseTable;
 import sqlancer.clickhouse.ClickHouseToStringVisitor;
 import sqlancer.common.gen.AbstractInsertGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 
 public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHouseColumn> {
 
     private final ClickHouseGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private final ClickHouseExpressionGenerator gen;
 
     public ClickHouseInsertGenerator(ClickHouseGlobalState globalState) {
@@ -42,13 +40,7 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
             columns = table.getRandomNonEmptyColumnSubset().stream().filter(c -> !c.isAlias() && !c.isMaterialized())
                     .collect(Collectors.toList());
         }
-        sb.append("INSERT INTO ");
-        sb.append(table.getName());
-        sb.append("(");
-        sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-        sb.append(")");
-        sb.append(" VALUES ");
-        insertColumns(columns);
+        buildInsertInto(table.getName(), columns);
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 

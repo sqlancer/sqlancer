@@ -1,10 +1,8 @@
 package sqlancer.presto.gen;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.common.gen.AbstractInsertGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.presto.PrestoErrors;
 import sqlancer.presto.PrestoGlobalState;
@@ -26,16 +24,9 @@ public class PrestoInsertGenerator extends AbstractInsertGenerator<PrestoColumn>
     }
 
     private SQLQueryAdapter generate() {
-        sb.append("INSERT INTO ");
         PrestoTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<PrestoColumn> columns = table.getRandomNonEmptyColumnSubset();
-        sb.append(table.getName());
-        sb.append("(");
-        sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-        sb.append(")");
-        sb.append(" VALUES ");
-        insertColumns(columns);
-        ExpectedErrors errors = new ExpectedErrors();
+        buildInsertInto(table.getName(), columns);
         PrestoErrors.addInsertErrors(errors);
         return new SQLQueryAdapter(sb.toString(), errors, false, false);
     }

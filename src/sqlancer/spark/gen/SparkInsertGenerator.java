@@ -3,7 +3,6 @@ package sqlancer.spark.gen;
 import java.util.List;
 
 import sqlancer.common.gen.AbstractInsertGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.spark.SparkErrors;
 import sqlancer.spark.SparkGlobalState;
@@ -14,7 +13,6 @@ import sqlancer.spark.SparkToStringVisitor;
 public class SparkInsertGenerator extends AbstractInsertGenerator<SparkColumn> {
 
     private final SparkGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private final SparkExpressionGenerator gen;
 
     public SparkInsertGenerator(SparkGlobalState globalState) {
