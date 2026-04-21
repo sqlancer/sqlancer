@@ -268,10 +268,12 @@ public class MaterializeGlobalState extends SQLGlobalState<MaterializeOptions, M
 
     @Override
     public MaterializeSchema readSchema() throws SQLException {
-        // Materialize's information_schema is eventually consistent: tables and columns
-        // may not be visible immediately after creation. Retry until the snapshot is
-        // consistent.
+        // Workaround for a suspected Materialize bug where tables or columns may be
+        // missing when reading the schema; retry until stable.
         readSchemaCallCount++;
+        if (!MaterializeBugs.bugSchemaReadIncomplete) {
+            return MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
+        }
         for (int tries = 0; tries < 30; tries++) {
             MaterializeSchema schema = MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
             boolean hasTableWithEmptyColumns = schema.getDatabaseTables().stream()
