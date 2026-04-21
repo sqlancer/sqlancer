@@ -1,12 +1,9 @@
 package sqlancer.yugabyte.ycql.gen;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.common.gen.AbstractInsertGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
-import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.yugabyte.ycql.YCQLErrors;
 import sqlancer.yugabyte.ycql.YCQLProvider.YCQLGlobalState;
 import sqlancer.yugabyte.ycql.YCQLSchema.YCQLColumn;
@@ -16,7 +13,6 @@ import sqlancer.yugabyte.ycql.YCQLToStringVisitor;
 public class YCQLInsertGenerator extends AbstractInsertGenerator<YCQLColumn> {
 
     private final YCQLGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
 
     public YCQLInsertGenerator(YCQLGlobalState globalState) {
         this.globalState = globalState;
@@ -27,15 +23,9 @@ public class YCQLInsertGenerator extends AbstractInsertGenerator<YCQLColumn> {
     }
 
     private SQLQueryAdapter generate() {
-        sb.append("INSERT INTO ");
         YCQLTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<YCQLColumn> columns = table.getColumns();
-        sb.append(globalState.getDatabaseName()).append(".").append(table.getName());
-        sb.append("(");
-        sb.append(columns.stream().map(AbstractTableColumn::getName).collect(Collectors.joining(", ")));
-        sb.append(")");
-        sb.append(" VALUES ");
-        insertColumns(columns);
+        buildInsertInto(globalState.getDatabaseName() + "." + table.getName(), columns);
 
         errors.add("Invalid Arguments");
         errors.add("Null Argument for Primary Key");

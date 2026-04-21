@@ -3,7 +3,6 @@ package sqlancer.hive.gen;
 import java.util.List;
 
 import sqlancer.common.gen.AbstractInsertGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.hive.HiveErrors;
 import sqlancer.hive.HiveGlobalState;
@@ -14,7 +13,6 @@ import sqlancer.hive.HiveToStringVisitor;
 public class HiveInsertGenerator extends AbstractInsertGenerator<HiveColumn> {
 
     private final HiveGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
     private final HiveExpressionGenerator gen;
 
     public HiveInsertGenerator(HiveGlobalState globalState) {
