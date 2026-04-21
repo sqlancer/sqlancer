@@ -18,16 +18,16 @@ public class QuestDBInsertGenerator extends AbstractInsertGenerator<QuestDBColum
         this.globalState = globalState;
     }
 
-    private SQLQueryAdapter generate() {
+    public static SQLQueryAdapter getQuery(QuestDBGlobalState globalState) {
+        return new QuestDBInsertGenerator(globalState).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
         QuestDBTable table = globalState.getSchema().getRandomTable();
         List<QuestDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         buildInsertInto(table.getName(), columns);
         QuestDBErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
-    }
-
-    public static SQLQueryAdapter getQuery(QuestDBGlobalState globalState) {
-        return new QuestDBInsertGenerator(globalState).generate();
     }
 
     @Override

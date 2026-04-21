@@ -22,10 +22,11 @@ public final class DuckDBUpdateGenerator extends AbstractUpdateGenerator<DuckDBC
     }
 
     public static SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
-        return new DuckDBUpdateGenerator(globalState).generate();
+        return new DuckDBUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubsetFilter(p -> !p.getName().equals("rowid"));
         gen = new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -34,7 +35,6 @@ public final class DuckDBUpdateGenerator extends AbstractUpdateGenerator<DuckDBC
         sb.append(" SET ");
         updateColumns(columns);
         DuckDBErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

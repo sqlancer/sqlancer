@@ -18,10 +18,11 @@ public class HiveInsertGenerator extends AbstractInsertGenerator<HiveColumn> {
     public HiveInsertGenerator(HiveGlobalState globalState) {
         this.globalState = globalState;
         this.gen = new HiveExpressionGenerator(globalState);
+        this.canonicalizeString = false;
     }
 
     public static SQLQueryAdapter getQuery(HiveGlobalState globalState) {
-        return new HiveInsertGenerator(globalState).generate();
+        return new HiveInsertGenerator(globalState).getStatement();
     }
 
     @Override
@@ -29,7 +30,8 @@ public class HiveInsertGenerator extends AbstractInsertGenerator<HiveColumn> {
         sb.append(HiveToStringVisitor.asString(gen.generateConstant()));
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         // Inserting values into tables from SQL.
         sb.append("INSERT INTO ");
         HiveTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
@@ -45,6 +47,5 @@ public class HiveInsertGenerator extends AbstractInsertGenerator<HiveColumn> {
         insertColumns(columns);
 
         HiveErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors, false, false);
     }
 }

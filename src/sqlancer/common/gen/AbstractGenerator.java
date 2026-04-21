@@ -8,10 +8,11 @@ public abstract class AbstractGenerator {
     protected final ExpectedErrors errors = new ExpectedErrors();
     protected final StringBuilder sb = new StringBuilder();
     protected boolean canAffectSchema;
+    protected boolean canonicalizeString = true;
 
-    public SQLQueryAdapter getQuery() {
+    public SQLQueryAdapter getStatement() {
         buildStatement();
-        return new SQLQueryAdapter(sb.toString(), errors, canAffectSchema);
+        return new SQLQueryAdapter(sb.toString(), errors, canAffectSchema, canonicalizeString);
     }
 
     public abstract void buildStatement();

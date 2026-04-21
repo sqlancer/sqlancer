@@ -20,15 +20,15 @@ public class DuckDBInsertGenerator extends AbstractInsertGenerator<DuckDBColumn>
     }
 
     public static SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
-        return new DuckDBInsertGenerator(globalState).generate();
+        return new DuckDBInsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<DuckDBColumn> columns = table.getRandomNonEmptyColumnSubsetFilter(p -> !p.getName().equals("rowid"));
         buildInsertInto(table.getName(), columns);
         DuckDBErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

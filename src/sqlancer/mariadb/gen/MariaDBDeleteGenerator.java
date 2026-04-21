@@ -3,7 +3,7 @@ package sqlancer.mariadb.gen;
 import java.util.Collections;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractDeleteGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.mariadb.MariaDBSchema;
@@ -11,12 +11,22 @@ import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 import sqlancer.mariadb.ast.MariaDBVisitor;
 
-public final class MariaDBDeleteGenerator {
+public final class MariaDBDeleteGenerator extends AbstractDeleteGenerator {
 
-    private MariaDBDeleteGenerator() {
+    private final MariaDBSchema schema;
+    private final Randomly r;
+
+    private MariaDBDeleteGenerator(MariaDBSchema schema, Randomly r) {
+        this.schema = schema;
+        this.r = r;
     }
 
     public static SQLQueryAdapter delete(MariaDBSchema schema, Randomly r) {
+        return new MariaDBDeleteGenerator(schema, r).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
         MariaDBTable table = schema.getRandomTable();
 
         MariaDBExpressionGenerator expressionGenerator = new MariaDBExpressionGenerator(r);
@@ -25,15 +35,13 @@ public final class MariaDBDeleteGenerator {
                 Collections.singletonList(table));
         expressionGenerator.setTablesAndColumns(tablesAndColumns);
 
-        ExpectedErrors errors = new ExpectedErrors();
-
         errors.add("foreign key constraint fails");
         errors.add("cannot delete or update a parent row");
         errors.add("Data truncated");
         errors.add("Division by 0");
         errors.add("Incorrect value");
 
-        StringBuilder sb = new StringBuilder("DELETE");
+        sb.append("DELETE");
 
         if (Randomly.getBooleanWithRatherLowProbability()) {
             sb.append(" LOW_PRIORITY");
@@ -81,13 +89,10 @@ public final class MariaDBDeleteGenerator {
             }
         }
 
-        String query = sb.toString();
-        if (query.contains("RLIKE") || query.contains("REGEXP")) {
+        if (sb.toString().contains("RLIKE") || sb.toString().contains("REGEXP")) {
             errors.add("Regex error");
             errors.add("quantifier does not follow a repeatable item");
             errors.add("Got error");
         }
-
-        return new SQLQueryAdapter(query, errors);
     }
 }

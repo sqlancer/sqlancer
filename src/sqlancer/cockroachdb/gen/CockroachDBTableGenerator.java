@@ -32,7 +32,7 @@ public class CockroachDBTableGenerator extends CockroachDBGenerator {
         if (globalState.getSchema().getDatabaseTables().size() > globalState.getDbmsSpecificOptions().maxNumTables) {
             throw new IgnoreMeException();
         }
-        return new CockroachDBTableGenerator(globalState).getQuery();
+        return new CockroachDBTableGenerator(globalState).getStatement();
     }
 
     @Override

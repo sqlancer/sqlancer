@@ -20,15 +20,15 @@ public class DorisInsertGenerator extends AbstractInsertGenerator<DorisColumn> {
     }
 
     public static SQLQueryAdapter getQuery(DorisGlobalState globalState) {
-        return new DorisInsertGenerator(globalState).generate();
+        return new DorisInsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         DorisTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        List<DorisColumn> columns = table.getRandomNonEmptyInsertColumns();
+        List<DorisColumn> columns = table.getRandomNonEmptyColumnSubset();
         buildInsertInto(table.getName(), columns);
         DorisErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

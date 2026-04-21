@@ -24,10 +24,11 @@ public final class HSQLDBUpdateGenerator extends AbstractUpdateGenerator<HSQLDBC
     }
 
     public static SQLQueryAdapter getQuery(HSQLDBProvider.HSQLDBGlobalState globalState) {
-        return new HSQLDBUpdateGenerator(globalState).generate();
+        return new HSQLDBUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         HSQLDBSchema.HSQLDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<HSQLDBSchema.HSQLDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         gen = new HSQLDBExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -42,7 +43,6 @@ public final class HSQLDBUpdateGenerator extends AbstractUpdateGenerator<HSQLDBC
             errors.add("data type of expression is not boolean");
             HSQLDBErrors.addExpressionErrors(errors);
         }
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

@@ -19,10 +19,11 @@ public class YCQLInsertGenerator extends AbstractInsertGenerator<YCQLColumn> {
     }
 
     public static SQLQueryAdapter getQuery(YCQLGlobalState globalState) {
-        return new YCQLInsertGenerator(globalState).generate();
+        return new YCQLInsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         YCQLTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<YCQLColumn> columns = table.getColumns();
         buildInsertInto(globalState.getDatabaseName() + "." + table.getName(), columns);
@@ -31,7 +32,6 @@ public class YCQLInsertGenerator extends AbstractInsertGenerator<YCQLColumn> {
         errors.add("Null Argument for Primary Key");
 
         YCQLErrors.addExpressionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

@@ -21,10 +21,11 @@ public class H2InsertGenerator extends AbstractInsertGenerator<H2Column> {
     }
 
     public static SQLQueryAdapter getQuery(H2GlobalState globalState) {
-        return new H2InsertGenerator(globalState).generate();
+        return new H2InsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         boolean mergeInto = false; // Randomly.getBooleanWithRatherLowProbability();
         if (mergeInto) {
             sb.append("MERGE INTO ");
@@ -48,7 +49,6 @@ public class H2InsertGenerator extends AbstractInsertGenerator<H2Column> {
         insertColumns(columns);
         H2Errors.addInsertErrors(errors);
         H2Errors.addExpressionErrors(errors); // generated columns
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

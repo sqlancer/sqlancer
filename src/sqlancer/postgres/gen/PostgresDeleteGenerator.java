@@ -1,25 +1,32 @@
 package sqlancer.postgres.gen;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractDeleteGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 
-public final class PostgresDeleteGenerator {
+public final class PostgresDeleteGenerator extends AbstractDeleteGenerator {
 
-    private PostgresDeleteGenerator() {
+    private final PostgresGlobalState globalState;
+
+    private PostgresDeleteGenerator(PostgresGlobalState globalState) {
+        this.globalState = globalState;
     }
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
+        return new PostgresDeleteGenerator(globalState).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
         PostgresTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        ExpectedErrors errors = new ExpectedErrors();
         errors.add("violates foreign key constraint");
         errors.add("violates not-null constraint");
         errors.add("could not determine which collation to use for string comparison");
-        StringBuilder sb = new StringBuilder("DELETE FROM");
+        sb.append("DELETE FROM");
         if (Randomly.getBoolean()) {
             sb.append(" ONLY");
         }
@@ -40,7 +47,6 @@ public final class PostgresDeleteGenerator {
         errors.add("cannot cast");
         errors.add("invalid input syntax for");
         errors.add("division by zero");
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

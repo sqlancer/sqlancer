@@ -1,6 +1,5 @@
 package sqlancer.clickhouse.gen;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,11 +28,12 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
         ClickHouseErrors.addExpectedExpressionErrors(errors);
     }
 
-    public static SQLQueryAdapter getQuery(ClickHouseGlobalState globalState) throws SQLException {
-        return new ClickHouseInsertGenerator(globalState).get();
+    public static SQLQueryAdapter getQuery(ClickHouseGlobalState globalState) {
+        return new ClickHouseInsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter get() {
+    @Override
+    public void buildStatement() {
         ClickHouseTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<ClickHouseColumn> columns = Collections.emptyList();
         while (columns.isEmpty()) {
@@ -41,7 +41,6 @@ public class ClickHouseInsertGenerator extends AbstractInsertGenerator<ClickHous
                     .collect(Collectors.toList());
         }
         buildInsertInto(table.getName(), columns);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override
