@@ -268,32 +268,32 @@ public class MaterializeGlobalState extends SQLGlobalState<MaterializeOptions, M
 
     @Override
     public MaterializeSchema readSchema() throws SQLException {
-        // Workaround for a suspected Materialize bug where tables or columns may be
-        // missing when reading the schema; retry until stable.
-        readSchemaCallCount++;
-        if (!MaterializeBugs.bugSchemaReadIncomplete) {
-            return MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
-        }
-        for (int tries = 0; tries < 30; tries++) {
+        if (MaterializeBugs.bugSchemaReadIncomplete) {
+            // Workaround for a suspected Materialize bug where tables or columns may be
+            // missing when reading the schema; retry until stable.
+            readSchemaCallCount++;
+            for (int tries = 0; tries < 30; tries++) {
+                MaterializeSchema schema = MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
+                boolean hasTableWithEmptyColumns = schema.getDatabaseTables().stream()
+                        .anyMatch(t -> t.getColumns().isEmpty());
+                boolean tableCountRegressed = schema.getDatabaseTables().size() < lastKnownTableCount;
+                boolean suspiciouslyEmpty = readSchemaCallCount > 1 && schema.getDatabaseTables().isEmpty();
+                if (!hasTableWithEmptyColumns && !tableCountRegressed && !suspiciouslyEmpty) {
+                    lastKnownTableCount = schema.getDatabaseTables().size();
+                    return schema;
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
             MaterializeSchema schema = MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
-            boolean hasTableWithEmptyColumns = schema.getDatabaseTables().stream()
-                    .anyMatch(t -> t.getColumns().isEmpty());
-            boolean tableCountRegressed = schema.getDatabaseTables().size() < lastKnownTableCount;
-            boolean suspiciouslyEmpty = readSchemaCallCount > 1 && schema.getDatabaseTables().isEmpty();
-            if (!hasTableWithEmptyColumns && !tableCountRegressed && !suspiciouslyEmpty) {
-                lastKnownTableCount = schema.getDatabaseTables().size();
-                return schema;
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
+            lastKnownTableCount = schema.getDatabaseTables().size();
+            return schema;
         }
-        MaterializeSchema schema = MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
-        lastKnownTableCount = schema.getDatabaseTables().size();
-        return schema;
+        return MaterializeSchema.fromConnection(getConnection(), getDatabaseName());
     }
 
     public void addFunctionAndType(String functionName, Character functionType) {
