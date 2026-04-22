@@ -20,6 +20,7 @@ public final class PostgresUpdateGenerator extends AbstractUpdateGenerator<Postg
 
     private PostgresUpdateGenerator(PostgresGlobalState globalState) {
         this.globalState = globalState;
+        this.canAffectSchema = true;
         errors.addAll(Arrays.asList("conflicting key value violates exclusion constraint",
                 "reached maximum value of sequence", "violates foreign key constraint", "violates not-null constraint",
                 "violates unique constraint", "out of range", "cannot cast", "must be type boolean", "is not unique",
@@ -29,10 +30,11 @@ public final class PostgresUpdateGenerator extends AbstractUpdateGenerator<Postg
     }
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
-        return new PostgresUpdateGenerator(globalState).generate();
+        return new PostgresUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         randomTable = globalState.getSchema().getRandomTable(t -> t.isInsertable());
         List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
         sb.append("UPDATE ");
@@ -55,8 +57,6 @@ public final class PostgresUpdateGenerator extends AbstractUpdateGenerator<Postg
                     randomTable.getColumns(), PostgresDataType.BOOLEAN);
             sb.append(PostgresVisitor.asString(where));
         }
-
-        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
     @Override

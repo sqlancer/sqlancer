@@ -13,22 +13,24 @@ import sqlancer.datafusion.DataFusionToStringVisitor;
 public class DataFusionInsertGenerator extends AbstractInsertGenerator<DataFusionColumn> {
 
     private final DataFusionGlobalState globalState;
+    private final DataFusionTable targetTable;
 
-    public DataFusionInsertGenerator(DataFusionGlobalState globalState) {
+    public DataFusionInsertGenerator(DataFusionGlobalState globalState, DataFusionTable targetTable) {
         this.globalState = globalState;
+        this.targetTable = targetTable;
     }
 
     public static SQLQueryAdapter getQuery(DataFusionGlobalState globalState, DataFusionTable targetTable) {
-        return new DataFusionInsertGenerator(globalState).generate(targetTable);
+        return new DataFusionInsertGenerator(globalState, targetTable).getStatement();
     }
 
-    private SQLQueryAdapter generate(DataFusionTable targetTable) {
+    @Override
+    public void buildStatement() {
         if (targetTable.getColumns().isEmpty()) {
             throw new IgnoreMeException();
         }
         List<DataFusionColumn> columns = targetTable.getRandomNonEmptyColumnSubset();
         buildInsertInto(targetTable.getName(), columns);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

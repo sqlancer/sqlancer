@@ -1,10 +1,9 @@
 package sqlancer.tidb.gen;
 
-import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractDeleteGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBExpressionGenerator;
@@ -12,16 +11,24 @@ import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 import sqlancer.tidb.visitor.TiDBVisitor;
 
-public final class TiDBDeleteGenerator {
+public final class TiDBDeleteGenerator extends AbstractDeleteGenerator {
 
-    private TiDBDeleteGenerator() {
+    private final TiDBGlobalState globalState;
+
+    private TiDBDeleteGenerator(TiDBGlobalState globalState) {
+        this.globalState = globalState;
     }
 
-    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
-        ExpectedErrors errors = ExpectedErrors.newErrors().with(TiDBErrors.getExpressionErrors()).build();
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) {
+        return new TiDBDeleteGenerator(globalState).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
+        errors.addAll(TiDBErrors.getExpressionErrors());
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         TiDBExpressionGenerator gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
-        StringBuilder sb = new StringBuilder("DELETE ");
+        sb.append("DELETE ");
         if (Randomly.getBooleanWithSmallProbability()) {
             sb.append("LOW_PRIORITY ");
         }
@@ -55,8 +62,6 @@ public final class TiDBDeleteGenerator {
         errors.add("is not valid for CHARACTER SET");
         errors.add("Division by 0");
         errors.add("error parsing regexp");
-        return new SQLQueryAdapter(sb.toString(), errors);
-
     }
 
 }

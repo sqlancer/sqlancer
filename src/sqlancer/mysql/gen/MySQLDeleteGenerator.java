@@ -3,16 +3,15 @@ package sqlancer.mysql.gen;
 import java.util.Arrays;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractDeleteGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLVisitor;
 
-public class MySQLDeleteGenerator {
+public class MySQLDeleteGenerator extends AbstractDeleteGenerator {
 
-    private final StringBuilder sb = new StringBuilder();
     private final MySQLGlobalState globalState;
 
     public MySQLDeleteGenerator(MySQLGlobalState globalState) {
@@ -20,13 +19,13 @@ public class MySQLDeleteGenerator {
     }
 
     public static SQLQueryAdapter delete(MySQLGlobalState globalState) {
-        return new MySQLDeleteGenerator(globalState).generate();
+        return new MySQLDeleteGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         MySQLTable randomTable = globalState.getSchema().getRandomTable();
         MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState).setColumns(randomTable.getColumns());
-        ExpectedErrors errors = new ExpectedErrors();
         sb.append("DELETE");
         if (Randomly.getBoolean()) {
             sb.append(" LOW_PRIORITY");
@@ -51,7 +50,6 @@ public class MySQLDeleteGenerator {
                                                     */, "Truncated incorrect INTEGER value",
                 "Truncated incorrect DECIMAL value", "Data truncated for functional index"));
         // TODO: support ORDER BY
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

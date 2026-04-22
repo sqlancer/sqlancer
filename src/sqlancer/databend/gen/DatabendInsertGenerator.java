@@ -19,15 +19,15 @@ public class DatabendInsertGenerator extends AbstractInsertGenerator<DatabendCol
     }
 
     public static SQLQueryAdapter getQuery(DatabendGlobalState globalState) {
-        return new DatabendInsertGenerator(globalState).generate();
+        return new DatabendInsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         DatabendTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<DatabendColumn> columns = table.getRandomNonEmptyColumnSubset();
         buildInsertInto(table.getName(), columns);
         DatabendErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

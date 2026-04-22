@@ -21,6 +21,7 @@ public final class YSQLUpdateGenerator extends AbstractUpdateGenerator<YSQLColum
 
     private YSQLUpdateGenerator(YSQLGlobalState globalState) {
         this.globalState = globalState;
+        this.canAffectSchema = true;
         errors.addAll(Arrays.asList("conflicting key value violates exclusion constraint",
                 "reached maximum value of sequence", "violates foreign key constraint", "violates not-null constraint",
                 "violates unique constraint", "out of range", "cannot cast", "must be type boolean", "is not unique",
@@ -30,10 +31,11 @@ public final class YSQLUpdateGenerator extends AbstractUpdateGenerator<YSQLColum
     }
 
     public static SQLQueryAdapter create(YSQLGlobalState globalState) {
-        return new YSQLUpdateGenerator(globalState).generate();
+        return new YSQLUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         randomTable = globalState.getSchema().getRandomTable(YSQLTable::isInsertable);
         List<YSQLColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
         sb.append("UPDATE ");
@@ -57,8 +59,6 @@ public final class YSQLUpdateGenerator extends AbstractUpdateGenerator<YSQLColum
                     YSQLDataType.BOOLEAN);
             sb.append(YSQLVisitor.asString(where));
         }
-
-        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
     @Override

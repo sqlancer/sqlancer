@@ -18,10 +18,11 @@ public class SparkInsertGenerator extends AbstractInsertGenerator<SparkColumn> {
     public SparkInsertGenerator(SparkGlobalState globalState) {
         this.globalState = globalState;
         this.gen = new SparkExpressionGenerator(globalState);
+        this.canonicalizeString = false;
     }
 
     public static SQLQueryAdapter getQuery(SparkGlobalState globalState) {
-        return new SparkInsertGenerator(globalState).generate();
+        return new SparkInsertGenerator(globalState).getStatement();
     }
 
     @Override
@@ -29,7 +30,8 @@ public class SparkInsertGenerator extends AbstractInsertGenerator<SparkColumn> {
         sb.append(SparkToStringVisitor.asString(gen.generateConstant()));
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         sb.append("INSERT INTO ");
         SparkTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         sb.append(table.getName());
@@ -40,6 +42,5 @@ public class SparkInsertGenerator extends AbstractInsertGenerator<SparkColumn> {
         insertColumns(columns);
 
         SparkErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors, false, false);
     }
 }

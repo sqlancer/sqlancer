@@ -4,13 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.schema.AbstractTableColumn;
 
-public abstract class AbstractInsertGenerator<C extends AbstractTableColumn<?, ?>> {
-
-    protected StringBuilder sb = new StringBuilder();
-    protected ExpectedErrors errors = new ExpectedErrors();
+public abstract class AbstractInsertGenerator<C extends AbstractTableColumn<?, ?>> extends AbstractGenerator {
 
     protected void appendColumnList(List<C> columns) {
         sb.append("(");

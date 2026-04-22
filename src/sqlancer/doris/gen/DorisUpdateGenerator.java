@@ -23,10 +23,11 @@ public final class DorisUpdateGenerator extends AbstractUpdateGenerator<DorisCol
     }
 
     public static SQLQueryAdapter getQuery(DorisGlobalState globalState) {
-        return new DorisUpdateGenerator(globalState).generate();
+        return new DorisUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         DorisTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<DorisColumn> columns = table.getRandomNonEmptyColumnSubset();
         gen = new DorisNewExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -37,7 +38,6 @@ public final class DorisUpdateGenerator extends AbstractUpdateGenerator<DorisCol
         sb.append(" WHERE ");
         sb.append(DorisToStringVisitor.asString(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
         DorisErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

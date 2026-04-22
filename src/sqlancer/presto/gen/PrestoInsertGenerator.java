@@ -17,18 +17,19 @@ public class PrestoInsertGenerator extends AbstractInsertGenerator<PrestoColumn>
 
     public PrestoInsertGenerator(PrestoGlobalState globalState) {
         this.globalState = globalState;
+        this.canonicalizeString = false;
     }
 
     public static SQLQueryAdapter getQuery(PrestoGlobalState globalState) {
-        return new PrestoInsertGenerator(globalState).generate();
+        return new PrestoInsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         PrestoTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<PrestoColumn> columns = table.getRandomNonEmptyColumnSubset();
         buildInsertInto(table.getName(), columns);
         PrestoErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors, false, false);
     }
 
     @Override

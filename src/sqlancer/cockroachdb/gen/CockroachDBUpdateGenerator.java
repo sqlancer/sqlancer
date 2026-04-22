@@ -22,10 +22,11 @@ public final class CockroachDBUpdateGenerator extends AbstractUpdateGenerator<Co
     }
 
     public static SQLQueryAdapter gen(CockroachDBGlobalState globalState) {
-        return new CockroachDBUpdateGenerator(globalState).generate();
+        return new CockroachDBUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         gen = new CockroachDBExpressionGenerator(globalState).setColumns(columns);
@@ -51,7 +52,6 @@ public final class CockroachDBUpdateGenerator extends AbstractUpdateGenerator<Co
         errors.add("cannot write directly to computed column");
         CockroachDBErrors.addExpressionErrors(errors);
         CockroachDBErrors.addTransactionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

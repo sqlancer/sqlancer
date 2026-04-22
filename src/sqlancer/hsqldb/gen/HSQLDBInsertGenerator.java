@@ -18,14 +18,14 @@ public class HSQLDBInsertGenerator extends AbstractInsertGenerator<HSQLDBSchema.
     }
 
     public static SQLQueryAdapter getQuery(HSQLDBProvider.HSQLDBGlobalState globalState) {
-        return new HSQLDBInsertGenerator(globalState).generate();
+        return new HSQLDBInsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         HSQLDBSchema.HSQLDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<HSQLDBSchema.HSQLDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         buildInsertInto(table.getName(), columns);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override
