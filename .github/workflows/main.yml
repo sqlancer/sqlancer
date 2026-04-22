@@ -127,9 +127,21 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
+      - name: Cache ClickHouse image
+        id: clickhouse-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-images/clickhouse.tar
+          key: docker-clickhouse-24.3.1.2672
       - name: Set up ClickHouse
         run: |
-          docker pull clickhouse/clickhouse-server:24.3.1.2672
+          if [ "${{ steps.clickhouse-cache.outputs.cache-hit }}" = "true" ]; then
+            docker load -i /tmp/docker-images/clickhouse.tar
+          else
+            docker pull clickhouse/clickhouse-server:24.3.1.2672
+            mkdir -p /tmp/docker-images
+            docker save clickhouse/clickhouse-server:24.3.1.2672 -o /tmp/docker-images/clickhouse.tar
+          fi
           docker run --ulimit nofile=262144:262144 --name clickhouse-server -p8123:8123 -d clickhouse/clickhouse-server:24.3.1.2672
           until curl -sf http://127.0.0.1:8123/ping 2>/dev/null; do sleep 1; done
       - name: Run Tests
@@ -502,8 +514,21 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
+      - name: Cache OceanBase image
+        id: oceanbase-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-images/oceanbase.tar
+          key: docker-oceanbase-ce-4.2.1-lts
       - name: Set up OceanBase
         run: |
+          if [ "${{ steps.oceanbase-cache.outputs.cache-hit }}" = "true" ]; then
+            docker load -i /tmp/docker-images/oceanbase.tar
+          else
+            docker pull oceanbase/oceanbase-ce:4.2.1-lts
+            mkdir -p /tmp/docker-images
+            docker save oceanbase/oceanbase-ce:4.2.1-lts -o /tmp/docker-images/oceanbase.tar
+          fi
           docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce:4.2.1-lts
           until mysql -h127.1 -uroot@test -P2881 --connect-timeout=3 -Doceanbase -A -e "SELECT 1" 2>/dev/null; do sleep 5; done
           mysql -h127.1 -uroot@test -P2881 -Doceanbase -A -e"CREATE USER 'sqlancer'@'%' IDENTIFIED BY 'sqlancer'; GRANT ALL PRIVILEGES ON * . * TO 'sqlancer'@'%';"
@@ -615,9 +640,21 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
+      - name: Cache TiDB image
+        id: tidb-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-images/tidb.tar
+          key: docker-tidb-playground-nightly-2025-09-16
       - name: Set up TiDB
         run: |
-          docker pull hawkingrei/tidb-playground:nightly-2025-09-16
+          if [ "${{ steps.tidb-cache.outputs.cache-hit }}" = "true" ]; then
+            docker load -i /tmp/docker-images/tidb.tar
+          else
+            docker pull hawkingrei/tidb-playground:nightly-2025-09-16
+            mkdir -p /tmp/docker-images
+            docker save hawkingrei/tidb-playground:nightly-2025-09-16 -o /tmp/docker-images/tidb.tar
+          fi
           docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:nightly-2025-09-16
           until mysql -h 127.0.0.1 -P 4000 -u root --connect-timeout=3 -e "SELECT 1" 2>/dev/null; do sleep 3; done
       - name: Create SQLancer user
@@ -640,9 +677,21 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
+      - name: Cache TiDB image
+        id: tidb-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-images/tidb.tar
+          key: docker-tidb-playground-nightly-2025-09-16
       - name: Set up TiDB
         run: |
-          docker pull hawkingrei/tidb-playground:nightly-2025-09-16
+          if [ "${{ steps.tidb-cache.outputs.cache-hit }}" = "true" ]; then
+            docker load -i /tmp/docker-images/tidb.tar
+          else
+            docker pull hawkingrei/tidb-playground:nightly-2025-09-16
+            mkdir -p /tmp/docker-images
+            docker save hawkingrei/tidb-playground:nightly-2025-09-16 -o /tmp/docker-images/tidb.tar
+          fi
           docker run --name tidb-server -d -p 4000:4000 hawkingrei/tidb-playground:nightly-2025-09-16
           until mysql -h 127.0.0.1 -P 4000 -u root --connect-timeout=3 -e "SELECT 1" 2>/dev/null; do sleep 3; done
       - name: Create SQLancer user
