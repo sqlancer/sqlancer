@@ -1,31 +1,36 @@
 package sqlancer.mariadb.gen;
 
-import java.util.List;
-
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractIndexGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mariadb.MariaDBSchema;
 import sqlancer.mariadb.MariaDBSchema.MariaDBColumn;
 import sqlancer.mariadb.MariaDBSchema.MariaDBTable;
 
-public final class MariaDBIndexGenerator {
+public class MariaDBIndexGenerator extends AbstractIndexGenerator<MariaDBColumn> {
 
-    private MariaDBIndexGenerator() {
+    private final MariaDBSchema schema;
+
+    public MariaDBIndexGenerator(MariaDBSchema schema) {
+        this.schema = schema;
+        this.canAffectSchema = true;
     }
 
     public static SQLQueryAdapter generate(MariaDBSchema s) {
-        ExpectedErrors errors = new ExpectedErrors();
-        StringBuilder sb = new StringBuilder("CREATE ");
+        return new MariaDBIndexGenerator(s).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
         errors.add("Key/Index cannot be defined on a virtual generated column");
         errors.add("Specified key was too long");
-        if (Randomly.getBoolean()) {
+        boolean unique = Randomly.getBoolean();
+        if (unique) {
             errors.add("Duplicate entry");
             errors.add("Key/Index cannot be defined on a virtual generated column");
-            sb.append("UNIQUE ");
         }
-        sb.append("INDEX ");
+        appendCreateIndex(unique);
         sb.append("i");
         sb.append(DBMSCommon.createColumnName(Randomly.smallNumber()));
         if (Randomly.getBoolean()) {
@@ -34,28 +39,9 @@ public final class MariaDBIndexGenerator {
         }
 
         sb.append(" ON ");
-        MariaDBTable randomTable = s.getRandomTable();
+        MariaDBTable randomTable = schema.getRandomTable();
         sb.append(randomTable.getName());
-        sb.append("(");
-        List<MariaDBColumn> columns = Randomly.nonEmptySubset(randomTable.getColumns());
-        for (int i = 0; i < columns.size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            sb.append(columns.get(i).getName());
-            if (Randomly.getBoolean()) {
-                sb.append(" ");
-                sb.append(Randomly.fromOptions("ASC", "DESC"));
-            }
-        }
-        sb.append(")");
-        // if (Randomly.getBoolean()) {
-        // sb.append(" ALGORITHM=");
-        // sb.append(Randomly.fromOptions("DEFAULT", "INPLACE", "COPY", "NOCOPY", "INSTANT"));
-        // errors.add("is not supported for this operation");
-        // }
-
-        return new SQLQueryAdapter(sb.toString(), errors, true);
+        appendIndexColumnList(Randomly.nonEmptySubset(randomTable.getColumns()), true);
     }
 
 }
