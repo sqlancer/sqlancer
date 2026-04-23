@@ -1,14 +1,18 @@
 package sqlancer.materialize.gen;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractIndexGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.materialize.MaterializeGlobalState;
+import sqlancer.materialize.MaterializeSchema.MaterializeColumn;
 import sqlancer.materialize.MaterializeSchema.MaterializeTable;
 
-public final class MaterializeIndexGenerator {
+public class MaterializeIndexGenerator extends AbstractIndexGenerator<MaterializeColumn> {
 
-    private MaterializeIndexGenerator() {
+    private final MaterializeGlobalState globalState;
+
+    public MaterializeIndexGenerator(MaterializeGlobalState globalState) {
+        this.globalState = globalState;
     }
 
     public enum IndexType {
@@ -16,17 +20,18 @@ public final class MaterializeIndexGenerator {
     }
 
     public static SQLQueryAdapter generate(MaterializeGlobalState globalState) {
-        ExpectedErrors errors = new ExpectedErrors();
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE");
-        sb.append(" INDEX ");
+        return new MaterializeIndexGenerator(globalState).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
+        appendCreateIndex(false);
         MaterializeTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO: materialized
                                                                                                  // views
         sb.append(MaterializeCommon.getFreeIndexName(globalState.getSchema()));
         sb.append(" ON ");
         sb.append(randomTable.getName());
-        IndexType method;
-        method = IndexType.BTREE;
+        IndexType method = IndexType.BTREE;
 
         sb.append("(");
         if (method == IndexType.HASH) {
@@ -75,6 +80,5 @@ public final class MaterializeIndexGenerator {
         errors.add("result of range difference would not be contiguous");
         errors.add("which is part of the partition key");
         MaterializeCommon.addCommonExpressionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 }

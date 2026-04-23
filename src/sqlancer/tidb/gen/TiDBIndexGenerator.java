@@ -5,34 +5,39 @@ import java.util.List;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractIndexGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBColumn;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
 
-public final class TiDBIndexGenerator {
+public class TiDBIndexGenerator extends AbstractIndexGenerator<TiDBColumn> {
 
-    private TiDBIndexGenerator() {
+    private final TiDBGlobalState globalState;
+
+    public TiDBIndexGenerator(TiDBGlobalState globalState) {
+        this.globalState = globalState;
+        this.canAffectSchema = true;
     }
 
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         if (globalState.getSchema().getIndexCount() > globalState.getDbmsSpecificOptions().maxNumIndexes) {
             throw new IgnoreMeException();
         }
-        ExpectedErrors errors = new ExpectedErrors();
+        return new TiDBIndexGenerator(globalState).getStatement();
+    }
 
+    @Override
+    public void buildStatement() {
         TiDBTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView());
-        String indexName = globalState.getSchema().getFreeIndexName();
-        StringBuilder sb = new StringBuilder("CREATE ");
-        if (Randomly.getBooleanWithRatherLowProbability()) {
-            sb.append("UNIQUE ");
+        boolean unique = Randomly.getBooleanWithRatherLowProbability();
+        if (unique) {
             errors.add("Duplicate for key");
             errors.add("Duplicate entry ");
             errors.add("A UNIQUE INDEX must include all columns in the table's partitioning function");
         }
-        sb.append("INDEX ");
-        sb.append(indexName);
+        appendCreateIndex(unique);
+        sb.append(globalState.getSchema().getFreeIndexName());
         sb.append(" ON ");
         sb.append(randomTable.getName());
         sb.append("(");
@@ -63,7 +68,6 @@ public final class TiDBIndexGenerator {
         errors.add("index already exist");
         errors.add("Data truncation");
         errors.add("key was too long");
-        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }
