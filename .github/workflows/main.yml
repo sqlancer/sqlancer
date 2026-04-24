@@ -154,15 +154,9 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Cache CockroachDB tarball
-        uses: actions/cache@v4
-        with:
-          path: cockroach-v24.2.0.linux-amd64.tgz
-          key: cockroach-v24.2.0-linux-amd64-tgz
       - name: Set up CockroachDB
         run: |
-          [ -f cockroach-v24.2.0.linux-amd64.tgz ] || wget -q https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz
-          tar xzf cockroach-v24.2.0.linux-amd64.tgz
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
           cd  cockroach-v24.2.0.linux-amd64/ && ./cockroach start-single-node --insecure &
           until cockroach-v24.2.0.linux-amd64/cockroach sql --insecure -e "SELECT 1" 2>/dev/null; do sleep 2; done
       - name: Create SQLancer user
@@ -186,15 +180,9 @@ jobs:
           cache: 'maven'
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
-      - name: Cache CockroachDB tarball
-        uses: actions/cache@v4
-        with:
-          path: cockroach-v24.2.0.linux-amd64.tgz
-          key: cockroach-v24.2.0-linux-amd64-tgz
       - name: Set up CockroachDB
         run: |
-          [ -f cockroach-v24.2.0.linux-amd64.tgz ] || wget -q https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz
-          tar xzf cockroach-v24.2.0.linux-amd64.tgz
+          wget -qO- https://binaries.cockroachdb.com/cockroach-v24.2.0.linux-amd64.tgz | tar  xvz
           cd  cockroach-v24.2.0.linux-amd64/ && ./cockroach start-single-node --insecure &
           until cockroach-v24.2.0.linux-amd64/cockroach sql --insecure -e "SELECT 1" 2>/dev/null; do sleep 2; done
       - name: Create SQLancer user
