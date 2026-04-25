@@ -104,9 +104,12 @@ jobs:
       - name: Build SQLancer
         run: mvn -B package -DskipTests=true
       - name: Set up CnosDB
+        # Pinned to community-2026-02-16. Newer daily builds regress with
+        # "Tskv: Index: index storage error: Resource temporarily unavailable
+        # (os error 11)" on DROP DATABASE.
         run: |
-          docker pull cnosdb/cnosdb:community-latest
-          docker run --name cnosdb -p 8902:8902 -d cnosdb/cnosdb:community-latest
+          docker pull cnosdb/cnosdb:community-2026-02-16
+          docker run --name cnosdb -p 8902:8902 -d cnosdb/cnosdb:community-2026-02-16
           until nc -z 127.0.0.1 8902 2>/dev/null; do sleep 1; done
       - name: Run Tests
         run: |
