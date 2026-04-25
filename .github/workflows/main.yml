@@ -228,6 +228,10 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/sqlancer/datafusion/server/datafusion_server
       - name: Build DataFusion Server
         run: |
           cd src/sqlancer/datafusion/server/datafusion_server
@@ -690,10 +694,15 @@ jobs:
         run: |
           sudo apt update
           sudo apt install mysql-client --assume-yes
+      - name: Cache Apache Doris tarball
+        uses: actions/cache@v4
+        with:
+          path: apache-doris-2.1.4-bin-x64.tar.gz
+          key: apache-doris-2.1.4-bin-x64-tarball
       - name: Set up Apache Doris
         run: |
           sudo sysctl -w vm.max_map_count=2000000
-          wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.1.4-bin-x64.tar.gz
+          [ -f apache-doris-2.1.4-bin-x64.tar.gz ] || wget -q https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-2.1.4-bin-x64.tar.gz
           tar zxf apache-doris-2.1.4-bin-x64.tar.gz
           mv apache-doris-2.1.4-bin-x64 apache-doris
           sudo swapoff -a
