@@ -34,8 +34,7 @@ public final class H2UpdateGenerator extends AbstractUpdateGenerator<H2Column> {
         H2Errors.addInsertErrors(errors);
         H2Errors.addDeleteErrors(errors);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(H2ToStringVisitor.asString(gen.generateExpression()));
+            appendWhereClause(H2ToStringVisitor.asString(gen.generateExpression()));
         }
         H2Errors.addExpressionErrors(errors);
     }

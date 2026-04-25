@@ -35,10 +35,9 @@ public class YCQLIndexGenerator extends AbstractIndexGenerator<YCQLColumn> {
         sb.append(table.getName());
         appendIndexColumnList(table.getRandomNonEmptyColumnSubset(), false);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             YCQLExpression expr = new YCQLExpressionGenerator(globalState).setColumns(table.getColumns())
                     .generateExpression();
-            sb.append(YCQLToStringVisitor.asString(expr));
+            appendWhereClause(YCQLToStringVisitor.asString(expr));
         }
         errors.add("Query timed out after PT2S");
         errors.add("Invalid SQL Statement");

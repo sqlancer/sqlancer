@@ -26,12 +26,9 @@ public final class MaterializeDeleteGenerator extends AbstractDeleteGenerator {
         errors.add("violates foreign key constraint");
         errors.add("violates not-null constraint");
         errors.add("could not determine which collation to use for string comparison");
-        sb.append("DELETE FROM");
-        sb.append(" ");
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(MaterializeVisitor.asString(MaterializeExpressionGenerator.generateExpression(globalState,
+            appendWhereClause(MaterializeVisitor.asString(MaterializeExpressionGenerator.generateExpression(globalState,
                     table.getColumns(), MaterializeDataType.BOOLEAN)));
         }
         MaterializeCommon.addCommonExpressionErrors(errors);

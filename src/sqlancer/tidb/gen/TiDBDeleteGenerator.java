@@ -41,8 +41,7 @@ public final class TiDBDeleteGenerator extends AbstractDeleteGenerator {
         sb.append("FROM ");
         sb.append(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(TiDBVisitor.asString(gen.generateExpression()));
+            appendWhereClause(TiDBVisitor.asString(gen.generateExpression()));
             errors.add("Truncated incorrect");
             errors.add("Data truncation");
             errors.add("Truncated incorrect FLOAT value");
@@ -54,8 +53,7 @@ public final class TiDBDeleteGenerator extends AbstractDeleteGenerator {
                     .collect(Collectors.joining(", ")));
         }
         if (Randomly.getBoolean()) {
-            sb.append(" LIMIT ");
-            sb.append(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE));
+            appendLimitClause(Randomly.getNotCachedInteger(0, Integer.MAX_VALUE));
         }
         errors.add("Bad Number");
         errors.add("Truncated incorrect"); // https://github.com/pingcap/tidb/issues/24292

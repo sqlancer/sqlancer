@@ -40,8 +40,7 @@ public class MySQLDeleteGenerator extends AbstractDeleteGenerator {
         sb.append(" FROM ");
         sb.append(randomTable.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(MySQLVisitor.asString(gen.generateExpression()));
+            appendWhereClause(MySQLVisitor.asString(gen.generateExpression()));
             MySQLErrors.addExpressionErrors(errors);
         }
         errors.addAll(Arrays.asList("doesn't have this option",

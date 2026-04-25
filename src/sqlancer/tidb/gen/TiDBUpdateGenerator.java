@@ -35,9 +35,8 @@ public final class TiDBUpdateGenerator extends AbstractUpdateGenerator<TiDBColum
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             TiDBErrors.addExpressionErrors(errors);
-            sb.append(TiDBVisitor.asString(gen.generateExpression()));
+            appendWhereClause(TiDBVisitor.asString(gen.generateExpression()));
         }
         TiDBErrors.addInsertErrors(errors);
     }

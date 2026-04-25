@@ -34,9 +34,8 @@ public class MySQLUpdateGenerator extends AbstractUpdateGenerator<MySQLColumn> {
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             MySQLErrors.addExpressionErrors(errors);
-            sb.append(MySQLVisitor.asString(gen.generateExpression()));
+            appendWhereClause(MySQLVisitor.asString(gen.generateExpression()));
         }
         MySQLErrors.addInsertUpdateErrors(errors);
         errors.add("doesn't have this option");

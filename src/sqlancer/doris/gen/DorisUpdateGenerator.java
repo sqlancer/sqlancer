@@ -35,8 +35,7 @@ public final class DorisUpdateGenerator extends AbstractUpdateGenerator<DorisCol
         sb.append(table.getName());
         sb.append(" SET ");
         updateColumns(columns);
-        sb.append(" WHERE ");
-        sb.append(DorisToStringVisitor.asString(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
+        appendWhereClause(DorisToStringVisitor.asString(gen.generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
         DorisErrors.addInsertErrors(errors);
     }
 

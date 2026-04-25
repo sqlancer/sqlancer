@@ -23,11 +23,9 @@ public final class YCQLDeleteGenerator extends AbstractDeleteGenerator {
     @Override
     public void buildStatement() {
         YCQLTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        sb.append("DELETE FROM ");
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(YCQLToStringVisitor.asString(
+            appendWhereClause(YCQLToStringVisitor.asString(
                     new YCQLExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
         }
         YCQLErrors.addExpressionErrors(errors);

@@ -36,8 +36,7 @@ public class OceanBaseDeleteGenerator extends AbstractDeleteGenerator {
         sb.append(" FROM ");
         sb.append(randomTable.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(OceanBaseVisitor.asString(gen.generateExpression()));
+            appendWhereClause(OceanBaseVisitor.asString(gen.generateExpression()));
             OceanBaseErrors.addExpressionErrors(errors);
         }
         errors.addAll(Arrays.asList("doesn't have this option", "Truncated incorrect DOUBLE value",

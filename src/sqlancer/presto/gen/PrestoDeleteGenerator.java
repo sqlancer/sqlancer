@@ -24,12 +24,10 @@ public final class PrestoDeleteGenerator extends AbstractDeleteGenerator {
 
     @Override
     public void buildStatement() {
-        sb.append("DELETE FROM ");
         PrestoTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(PrestoToStringVisitor
+            appendWhereClause(PrestoToStringVisitor
                     .asString(new PrestoTypedExpressionGenerator(globalState).setColumns(table.getColumns())
                             .generateExpression(PrestoSchema.PrestoCompositeDataType.getRandomWithoutNull())));
         }

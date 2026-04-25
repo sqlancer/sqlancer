@@ -54,10 +54,9 @@ public final class YSQLUpdateGenerator extends AbstractUpdateGenerator<YSQLColum
         errors.add("but expression is of type");
         YSQLErrors.addCommonExpressionErrors(errors);
         if (!Randomly.getBooleanWithSmallProbability()) {
-            sb.append(" WHERE ");
             YSQLExpression where = YSQLExpressionGenerator.generateExpression(globalState, randomTable.getColumns(),
                     YSQLDataType.BOOLEAN);
-            sb.append(YSQLVisitor.asString(where));
+            appendWhereClause(YSQLVisitor.asString(where));
         }
     }
 

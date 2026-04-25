@@ -17,4 +17,17 @@ public abstract class AbstractGenerator {
 
     public abstract void buildStatement();
 
+    /**
+     * Appends {@code  WHERE <condition>} (with a leading space). Subclasses are responsible for deciding whether to
+     * include the WHERE clause, typically based on a randomized boolean. Used by DELETE, UPDATE, partial-INDEX, and
+     * INSERT...ON CONFLICT generators.
+     *
+     * @param condition
+     *            the rendered WHERE condition.
+     */
+    protected void appendWhereClause(String condition) {
+        sb.append(" WHERE ");
+        sb.append(condition);
+    }
+
 }

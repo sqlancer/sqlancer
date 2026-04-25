@@ -20,17 +20,14 @@ public final class H2DeleteGenerator extends AbstractDeleteGenerator {
 
     @Override
     public void buildStatement() {
-        sb.append("DELETE FROM ");
         H2Table table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(H2ToStringVisitor.asString(
+            appendWhereClause(H2ToStringVisitor.asString(
                     new H2ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
         }
         if (Randomly.getBoolean()) {
-            sb.append(" LIMIT ");
-            sb.append(H2ToStringVisitor.asString(new H2ExpressionGenerator(globalState).generateConstant()));
+            appendLimitClause(H2ToStringVisitor.asString(new H2ExpressionGenerator(globalState).generateConstant()));
         }
         H2Errors.addExpressionErrors(errors);
         H2Errors.addDeleteErrors(errors);
