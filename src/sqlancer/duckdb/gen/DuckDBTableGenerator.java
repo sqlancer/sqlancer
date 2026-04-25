@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
+import sqlancer.common.gen.AbstractTableGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.duckdb.DuckDBErrors;
 import sqlancer.duckdb.DuckDBProvider.DuckDBGlobalState;
@@ -16,50 +16,28 @@ import sqlancer.duckdb.DuckDBSchema.DuckDBDataType;
 import sqlancer.duckdb.DuckDBToStringVisitor;
 import sqlancer.duckdb.ast.DuckDBExpression;
 
-public class DuckDBTableGenerator {
+public class DuckDBTableGenerator extends AbstractTableGenerator<DuckDBColumn> {
+
+    private DuckDBGlobalState globalState;
+    private UntypedExpressionGenerator<DuckDBExpression, DuckDBColumn> gen;
+
+    public DuckDBTableGenerator() {
+        this.canAffectSchema = true;
+    }
 
     public SQLQueryAdapter getQuery(DuckDBGlobalState globalState) {
-        ExpectedErrors errors = new ExpectedErrors();
-        StringBuilder sb = new StringBuilder();
+        this.globalState = globalState;
+        return getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
         String tableName = globalState.getSchema().getFreeTableName();
-        sb.append("CREATE TABLE ");
-        sb.append(tableName);
-        sb.append("(");
+        appendCreateTable(tableName);
         List<DuckDBColumn> columns = getNewColumns();
-        UntypedExpressionGenerator<DuckDBExpression, DuckDBColumn> gen = new DuckDBExpressionGenerator(globalState)
-                .setColumns(columns);
-        for (int i = 0; i < columns.size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            sb.append(columns.get(i).getName());
-            sb.append(" ");
-            sb.append(columns.get(i).getType());
-            if (globalState.getDbmsSpecificOptions().testCollate && Randomly.getBooleanWithRatherLowProbability()
-                    && columns.get(i).getType().getPrimitiveDataType() == DuckDBDataType.VARCHAR) {
-                sb.append(" COLLATE ");
-                sb.append(getRandomCollate());
-            }
-            if (globalState.getDbmsSpecificOptions().testIndexes && Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(" UNIQUE");
-            }
-            if (globalState.getDbmsSpecificOptions().testNotNullConstraints
-                    && Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(" NOT NULL");
-            }
-            if (globalState.getDbmsSpecificOptions().testCheckConstraints
-                    && Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(" CHECK(");
-                sb.append(DuckDBToStringVisitor.asString(gen.generateExpression()));
-                DuckDBErrors.addExpressionErrors(errors);
-                sb.append(")");
-            }
-            if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().testDefaultValues) {
-                sb.append(" DEFAULT(");
-                sb.append(DuckDBToStringVisitor.asString(gen.generateConstant()));
-                sb.append(")");
-            }
-        }
+        gen = new DuckDBExpressionGenerator(globalState).setColumns(columns);
+        sb.append("(");
+        appendColumnDefinitionList(columns);
         if (globalState.getDbmsSpecificOptions().testIndexes && Randomly.getBoolean()) {
             errors.add("Invalid type for index");
             List<DuckDBColumn> primaryKeyColumns = Randomly.nonEmptySubset(columns);
@@ -68,7 +46,37 @@ public class DuckDBTableGenerator {
             sb.append(")");
         }
         sb.append(")");
-        return new SQLQueryAdapter(sb.toString(), errors, true);
+    }
+
+    @Override
+    protected void appendColumnDefinition(DuckDBColumn column) {
+        sb.append(column.getName());
+        sb.append(" ");
+        sb.append(column.getType());
+        if (globalState.getDbmsSpecificOptions().testCollate && Randomly.getBooleanWithRatherLowProbability()
+                && column.getType().getPrimitiveDataType() == DuckDBDataType.VARCHAR) {
+            sb.append(" COLLATE ");
+            sb.append(getRandomCollate());
+        }
+        if (globalState.getDbmsSpecificOptions().testIndexes && Randomly.getBooleanWithRatherLowProbability()) {
+            sb.append(" UNIQUE");
+        }
+        if (globalState.getDbmsSpecificOptions().testNotNullConstraints
+                && Randomly.getBooleanWithRatherLowProbability()) {
+            sb.append(" NOT NULL");
+        }
+        if (globalState.getDbmsSpecificOptions().testCheckConstraints
+                && Randomly.getBooleanWithRatherLowProbability()) {
+            sb.append(" CHECK(");
+            sb.append(DuckDBToStringVisitor.asString(gen.generateExpression()));
+            DuckDBErrors.addExpressionErrors(errors);
+            sb.append(")");
+        }
+        if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().testDefaultValues) {
+            sb.append(" DEFAULT(");
+            sb.append(DuckDBToStringVisitor.asString(gen.generateConstant()));
+            sb.append(")");
+        }
     }
 
     public static String getRandomCollate() {

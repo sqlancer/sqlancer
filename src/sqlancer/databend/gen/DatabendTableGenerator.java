@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sqlancer.Randomly;
+import sqlancer.common.gen.AbstractTableGenerator;
 import sqlancer.common.gen.TypedExpressionGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.databend.DatabendErrors;
 import sqlancer.databend.DatabendProvider.DatabendGlobalState;
@@ -15,44 +15,49 @@ import sqlancer.databend.DatabendSchema.DatabendDataType;
 import sqlancer.databend.DatabendToStringVisitor;
 import sqlancer.databend.ast.DatabendExpression;
 
-public class DatabendTableGenerator {
+public class DatabendTableGenerator extends AbstractTableGenerator<DatabendColumn> {
+
+    private DatabendGlobalState globalState;
+    private TypedExpressionGenerator<DatabendExpression, DatabendColumn, DatabendDataType> gen;
+
+    public DatabendTableGenerator() {
+        this.canAffectSchema = true;
+    }
 
     public SQLQueryAdapter getQuery(DatabendGlobalState globalState) {
-        ExpectedErrors errors = new ExpectedErrors();
+        this.globalState = globalState;
+        return getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
         DatabendErrors.addExpressionErrors(errors);
-        StringBuilder sb = new StringBuilder();
         String tableName = globalState.getSchema().getFreeTableName();
-        sb.append("CREATE TABLE ");
-        sb.append(tableName);
-        sb.append("(");
+        appendCreateTable(tableName);
         List<DatabendColumn> columns = getNewColumns();
-        TypedExpressionGenerator<DatabendExpression, DatabendColumn, DatabendDataType> gen = new DatabendNewExpressionGenerator(
-                globalState).setColumns(columns);
-        for (int i = 0; i < columns.size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            sb.append(columns.get(i).getName());
-            sb.append(" ");
-            sb.append(columns.get(i).getType());
+        gen = new DatabendNewExpressionGenerator(globalState).setColumns(columns);
+        appendColumnDefinitions(columns);
+    }
 
-            if (globalState.getDbmsSpecificOptions().testNotNullConstraints
-                    && Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(" NOT NULL");
-            } else {
-                sb.append(" NULL"); // Databend 默认字段为非空，这个将它默认设置为允许空
-            }
+    @Override
+    protected void appendColumnDefinition(DatabendColumn column) {
+        sb.append(column.getName());
+        sb.append(" ");
+        sb.append(column.getType());
 
-            if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().testDefaultValues) {
-                sb.append(" DEFAULT(");
-                sb.append(DatabendToStringVisitor.asString(// 常量类型于字段类型等同
-                        gen.generateConstant(columns.get(i).getType().getPrimitiveDataType())));
-                sb.append(")");
-            }
+        if (globalState.getDbmsSpecificOptions().testNotNullConstraints
+                && Randomly.getBooleanWithRatherLowProbability()) {
+            sb.append(" NOT NULL");
+        } else {
+            sb.append(" NULL"); // Databend 默认字段为非空，这个将它默认设置为允许空
         }
 
-        sb.append(")");
-        return new SQLQueryAdapter(sb.toString(), errors, true);
+        if (Randomly.getBoolean() && globalState.getDbmsSpecificOptions().testDefaultValues) {
+            sb.append(" DEFAULT(");
+            sb.append(DatabendToStringVisitor.asString(// 常量类型于字段类型等同
+                    gen.generateConstant(column.getType().getPrimitiveDataType())));
+            sb.append(")");
+        }
     }
 
     private static List<DatabendColumn> getNewColumns() {
