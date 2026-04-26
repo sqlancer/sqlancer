@@ -108,6 +108,21 @@ jobs:
           docker pull cnosdb/cnosdb:community-latest
           docker run --name cnosdb -p 8902:8902 -d cnosdb/cnosdb:community-latest
           until nc -z 127.0.0.1 8902 2>/dev/null; do sleep 1; done
+          # CnosDB's HTTP listener starts before its Tskv storage layer.
+          # Poll a DDL round-trip until it actually succeeds, otherwise the
+          # first DROP DATABASE in the test fails with EAGAIN.
+          for i in $(seq 1 60); do
+            if curl -sf -u "root:" -H "Content-Type: application/json" \
+                "http://127.0.0.1:8902/api/v1/sql?db=public" \
+                -d "DROP DATABASE IF EXISTS sqlancer_readiness_probe" >/dev/null 2>&1 \
+               && curl -sf -u "root:" -H "Content-Type: application/json" \
+                "http://127.0.0.1:8902/api/v1/sql?db=public" \
+                -d "CREATE DATABASE sqlancer_readiness_probe" >/dev/null 2>&1; then
+              echo "CnosDB DDL ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
       - name: Run Tests
         run: |
           CNOSDB_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCnosDBNoREC test
