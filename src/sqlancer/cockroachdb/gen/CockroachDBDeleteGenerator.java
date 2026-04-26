@@ -24,12 +24,10 @@ public final class CockroachDBDeleteGenerator extends AbstractDeleteGenerator {
     @Override
     public void buildStatement() {
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        sb.append("DELETE FROM ");
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             CockroachDBErrors.addExpressionErrors(errors);
-            sb.append(CockroachDBVisitor.asString(new CockroachDBExpressionGenerator(globalState)
+            appendWhereClause(CockroachDBVisitor.asString(new CockroachDBExpressionGenerator(globalState)
                     .setColumns(table.getColumns()).generateExpression(CockroachDBDataType.BOOL.get())));
         } else {
             errors.add("rejected: DELETE without WHERE clause (sql_safe_updates = true)");

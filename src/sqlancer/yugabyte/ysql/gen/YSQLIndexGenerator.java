@@ -93,10 +93,9 @@ public class YSQLIndexGenerator extends AbstractIndexGenerator<YSQLColumn> {
             sb.append(")");
         }
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             YSQLExpression expr = new YSQLExpressionGenerator(globalState).setColumns(randomTable.getColumns())
                     .setGlobalState(globalState).generateExpression(YSQLDataType.BOOLEAN);
-            sb.append(YSQLVisitor.asString(expr));
+            appendWhereClause(YSQLVisitor.asString(expr));
         }
         errors.add("already contains data"); // CONCURRENT INDEX failed
         errors.add("You might need to add explicit type casts");

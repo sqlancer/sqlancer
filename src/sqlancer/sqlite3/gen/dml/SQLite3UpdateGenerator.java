@@ -76,10 +76,9 @@ public final class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite
         }
 
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             String whereClause = SQLite3Visitor.asString(
                     new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression());
-            sb.append(whereClause);
+            appendWhereClause(whereClause);
         }
 
         // ORDER BY and LIMIT are only supported by enabling a compile-time option

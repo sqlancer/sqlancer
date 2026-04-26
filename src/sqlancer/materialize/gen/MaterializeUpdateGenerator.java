@@ -52,10 +52,9 @@ public final class MaterializeUpdateGenerator extends AbstractUpdateGenerator<Ma
         errors.add("but expression is of type");
         MaterializeCommon.addCommonExpressionErrors(errors);
         if (!Randomly.getBooleanWithSmallProbability()) {
-            sb.append(" WHERE ");
             MaterializeExpression where = MaterializeExpressionGenerator.generateExpression(globalState,
                     randomTable.getColumns(), MaterializeDataType.BOOLEAN);
-            sb.append(MaterializeVisitor.asString(where));
+            appendWhereClause(MaterializeVisitor.asString(where));
         }
     }
 

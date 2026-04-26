@@ -27,20 +27,13 @@ public final class YSQLDeleteGenerator extends AbstractDeleteGenerator {
         errors.add("violates foreign key constraint");
         errors.add("violates not-null constraint");
         errors.add("could not determine which collation to use for string comparison");
-        sb.append("DELETE FROM");
+        appendDeleteFromTable(table.getName(), Randomly.getBoolean());
         if (Randomly.getBoolean()) {
-            sb.append(" ONLY");
-        }
-        sb.append(" ");
-        sb.append(table.getName());
-        if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(YSQLVisitor.asString(
+            appendWhereClause(YSQLVisitor.asString(
                     YSQLExpressionGenerator.generateExpression(globalState, table.getColumns(), YSQLDataType.BOOLEAN)));
         }
         if (Randomly.getBoolean()) {
-            sb.append(" RETURNING ");
-            sb.append(
+            appendReturningClause(
                     YSQLVisitor.asString(YSQLExpressionGenerator.generateExpression(globalState, table.getColumns())));
         }
         YSQLErrors.addCommonExpressionErrors(errors);

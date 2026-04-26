@@ -52,10 +52,9 @@ public final class PostgresUpdateGenerator extends AbstractUpdateGenerator<Postg
         errors.add("but expression is of type");
         PostgresCommon.addCommonExpressionErrors(errors);
         if (!Randomly.getBooleanWithSmallProbability()) {
-            sb.append(" WHERE ");
             PostgresExpression where = PostgresExpressionGenerator.generateExpression(globalState,
                     randomTable.getColumns(), PostgresDataType.BOOLEAN);
-            sb.append(PostgresVisitor.asString(where));
+            appendWhereClause(PostgresVisitor.asString(where));
         }
     }
 

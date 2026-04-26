@@ -57,12 +57,13 @@ public final class MariaDBDeleteGenerator extends AbstractDeleteGenerator {
         sb.append(table.getName());
 
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
+            String condition;
             if (Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r)));
+                condition = MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r));
             } else {
-                sb.append(MariaDBVisitor.asString(expressionGenerator.getRandomExpression()));
+                condition = MariaDBVisitor.asString(expressionGenerator.getRandomExpression());
             }
+            appendWhereClause(condition);
         }
 
         // ORDER BY + LIMIT
@@ -75,18 +76,18 @@ public final class MariaDBDeleteGenerator extends AbstractDeleteGenerator {
         }
 
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            sb.append(" LIMIT ");
-            sb.append(Randomly.getNotCachedInteger(1, 10));
+            appendLimitClause(Randomly.getNotCachedInteger(1, 10));
         }
 
         // RETURNING clause (MariaDB >= 10.5)
         if (Randomly.getBooleanWithRatherLowProbability()) {
-            sb.append(" RETURNING ");
+            String expression;
             if (Randomly.getBooleanWithRatherLowProbability()) {
-                sb.append(MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r)));
+                expression = MariaDBVisitor.asString(MariaDBExpressionGenerator.getRandomConstant(r));
             } else {
-                sb.append(MariaDBVisitor.asString(expressionGenerator.getRandomExpression()));
+                expression = MariaDBVisitor.asString(expressionGenerator.getRandomExpression());
             }
+            appendReturningClause(expression);
         }
 
         if (sb.toString().contains("RLIKE") || sb.toString().contains("REGEXP")) {

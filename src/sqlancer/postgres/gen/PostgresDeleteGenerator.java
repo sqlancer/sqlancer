@@ -26,20 +26,13 @@ public final class PostgresDeleteGenerator extends AbstractDeleteGenerator {
         errors.add("violates foreign key constraint");
         errors.add("violates not-null constraint");
         errors.add("could not determine which collation to use for string comparison");
-        sb.append("DELETE FROM");
+        appendDeleteFromTable(table.getName(), Randomly.getBoolean());
         if (Randomly.getBoolean()) {
-            sb.append(" ONLY");
-        }
-        sb.append(" ");
-        sb.append(table.getName());
-        if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState,
+            appendWhereClause(PostgresVisitor.asString(PostgresExpressionGenerator.generateExpression(globalState,
                     table.getColumns(), PostgresDataType.BOOLEAN)));
         }
         if (Randomly.getBoolean()) {
-            sb.append(" RETURNING ");
-            sb.append(PostgresVisitor
+            appendReturningClause(PostgresVisitor
                     .asString(PostgresExpressionGenerator.generateExpression(globalState, table.getColumns())));
         }
         PostgresCommon.addCommonExpressionErrors(errors);

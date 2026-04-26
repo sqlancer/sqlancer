@@ -22,12 +22,10 @@ public final class DuckDBDeleteGenerator extends AbstractDeleteGenerator {
 
     @Override
     public void buildStatement() {
-        sb.append("DELETE FROM ");
         DuckDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(DuckDBToStringVisitor.asString(
+            appendWhereClause(DuckDBToStringVisitor.asString(
                     new DuckDBExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
         }
         DuckDBErrors.addExpressionErrors(errors);

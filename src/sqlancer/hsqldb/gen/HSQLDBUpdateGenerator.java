@@ -37,8 +37,7 @@ public final class HSQLDBUpdateGenerator extends AbstractUpdateGenerator<HSQLDBC
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBooleanWithSmallProbability()) {
-            sb.append(" WHERE ");
-            sb.append(HSQLDBToStringVisitor.asString(
+            appendWhereClause(HSQLDBToStringVisitor.asString(
                     gen.generateExpression(HSQLDBCompositeDataType.getRandomWithType(HSQLDBDataType.BOOLEAN))));
             errors.add("data type of expression is not boolean");
             HSQLDBErrors.addExpressionErrors(errors);

@@ -22,11 +22,9 @@ public final class DatabendDeleteGenerator extends AbstractDeleteGenerator {
 
     @Override
     public void buildStatement() {
-        sb.append("DELETE FROM ");
-        sb.append(globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
+        appendDeleteFromTable(globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(DatabendToStringVisitor.asString(
+            appendWhereClause(DatabendToStringVisitor.asString(
                     new DatabendNewExpressionGenerator(globalState).generateExpression(DatabendDataType.BOOLEAN)));
             DatabendErrors.addExpressionErrors(errors);
         }

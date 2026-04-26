@@ -40,8 +40,7 @@ public final class CockroachDBUpdateGenerator extends AbstractUpdateGenerator<Co
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(CockroachDBVisitor.asString(gen.generateExpression(CockroachDBDataType.BOOL.get())));
+            appendWhereClause(CockroachDBVisitor.asString(gen.generateExpression(CockroachDBDataType.BOOL.get())));
         }
         errors.add("violates unique constraint");
         errors.add("violates not-null constraint");

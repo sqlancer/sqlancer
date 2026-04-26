@@ -51,10 +51,9 @@ public class PrestoIndexGenerator extends AbstractIndexGenerator<PrestoColumn> {
         }
         sb.append(")");
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             PrestoExpression expr = new PrestoTypedExpressionGenerator(globalState).setColumns(table.getColumns())
                     .generateExpression(PrestoSchema.PrestoCompositeDataType.getRandomWithoutNull());
-            sb.append(PrestoToStringVisitor.asString(expr));
+            appendWhereClause(PrestoToStringVisitor.asString(expr));
         }
         errors.add("already exists!");
     }

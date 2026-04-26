@@ -23,12 +23,10 @@ public final class DorisDeleteGenerator extends AbstractDeleteGenerator {
 
     @Override
     public void buildStatement() {
-        sb.append("DELETE FROM ");
         DorisTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(DorisToStringVisitor.asString(new DorisNewExpressionGenerator(globalState)
+            appendWhereClause(DorisToStringVisitor.asString(new DorisNewExpressionGenerator(globalState)
                     .setColumns(table.getColumns()).generateExpression(DorisSchema.DorisDataType.BOOLEAN)));
             DorisErrors.addExpressionErrors(errors);
         }

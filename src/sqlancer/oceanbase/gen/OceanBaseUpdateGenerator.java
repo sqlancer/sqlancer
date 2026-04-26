@@ -39,9 +39,8 @@ public class OceanBaseUpdateGenerator extends AbstractUpdateGenerator<OceanBaseC
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             OceanBaseErrors.addExpressionErrors(errors);
-            sb.append(OceanBaseVisitor.asString(gen.generateExpression()));
+            appendWhereClause(OceanBaseVisitor.asString(gen.generateExpression()));
             errors.add("Data Too Long");
         }
         errors.add("Duplicated primary key");

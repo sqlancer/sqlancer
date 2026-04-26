@@ -33,11 +33,9 @@ public final class SQLite3DeleteGenerator extends AbstractDeleteGenerator {
 
     @Override
     public void buildStatement() {
-        sb.append("DELETE FROM ");
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(SQLite3Visitor.asString(
+            appendWhereClause(SQLite3Visitor.asString(
                     new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
         }
         SQLite3Errors.addExpectedExpressionErrors(errors);
