@@ -66,7 +66,6 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | YugabyteDB                   | Working     | Typed (YSQL), Untyped (YCQL) | YSQL implementation based on Postgres code. YCQL implementation is primitive for now and uses Cassandra JDBC driver as a proxy interface.                                                       |
 | Databend                     | Working     | Typed                        |                                                                                                                                                                                                 |
 | QuestDB                      | Working     | Untyped, Generic             | The implementation of QuestDB is still WIP, current version covers very basic data types, operations and SQL keywords.                                                                          |
-| CnosDB                       | Working     | Typed                        | The implementation of CnosDB currently uses Restful API.                                                                                                                                        |
 | Materialize                  | Working     | Typed                        |                                                                                                                                                                                                 |
 | Apache Doris                 | Preliminary | Typed                        | This is a preliminary implementation, which only contains the common logic of Doris. We have found some errors through it, and hope to improve it in the future.                                |
 | Presto                       | Preliminary | Typed                        | This is a preliminary implementation, only basic types supported.                                                                                                                               |
@@ -82,6 +81,7 @@ Some DBMS were once supported but subsequently removed.
 | Cosmos     | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because Cosmos is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.    |
 | MongoDB    | [#915](https://github.com/sqlancer/sqlancer/pull/915) | This implementation was removed because MongoDB is a NoSQL DBMS, while the majority were SQL DBMSs, which resulted in difficulty refactoring SQLancer.   |
 | StoneDB    | [#963](https://github.com/sqlancer/sqlancer/pull/963) | This implementation was removed because development of StoneDB stopped.
+| CnosDB     |                                                 | This implementation was removed because the CnosDB image is unstable under SQLancer's DDL load (see [cnosdb/cnosdb#2435](https://github.com/cnosdb/cnosdb/issues/2435)) and the project appears no longer maintained. |
 
 ### Unfixed Bugs
 

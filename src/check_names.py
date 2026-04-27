@@ -35,7 +35,6 @@ if __name__ == '__main__':
     name_to_files: dict[str:List[str]] = dict()
     name_to_files["Citus"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "citus"))
     name_to_files["ClickHouse"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "clickhouse"))
-    name_to_files["CnosDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "cnosdb"))
     name_to_files["CockroachDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "cockroachdb"))
     name_to_files["Databend"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "databend"))
     name_to_files["DataFusion"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "datafusion"))
