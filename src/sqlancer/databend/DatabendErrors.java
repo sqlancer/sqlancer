@@ -47,9 +47,10 @@ public final class DatabendErrors {
         if (DatabendBugs.bug15568) {
             errors.add("Decimal overflow at line : 723 while evaluating function `to_decimal");
         }
-        if (DatabendBugs.bug19738) {
-            errors.add("UnwindError");
-            errors.add("unable to cast `NULL`");
+        if (DatabendBugs.bug19773) {
+            errors.add("failed to downcast column Decimal128");
+            errors.add("Decimal(DecimalSize { precision: 38");
+            errors.add("_eager_final_count");
         }
 
         /*
