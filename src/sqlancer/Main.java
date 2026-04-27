@@ -26,7 +26,6 @@ import com.beust.jcommander.JCommander.Builder;
 
 import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
-import sqlancer.cnosdb.CnosDBProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
@@ -750,7 +749,6 @@ public final class Main {
                     "No DBMS implementations (i.e., instantiations of the DatabaseProvider class) were found. You likely ran into an issue described in https://github.com/sqlancer/sqlancer/issues/799. As a workaround, I now statically load all supported providers as of June 7, 2023.");
             providers.add(new CitusProvider());
             providers.add(new ClickHouseProvider());
-            providers.add(new CnosDBProvider());
             providers.add(new CockroachDBProvider());
             providers.add(new DatabendProvider());
             providers.add(new DorisProvider());
