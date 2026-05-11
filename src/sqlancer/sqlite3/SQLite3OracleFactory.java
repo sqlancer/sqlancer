@@ -7,9 +7,10 @@ import java.util.List;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.NoRECOracle;
-import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TLPWhereOracle2;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
+import sqlancer.sqlite3.dialect.SQLite3Dialect;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.oracle.SQLite3CODDTestOracle;
 import sqlancer.sqlite3.oracle.SQLite3Fuzzer;
@@ -55,10 +56,11 @@ public enum SQLite3OracleFactory implements OracleFactory<SQLite3GlobalState> {
     WHERE {
         @Override
         public TestOracle<SQLite3GlobalState> create(SQLite3GlobalState globalState) throws SQLException {
-            SQLite3ExpressionGenerator gen = new SQLite3ExpressionGenerator(globalState);
             ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(SQLite3Errors.getExpectedExpressionErrors())
                     .build();
-            return new TLPWhereOracle<>(globalState, gen, expectedErrors);
+            SQLite3Dialect dialect = new SQLite3Dialect();
+
+            return new TLPWhereOracle2<>(globalState, dialect, expectedErrors);
         }
 
     },
