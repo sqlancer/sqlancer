@@ -8,10 +8,14 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
+import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
+import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLVisitor;
+import sqlancer.mysql.ast.MySQLExpression;
+import sqlancer.mysql.ast.MySQLConstant;
 
 public class MySQLInsertGenerator {
 
@@ -84,8 +88,27 @@ public class MySQLInsertGenerator {
                 if (c != 0) {
                     sb.append(", ");
                 }
-                sb.append(MySQLVisitor.asString(gen.generateConstant()));
-
+                MySQLExpression constExpr;
+                // Bug workaround: for integer columns, reject numeric values that round to 1. Regenerate until valid.
+                if (MySQLBugs.bug120711 && columns.get(c).getType() == MySQLDataType.INT) {
+                    while (true) {
+                        constExpr = gen.generateConstant();
+                        boolean reject = false;
+                        if (constExpr instanceof MySQLConstant.MySQLIntConstant) {
+                            long value = ((MySQLConstant.MySQLIntConstant) constExpr).getInt();
+                            reject = value == 1;
+                        } else if (constExpr instanceof MySQLConstant.MySQLDoubleConstant) {
+                            double value = ((MySQLConstant.MySQLDoubleConstant) constExpr).getDouble();
+                            reject = value >= 0.5 && value < 1.5;
+                        }
+                        if (!reject) {
+                            break;
+                        }
+                    }
+                } else {
+                    constExpr = gen.generateConstant();
+                }
+                sb.append(MySQLVisitor.asString(constExpr));
             }
             sb.append(")");
         }
