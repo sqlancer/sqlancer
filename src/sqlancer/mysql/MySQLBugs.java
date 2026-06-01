@@ -37,6 +37,10 @@ public final class MySQLBugs {
     // https://bugs.mysql.com/bug.php?id=114534
     public static boolean bug114534 = true;
 
+    // https://bugs.mysql.com/bug.php?id=120710
+    // Inserting a NULL and a value which rounds to 0 into a DECIMAL column causes result set mismatch.
+    public static boolean bug120710 = true;
+
     // https://bugs.mysql.com/bug.php?id=120711
     // Creating an index on an integer-type column, then inserting a value which rounds to 1, causes result set mismatch.
     public static boolean bug120711 = true;

@@ -105,6 +105,22 @@ public class MySQLInsertGenerator {
                             break;
                         }
                     }
+                // Bug workaround: for decimal columns, reject values that round to 0. Regenerate until valid.
+                } else if (MySQLBugs.bug120710 && columns.get(c).getType() == MySQLDataType.DECIMAL) {
+                    while (true) {
+                        constExpr = gen.generateConstant();
+                        boolean reject = false;
+                        if (constExpr instanceof MySQLConstant.MySQLIntConstant) {
+                            long value = ((MySQLConstant.MySQLIntConstant) constExpr).getInt();
+                            reject = value == 0;
+                        } else if (constExpr instanceof MySQLConstant.MySQLDoubleConstant) {
+                            double value = ((MySQLConstant.MySQLDoubleConstant) constExpr).getDouble();
+                            reject = value >= -0.5 && value < 0.5;
+                        }
+                        if (!reject) {
+                            break;
+                        }
+                    }
                 } else {
                     constExpr = gen.generateConstant();
                 }
