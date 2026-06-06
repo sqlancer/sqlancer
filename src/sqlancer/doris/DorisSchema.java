@@ -569,7 +569,7 @@ public class DorisSchema extends AbstractSchema<DorisGlobalState, DorisTable> {
                 continue;
             }
             List<DorisColumn> databaseColumns = getTableColumns(con, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             DorisTable t = new DorisTable(tableName, databaseColumns, isView);
             for (DorisColumn c : databaseColumns) {
                 c.setTable(t);

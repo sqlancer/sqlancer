@@ -44,9 +44,11 @@ public class DatabendQueryPartitioningAggregateTester extends DatabendQueryParti
     @Override
     public void check() throws SQLException {
         super.check();
-        DatabendAggregateFunction aggregateFunction = Randomly.fromOptions(DatabendAggregateFunction.MAX,
-                DatabendAggregateFunction.MIN, DatabendAggregateFunction.SUM, DatabendAggregateFunction.COUNT,
-                DatabendAggregateFunction.AVG/* , DatabendAggregateFunction.STDDEV_POP */);
+        List<DatabendAggregateFunction> aggregateFunctions = new ArrayList<>(
+                List.of(DatabendAggregateFunction.MAX, DatabendAggregateFunction.MIN, DatabendAggregateFunction.SUM,
+                        DatabendAggregateFunction.COUNT, DatabendAggregateFunction.AVG
+                /* , DatabendAggregateFunction.STDDEV_POP */));
+        DatabendAggregateFunction aggregateFunction = Randomly.fromList(aggregateFunctions);
         DatabendFunctionOperation<DatabendAggregateFunction> aggregate = (DatabendAggregateOperation) gen
                 .generateArgsForAggregate(aggregateFunction);
         List<DatabendExpression> fetchColumns = new ArrayList<>();

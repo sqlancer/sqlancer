@@ -3,7 +3,7 @@ package sqlancer.sqlite3.gen.dml;
 import java.util.Arrays;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractDeleteGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.sqlite3.SQLite3Errors;
 import sqlancer.sqlite3.SQLite3GlobalState;
@@ -11,26 +11,33 @@ import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public final class SQLite3DeleteGenerator {
+public final class SQLite3DeleteGenerator extends AbstractDeleteGenerator {
 
-    private SQLite3DeleteGenerator() {
+    private final SQLite3GlobalState globalState;
+    private final SQLite3Table table;
+
+    private SQLite3DeleteGenerator(SQLite3GlobalState globalState, SQLite3Table table) {
+        this.globalState = globalState;
+        this.table = table;
+        this.canAffectSchema = true;
     }
 
     public static SQLQueryAdapter deleteContent(SQLite3GlobalState globalState) {
-        SQLite3Table tableName = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
-        return deleteContent(globalState, tableName);
+        SQLite3Table table = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
+        return deleteContent(globalState, table);
     }
 
-    public static SQLQueryAdapter deleteContent(SQLite3GlobalState globalState, SQLite3Table tableName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("DELETE FROM ");
-        sb.append(tableName.getName());
+    public static SQLQueryAdapter deleteContent(SQLite3GlobalState globalState, SQLite3Table table) {
+        return new SQLite3DeleteGenerator(globalState, table).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(SQLite3Visitor.asString(new SQLite3ExpressionGenerator(globalState)
-                    .setColumns(tableName.getColumns()).generateExpression()));
+            appendWhereClause(SQLite3Visitor.asString(
+                    new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
         }
-        ExpectedErrors errors = new ExpectedErrors();
         SQLite3Errors.addExpectedExpressionErrors(errors);
         errors.addAll(Arrays.asList("[SQLITE_ERROR] SQL error or missing database (foreign key mismatch",
                 "[SQLITE_CONSTRAINT]  Abort due to constraint violation ",
@@ -40,7 +47,6 @@ public final class SQLite3DeleteGenerator {
                 "cannot INSERT into generated column", "A table in the database is locked",
                 "load_extension() prohibited in triggers and views", "The database file is locked"));
         SQLite3Errors.addDeleteErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
 }

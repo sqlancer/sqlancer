@@ -1,6 +1,5 @@
 package sqlancer.mysql.gen;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import sqlancer.Randomly;
@@ -21,11 +20,12 @@ public class MySQLUpdateGenerator extends AbstractUpdateGenerator<MySQLColumn> {
         this.globalState = globalState;
     }
 
-    public static SQLQueryAdapter create(MySQLGlobalState globalState) throws SQLException {
-        return new MySQLUpdateGenerator(globalState).generate();
+    public static SQLQueryAdapter create(MySQLGlobalState globalState) {
+        return new MySQLUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() throws SQLException {
+    @Override
+    public void buildStatement() {
         MySQLTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<MySQLColumn> columns = table.getRandomNonEmptyColumnSubset();
         gen = new MySQLExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -34,14 +34,11 @@ public class MySQLUpdateGenerator extends AbstractUpdateGenerator<MySQLColumn> {
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             MySQLErrors.addExpressionErrors(errors);
-            sb.append(MySQLVisitor.asString(gen.generateExpression()));
+            appendWhereClause(MySQLVisitor.asString(gen.generateExpression()));
         }
         MySQLErrors.addInsertUpdateErrors(errors);
         errors.add("doesn't have this option");
-
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

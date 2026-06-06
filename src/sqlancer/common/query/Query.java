@@ -5,6 +5,7 @@ import sqlancer.SQLancerDBConnection;
 import sqlancer.common.log.Loggable;
 
 public abstract class Query<C extends SQLancerDBConnection> implements Loggable {
+    private static final long serialVersionUID = 1L;
 
     /**
      * Gets the query string, which is guaranteed to be terminated with a semicolon.

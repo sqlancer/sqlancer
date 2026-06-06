@@ -18,15 +18,17 @@ public final class CitusCommon {
         errors.add("cannot perform an INSERT without a partition column value");
         errors.add("cannot perform an INSERT with NULL in the partition column");
         errors.add("recursive CTEs are not supported in distributed queries");
+        errors.add("recursive CTEs are only supported when they contain a filter on the distribution column");
         errors.add("could not run distributed query with GROUPING SETS, CUBE, or ROLLUP");
         errors.add("Subqueries in HAVING cannot refer to outer query");
         errors.add("non-IMMUTABLE functions are not allowed in the RETURNING clause");
         errors.add("functions used in UPDATE queries on distributed tables must not be VOLATILE");
         errors.add("STABLE functions used in UPDATE queries cannot be called with column references");
-        errors.add(
-                "functions used in the WHERE clause of modification queries on distributed tables must not be VOLATILE");
+        errors.add("of modification queries on distributed tables must not be VOLATILE");
         errors.add("cannot execute ADD CONSTRAINT command with other subcommands");
         errors.add("cannot execute ALTER TABLE command involving partition column");
+        errors.add("alter table command is currently unsupported");
+        errors.add("on distributed partitioned tables are not supported");
         errors.add("could not run distributed query with FOR UPDATE/SHARE commands");
         errors.add("is not a regular, foreign or partitioned table");
         errors.add("must be a distributed table or a reference table");
@@ -53,13 +55,15 @@ public final class CitusCommon {
         errors.add("direct joins between distributed and local tables are not supported");
         errors.add("unlogged columnar tables are not supported");
         errors.add("UPDATE and CTID scans not supported for ColumnarScan");
-        errors.add("indexes not supported for columnar tables");
+        errors.add("unsupported access method for the index on columnar table");
+        errors.add("BRIN indexes on columnar tables are not supported");
         errors.add("invalid byte sequence for encoding \"UTF8\": 0x00");
         errors.add("columnar_tuple_insert_speculative not implemented");
         errors.add("row field count is 1, expected 2");
         errors.add("incorrect binary data format");
         errors.add("invalid sign in external \"numeric\" value");
         errors.add("Foreign keys and AFTER ROW triggers are not supported for columnar tables");
+        errors.addAll(getColumnarOidErrors());
 
         // current errors in Citus (to be removed once fixed)
         if (CitusBugs.bug3957) {
@@ -84,6 +88,19 @@ public final class CitusCommon {
         if (CitusBugs.bug4079) {
             errors.add("aggregate function calls cannot be nested");
         }
+        return errors;
+    }
+
+    /**
+     * Citus can fail with "could not open relation with OID 0" when operating on columnar temporary tables (e.g., USING
+     * columnar ON COMMIT DROP), during VACUUM, DISCARD TEMPORARY, or INSERT operations where Citus cannot resolve the
+     * relation OID.
+     *
+     * @return the list of expected error substrings for columnar OID resolution failures.
+     */
+    public static List<String> getColumnarOidErrors() {
+        List<String> errors = new ArrayList<>();
+        errors.add("could not open relation with OID 0");
         return errors;
     }
 

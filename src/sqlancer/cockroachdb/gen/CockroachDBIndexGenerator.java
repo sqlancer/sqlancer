@@ -21,7 +21,7 @@ public class CockroachDBIndexGenerator extends CockroachDBGenerator {
         if (s.getSchema().getIndexCount() >= s.getDbmsSpecificOptions().maxNumIndexes) {
             throw new IgnoreMeException();
         }
-        return new CockroachDBIndexGenerator(s).getQuery();
+        return new CockroachDBIndexGenerator(s).getStatement();
     }
 
     @Override

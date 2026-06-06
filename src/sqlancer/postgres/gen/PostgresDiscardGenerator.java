@@ -25,6 +25,7 @@ public final class PostgresDiscardGenerator {
         }
         sb.append(what);
         return new SQLQueryAdapter(sb.toString(), ExpectedErrors.from("cannot run inside a transaction block")) {
+            private static final long serialVersionUID = 1L;
 
             @Override
             public boolean couldAffectSchema() {

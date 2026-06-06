@@ -52,6 +52,7 @@ public class MaterializeTableGenerator {
         errors.add("no collation was derived for partition key column");
         errors.add("inherits from generated column but specifies identity");
         errors.add("inherits from generated column but specifies default");
+        errors.add("already exists");
         MaterializeCommon.addCommonExpressionErrors(errors);
         MaterializeCommon.addCommonTableErrors(errors);
     }

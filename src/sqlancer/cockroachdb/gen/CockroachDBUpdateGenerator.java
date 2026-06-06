@@ -22,10 +22,11 @@ public final class CockroachDBUpdateGenerator extends AbstractUpdateGenerator<Co
     }
 
     public static SQLQueryAdapter gen(CockroachDBGlobalState globalState) {
-        return new CockroachDBUpdateGenerator(globalState).generate();
+        return new CockroachDBUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         CockroachDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<CockroachDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         gen = new CockroachDBExpressionGenerator(globalState).setColumns(columns);
@@ -39,8 +40,7 @@ public final class CockroachDBUpdateGenerator extends AbstractUpdateGenerator<Co
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(CockroachDBVisitor.asString(gen.generateExpression(CockroachDBDataType.BOOL.get())));
+            appendWhereClause(CockroachDBVisitor.asString(gen.generateExpression(CockroachDBDataType.BOOL.get())));
         }
         errors.add("violates unique constraint");
         errors.add("violates not-null constraint");
@@ -51,7 +51,6 @@ public final class CockroachDBUpdateGenerator extends AbstractUpdateGenerator<Co
         errors.add("cannot write directly to computed column");
         CockroachDBErrors.addExpressionErrors(errors);
         CockroachDBErrors.addTransactionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

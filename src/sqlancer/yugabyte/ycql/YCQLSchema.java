@@ -126,6 +126,7 @@ public class YCQLSchema extends AbstractSchema<YCQLGlobalState, YCQLTable> {
             this.isNullable = isNullable;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }
@@ -216,7 +217,7 @@ public class YCQLSchema extends AbstractSchema<YCQLGlobalState, YCQLTable> {
                 continue;
             }
             List<YCQLColumn> databaseColumns = getTableColumns(con, databaseName, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             YCQLTable t = new YCQLTable(tableName, databaseColumns, isView);
             for (YCQLColumn c : databaseColumns) {
                 c.setTable(t);

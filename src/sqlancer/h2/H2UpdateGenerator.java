@@ -19,10 +19,11 @@ public final class H2UpdateGenerator extends AbstractUpdateGenerator<H2Column> {
     }
 
     public static SQLQueryAdapter getQuery(H2GlobalState globalState) {
-        return new H2UpdateGenerator(globalState).generate();
+        return new H2UpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         H2Table table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<H2Column> columns = table.getRandomNonEmptyColumnSubset();
         gen = new H2ExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -33,11 +34,9 @@ public final class H2UpdateGenerator extends AbstractUpdateGenerator<H2Column> {
         H2Errors.addInsertErrors(errors);
         H2Errors.addDeleteErrors(errors);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(H2ToStringVisitor.asString(gen.generateExpression()));
+            appendWhereClause(H2ToStringVisitor.asString(gen.generateExpression()));
         }
         H2Errors.addExpressionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

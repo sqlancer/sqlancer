@@ -3,7 +3,7 @@ package sqlancer.presto.gen;
 import java.util.List;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractIndexGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.presto.PrestoGlobalState;
 import sqlancer.presto.PrestoSchema;
@@ -12,20 +12,27 @@ import sqlancer.presto.PrestoSchema.PrestoTable;
 import sqlancer.presto.PrestoToStringVisitor;
 import sqlancer.presto.ast.PrestoExpression;
 
-public final class PrestoIndexGenerator {
+public class PrestoIndexGenerator extends AbstractIndexGenerator<PrestoColumn> {
 
-    private PrestoIndexGenerator() {
+    private final PrestoGlobalState globalState;
+
+    public PrestoIndexGenerator(PrestoGlobalState globalState) {
+        this.globalState = globalState;
+        this.canAffectSchema = true;
+        this.canonicalizeString = false;
     }
 
     public static SQLQueryAdapter getQuery(PrestoGlobalState globalState) {
-        ExpectedErrors errors = new ExpectedErrors();
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE ");
-        if (Randomly.getBoolean()) {
+        return new PrestoIndexGenerator(globalState).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
+        boolean unique = Randomly.getBoolean();
+        if (unique) {
             errors.add("Cant create unique index, table contains duplicate data on indexed column(s)");
-            sb.append("UNIQUE ");
         }
-        sb.append("INDEX ");
+        appendCreateIndex(unique);
         sb.append(Randomly.fromOptions("i0", "i1", "i2", "i3", "i4")); // cannot query this information
         sb.append(" ON ");
         PrestoTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
@@ -44,13 +51,11 @@ public final class PrestoIndexGenerator {
         }
         sb.append(")");
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             PrestoExpression expr = new PrestoTypedExpressionGenerator(globalState).setColumns(table.getColumns())
                     .generateExpression(PrestoSchema.PrestoCompositeDataType.getRandomWithoutNull());
-            sb.append(PrestoToStringVisitor.asString(expr));
+            appendWhereClause(PrestoToStringVisitor.asString(expr));
         }
         errors.add("already exists!");
-        return new SQLQueryAdapter(sb.toString(), errors, true, false);
     }
 
 }

@@ -5,11 +5,12 @@ public class TestConfig {
     public static final String SECONDS = "300";
 
     public static final String CLICKHOUSE_ENV = "CLICKHOUSE_AVAILABLE";
-    public static final String CNOSDB_ENV = "CNOSDB_AVAILABLE";
     public static final String COCKROACHDB_ENV = "COCKROACHDB_AVAILABLE";
     public static final String DATABEND_ENV = "DATABEND_AVAILABLE";
     public static final String DATAFUSION_ENV = "DATAFUSION_AVAILABLE";
     public static final String DORIS_ENV = "DORIS_AVAILABLE";
+    public static final String HIVE_ENV = "HIVE_AVAILABLE";
+    public static final String SPARK_ENV = "SPARK_AVAILABLE";
     public static final String MARIADB_ENV = "MARIADB_AVAILABLE";
     public static final String MATERIALIZE_ENV = "MATERIALIZE_AVAILABLE";
     public static final String MYSQL_ENV = "MYSQL_AVAILABLE";

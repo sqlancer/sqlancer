@@ -34,6 +34,7 @@ public class PostgresAlterTableGenerator {
         ALTER_COLUMN_SET_ATTRIBUTE_OPTION, // ALTER [ COLUMN ] column SET ( attribute_option = value [, ... ] )
         ALTER_COLUMN_RESET_ATTRIBUTE_OPTION, // ALTER [ COLUMN ] column RESET ( attribute_option [, ... ] )
         ALTER_COLUMN_SET_STORAGE, // ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
+        ALTER_COLUMN_DROP_EXPRESSION, // ALTER [ COLUMN ] column DROP EXPRESSION [ IF EXISTS ]
         ADD_TABLE_CONSTRAINT, // ADD table_constraint [ NOT VALID ]
         ADD_TABLE_CONSTRAINT_USING_INDEX, // ADD table_constraint_using_index
         VALIDATE_CONSTRAINT, // VALIDATE CONSTRAINT constraint_name
@@ -48,8 +49,11 @@ public class PostgresAlterTableGenerator {
         SET_LOGGED_UNLOGGED, //
         NOT_OF, //
         OWNER_TO, //
-        REPLICA_IDENTITY
+        REPLICA_IDENTITY, // RENAME COLUMN old_name TO new_name (for views)
+        ALTER_VIEW_RENAME_COLUMN // RENAME COLUMN old_name TO new_name (for views)
     }
+
+    private static final List<Action> VIEW_ACTIONS = List.of(Action.ALTER_VIEW_RENAME_COLUMN);
 
     public PostgresAlterTableGenerator(PostgresTable randomTable, PostgresGlobalState globalState,
             boolean generateOnlyKnown) {
@@ -98,6 +102,20 @@ public class PostgresAlterTableGenerator {
             // make it more likely that the ALTER TABLE succeeds
             action = Randomly.subset(Randomly.smallNumber(), Action.values());
         }
+
+        // If this is a view, only allow view-compatible operations
+        if (randomTable.isView()) {
+            // Remove all non-view operations
+            action.removeIf(a -> !VIEW_ACTIONS.contains(a));
+            // If no view operations remain, add a random view operation
+            if (action.isEmpty()) {
+                action.add(VIEW_ACTIONS.get(r.getInteger(0, VIEW_ACTIONS.size() - 1)));
+            }
+        } else {
+            // Remove view-specific actions if this is a table
+            action.removeIf(VIEW_ACTIONS::contains);
+        }
+
         if (randomTable.getColumns().size() == 1) {
             action.remove(Action.ALTER_TABLE_DROP_COLUMN);
         }
@@ -108,6 +126,9 @@ public class PostgresAlterTableGenerator {
         action.remove(Action.SET_WITH_OIDS);
         if (!randomTable.hasIndexes()) {
             action.remove(Action.ADD_TABLE_CONSTRAINT_USING_INDEX);
+        }
+        if (randomTable.isPartitioned()) {
+            action.remove(Action.SET_LOGGED_UNLOGGED);
         }
         if (action.isEmpty()) {
             throw new IgnoreMeException();
@@ -120,14 +141,24 @@ public class PostgresAlterTableGenerator {
         int i = 0;
         List<Action> action = getActions(errors);
         StringBuilder sb = new StringBuilder();
-        sb.append("ALTER TABLE ");
-        if (Randomly.getBoolean()) {
-            sb.append(" ONLY");
-            errors.add("cannot use ONLY for foreign key on partitioned table");
+
+        // Check if we're dealing with a view operation
+        boolean isViewOperation = action.contains(Action.ALTER_VIEW_RENAME_COLUMN);
+
+        if (isViewOperation) {
+            sb.append("ALTER VIEW ");
+        } else {
+            sb.append("ALTER TABLE ");
+            if (Randomly.getBoolean()) {
+                sb.append(" ONLY");
+                errors.add("cannot use ONLY for foreign key on partitioned table");
+            }
         }
+
         sb.append(" ");
         sb.append(randomTable.getName());
         sb.append(" ");
+
         for (Action a : action) {
             if (i++ != 0) {
                 sb.append(", ");
@@ -206,6 +237,9 @@ public class PostgresAlterTableGenerator {
                     sb.append("DROP NOT NULL");
                     errors.add("is in a primary key");
                     errors.add("is an identity column");
+                    errors.add("is in index used as replica identity");
+                    // PG18 update: otherwise we need to encode contraint inheritance info in PostgreColumn
+                    errors.add("cannot drop inherited constraint");
                 }
                 break;
             case ALTER_COLUMN_SET_STATISTICS:
@@ -249,6 +283,19 @@ public class PostgresAlterTableGenerator {
                 errors.add("can only have storage");
                 errors.add("is an identity column");
                 break;
+            case ALTER_COLUMN_DROP_EXPRESSION:
+                alterColumn(randomTable, sb);
+                sb.append("DROP EXPRESSION");
+                if (Randomly.getBoolean()) {
+                    sb.append(" IF EXISTS");
+                }
+                errors.add("is not a generated column");
+                errors.add("is not a stored generated column");
+                errors.add("cannot drop expression from inherited column");
+                errors.add("cannot drop generation expression from inherited column");
+                errors.add("must be applied to child tables too");
+                errors.add("cannot drop expression from column");
+                break;
             case ADD_TABLE_CONSTRAINT:
                 sb.append("ADD ");
                 sb.append("CONSTRAINT " + r.getAlphabeticChar() + " ");
@@ -257,6 +304,7 @@ public class PostgresAlterTableGenerator {
                 errors.add("multiple primary keys for table");
                 errors.add("could not create unique index");
                 errors.add("contains null values");
+                errors.add("is not marked NOT NULL");
                 errors.add("cannot cast type");
                 errors.add("unsupported PRIMARY KEY constraint with partition key definition");
                 errors.add("unsupported UNIQUE constraint with partition key definition");
@@ -295,6 +343,7 @@ public class PostgresAlterTableGenerator {
                 errors.add("appears twice in unique constraint");
                 errors.add("appears twice in primary key constraint");
                 errors.add("contains null values");
+                errors.add("is not marked NOT NULL");
                 errors.add("insufficient columns in PRIMARY KEY constraint definition");
                 errors.add("which is part of the partition key");
                 break;
@@ -362,6 +411,17 @@ public class PostgresAlterTableGenerator {
                     errors.add("cannot use partial index");
                     errors.add("cannot use invalid index");
                 }
+                break;
+            case ALTER_VIEW_RENAME_COLUMN:
+                sb.append("RENAME COLUMN ");
+                PostgresColumn columnToRename = randomTable.getRandomColumn();
+                sb.append(columnToRename.getName());
+                sb.append(" TO ");
+                sb.append("new_" + columnToRename.getName() + "_" + r.getInteger(1, 1000));
+                errors.add("column does not exist");
+                errors.add("column name already exists");
+                errors.add("cannot rename column of view");
+                errors.add("permission denied");
                 break;
             default:
                 throw new AssertionError(a);

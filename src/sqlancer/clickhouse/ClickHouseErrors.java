@@ -41,6 +41,7 @@ public final class ClickHouseErrors {
                 "Cannot convert out of range floating point value to integer type",
                 "Unexpected inf or nan to integer conversion", "No such name in Block::erase", // https://github.com/ClickHouse/ClickHouse/issues/42769
                 "EMPTY_LIST_OF_COLUMNS_QUERIED", // https://github.com/ClickHouse/ClickHouse/issues/43003
+                "EMPTY_LIST_OF_COLUMNS_PASSED", // https://github.com/ClickHouse/ClickHouse/pull/81835
                 "cannot get JOIN keys. (INVALID_JOIN_ON_EXPRESSION)", "AMBIGUOUS_IDENTIFIER", "CYCLIC_ALIASES",
                 "Positional argument numeric constant expression is not representable as",
                 "Positional argument must be constant with numeric type", " is out of bounds. Expected in range",

@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractIndexGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.common.schema.AbstractTableColumn;
 import sqlancer.yugabyte.ysql.YSQLErrors;
@@ -17,19 +17,21 @@ import sqlancer.yugabyte.ysql.YSQLSchema.YSQLTable;
 import sqlancer.yugabyte.ysql.YSQLVisitor;
 import sqlancer.yugabyte.ysql.ast.YSQLExpression;
 
-public final class YSQLIndexGenerator {
+public class YSQLIndexGenerator extends AbstractIndexGenerator<YSQLColumn> {
 
-    private YSQLIndexGenerator() {
+    private final YSQLGlobalState globalState;
+
+    public YSQLIndexGenerator(YSQLGlobalState globalState) {
+        this.globalState = globalState;
     }
 
     public static SQLQueryAdapter generate(YSQLGlobalState globalState) {
-        ExpectedErrors errors = new ExpectedErrors();
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE");
-        if (Randomly.getBoolean()) {
-            sb.append(" UNIQUE");
-        }
-        sb.append(" INDEX ");
+        return new YSQLIndexGenerator(globalState).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
+        appendCreateIndex(Randomly.getBoolean());
         YSQLTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO: materialized
         // views
         String indexName = getNewIndexName(randomTable);
@@ -91,10 +93,9 @@ public final class YSQLIndexGenerator {
             sb.append(")");
         }
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             YSQLExpression expr = new YSQLExpressionGenerator(globalState).setColumns(randomTable.getColumns())
                     .setGlobalState(globalState).generateExpression(YSQLDataType.BOOLEAN);
-            sb.append(YSQLVisitor.asString(expr));
+            appendWhereClause(YSQLVisitor.asString(expr));
         }
         errors.add("already contains data"); // CONCURRENT INDEX failed
         errors.add("You might need to add explicit type casts");
@@ -122,7 +123,6 @@ public final class YSQLIndexGenerator {
         errors.add("result of range difference would not be contiguous");
         errors.add("which is part of the partition key");
         YSQLErrors.addCommonExpressionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     private static String getNewIndexName(YSQLTable randomTable) {

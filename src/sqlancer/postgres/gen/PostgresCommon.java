@@ -48,6 +48,7 @@ public final class PostgresCommon {
 
         errors.add("is not commutative"); // exclude
         errors.add("operator requires run-time type coercion"); // exclude
+        errors.add("partitioned tables cannot be unlogged");
 
         return errors;
     }
@@ -59,6 +60,8 @@ public final class PostgresCommon {
     public static List<String> getCommonExpressionErrors() {
         ArrayList<String> errors = new ArrayList<>();
 
+        errors.add("for encoding \"SQL_ASCII\" does not exist");
+        errors.add("invalid byte sequence for encoding");
         errors.add("You might need to add explicit type casts");
         errors.add("invalid regular expression");
         errors.add("could not determine which collation to use");
@@ -119,6 +122,7 @@ public final class PostgresCommon {
         errors.add("cannot use \"S\" and \"PL\" together");
         errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
         errors.add("is not a number");
+        errors.add("\"EEEE\" must be the last pattern used");
 
         return errors;
     }
@@ -434,6 +438,8 @@ public final class PostgresCommon {
             }
             break;
         case EXCLUDE:
+            errors.add("exclusion constraints are not supported on partitioned tables");
+            errors.add("unsupported EXCLUDE constraint with partition key definition");
             sb.append("EXCLUDE ");
             sb.append("(");
             // TODO [USING index_method ]
@@ -454,7 +460,6 @@ public final class PostgresCommon {
             errors.add("exclusion constraints are not supported on partitioned tables");
             errors.add("The exclusion operator must be related to the index operator class for the constraint");
             errors.add("could not create exclusion constraint");
-            // TODO: index parameters
             if (Randomly.getBoolean()) {
                 sb.append(" WHERE ");
                 sb.append("(");

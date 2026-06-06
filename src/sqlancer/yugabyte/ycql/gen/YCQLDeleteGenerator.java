@@ -1,31 +1,34 @@
 package sqlancer.yugabyte.ycql.gen;
 
 import sqlancer.Randomly;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractDeleteGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.yugabyte.ycql.YCQLErrors;
 import sqlancer.yugabyte.ycql.YCQLProvider.YCQLGlobalState;
 import sqlancer.yugabyte.ycql.YCQLSchema.YCQLTable;
 import sqlancer.yugabyte.ycql.YCQLToStringVisitor;
 
-public final class YCQLDeleteGenerator {
+public final class YCQLDeleteGenerator extends AbstractDeleteGenerator {
 
-    private YCQLDeleteGenerator() {
+    private final YCQLGlobalState globalState;
+
+    private YCQLDeleteGenerator(YCQLGlobalState globalState) {
+        this.globalState = globalState;
     }
 
     public static SQLQueryAdapter generate(YCQLGlobalState globalState) {
-        StringBuilder sb = new StringBuilder("DELETE FROM ");
-        ExpectedErrors errors = new ExpectedErrors();
+        return new YCQLDeleteGenerator(globalState).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
         YCQLTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        sb.append(table.getName());
+        appendDeleteFromTable(table.getName());
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
-            sb.append(YCQLToStringVisitor.asString(
+            appendWhereClause(YCQLToStringVisitor.asString(
                     new YCQLExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression()));
         }
-
         YCQLErrors.addExpressionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
 }

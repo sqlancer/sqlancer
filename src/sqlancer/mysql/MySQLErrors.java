@@ -33,6 +33,7 @@ public final class MySQLErrors {
         }
 
         errors.add(Pattern.compile("Unknown column '.*' in 'order clause'"));
+        errors.add(Pattern.compile("Unknown column '.*' in 'EXISTS subquery'"));
 
         return errors;
     }
@@ -53,6 +54,7 @@ public final class MySQLErrors {
         errors.add("Data truncated for functional index");
         errors.add("cannot be null");
         errors.add("Incorrect decimal value");
+        errors.add("The value specified for generated column");
 
         return errors;
     }

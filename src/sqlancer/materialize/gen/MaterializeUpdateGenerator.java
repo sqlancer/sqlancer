@@ -20,6 +20,7 @@ public final class MaterializeUpdateGenerator extends AbstractUpdateGenerator<Ma
 
     private MaterializeUpdateGenerator(MaterializeGlobalState globalState) {
         this.globalState = globalState;
+        this.canAffectSchema = true;
         errors.addAll(Arrays.asList("conflicting key value violates exclusion constraint",
                 "reached maximum value of sequence", "violates foreign key constraint", "violates not-null constraint",
                 "violates unique constraint", "out of range", "does not support casting", "must be type boolean",
@@ -29,10 +30,11 @@ public final class MaterializeUpdateGenerator extends AbstractUpdateGenerator<Ma
     }
 
     public static SQLQueryAdapter create(MaterializeGlobalState globalState) {
-        return new MaterializeUpdateGenerator(globalState).generate();
+        return new MaterializeUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         randomTable = globalState.getSchema().getRandomTable(t -> t.isInsertable());
         List<MaterializeColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
         sb.append("UPDATE ");
@@ -50,13 +52,10 @@ public final class MaterializeUpdateGenerator extends AbstractUpdateGenerator<Ma
         errors.add("but expression is of type");
         MaterializeCommon.addCommonExpressionErrors(errors);
         if (!Randomly.getBooleanWithSmallProbability()) {
-            sb.append(" WHERE ");
             MaterializeExpression where = MaterializeExpressionGenerator.generateExpression(globalState,
                     randomTable.getColumns(), MaterializeDataType.BOOLEAN);
-            sb.append(MaterializeVisitor.asString(where));
+            appendWhereClause(MaterializeVisitor.asString(where));
         }
-
-        return new SQLQueryAdapter(sb.toString(), errors, true);
     }
 
     @Override

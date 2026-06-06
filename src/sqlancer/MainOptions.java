@@ -123,6 +123,9 @@ public class MainOptions {
     @Parameter(names = "--database-prefix", description = "The prefix used for each database created")
     private String databasePrefix = "database"; // NOPMD
 
+    @Parameter(names = "--serialize-reproduce-state", description = "Serialize the state to reproduce")
+    private boolean serializeReproduceState = false; // NOPMD
+
     @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
     private boolean useReducer = false; // NOPMD
 
@@ -302,6 +305,10 @@ public class MainOptions {
 
     public boolean performConnectionTest() {
         return useConnectionTest;
+    }
+
+    public boolean serializeReproduceState() {
+        return serializeReproduceState;
     }
 
     public boolean useReducer() {

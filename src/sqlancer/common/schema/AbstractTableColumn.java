@@ -12,6 +12,10 @@ public class AbstractTableColumn<T extends AbstractTable<?, ?, ?>, U> implements
         this.type = type;
     }
 
+    public boolean isPrimaryKey() {
+        return false;
+    }
+
     public String getName() {
         return name;
     }

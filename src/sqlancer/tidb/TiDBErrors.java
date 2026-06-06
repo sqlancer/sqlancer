@@ -108,6 +108,9 @@ public final class TiDBErrors {
         errors.add("is not valid for CHARACTER SET");
         errors.add("for function inet_aton");
         errors.add("'Empty pattern is invalid' from regexp");
+        errors.add("Data too long for expression index");
+        errors.add("Data too long for column");
+        errors.add("Data Too Long");
 
         return errors;
     }

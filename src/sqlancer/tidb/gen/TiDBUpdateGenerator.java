@@ -1,6 +1,5 @@
 package sqlancer.tidb.gen;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import sqlancer.Randomly;
@@ -22,11 +21,12 @@ public final class TiDBUpdateGenerator extends AbstractUpdateGenerator<TiDBColum
         this.globalState = globalState;
     }
 
-    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
-        return new TiDBUpdateGenerator(globalState).generate();
+    public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) {
+        return new TiDBUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() throws SQLException {
+    @Override
+    public void buildStatement() {
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<TiDBColumn> columns = table.getRandomNonEmptyColumnSubset();
         gen = new TiDBExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -35,13 +35,10 @@ public final class TiDBUpdateGenerator extends AbstractUpdateGenerator<TiDBColum
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             TiDBErrors.addExpressionErrors(errors);
-            sb.append(TiDBVisitor.asString(gen.generateExpression()));
+            appendWhereClause(TiDBVisitor.asString(gen.generateExpression()));
         }
         TiDBErrors.addInsertErrors(errors);
-
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

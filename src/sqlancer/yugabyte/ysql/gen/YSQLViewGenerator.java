@@ -28,19 +28,11 @@ public final class YSQLViewGenerator {
             }
         }
         sb.append(" VIEW ");
-        int i = 0;
-        String[] name = new String[1];
-        while (true) {
-            name[0] = "v" + i++;
-            if (globalState.getSchema().getDatabaseTables().stream()
-                    .noneMatch(tab -> tab.getName().contentEquals(name[0]))) {
-                break;
-            }
-        }
-        sb.append(name[0]);
+        String name = globalState.getSchema().getFreeViewName();
+        sb.append(name);
         sb.append("(");
         int nrColumns = Randomly.smallNumber() + 1;
-        for (i = 0; i < nrColumns; i++) {
+        for (int i = 0; i < nrColumns; i++) {
             if (i != 0) {
                 sb.append(", ");
             }

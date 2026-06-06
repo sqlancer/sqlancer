@@ -76,6 +76,7 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
             return precision;
         }
 
+        @Override
         public boolean isPrimaryKey() {
             return isPrimaryKey;
         }
@@ -192,10 +193,6 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
         public MySQLEngine getEngine() {
             return engine;
-        }
-
-        public boolean hasPrimaryKey() {
-            return getColumns().stream().anyMatch(c -> c.isPrimaryKey());
         }
 
     }

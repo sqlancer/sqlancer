@@ -7,6 +7,8 @@ public class PostgresOrderByTerm implements PostgresExpression {
 
     private final PostgresExpression expr;
     private final PostgresOrder order;
+    private final int limit;
+    private final boolean ties;
 
     public enum PostgresOrder {
         ASC, DESC;
@@ -22,6 +24,15 @@ public class PostgresOrderByTerm implements PostgresExpression {
         }
         this.expr = expr;
         this.order = order;
+
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            this.limit = (int) Randomly.getPositiveOrZeroNonCachedInteger();
+            this.ties = true;
+        } else {
+            this.limit = 0;
+            this.ties = false;
+        }
+
     }
 
     // Constructor for window functions, might be removed in the future to have only one constructor
@@ -31,6 +42,8 @@ public class PostgresOrderByTerm implements PostgresExpression {
         }
         this.expr = expr;
         this.order = ascending ? PostgresOrder.ASC : PostgresOrder.DESC;
+        this.limit = 0;
+        this.ties = false;
     }
 
     public PostgresExpression getExpr() {
@@ -57,6 +70,10 @@ public class PostgresOrderByTerm implements PostgresExpression {
 
     @Override
     public String toString() {
-        return String.format("%s %s", expr, order);
+        if (ties) {
+            return String.format("%s %s FETCH FIRST %d WITH TIES", expr, order, limit);
+        } else {
+            return String.format("%s %s", expr, order);
+        }
     }
 }

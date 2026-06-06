@@ -1,5 +1,6 @@
 package sqlancer.citus.gen;
 
+import sqlancer.citus.CitusBugs;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema;
@@ -18,6 +19,14 @@ public class CitusTableGenerator extends PostgresTableGenerator {
     public static SQLQueryAdapter generate(String tableName, PostgresSchema newSchema, boolean generateOnlyKnown,
             PostgresGlobalState globalState) {
         return new CitusTableGenerator(tableName, newSchema, generateOnlyKnown, globalState).generate();
+    }
+
+    @Override
+    protected void generateInherits() {
+        if (CitusBugs.bug8553) {
+            return;
+        }
+        super.generateInherits();
     }
 
 }

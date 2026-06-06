@@ -1,10 +1,12 @@
 package sqlancer.tidb.gen;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.common.schema.TableIndex;
 import sqlancer.tidb.TiDBErrors;
 import sqlancer.tidb.TiDBProvider.TiDBGlobalState;
 import sqlancer.tidb.TiDBSchema.TiDBTable;
@@ -17,12 +19,17 @@ public final class TiDBAnalyzeTableGenerator {
     public static SQLQueryAdapter getQuery(TiDBGlobalState globalState) throws SQLException {
         ExpectedErrors errors = ExpectedErrors.newErrors().with(TiDBErrors.getExpressionErrors()).build();
         TiDBTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        boolean analyzeIndex = !table.getIndexes().isEmpty() && Randomly.getBoolean();
+        List<TableIndex> indexes = table.getIndexes();
+        indexes.removeIf(index -> index.getIndexName().contains("PRIMARY"));
+        boolean analyzeIndex = !indexes.isEmpty() && Randomly.getBoolean();
         StringBuilder sb = new StringBuilder("ANALYZE TABLE ");
         sb.append(table.getName());
         if (analyzeIndex) {
             sb.append(" INDEX ");
-            sb.append(table.getRandomIndex().getIndexName());
+            sb.append(Randomly.fromList(indexes).getIndexName());
+        }
+        if (!analyzeIndex && Randomly.getBoolean()) {
+            sb.append(" ALL COLUMNS");
         }
         if (Randomly.getBoolean()) {
             sb.append(" WITH ");

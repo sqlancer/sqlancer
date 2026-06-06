@@ -268,7 +268,7 @@ public class QuestDBSchema extends AbstractSchema<QuestDBGlobalState, QuestDBTab
                 continue; // TODO: unexpected?
             }
             List<QuestDBColumn> databaseColumns = getTableColumns(con, tableName);
-            boolean isView = tableName.startsWith("v");
+            boolean isView = matchesViewName(tableName);
             QuestDBTable t = new QuestDBTable(tableName, databaseColumns, isView);
             for (QuestDBColumn c : databaseColumns) {
                 c.setTable(t);

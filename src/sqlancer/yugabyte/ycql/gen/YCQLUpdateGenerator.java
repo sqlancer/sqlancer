@@ -22,10 +22,11 @@ public final class YCQLUpdateGenerator extends AbstractUpdateGenerator<YCQLColum
     }
 
     public static SQLQueryAdapter getQuery(YCQLGlobalState globalState) {
-        return new YCQLUpdateGenerator(globalState).generate();
+        return new YCQLUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         YCQLTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<YCQLColumn> columns = table.getRandomNonEmptyColumnSubset();
         gen = new YCQLExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -41,7 +42,6 @@ public final class YCQLUpdateGenerator extends AbstractUpdateGenerator<YCQLColum
         errors.add("Missing Argument for Primary Key");
 
         YCQLErrors.addExpressionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

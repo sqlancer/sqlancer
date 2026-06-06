@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import com.beust.jcommander.JCommander.Builder;
 
 import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
-import sqlancer.cnosdb.CnosDBProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
@@ -34,6 +34,7 @@ import sqlancer.databend.DatabendProvider;
 import sqlancer.doris.DorisProvider;
 import sqlancer.duckdb.DuckDBProvider;
 import sqlancer.h2.H2Provider;
+import sqlancer.hive.HiveProvider;
 import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.mariadb.MariaDBProvider;
 import sqlancer.materialize.MaterializeProvider;
@@ -42,6 +43,7 @@ import sqlancer.oceanbase.OceanBaseProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.presto.PrestoProvider;
 import sqlancer.questdb.QuestDBProvider;
+import sqlancer.spark.SparkProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
 import sqlancer.yugabyte.ycql.YCQLProvider;
@@ -77,6 +79,7 @@ public final class Main {
         public FileWriter currentFileWriter;
         private FileWriter queryPlanFileWriter;
         private FileWriter reduceFileWriter;
+        private Path reproduceFilePath;
 
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
@@ -126,7 +129,13 @@ public final class Main {
                     reduceFileDir.mkdir();
                 }
                 this.reduceFile = new File(reduceFileDir, databaseName + "-reduce.log");
-
+            }
+            if (options.serializeReproduceState()) {
+                File reproduceFileDir = new File(dir, "reproduce");
+                if (!reproduceFileDir.exists()) {
+                    reproduceFileDir.mkdir();
+                }
+                reproduceFilePath = new File(reproduceFileDir, databaseName + ".ser").toPath();
             }
             this.databaseProvider = provider;
         }
@@ -340,6 +349,10 @@ public final class Main {
             result = result.replaceAll("i[0-9]+", "i0"); // Avoid duplicate indexes
             return result + "\n";
         }
+
+        public Path getReproduceFilePath() {
+            return reproduceFilePath;
+        }
     }
 
     public static class QueryManager<C extends SQLancerDBConnection> {
@@ -460,6 +473,9 @@ public final class Main {
                     throw new AssertionError(e);
                 }
 
+                if (options.serializeReproduceState() && reproducer != null) {
+                    stateToRepro.serialize(logger.getReproduceFilePath());
+                }
                 if (options.reduceAST() && !options.useReducer()) {
                     throw new AssertionError("To reduce AST, use-reducer option must be enabled first");
                 }
@@ -674,6 +690,10 @@ public final class Main {
                         executor.getStateToReproduce().exception = reduce.getMessage();
                         executor.getLogger().logFileWriter = null;
                         executor.getLogger().logException(reduce, executor.getStateToReproduce());
+                        if (options.serializeReproduceState()) {
+                            executor.getStateToReproduce().logStatement(reduce.getMessage()); // add the error statement
+                            executor.getStateToReproduce().serialize(executor.getLogger().getReproduceFilePath());
+                        }
                         return false;
                     } finally {
                         try {
@@ -729,12 +749,13 @@ public final class Main {
                     "No DBMS implementations (i.e., instantiations of the DatabaseProvider class) were found. You likely ran into an issue described in https://github.com/sqlancer/sqlancer/issues/799. As a workaround, I now statically load all supported providers as of June 7, 2023.");
             providers.add(new CitusProvider());
             providers.add(new ClickHouseProvider());
-            providers.add(new CnosDBProvider());
             providers.add(new CockroachDBProvider());
             providers.add(new DatabendProvider());
             providers.add(new DorisProvider());
             providers.add(new DuckDBProvider());
             providers.add(new H2Provider());
+            providers.add(new HiveProvider());
+            providers.add(new SparkProvider());
             providers.add(new HSQLDBProvider());
             providers.add(new MariaDBProvider());
             providers.add(new MaterializeProvider());

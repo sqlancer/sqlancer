@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.DBMSCommon;
-import sqlancer.common.query.ExpectedErrors;
+import sqlancer.common.gen.AbstractIndexGenerator;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
@@ -15,9 +15,12 @@ import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
 import sqlancer.postgres.ast.PostgresExpression;
 
-public final class PostgresIndexGenerator {
+public class PostgresIndexGenerator extends AbstractIndexGenerator<PostgresColumn> {
 
-    private PostgresIndexGenerator() {
+    private final PostgresGlobalState globalState;
+
+    public PostgresIndexGenerator(PostgresGlobalState globalState) {
+        this.globalState = globalState;
     }
 
     public enum IndexType {
@@ -25,13 +28,12 @@ public final class PostgresIndexGenerator {
     }
 
     public static SQLQueryAdapter generate(PostgresGlobalState globalState) {
-        ExpectedErrors errors = new ExpectedErrors();
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE");
-        if (Randomly.getBoolean()) {
-            sb.append(" UNIQUE");
-        }
-        sb.append(" INDEX ");
+        return new PostgresIndexGenerator(globalState).getStatement();
+    }
+
+    @Override
+    public void buildStatement() {
+        appendCreateIndex(Randomly.getBoolean());
         /*
          * Commented out as a workaround for https://www.postgresql.org/message-id/CA%2Bu7OA4XYhc-
          * qyCgJqwwgMGZDWAyeH821oa5oMzm_HEifZ4BeA%40mail.gmail.com
@@ -105,10 +107,9 @@ public final class PostgresIndexGenerator {
             sb.append(")");
         }
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             PostgresExpression expr = new PostgresExpressionGenerator(globalState).setColumns(randomTable.getColumns())
                     .setGlobalState(globalState).generateExpression(PostgresDataType.BOOLEAN);
-            sb.append(PostgresVisitor.asString(expr));
+            appendWhereClause(PostgresVisitor.asString(expr));
         }
         errors.add("already contains data"); // CONCURRENT INDEX failed
         errors.add("You might need to add explicit type casts");
@@ -136,7 +137,6 @@ public final class PostgresIndexGenerator {
         errors.add("result of range difference would not be contiguous");
         errors.add("which is part of the partition key");
         PostgresCommon.addCommonExpressionErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     private static String getNewIndexName(PostgresTable randomTable) {

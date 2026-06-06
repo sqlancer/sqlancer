@@ -14,14 +14,17 @@ import sqlancer.sqlite3.gen.SQLite3ExpressionGenerator;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Column;
 import sqlancer.sqlite3.schema.SQLite3Schema.SQLite3Table;
 
-public class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Column> {
+public final class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Column> {
 
     private final SQLite3GlobalState globalState;
     private final Randomly r;
+    private final SQLite3Table table;
 
-    public SQLite3UpdateGenerator(SQLite3GlobalState globalState, Randomly r) {
+    private SQLite3UpdateGenerator(SQLite3GlobalState globalState, SQLite3Table table) {
         this.globalState = globalState;
-        this.r = r;
+        this.r = globalState.getRandomly();
+        this.table = table;
+        this.canAffectSchema = true;
     }
 
     public static SQLQueryAdapter updateRow(SQLite3GlobalState globalState) {
@@ -31,11 +34,11 @@ public class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Colum
     }
 
     public static SQLQueryAdapter updateRow(SQLite3GlobalState globalState, SQLite3Table table) {
-        SQLite3UpdateGenerator generator = new SQLite3UpdateGenerator(globalState, globalState.getRandomly());
-        return generator.generate(table);
+        return new SQLite3UpdateGenerator(globalState, table).getStatement();
     }
 
-    private SQLQueryAdapter generate(SQLite3Table table) {
+    @Override
+    public void buildStatement() {
         List<SQLite3Column> columnsToUpdate = Randomly.nonEmptySubsetPotentialDuplicates(table.getColumns());
         sb.append("UPDATE ");
         if (Randomly.getBoolean()) {
@@ -73,10 +76,9 @@ public class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Colum
         }
 
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             String whereClause = SQLite3Visitor.asString(
                     new SQLite3ExpressionGenerator(globalState).setColumns(table.getColumns()).generateExpression());
-            sb.append(whereClause);
+            appendWhereClause(whereClause);
         }
 
         // ORDER BY and LIMIT are only supported by enabling a compile-time option
@@ -98,8 +100,6 @@ public class SQLite3UpdateGenerator extends AbstractUpdateGenerator<SQLite3Colum
         SQLite3Errors.addInsertNowErrors(errors);
         SQLite3Errors.addExpectedExpressionErrors(errors);
         SQLite3Errors.addDeleteErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors, true /* column could have an ON UPDATE clause */);
-
     }
 
     @Override

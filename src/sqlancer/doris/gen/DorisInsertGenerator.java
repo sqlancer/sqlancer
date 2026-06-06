@@ -1,11 +1,9 @@
 package sqlancer.doris.gen;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import sqlancer.Randomly;
 import sqlancer.common.gen.AbstractInsertGenerator;
-import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.doris.DorisErrors;
 import sqlancer.doris.DorisProvider.DorisGlobalState;
@@ -16,28 +14,21 @@ import sqlancer.doris.visitor.DorisToStringVisitor;
 public class DorisInsertGenerator extends AbstractInsertGenerator<DorisColumn> {
 
     private final DorisGlobalState globalState;
-    private final ExpectedErrors errors = new ExpectedErrors();
 
     public DorisInsertGenerator(DorisGlobalState globalState) {
         this.globalState = globalState;
     }
 
     public static SQLQueryAdapter getQuery(DorisGlobalState globalState) {
-        return new DorisInsertGenerator(globalState).generate();
+        return new DorisInsertGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
-        sb.append("INSERT INTO ");
+    @Override
+    public void buildStatement() {
         DorisTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
-        List<DorisColumn> columns = table.getRandomNonEmptyInsertColumns();
-        sb.append(table.getName());
-        sb.append(" (");
-        sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
-        sb.append(")");
-        sb.append(" VALUES ");
-        insertColumns(columns);
+        List<DorisColumn> columns = table.getRandomNonEmptyColumnSubset();
+        buildInsertInto(table.getName(), columns);
         DorisErrors.addInsertErrors(errors);
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

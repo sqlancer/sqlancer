@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.common.ast.newast.Select;
 import sqlancer.sqlite3.SQLite3Visitor;
 import sqlancer.sqlite3.ast.SQLite3Expression.Join;
@@ -24,6 +25,7 @@ public class SQLite3Select extends SQLite3Expression
     private List<SQLite3Expression> fetchColumns = Collections.emptyList();
     private List<Join> joinStatements = Collections.emptyList();
     private SQLite3Expression havingClause;
+    private SQLite3WithClause withClause;
 
     public SQLite3Select() {
     }
@@ -42,6 +44,7 @@ public class SQLite3Select extends SQLite3Expression
             joinStatements.add(new Join(j));
         }
         havingClause = other.havingClause;
+        withClause = other.withClause;
     }
 
     public enum SelectType {
@@ -160,5 +163,36 @@ public class SQLite3Select extends SQLite3Expression
     @Override
     public String asString() {
         return SQLite3Visitor.asString(this);
+    }
+
+    public void setWithClause(SQLite3WithClause withClause) {
+        this.withClause = withClause;
+    }
+
+    public void updateWithClauseRight(SQLite3Expression withClauseRight) {
+        this.withClause.updateRight(withClauseRight);
+    }
+
+    public SQLite3Expression getWithClause() {
+        return this.withClause;
+    }
+
+    // This method is used in CODDTest to test subquery by replacing a table name
+    // in the SELECT clause with a derived table expression.
+    public void replaceFromTable(String tableName, SQLite3Expression newFromExpression) {
+        int replaceIdx = -1;
+        for (int i = 0; i < fromList.size(); ++i) {
+            SQLite3Expression f = fromList.get(i);
+            if (f instanceof SQLite3TableReference) {
+                SQLite3TableReference tableRef = (SQLite3TableReference) f;
+                if (tableRef.getTable().getName().equals(tableName)) {
+                    replaceIdx = i;
+                }
+            }
+        }
+        if (replaceIdx == -1) {
+            throw new IgnoreMeException();
+        }
+        fromList.set(replaceIdx, newFromExpression);
     }
 }

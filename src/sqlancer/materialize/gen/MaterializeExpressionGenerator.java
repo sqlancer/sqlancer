@@ -600,6 +600,7 @@ public class MaterializeExpressionGenerator implements ExpressionGenerator<Mater
             }
             select.setSelectType(SelectType.ALL);
         }
+        select.setWhereClause(whereCondition);
 
         return select.asString();
     }

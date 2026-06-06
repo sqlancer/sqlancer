@@ -23,10 +23,11 @@ public class OceanBaseUpdateGenerator extends AbstractUpdateGenerator<OceanBaseC
     }
 
     public static SQLQueryAdapter update(OceanBaseGlobalState globalState) {
-        return new OceanBaseUpdateGenerator(globalState).generate();
+        return new OceanBaseUpdateGenerator(globalState).getStatement();
     }
 
-    private SQLQueryAdapter generate() {
+    @Override
+    public void buildStatement() {
         OceanBaseSchema.OceanBaseTable table = globalState.getSchema().getRandomTable(t -> !t.isView());
         List<OceanBaseSchema.OceanBaseColumn> columns = table.getRandomNonEmptyColumnSubset();
         gen = new OceanBaseExpressionGenerator(globalState).setColumns(table.getColumns());
@@ -38,15 +39,12 @@ public class OceanBaseUpdateGenerator extends AbstractUpdateGenerator<OceanBaseC
         sb.append(" SET ");
         updateColumns(columns);
         if (Randomly.getBoolean()) {
-            sb.append(" WHERE ");
             OceanBaseErrors.addExpressionErrors(errors);
-            sb.append(OceanBaseVisitor.asString(gen.generateExpression()));
+            appendWhereClause(OceanBaseVisitor.asString(gen.generateExpression()));
             errors.add("Data Too Long");
         }
         errors.add("Duplicated primary key");
         OceanBaseErrors.addInsertErrors(errors);
-
-        return new SQLQueryAdapter(sb.toString(), errors);
     }
 
     @Override

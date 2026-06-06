@@ -95,6 +95,10 @@ public abstract class AbstractTable<C extends AbstractTableColumn<?, ?>, I exten
         return isView;
     }
 
+    public boolean hasPrimaryKey() {
+        return columns.stream().anyMatch(c -> c.isPrimaryKey());
+    }
+
     public String getFreeColumnName() {
         int i = 0;
         if (Randomly.getBooleanWithRatherLowProbability()) {
