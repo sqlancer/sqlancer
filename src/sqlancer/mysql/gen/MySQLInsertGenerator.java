@@ -100,6 +100,8 @@ public class MySQLInsertGenerator {
                         } else if (constExpr instanceof MySQLConstant.MySQLDoubleConstant) {
                             double value = ((MySQLConstant.MySQLDoubleConstant) constExpr).getDouble();
                             reject = value >= 0.5 && value < 1.5;
+                        } else if (constExpr instanceof MySQLConstant.MySQLTextConstant) { // reject strings, which may be implicitly cast to 1
+                            reject = true;
                         }
                         if (!reject) {
                             break;
@@ -116,6 +118,8 @@ public class MySQLInsertGenerator {
                         } else if (constExpr instanceof MySQLConstant.MySQLDoubleConstant) {
                             double value = ((MySQLConstant.MySQLDoubleConstant) constExpr).getDouble();
                             reject = value >= -0.5 && value < 0.5;
+                        } else if (constExpr instanceof MySQLConstant.MySQLTextConstant) { // reject strings, which may be implicitly cast to 0
+                            reject = true;
                         }
                         if (!reject) {
                             break;
