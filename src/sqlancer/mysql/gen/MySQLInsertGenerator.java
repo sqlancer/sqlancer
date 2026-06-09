@@ -89,11 +89,13 @@ public class MySQLInsertGenerator {
                     sb.append(", ");
                 }
                 MySQLExpression constExpr;
-                // Bug workaround: for integer columns, reject numeric values that round to 1. Regenerate until valid.
-                if (MySQLBugs.bug120711 && columns.get(c).getType() == MySQLDataType.INT) {
-                    while (true) {
-                        constExpr = gen.generateConstant();
-                        boolean reject = false;
+                // loop to regenerate until expression is valid (for bug workarounds)
+                while (true) {
+                    constExpr = gen.generateConstant();
+                    boolean reject = false;
+
+                    // Bug workaround: for integer columns, reject values that round to 1
+                    if (!reject && MySQLBugs.bug120711 && columns.get(c).getType() == MySQLDataType.INT) {
                         if (constExpr instanceof MySQLConstant.MySQLIntConstant) {
                             long value = ((MySQLConstant.MySQLIntConstant) constExpr).getInt();
                             reject = value == 1;
@@ -103,15 +105,10 @@ public class MySQLInsertGenerator {
                         } else if (constExpr instanceof MySQLConstant.MySQLTextConstant) { // reject strings, which may be implicitly cast to 1
                             reject = true;
                         }
-                        if (!reject) {
-                            break;
-                        }
                     }
-                // Bug workaround: for decimal columns, reject values that round to 0. Regenerate until valid.
-                } else if (MySQLBugs.bug120710 && columns.get(c).getType() == MySQLDataType.DECIMAL) {
-                    while (true) {
-                        constExpr = gen.generateConstant();
-                        boolean reject = false;
+
+                    // Bug workaround: for decimal columns, reject values that round to 0
+                    if (!reject && MySQLBugs.bug120710 && columns.get(c).getType() == MySQLDataType.DECIMAL) {
                         if (constExpr instanceof MySQLConstant.MySQLIntConstant) {
                             long value = ((MySQLConstant.MySQLIntConstant) constExpr).getInt();
                             reject = value == 0;
@@ -121,12 +118,11 @@ public class MySQLInsertGenerator {
                         } else if (constExpr instanceof MySQLConstant.MySQLTextConstant) { // reject strings, which may be implicitly cast to 0
                             reject = true;
                         }
-                        if (!reject) {
-                            break;
-                        }
                     }
-                } else {
-                    constExpr = gen.generateConstant();
+
+                    if (!reject) {
+                        break;
+                    }
                 }
                 sb.append(MySQLVisitor.asString(constExpr));
             }
