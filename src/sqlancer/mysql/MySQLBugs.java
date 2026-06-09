@@ -45,6 +45,10 @@ public final class MySQLBugs {
     // Creating an index on an integer-type column, then inserting a value which rounds to 1, causes result set mismatch.
     public static boolean bug120711 = true;
 
+    // https://bugs.mysql.com/bug.php?id=120712
+    // Creating an index in between two NULL inserts causes inconsistent CERT result.
+    public static boolean bug120712 = true;
+
     private MySQLBugs() {
     }
 

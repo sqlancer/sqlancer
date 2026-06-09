@@ -10,6 +10,7 @@ import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
+import sqlancer.mysql.MySQLOracleFactory;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
@@ -116,6 +117,13 @@ public class MySQLInsertGenerator {
                             double value = ((MySQLConstant.MySQLDoubleConstant) constExpr).getDouble();
                             reject = value >= -0.5 && value < 0.5;
                         } else if (constExpr instanceof MySQLConstant.MySQLTextConstant) { // reject strings, which may be implicitly cast to 0
+                            reject = true;
+                        }
+                    }
+
+                    // Bug workaround: if using CERT oracle, reject NULL values
+                    if (!reject && MySQLBugs.bug120712 && globalState.getDbmsSpecificOptions().getTestOracleFactory().stream().anyMatch(o -> o == MySQLOracleFactory.CERT)) {
+                        if (constExpr instanceof MySQLConstant.MySQLNullConstant) {
                             reject = true;
                         }
                     }
