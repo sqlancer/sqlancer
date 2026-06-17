@@ -24,6 +24,7 @@ public class MySQLInsertGenerator {
     private final StringBuilder sb = new StringBuilder();
     private final ExpectedErrors errors = new ExpectedErrors();
     private final MySQLGlobalState globalState;
+    private static final int MAX_REGENERATION_ATTEMPTS = 100; // for regenerating expression until valid (for bug workarounds)
 
     public MySQLInsertGenerator(MySQLGlobalState globalState, MySQLTable table) {
         this.globalState = globalState;
@@ -91,7 +92,12 @@ public class MySQLInsertGenerator {
                 }
                 MySQLExpression constExpr;
                 // loop to regenerate until expression is valid (for bug workarounds)
+                int regenerationAttempts = 0;
                 while (true) {
+                    regenerationAttempts++;
+                    if (regenerationAttempts > MAX_REGENERATION_ATTEMPTS) {
+                        throw new AssertionError("Exceeded " + MAX_REGENERATION_ATTEMPTS + " attempts while generating constant for column " + columns.get(c).getName());
+                    }
                     constExpr = gen.generateConstant();
                     boolean reject = false;
 
