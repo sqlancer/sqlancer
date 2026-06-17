@@ -360,7 +360,9 @@ public class MySQLTableGenerator {
             if (Randomly.getBoolean() && randomType != MySQLDataType.INT) {
                 sb.append(" UNSIGNED");
             }
-            if (Randomly.getBoolean() && !globalState.getDbmsSpecificOptions().getTestOracleFactory().stream().anyMatch(o -> o == MySQLOracleFactory.TLP_WHERE || o == MySQLOracleFactory.PQS || o == MySQLOracleFactory.DQP)) {
+            if (Randomly.getBoolean() && !globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                    .anyMatch(o -> o == MySQLOracleFactory.TLP_WHERE || o == MySQLOracleFactory.PQS
+                            || o == MySQLOracleFactory.DQP)) {
                 sb.append(" ZEROFILL");
             }
         }

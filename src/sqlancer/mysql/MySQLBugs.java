@@ -38,7 +38,8 @@ public final class MySQLBugs {
     public static boolean bug120710 = true;
 
     // https://bugs.mysql.com/bug.php?id=120711
-    // Creating an index on an integer-type column, then inserting a value which rounds to 1, causes result set mismatch.
+    // Creating an index on an integer-type column, then inserting a value which rounds to 1, causes result set
+    // mismatch.
     public static boolean bug120711 = true;
 
     // https://bugs.mysql.com/bug.php?id=120712

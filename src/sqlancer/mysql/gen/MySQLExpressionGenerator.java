@@ -253,7 +253,9 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
     @Override
     public String generateExplainQuery(MySQLSelect select) {
-        return "EXPLAIN FORMAT=TRADITIONAL " + select.asString(); // as of MySQL 9.5.0, default EXPLAIN format changed from TRADITIONAL to TREE, hence TRADITIONAL must now be specified
+        return "EXPLAIN FORMAT=TRADITIONAL " + select.asString(); // as of MySQL 9.5.0, default EXPLAIN format changed
+                                                                  // from TRADITIONAL to TREE, hence TRADITIONAL must
+                                                                  // now be specified
     }
 
     public MySQLAggregate generateAggregate() {
