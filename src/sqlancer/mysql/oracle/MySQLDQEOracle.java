@@ -467,7 +467,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
     public void addAuxiliaryColumns(AbstractRelationalTable<?, ?, ?> table) throws SQLException {
         String tableName = table.getName();
 
-        String addColumnRowID = String.format("ALTER TABLE %s ADD %s TEXT", tableName, COLUMN_ROWID);
+        String addColumnRowID = String.format("ALTER TABLE %s ADD %s VARCHAR(36)", tableName, COLUMN_ROWID);
         new SQLQueryAdapter(addColumnRowID).execute(state, false);
         state.getState().getLocalState().log(addColumnRowID);
 
