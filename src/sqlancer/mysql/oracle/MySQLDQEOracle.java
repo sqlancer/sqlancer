@@ -71,6 +71,10 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             for (MySQLColumn column : Randomly.nonEmptySubset(mySQLTables.getColumns())) {
                 orderColumns.add(column.getFullQualifiedName());
             }
+            // rowId tiebreaker ensures ORDER BY LIMIT is deterministic when user columns have duplicate values
+            for (MySQLTable table : mySQLTables.getTables()) {
+                orderColumns.add(table.getName() + "." + COLUMN_ROWID);
+            }
 
             if (Randomly.getBooleanWithRatherLowProbability()) {
                 generateLimit = true;
@@ -185,7 +189,13 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
     public String compareSelectAndUpdate(SQLQueryResult selectResult, SQLQueryResult updateResult) {
         if (updateResult.hasEmptyErrors()) {
             if (!selectResult.hasEmptyErrors()) {
-                return "SELECT has errors, but UPDATE does not.";
+                // Tolerate SELECT-only discrepancy errors (e.g. 1292 raised in SELECT but not UPDATE
+                // due to different short-circuit evaluation paths).
+                boolean selectHasNonDiscrepancyErrors = selectResult.getQueryErrors().stream()
+                        .anyMatch(e -> !isKnownSelectDMLDiscrepancy(e));
+                if (selectHasNonDiscrepancyErrors) {
+                    return "SELECT has errors, but UPDATE does not.";
+                }
             }
             if (!selectResult.hasSameAccessedRows(updateResult)) {
                 return "SELECT accessed different rows from UPDATE.";
@@ -201,9 +211,14 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             }
 
             // update errors should all appear in the select errors
+            // WHERE coercion errors (1292, 1366) are skipped: MySQL may raise these in UPDATE but not SELECT
+            // due to differing short-circuit evaluation of type-incompatible literals in the WHERE clause.
             List<SQLQueryError> selectErrors = new ArrayList<>(selectResult.getQueryErrors());
             for (int i = 0; i < updateResult.getQueryErrors().size(); i++) {
                 SQLQueryError updateError = updateResult.getQueryErrors().get(i);
+                if (isKnownSelectDMLDiscrepancy(updateError)) {
+                    continue;
+                }
                 if (!isFound(selectErrors, updateError)) {
                     return "SELECT has different errors from UPDATE.";
                 }
@@ -247,7 +262,13 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
     public String compareSelectAndDelete(SQLQueryResult selectResult, SQLQueryResult deleteResult) {
         if (deleteResult.hasEmptyErrors()) {
             if (!selectResult.hasEmptyErrors()) {
-                return "SELECT has errors, but DELETE does not.";
+                // Tolerate SELECT-only discrepancy errors (e.g. 1292 raised in SELECT but not DELETE
+                // due to different short-circuit evaluation paths).
+                boolean selectHasNonDiscrepancyErrors = selectResult.getQueryErrors().stream()
+                        .anyMatch(e -> !isKnownSelectDMLDiscrepancy(e));
+                if (selectHasNonDiscrepancyErrors) {
+                    return "SELECT has errors, but DELETE does not.";
+                }
             }
             if (!selectResult.hasSameAccessedRows(deleteResult)) {
                 return "SELECT accessed different rows from DELETE.";
@@ -263,9 +284,14 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             }
 
             // delete errors should all appear in the select errors
+            // WHERE coercion errors (1292, 1366) are skipped: MySQL may raise these in DELETE but not SELECT
+            // due to differing short-circuit evaluation of type-incompatible literals in the WHERE clause.
             List<SQLQueryError> selectErrors = new ArrayList<>(selectResult.getQueryErrors());
             for (int i = 0; i < deleteResult.getQueryErrors().size(); i++) {
                 SQLQueryError deleteError = deleteResult.getQueryErrors().get(i);
+                if (isKnownSelectDMLDiscrepancy(deleteError)) {
+                    continue;
+                }
                 if (!isFound(selectErrors, deleteError)) {
                     return "SELECT has different errors from DELETE.";
                 }
@@ -347,6 +373,33 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
         return deleteResult.getQueryErrors().stream().anyMatch(
                 error -> new MySQLErrorCodeStrategy().getDeleteSpecificErrorCodes().contains(error.getCode()));
 
+    }
+
+    /*
+     * Errors that MySQL may raise in UPDATE/DELETE but not SELECT due to different execution paths. These are
+     * acceptable discrepancies and should be skipped when checking that DML errors appear in SELECT errors. They are
+     * not treated as stop errors (hasStopErrors) so row comparison still proceeds normally.
+     *
+     * 1292: Truncated incorrect DOUBLE value — WHERE clause type coercion; MySQL may short-circuit in SELECT but
+     * evaluate fully in UPDATE/DELETE, raising this at ERROR level vs WARNING in SELECT. 1366: Incorrect
+     * integer/decimal/float value for column — same WHERE clause coercion discrepancy. 1030: Got error from storage
+     * engine — raised during functional index maintenance on UPDATE/DELETE; SELECT never writes indexes so cannot
+     * produce this error. 3170: range_optimizer_max_mem_size exceeded — MySQL applies this memory budget differently
+     * for SELECT vs DML; the fallback full-scan still evaluates the WHERE predicate correctly. 3751: Data truncated for
+     * functional index — raised when a functional index expression truncates a value during DML; structurally
+     * impossible in SELECT.
+     */
+    private static boolean isKnownSelectDMLDiscrepancy(SQLQueryError error) {
+        switch (error.getCode()) {
+        case 1030:
+        case 1292:
+        case 1366:
+        case 3170:
+        case 3751:
+            return true;
+        default:
+            return false;
+        }
     }
 
     private boolean hasStopErrors(SQLQueryResult queryResult) {
