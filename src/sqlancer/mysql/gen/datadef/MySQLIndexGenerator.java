@@ -120,6 +120,8 @@ public class MySQLIndexGenerator {
         errors.add("Data truncated for functional index");
         errors.add("used in key specification without a key length");
         errors.add("Row size too large"); // seems to happen together with MIN_ROWS in the table declaration
+        errors.add("in the PARTITION BY KEY() clause is not supported"); // prefix key parts disallowed on
+                                                                         // KEY-partitioned columns
         return new SQLQueryAdapter(string, errors, true);
     }
 
