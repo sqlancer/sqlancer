@@ -211,8 +211,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             }
 
             // update errors should all appear in the select errors
-            // WHERE coercion errors (1292, 1366) are skipped: MySQL may raise these in UPDATE but not SELECT
-            // due to differing short-circuit evaluation of type-incompatible literals in the WHERE clause.
+            // known SELECT/DML discrepancy errors are skipped: see KnownSelectDMLDiscrepancy for the full list.
             List<SQLQueryError> selectErrors = new ArrayList<>(selectResult.getQueryErrors());
             for (int i = 0; i < updateResult.getQueryErrors().size(); i++) {
                 SQLQueryError updateError = updateResult.getQueryErrors().get(i);
@@ -284,8 +283,7 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
             }
 
             // delete errors should all appear in the select errors
-            // WHERE coercion errors (1292, 1366) are skipped: MySQL may raise these in DELETE but not SELECT
-            // due to differing short-circuit evaluation of type-incompatible literals in the WHERE clause.
+            // known SELECT/DML discrepancy errors are skipped: see KnownSelectDMLDiscrepancy for the full list.
             List<SQLQueryError> selectErrors = new ArrayList<>(selectResult.getQueryErrors());
             for (int i = 0; i < deleteResult.getQueryErrors().size(); i++) {
                 SQLQueryError deleteError = deleteResult.getQueryErrors().get(i);
@@ -375,31 +373,36 @@ public class MySQLDQEOracle extends DQEBase<MySQLGlobalState> implements TestOra
 
     }
 
-    /*
-     * Errors that MySQL may raise in UPDATE/DELETE but not SELECT due to different execution paths. These are
-     * acceptable discrepancies and should be skipped when checking that DML errors appear in SELECT errors. They are
-     * not treated as stop errors (hasStopErrors) so row comparison still proceeds normally.
-     *
-     * 1292: Truncated incorrect DOUBLE value — WHERE clause type coercion; MySQL may short-circuit in SELECT but
-     * evaluate fully in UPDATE/DELETE, raising this at ERROR level vs WARNING in SELECT. 1366: Incorrect
-     * integer/decimal/float value for column — same WHERE clause coercion discrepancy. 1030: Got error from storage
-     * engine — raised during functional index maintenance on UPDATE/DELETE; SELECT never writes indexes so cannot
-     * produce this error. 3170: range_optimizer_max_mem_size exceeded — MySQL applies this memory budget differently
-     * for SELECT vs DML; the fallback full-scan still evaluates the WHERE predicate correctly. 3751: Data truncated for
-     * functional index — raised when a functional index expression truncates a value during DML; structurally
-     * impossible in SELECT.
-     */
-    private static boolean isKnownSelectDMLDiscrepancy(SQLQueryError error) {
-        switch (error.getCode()) {
-        case 1030:
-        case 1292:
-        case 1366:
-        case 3170:
-        case 3751:
-            return true;
-        default:
-            return false;
+    // Errors MySQL may raise in UPDATE/DELETE but not SELECT due to different execution paths. Acceptable
+    // discrepancies that should be skipped; not treated as stop errors so row comparison proceeds normally.
+    private enum KnownSelectDMLDiscrepancy {
+        // WHERE clause type coercion: MySQL may short-circuit in SELECT but evaluate fully in UPDATE/DELETE,
+        // raising this at ERROR level vs WARNING in SELECT.
+        TRUNCATED_DOUBLE_VALUE(1292),
+        // Same WHERE clause coercion discrepancy as TRUNCATED_DOUBLE_VALUE.
+        INCORRECT_COLUMN_VALUE(1366),
+        // Raised during functional index maintenance on UPDATE/DELETE; SELECT never writes indexes.
+        STORAGE_ENGINE_ERROR(1030),
+        // MySQL applies this memory budget differently for SELECT vs DML; the fallback full-scan still
+        // evaluates the WHERE predicate correctly.
+        RANGE_OPTIMIZER_MEM_EXCEEDED(3170),
+        // Raised when a functional index expression truncates a value during DML; structurally impossible in SELECT.
+        FUNCTIONAL_INDEX_DATA_TRUNCATED(3751);
+
+        private final int code;
+
+        KnownSelectDMLDiscrepancy(int code) {
+            this.code = code;
         }
+    }
+
+    private static boolean isKnownSelectDMLDiscrepancy(SQLQueryError error) {
+        for (KnownSelectDMLDiscrepancy discrepancy : KnownSelectDMLDiscrepancy.values()) {
+            if (discrepancy.code == error.getCode()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean hasStopErrors(SQLQueryResult queryResult) {
