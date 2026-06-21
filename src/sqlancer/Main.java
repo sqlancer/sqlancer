@@ -176,7 +176,7 @@ public final class Main {
 
         public FileWriter getCurrentFileWriter() {
             if (!logEachSelect) {
-                throw new UnsupportedOperationException();
+                return null; // Instead of throwing an exception
             }
             if (currentFileWriter == null) {
                 try {
@@ -186,7 +186,7 @@ public final class Main {
                 }
             }
             return currentFileWriter;
-        }
+        }        
 
         public FileWriter getQueryPlanFileWriter() {
             if (!logQueryPlan) {
@@ -218,16 +218,18 @@ public final class Main {
 
         public void writeCurrent(StateToReproduce state) {
             if (!logEachSelect) {
-                throw new UnsupportedOperationException();
+                return; // Skip logging if logEachSelect is false
             }
-            printState(getCurrentFileWriter(), state);
-            try {
-                currentFileWriter.flush();
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            FileWriter writer = getCurrentFileWriter();
+            if (writer != null) {
+                printState(writer, state);
+                try {
+                    writer.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
+        }        
 
         public void writeCurrent(String input) {
             write(databaseProvider.getLoggableFactory().createLoggable(input));
@@ -239,16 +241,18 @@ public final class Main {
 
         private void write(Loggable loggable) {
             if (!logEachSelect) {
-                throw new UnsupportedOperationException();
+                return; // Skip writing if logging is disabled
             }
-            try {
-                getCurrentFileWriter().write(loggable.getLogString());
-
-                currentFileWriter.flush();
-            } catch (IOException e) {
-                throw new AssertionError();
+            FileWriter writer = getCurrentFileWriter();
+            if (writer != null) {
+                try {
+                    writer.write(loggable.getLogString());
+                    writer.flush();
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
             }
-        }
+        }        
 
         public void writeQueryPlan(String queryPlan) {
             if (!logQueryPlan) {
