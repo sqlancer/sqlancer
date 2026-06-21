@@ -49,6 +49,8 @@ public final class MySQLErrors {
         errors.add("doesn't have a default value");
         errors.add("Data truncation");
         errors.add("Incorrect integer value");
+        errors.add("Incorrect FLOAT value");
+        errors.add("Incorrect DOUBLE value");
         errors.add("Duplicate entry");
         errors.add("Data truncated for column");
         errors.add("Data truncated for functional index");

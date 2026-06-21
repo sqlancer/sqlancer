@@ -112,7 +112,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         case EXISTS:
             return getExists();
         case BETWEEN_OPERATOR:
-            if (MySQLBugs.bug99181) {
+            if (MySQLBugs.bug99182) {
                 // TODO: there are a number of bugs that are triggered by the BETWEEN operator
                 throw new IgnoreMeException();
             }
@@ -253,7 +253,9 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
     @Override
     public String generateExplainQuery(MySQLSelect select) {
-        return "EXPLAIN " + select.asString();
+        return "EXPLAIN FORMAT=TRADITIONAL " + select.asString(); // as of MySQL 9.5.0, default EXPLAIN format changed
+                                                                  // from TRADITIONAL to TREE, hence TRADITIONAL must
+                                                                  // now be specified
     }
 
     public MySQLAggregate generateAggregate() {

@@ -7,11 +7,16 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLErrors;
 import sqlancer.mysql.MySQLGlobalState;
+import sqlancer.mysql.MySQLOracleFactory;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
+import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLVisitor;
+import sqlancer.mysql.ast.MySQLConstant;
+import sqlancer.mysql.ast.MySQLExpression;
 
 public class MySQLInsertGenerator {
 
@@ -19,6 +24,8 @@ public class MySQLInsertGenerator {
     private final StringBuilder sb = new StringBuilder();
     private final ExpectedErrors errors = new ExpectedErrors();
     private final MySQLGlobalState globalState;
+    private static final int MAX_REGENERATION_ATTEMPTS = 100; // for regenerating expression until valid (for bug
+                                                              // workarounds)
 
     public MySQLInsertGenerator(MySQLGlobalState globalState, MySQLTable table) {
         this.globalState = globalState;
@@ -84,8 +91,59 @@ public class MySQLInsertGenerator {
                 if (c != 0) {
                     sb.append(", ");
                 }
-                sb.append(MySQLVisitor.asString(gen.generateConstant()));
+                MySQLExpression constExpr;
+                // loop to regenerate until expression is valid (for bug workarounds)
+                int regenerationAttempts = 0;
+                while (true) {
+                    regenerationAttempts++;
+                    if (regenerationAttempts > MAX_REGENERATION_ATTEMPTS) {
+                        throw new AssertionError("Exceeded " + MAX_REGENERATION_ATTEMPTS
+                                + " attempts while generating constant for column " + columns.get(c).getName());
+                    }
+                    constExpr = gen.generateConstant();
+                    boolean reject = false;
 
+                    // Bug workaround: for integer columns, reject values that round to 1
+                    if (!reject && MySQLBugs.bug120711 && columns.get(c).getType() == MySQLDataType.INT) {
+                        if (constExpr instanceof MySQLConstant.MySQLIntConstant) {
+                            long value = ((MySQLConstant.MySQLIntConstant) constExpr).getInt();
+                            reject = value == 1;
+                        } else if (constExpr instanceof MySQLConstant.MySQLDoubleConstant) {
+                            double value = ((MySQLConstant.MySQLDoubleConstant) constExpr).getDouble();
+                            reject = value >= 0.5 && value < 1.5;
+                        } else if (constExpr instanceof MySQLConstant.MySQLTextConstant) { // reject strings, which may
+                                                                                           // be implicitly cast to 1
+                            reject = true;
+                        }
+                    }
+
+                    // Bug workaround: for decimal columns, reject values that round to 0
+                    if (!reject && MySQLBugs.bug120710 && columns.get(c).getType() == MySQLDataType.DECIMAL) {
+                        if (constExpr instanceof MySQLConstant.MySQLIntConstant) {
+                            long value = ((MySQLConstant.MySQLIntConstant) constExpr).getInt();
+                            reject = value == 0;
+                        } else if (constExpr instanceof MySQLConstant.MySQLDoubleConstant) {
+                            double value = ((MySQLConstant.MySQLDoubleConstant) constExpr).getDouble();
+                            reject = value >= -0.5 && value < 0.5;
+                        } else if (constExpr instanceof MySQLConstant.MySQLTextConstant) { // reject strings, which may
+                                                                                           // be implicitly cast to 0
+                            reject = true;
+                        }
+                    }
+
+                    // Bug workaround: if using CERT oracle, reject NULL values
+                    if (!reject && MySQLBugs.bug120712
+                            && globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                                    .anyMatch(o -> o == MySQLOracleFactory.CERT)
+                            && constExpr instanceof MySQLConstant.MySQLNullConstant) {
+                        reject = true;
+                    }
+
+                    if (!reject) {
+                        break;
+                    }
+                }
+                sb.append(MySQLVisitor.asString(constExpr));
             }
             sb.append(")");
         }

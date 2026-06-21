@@ -13,6 +13,7 @@ import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
+import sqlancer.mysql.MySQLOracleFactory;
 import sqlancer.mysql.MySQLSchema;
 import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLTable.MySQLEngine;
@@ -356,10 +357,12 @@ public class MySQLTableGenerator {
             throw new AssertionError();
         }
         if (randomType.isNumeric()) {
-            if (Randomly.getBoolean() && randomType != MySQLDataType.INT && !MySQLBugs.bug99127) {
+            if (Randomly.getBoolean() && randomType != MySQLDataType.INT) {
                 sb.append(" UNSIGNED");
             }
-            if (!globalState.usesPQS() && Randomly.getBoolean()) {
+            if (Randomly.getBoolean() && !globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                    .anyMatch(o -> o == MySQLOracleFactory.TLP_WHERE || o == MySQLOracleFactory.PQS
+                            || o == MySQLOracleFactory.DQP)) {
                 sb.append(" ZEROFILL");
             }
         }

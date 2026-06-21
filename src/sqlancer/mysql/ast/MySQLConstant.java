@@ -69,6 +69,11 @@ public abstract class MySQLConstant implements MySQLExpression {
         }
 
         @Override
+        public double getDouble() {
+            return val;
+        }
+
+        @Override
         public String getTextRepresentation() {
             return String.valueOf(val);
         }
@@ -378,6 +383,10 @@ public abstract class MySQLConstant implements MySQLExpression {
     }
 
     public long getInt() {
+        throw new UnsupportedOperationException();
+    }
+
+    public double getDouble() {
         throw new UnsupportedOperationException();
     }
 

@@ -3,12 +3,8 @@ package sqlancer.mysql;
 // do not make the fields final to avoid warnings
 public final class MySQLBugs {
 
-    // https://bugs.mysql.com/bug.php?id=99127 0.9 > t0.c0 malfunctions when c0 is
-    // an INT UNSIGNED
-    public static boolean bug99127 = true;
-
     // https://bugs.mysql.com/99182 BETWEEN malfunctions for DECIMAL and TEXT
-    public static boolean bug99181 = true;
+    public static boolean bug99182 = true;
 
     // https://bugs.mysql.com/bug.php?id=99183
     public static boolean bug99183 = true;
@@ -36,6 +32,19 @@ public final class MySQLBugs {
 
     // https://bugs.mysql.com/bug.php?id=114534
     public static boolean bug114534 = true;
+
+    // https://bugs.mysql.com/bug.php?id=120710
+    // Inserting a NULL and a value which rounds to 0 into a DECIMAL column causes result set mismatch.
+    public static boolean bug120710 = true;
+
+    // https://bugs.mysql.com/bug.php?id=120711
+    // Creating an index on an integer-type column, then inserting a value which rounds to 1, causes result set
+    // mismatch.
+    public static boolean bug120711 = true;
+
+    // https://bugs.mysql.com/bug.php?id=120712
+    // Creating an index in between two NULL inserts causes inconsistent CERT result.
+    public static boolean bug120712 = true;
 
     private MySQLBugs() {
     }
