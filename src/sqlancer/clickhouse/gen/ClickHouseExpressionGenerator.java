@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.clickhouse.client.ClickHouseDataType;
+import com.clickhouse.data.ClickHouseDataType;
 
 import sqlancer.Randomly;
 import sqlancer.clickhouse.ClickHouseProvider.ClickHouseGlobalState;
