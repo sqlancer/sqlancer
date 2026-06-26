@@ -15,6 +15,7 @@ import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnReference;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConstant;
+import sqlancer.postgres.ast.PostgresCTE;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresInOperation;
@@ -34,6 +35,7 @@ import sqlancer.postgres.ast.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresWindowFunction;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowFrame;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowSpecification;
+import sqlancer.postgres.ast.PostgresWithClause;
 
 public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 
@@ -105,6 +107,10 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
 
     @Override
     public void visit(PostgresSelect s) {
+        if (s.getWithClause() != null) {
+            visit(s.getWithClause());
+            sb.append(" ");
+        }
         sb.append("SELECT ");
         switch (s.getSelectOption()) {
         case DISTINCT:
@@ -398,5 +404,25 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
         }
 
         sb.append(")");
+    }
+
+    @Override
+    public void visit(PostgresCTE cte) {
+        sb.append(cte.getName());
+        sb.append(" AS (");
+        visit(cte.getSubquery());
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(PostgresWithClause withClause) {
+        sb.append("WITH ");
+        List<PostgresCTE> cteList = withClause.getCteList();
+        for (int i = 0; i < cteList.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            visit(cteList.get(i));
+        }
     }
 }
