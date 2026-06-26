@@ -31,6 +31,82 @@ public class PostgresFunction implements PostgresExpression {
         return args.clone();
     }
 
+    public boolean isExtractFunction() {
+        return false;
+    }
+
+    public String getArgString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < args.length; i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            sb.append(formatArgumentForPostgresFunction(args[i]));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats an argument for use in PostgreSQL function calls. Date or time values need explicit CAST statements
+     * because they are stored as text but PostgreSQL requires proper type annotations for function parameters.
+     *
+     * @param arg
+     *            the expression to format
+     *
+     * @return the formatted argument string
+     */
+    private String formatArgumentForPostgresFunction(PostgresExpression arg) {
+        if (arg.getExpressionType() == PostgresDataType.TIME || arg.getExpressionType() == PostgresDataType.TIMESTAMP
+                || arg.getExpressionType() == PostgresDataType.DATE) {
+            return String.format("CAST(%s AS %s)", arg, arg.getExpressionType().toString());
+        } else {
+            return arg.toString();
+        }
+    }
+
+    public static class PostgresExtractFunction extends PostgresFunction {
+
+        public PostgresExtractFunction(PostgresFunctionWithUnknownResult f, PostgresDataType returnType,
+                PostgresExpression... args) {
+            super(f, returnType, args);
+        }
+
+        @Override
+        public String getFunctionName() {
+            return "EXTRACT";
+        }
+
+        @Override
+        public boolean isExtractFunction() {
+            return true;
+        }
+
+        @Override
+        public String getArgString() {
+            return String.format("%s FROM %s", getArguments()[0], getArguments()[1]);
+        }
+    }
+
+    @Override
+    public PostgresConstant getExpectedValue() {
+        if (functionWithKnownResult == null) {
+            return null;
+        }
+        PostgresConstant[] constants = new PostgresConstant[args.length];
+        for (int i = 0; i < constants.length; i++) {
+            constants[i] = args[i].getExpectedValue();
+            if (constants[i] == null) {
+                return null;
+            }
+        }
+        return functionWithKnownResult.apply(constants, args);
+    }
+
+    @Override
+    public PostgresDataType getExpressionType() {
+        return returnType;
+    }
+
     public enum PostgresFunctionWithResult {
         ABS(1, "abs") {
 
@@ -76,7 +152,6 @@ public class PostgresFunction implements PostgresExpression {
             public PostgresDataType[] getInputTypesForReturnType(PostgresDataType returnType, int nrArguments) {
                 return new PostgresDataType[] { PostgresDataType.TEXT };
             }
-
         },
         LENGTH(1, "length") {
             @Override
@@ -263,26 +338,6 @@ public class PostgresFunction implements PostgresExpression {
             return true;
         }
 
-    }
-
-    @Override
-    public PostgresConstant getExpectedValue() {
-        if (functionWithKnownResult == null) {
-            return null;
-        }
-        PostgresConstant[] constants = new PostgresConstant[args.length];
-        for (int i = 0; i < constants.length; i++) {
-            constants[i] = args[i].getExpectedValue();
-            if (constants[i] == null) {
-                return null;
-            }
-        }
-        return functionWithKnownResult.apply(constants, args);
-    }
-
-    @Override
-    public PostgresDataType getExpressionType() {
-        return returnType;
     }
 
 }
