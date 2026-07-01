@@ -71,6 +71,18 @@ Usage: SQLancer [options] [command] [command options]
 
 **Supported DBMSs.** SQLancer requires DBMS-specific code for each DBMS that it supports. As of January 2025, it provides support for Citus, ClickHouse, CockroachDB, Databend, (Apache) DataFusion, (Apache) Doris, DuckDB, H2, HSQLDB, MariaDB, Materialize, MySQL, OceanBase, PostgreSQL, Presto, QuestDB, SQLite3, TiDB, and YugabyteDB. The extent to which the individual DBMSs are supported [differs](https://github.com/sqlancer/sqlancer/blob/documentation-approaches/CONTRIBUTING.md).
 
+## Hive Support
+
+Hive support in SQLancer is currently limited.
+
+At the moment, the Hive implementation focuses primarily on schema
+generation and INSERT-based testing. SELECT-based or mixed workloads
+are not fully supported yet.
+
+As a result, depending on the configuration and environment, a run
+may execute zero queries. This is expected behavior and does not
+indicate a runtime failure.
+
 # Approaches and Papers
 
 SQLancer has pioneered and includes multiple approaches for DBMS testing, as outlined below in chronological order.
