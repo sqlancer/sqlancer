@@ -362,7 +362,7 @@ public class MySQLTableGenerator {
             }
             if (Randomly.getBoolean() && !globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
                     .anyMatch(o -> o == MySQLOracleFactory.TLP_WHERE || o == MySQLOracleFactory.PQS
-                            || o == MySQLOracleFactory.DQP)) {
+                            || o == MySQLOracleFactory.DQP || o == MySQLOracleFactory.EET)) {
                 sb.append(" ZEROFILL");
             }
         }

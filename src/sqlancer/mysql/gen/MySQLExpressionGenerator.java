@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.CERTGenerator;
+import sqlancer.common.gen.EETGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
 import sqlancer.common.schema.AbstractTables;
@@ -48,11 +49,13 @@ import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
         implements TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
-        CERTGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
+        CERTGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
+        EETGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
 
     private final MySQLGlobalState state;
     private MySQLRowValue rowVal;
     private List<MySQLTable> tables;
+    private MySQLEETTransformer eetTransformer;
 
     public MySQLExpressionGenerator(MySQLGlobalState state) {
         this.state = state;
@@ -234,6 +237,14 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     @Override
     public MySQLSelect generateSelect() {
         return new MySQLSelect();
+    }
+
+    @Override
+    public MySQLExpression transformExpression(MySQLExpression expr, boolean booleanContext) {
+        if (eetTransformer == null) {
+            eetTransformer = new MySQLEETTransformer(this);
+        }
+        return eetTransformer.transform(expr, booleanContext);
     }
 
     @Override
