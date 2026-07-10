@@ -1,5 +1,6 @@
 package sqlancer.common.oracle;
 
+import sqlancer.common.ast.newast.Expression;
 import sqlancer.Randomly;
 
 /**
@@ -18,7 +19,7 @@ import sqlancer.Randomly;
  * @param <E>
  *            the DBMS-specific expression type
  */
-public class EETTransformation<E> {
+public class EETTransformation<E extends Expression<?>> {
 
     private final EETNodeFactory<E> factory;
 
@@ -39,7 +40,7 @@ public class EETTransformation<E> {
     }
 
     /**
-     * Transforms {@code expr} into a semantically equivalent expression by applying a randomly chosen, applicable
+     * Transforms {@code expr} into a semantically equivalent expression by applying a randomly chosen applicable
      * transformation rule.
      *
      * @param expr

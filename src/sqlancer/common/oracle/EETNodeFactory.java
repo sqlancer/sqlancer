@@ -1,5 +1,7 @@
 package sqlancer.common.oracle;
 
+import sqlancer.common.ast.newast.Expression;
+
 /**
  * Factory for constructing the AST nodes needed by the {@link EETTransformation equivalent expression transformation}
  * rules. Because every DBMS has its own expression AST, the actual node construction is DBMS-specific; this interface
@@ -8,7 +10,7 @@ package sqlancer.common.oracle;
  * @param <E>
  *            the DBMS-specific expression type
  */
-public interface EETNodeFactory<E> {
+public interface EETNodeFactory<E extends Expression<?>> {
 
     /** Builds {@code left AND right}. */
     E and(E left, E right);
