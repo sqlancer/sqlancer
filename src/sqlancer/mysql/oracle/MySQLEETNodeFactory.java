@@ -1,4 +1,4 @@
-package sqlancer.mysql.gen;
+package sqlancer.mysql.oracle;
 
 import java.util.List;
 
@@ -13,10 +13,10 @@ import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation.UnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
+import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 /**
- * Constructs the MySQL AST nodes needed by the {@link sqlancer.common.oracle.EETTransformation EET transformation}
- * rules.
+ * Constructs the MySQL AST nodes needed by the {@link sqlancer.common.oracle.EETTransformer EET transformer}.
  */
 public class MySQLEETNodeFactory implements EETNodeFactory<MySQLExpression> {
 

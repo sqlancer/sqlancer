@@ -1,10 +1,9 @@
-package sqlancer.mysql.gen;
+package sqlancer.mysql.oracle;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import sqlancer.Randomly;
-import sqlancer.common.oracle.EETTransformation;
+import sqlancer.common.oracle.EETTransformer;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
@@ -17,49 +16,23 @@ import sqlancer.mysql.ast.MySQLInOperation;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
+import sqlancer.mysql.gen.MySQLExpressionGenerator;
 
 /**
- * Recursively applies the {@link EETTransformation EET} transformation rules throughout a MySQL expression's AST. At
- * each node the transformer first recurses into (and rebuilds the node from) its transformed children, then, with some
- * probability, wraps the resulting sub-expression with a randomly chosen transformation rule.
- *
- * <p>
- * A boolean/scalar context flag is threaded through the recursion so that the determined-boolean rules (which reduce an
- * expression to a boolean value) are only ever applied where the expression is used purely for its truth value.
+ * MySQL implementation of the {@link EETTransformer EET} tree-walker. Implements {@link #descend} to rebuild MySQL AST
+ * nodes from their transformed children, threading the correct boolean/scalar context into each child.
  */
-public class MySQLEETTransformer {
+public class MySQLEETTransformer extends EETTransformer<MySQLExpression> {
 
     private static final boolean BOOLEAN = true;
     private static final boolean SCALAR = false;
 
-    private final EETTransformation<MySQLExpression> transformation;
-
     public MySQLEETTransformer(MySQLExpressionGenerator gen) {
-        this.transformation = new EETTransformation<>(new MySQLEETNodeFactory(gen));
+        super(new MySQLEETNodeFactory(gen));
     }
 
-    /**
-     * Transforms {@code expr} into a semantically equivalent expression. A transformation rule is always applied at the
-     * root, guaranteeing that the returned expression differs from the input.
-     */
-    public MySQLExpression transform(MySQLExpression expr, boolean booleanContext) {
-        return transformNode(expr, booleanContext, true);
-    }
-
-    private MySQLExpression transformNode(MySQLExpression expr, boolean booleanContext, boolean forceApply) {
-        MySQLExpression descended = descend(expr, booleanContext);
-        if (forceApply || Randomly.getBoolean()) {
-            return transformation.applyRandomRule(descended, booleanContext);
-        }
-        return descended;
-    }
-
-    /**
-     * Rebuilds {@code expr} with its children transformed. Leaf nodes (columns, constants, ...) and node types that are
-     * not rebuilt here are returned unchanged; any applicable transformation is still applied to them by the calling
-     * {@link #transformNode}.
-     */
-    private MySQLExpression descend(MySQLExpression expr, boolean booleanContext) {
+    @Override
+    protected MySQLExpression descend(MySQLExpression expr, boolean booleanContext) {
         if (expr instanceof MySQLBinaryLogicalOperation) {
             // AND/OR/XOR: both operands are evaluated in a boolean context.
             MySQLBinaryLogicalOperation op = (MySQLBinaryLogicalOperation) expr;

@@ -46,6 +46,7 @@ import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
+import sqlancer.mysql.oracle.MySQLEETTransformer;
 
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
         implements TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
