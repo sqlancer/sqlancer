@@ -46,6 +46,7 @@ import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
+import sqlancer.common.oracle.EETTransformer;
 import sqlancer.mysql.oracle.MySQLEETTransformer;
 
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
@@ -56,7 +57,6 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     private final MySQLGlobalState state;
     private MySQLRowValue rowVal;
     private List<MySQLTable> tables;
-    private MySQLEETTransformer eetTransformer;
 
     public MySQLExpressionGenerator(MySQLGlobalState state) {
         this.state = state;
@@ -241,11 +241,8 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     }
 
     @Override
-    public MySQLExpression transformExpression(MySQLExpression expr, boolean booleanContext) {
-        if (eetTransformer == null) {
-            eetTransformer = new MySQLEETTransformer(this);
-        }
-        return eetTransformer.transform(expr, booleanContext);
+    public EETTransformer<MySQLExpression> createTransformer() {
+        return new MySQLEETTransformer(this);
     }
 
     @Override

@@ -32,6 +32,7 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
 
     private final G state;
     private EETGenerator<Z, J, E, T, C> gen;
+    private final EETTransformer<E> transformer;
     private final ExpectedErrors errors;
 
     private Reproducer<G> reproducer;
@@ -69,6 +70,7 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
         }
         this.state = state;
         this.gen = gen;
+        this.transformer = gen.createTransformer();
         this.errors = expectedErrors;
     }
 
@@ -94,10 +96,10 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
 
         // Transform the query's expressions into semantically equivalent ones. Fetch columns are scalar expressions,
         // while the WHERE clause is evaluated in a boolean context.
-        List<E> transformedFetchColumns = fetchColumns.stream().map(c -> gen.transformExpression(c, false))
+        List<E> transformedFetchColumns = fetchColumns.stream().map(c -> transformer.transform(c, false))
                 .collect(Collectors.toList());
         select.setFetchColumns(transformedFetchColumns);
-        select.setWhereClause(gen.transformExpression(whereClause, true));
+        select.setWhereClause(transformer.transform(whereClause, true));
 
         String transformedQueryString = select.asString();
         List<String> transformedResultSet = ComparatorHelper.getResultSetFirstColumnAsString(transformedQueryString,
