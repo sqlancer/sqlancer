@@ -55,17 +55,18 @@ public abstract class EETTransformer<E extends Expression<?>> {
             rule = Randomly.fromOptions(3, 4, 5, 6);
         }
         switch (rule) {
-        case 1: // bool_expr => false_expr OR bool_expr
+        case 1: // expr => false_expr OR expr
             return or(falseExpr(), expr);
-        case 2: // bool_expr => true_expr AND bool_expr
+        case 2: // expr => true_expr AND expr
             return and(trueExpr(), expr);
-        case 3: // expr => CASE WHEN false_expr THEN copy(expr) ELSE expr END
+        case 3: // expr => CASE WHEN false_expr THEN rand_expr(type(expr)) ELSE expr END
             return caseWhen(falseExpr(), expr, expr);
-        case 4: // expr => CASE WHEN true_expr THEN expr ELSE copy(expr) END
+        case 4: // expr => CASE WHEN true_expr THEN expr ELSE rand_expr(type(expr)) END
             return caseWhen(trueExpr(), expr, expr);
-        case 5: // expr => CASE WHEN rand_bool THEN copy(expr) ELSE expr END
-        case 6: // expr => CASE WHEN rand_bool THEN expr ELSE copy(expr) END
-            return caseWhen(generateBooleanExpression(), expr, expr);
+        case 5: // expr => CASE WHEN rand_expr(boolean) THEN copy(expr) ELSE expr END
+        case 6: // expr => CASE WHEN rand_expr(boolean) THEN expr ELSE copy(expr) END
+            return caseWhen(generateBooleanExpression(), expr, expr); 
+            // deep copy of expr is not needed, as the AST nodes are immutable anyway
         default:
             throw new AssertionError(rule);
         }
