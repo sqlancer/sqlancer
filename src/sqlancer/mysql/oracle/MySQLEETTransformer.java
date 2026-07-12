@@ -4,16 +4,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.common.oracle.EETTransformer;
+import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
+import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
 import sqlancer.mysql.ast.MySQLCaseOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
 import sqlancer.mysql.ast.MySQLComputableFunction;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
+import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
+import sqlancer.mysql.ast.MySQLUnaryPostfixOperation.UnaryPostfixOperator;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
 import sqlancer.mysql.gen.MySQLExpressionGenerator;
@@ -27,8 +31,10 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression> {
     private static final boolean BOOLEAN = true;
     private static final boolean SCALAR = false;
 
+    private final MySQLExpressionGenerator gen;
+
     public MySQLEETTransformer(MySQLExpressionGenerator gen) {
-        super(new MySQLEETNodeFactory(gen));
+        this.gen = gen;
     }
 
     @Override
@@ -93,5 +99,47 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression> {
         MySQLExpression elseExpr = caseOp.getElseExpr() == null ? null
                 : transformNode(caseOp.getElseExpr(), SCALAR, false);
         return new MySQLCaseOperator(newSwitch, conditions, expressions, elseExpr);
+    }
+
+    @Override
+    protected MySQLExpression and(MySQLExpression left, MySQLExpression right) {
+        return new MySQLBinaryLogicalOperation(left, right, MySQLBinaryLogicalOperator.AND);
+    }
+
+    @Override
+    protected MySQLExpression or(MySQLExpression left, MySQLExpression right) {
+        return new MySQLBinaryLogicalOperation(left, right, MySQLBinaryLogicalOperator.OR);
+    }
+
+    @Override
+    protected MySQLExpression not(MySQLExpression expr) {
+        return new MySQLUnaryPrefixOperation(expr, MySQLUnaryPrefixOperator.NOT);
+    }
+
+    @Override
+    protected MySQLExpression isNull(MySQLExpression expr) {
+        return new MySQLUnaryPostfixOperation(expr, UnaryPostfixOperator.IS_NULL, false);
+    }
+
+    @Override
+    protected MySQLExpression isNotNull(MySQLExpression expr) {
+        return new MySQLUnaryPostfixOperation(expr, UnaryPostfixOperator.IS_NULL, true);
+    }
+
+    @Override
+    protected MySQLExpression caseWhen(MySQLExpression condition, MySQLExpression thenExpr, MySQLExpression elseExpr) {
+        return new MySQLCaseOperator(null, List.of(condition), List.of(thenExpr), elseExpr);
+    }
+
+    @Override
+    protected MySQLExpression generateBooleanExpression() {
+        return gen.generateBooleanExpression();
+    }
+
+    @Override
+    protected boolean isCaseWhenApplicable(MySQLExpression expr) {
+        // Table references cannot be wrapped in CASE WHEN (they would cause syntax errors, see rule No. 7 of the EET
+        // paper); aggregates are excluded to avoid placing them in invalid contexts.
+        return !(expr instanceof MySQLTableReference) && !(expr instanceof MySQLAggregate);
     }
 }

@@ -10,30 +10,24 @@ import sqlancer.common.ast.newast.Expression;
  * <p>
  * This class implements the seven transformation rules (Table 2 of the paper) and provides a template-method framework
  * for applying them throughout an expression's AST. Subclasses implement {@link #descend} to rebuild DBMS-specific AST
- * nodes from their transformed children; everything else (the rule logic, context threading, and tree-walking
- * orchestration) is provided here.
+ * nodes from their transformed children, and the abstract factory methods to construct new nodes; everything else (the
+ * rule logic, context threading, and tree-walking orchestration) is provided here.
  *
  * @param <E>
  *            the DBMS-specific expression type
  */
 public abstract class EETTransformer<E extends Expression<?>> {
 
-    private final EETNodeFactory<E> factory;
-
-    protected EETTransformer(EETNodeFactory<E> factory) {
-        this.factory = factory;
-    }
-
     // true_expr(p) = p OR (NOT p) OR (p IS NULL) -> always TRUE
     private E trueExpr() {
-        E p = factory.generateBooleanExpression();
-        return factory.or(factory.or(p, factory.not(p)), factory.isNull(p));
+        E p = generateBooleanExpression();
+        return or(or(p, not(p)), isNull(p));
     }
 
     // false_expr(p) = p AND (NOT p) AND (p IS NOT NULL) -> always FALSE
     private E falseExpr() {
-        E p = factory.generateBooleanExpression();
-        return factory.and(factory.and(p, factory.not(p)), factory.isNotNull(p));
+        E p = generateBooleanExpression();
+        return and(and(p, not(p)), isNotNull(p));
     }
 
     /**
@@ -54,7 +48,7 @@ public abstract class EETTransformer<E extends Expression<?>> {
             // Rules No. 1-6 are all value-preserving in a boolean context.
             rule = Randomly.fromOptions(1, 2, 3, 4, 5, 6);
         } else {
-            if (!factory.isCaseWhenApplicable(expr)) {
+            if (!isCaseWhenApplicable(expr)) {
                 return expr; // rule No. 7: transform the expression to itself
             }
             // In a scalar context only the CASE WHEN rules preserve the exact value and type.
@@ -62,16 +56,16 @@ public abstract class EETTransformer<E extends Expression<?>> {
         }
         switch (rule) {
         case 1: // bool_expr => false_expr OR bool_expr
-            return factory.or(falseExpr(), expr);
+            return or(falseExpr(), expr);
         case 2: // bool_expr => true_expr AND bool_expr
-            return factory.and(trueExpr(), expr);
+            return and(trueExpr(), expr);
         case 3: // expr => CASE WHEN false_expr THEN copy(expr) ELSE expr END
-            return factory.caseWhen(falseExpr(), expr, expr);
+            return caseWhen(falseExpr(), expr, expr);
         case 4: // expr => CASE WHEN true_expr THEN expr ELSE copy(expr) END
-            return factory.caseWhen(trueExpr(), expr, expr);
+            return caseWhen(trueExpr(), expr, expr);
         case 5: // expr => CASE WHEN rand_bool THEN copy(expr) ELSE expr END
         case 6: // expr => CASE WHEN rand_bool THEN expr ELSE copy(expr) END
-            return factory.caseWhen(factory.generateBooleanExpression(), expr, expr);
+            return caseWhen(generateBooleanExpression(), expr, expr);
         default:
             throw new AssertionError(rule);
         }
@@ -109,4 +103,31 @@ public abstract class EETTransformer<E extends Expression<?>> {
      * @return a rebuilt copy of {@code expr} with transformed children, or {@code expr} itself if it is a leaf
      */
     protected abstract E descend(E expr, boolean booleanContext);
+
+    /** Builds {@code left AND right}. */
+    protected abstract E and(E left, E right);
+
+    /** Builds {@code left OR right}. */
+    protected abstract E or(E left, E right);
+
+    /** Builds {@code NOT expr}. */
+    protected abstract E not(E expr);
+
+    /** Builds {@code expr IS NULL}. */
+    protected abstract E isNull(E expr);
+
+    /** Builds {@code expr IS NOT NULL}. */
+    protected abstract E isNotNull(E expr);
+
+    /** Builds {@code CASE WHEN condition THEN thenExpr ELSE elseExpr END}. */
+    protected abstract E caseWhen(E condition, E thenExpr, E elseExpr);
+
+    /** Generates a fresh random boolean expression, reusing the variables available to the query generator. */
+    protected abstract E generateBooleanExpression();
+
+    /**
+     * Whether {@code expr} may be wrapped in a CASE WHEN expression. Some expressions (e.g. table references) are not
+     * CASE-WHEN applicable and must be transformed to themselves (rule No. 7 of the EET paper).
+     */
+    protected abstract boolean isCaseWhenApplicable(E expr);
 }
