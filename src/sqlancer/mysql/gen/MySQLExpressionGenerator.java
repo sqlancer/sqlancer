@@ -222,6 +222,22 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         return newOrderBys;
     }
 
+    public MySQLAggregate generateAggregate() {
+        MySQLAggregateFunction func = Randomly.fromOptions(MySQLAggregateFunction.values());
+
+        if (func.isVariadic()) {
+            int nrExprs = Randomly.smallNumber() + 1;
+            List<MySQLExpression> exprs = IntStream.range(0, nrExprs).mapToObj(index -> generateExpression())
+                    .collect(Collectors.toList());
+
+            return new MySQLAggregate(exprs, func);
+        } else {
+            return new MySQLAggregate(List.of(generateExpression()), func);
+        }
+    }
+
+    // --- Shared oracle infrastructure (TLPWhere / CERT / EET) ---
+
     @Override
     public MySQLExpressionGenerator setTablesAndColumns(AbstractTables<MySQLTable, MySQLColumn> tables) {
         this.columns = tables.getColumns();
@@ -241,11 +257,6 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     }
 
     @Override
-    public EETTransformer<MySQLExpression> createTransformer() {
-        return new MySQLEETTransformer(this);
-    }
-
-    @Override
     public List<MySQLJoin> getRandomJoinClauses() {
         return List.of();
     }
@@ -260,25 +271,13 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         return columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
     }
 
+    // --- CERT oracle ---
+
     @Override
     public String generateExplainQuery(MySQLSelect select) {
         return "EXPLAIN FORMAT=TRADITIONAL " + select.asString(); // as of MySQL 9.5.0, default EXPLAIN format changed
                                                                   // from TRADITIONAL to TREE, hence TRADITIONAL must
                                                                   // now be specified
-    }
-
-    public MySQLAggregate generateAggregate() {
-        MySQLAggregateFunction func = Randomly.fromOptions(MySQLAggregateFunction.values());
-
-        if (func.isVariadic()) {
-            int nrExprs = Randomly.smallNumber() + 1;
-            List<MySQLExpression> exprs = IntStream.range(0, nrExprs).mapToObj(index -> generateExpression())
-                    .collect(Collectors.toList());
-
-            return new MySQLAggregate(exprs, func);
-        } else {
-            return new MySQLAggregate(List.of(generateExpression()), func);
-        }
     }
 
     @Override
@@ -363,5 +362,12 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
             select.setWhereClause(newWhere);
             return true;
         }
+    }
+
+    // --- EET oracle ---
+
+    @Override
+    public EETTransformer<MySQLExpression> createTransformer() {
+        return new MySQLEETTransformer(this);
     }
 }
