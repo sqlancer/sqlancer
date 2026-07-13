@@ -1,5 +1,6 @@
 package sqlancer.mysql.oracle;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,7 +13,11 @@ import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator
 import sqlancer.mysql.ast.MySQLBinaryOperation;
 import sqlancer.mysql.ast.MySQLCaseOperator;
 import sqlancer.mysql.ast.MySQLCastOperation;
+import sqlancer.mysql.ast.MySQLCastOperation.CastType;
+import sqlancer.mysql.ast.MySQLColumnReference;
 import sqlancer.mysql.ast.MySQLComputableFunction;
+import sqlancer.mysql.ast.MySQLConstant;
+import sqlancer.mysql.ast.MySQLExists;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLInOperation;
 import sqlancer.mysql.ast.MySQLTableReference;
@@ -25,8 +30,13 @@ import sqlancer.mysql.gen.MySQLExpressionGenerator;
 /**
  * MySQL implementation of the {@link EETTransformer EET} tree-walker. Implements {@link #descend} to rebuild MySQL AST
  * nodes from their transformed children, threading the correct boolean/scalar context into each child.
+ *
+ * <p>
+ * MySQL's expression generator is untyped, so type inference/generation works with a subset of MySQL's CAST target types
+ * ({@link CastType}): {@link #inferType} conservatively classifies AST nodes into that domain (returning {@code null}
+ * when uncertain), and {@link #generateExpressionOfType} pins the type of a random expression by wrapping it in a CAST.
  */
-public class MySQLEETTransformer extends EETTransformer<MySQLExpression> {
+public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCastOperation.CastType> {
 
     private static final boolean BOOLEAN = true;
     private static final boolean SCALAR = false;
@@ -134,6 +144,122 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression> {
     @Override
     protected MySQLExpression generateBooleanExpression() {
         return gen.generateBooleanExpression();
+    }
+
+    @Override
+    protected MySQLExpression generateExpressionOfType(CastType type) {
+        // The MySQL expression generator is untyped, so the type of an arbitrary random expression is pinned by
+        // wrapping it in a CAST to the requested type.
+        return new MySQLCastOperation(gen.generateExpression(), type);
+    }
+
+    @Override
+    protected CastType inferType(MySQLExpression expr) {
+        if (expr instanceof MySQLBinaryLogicalOperation || expr instanceof MySQLBinaryComparisonOperation
+                || expr instanceof MySQLUnaryPostfixOperation || expr instanceof MySQLBetweenOperation
+                || expr instanceof MySQLInOperation || expr instanceof MySQLExists) {
+            // Predicates evaluate to the boolean values 0/1, which are signed BIGINT.
+            return CastType.SIGNED;
+        } else if (expr instanceof MySQLBinaryOperation) {
+            // The bit operators &, | and ^ return BIGINT UNSIGNED.
+            return CastType.UNSIGNED;
+        } else if (expr instanceof MySQLCastOperation) {
+            return ((MySQLCastOperation) expr).getType();
+        } else if (expr instanceof MySQLUnaryPrefixOperation) {
+            return inferUnaryPrefixType((MySQLUnaryPrefixOperation) expr);
+        } else if (expr instanceof MySQLConstant) {
+            return inferConstantType((MySQLConstant) expr);
+        } else if (expr instanceof MySQLColumnReference) {
+            return inferColumnType((MySQLColumnReference) expr);
+        } else if (expr instanceof MySQLComputableFunction) {
+            return inferFunctionType((MySQLComputableFunction) expr);
+        } else if (expr instanceof MySQLCaseOperator) {
+            return inferCaseType((MySQLCaseOperator) expr);
+        }
+        return null;
+    }
+
+    private CastType inferUnaryPrefixType(MySQLUnaryPrefixOperation op) {
+        if (op.getOp() == MySQLUnaryPrefixOperator.NOT) {
+            return CastType.SIGNED;
+        }
+        CastType operandType = inferType(op.getExpression());
+        if (op.getOp() == MySQLUnaryPrefixOperator.PLUS) {
+            return operandType; // unary + is the identity
+        }
+        // Unary -: strings are coerced to DOUBLE; negating UNSIGNED changes the type (and usually errors).
+        if (operandType == CastType.CHAR || operandType == CastType.DOUBLE) {
+            return CastType.DOUBLE;
+        }
+        return operandType == CastType.SIGNED ? CastType.SIGNED : null;
+    }
+
+    private CastType inferConstantType(MySQLConstant constant) {
+        if (constant instanceof MySQLConstant.MySQLIntConstant) {
+            return constant.isSigned() ? CastType.SIGNED : CastType.UNSIGNED;
+        } else if (constant instanceof MySQLConstant.MySQLTextConstant) {
+            return CastType.CHAR;
+        } else if (constant instanceof MySQLConstant.MySQLDoubleConstant) {
+            return CastType.DOUBLE;
+        }
+        return null; // the NULL constant has no type of its own
+    }
+
+    private CastType inferColumnType(MySQLColumnReference ref) {
+        switch (ref.getColumn().getType()) {
+        case INT:
+            return CastType.SIGNED; // the table generator never creates UNSIGNED INT columns
+        case VARCHAR:
+            return CastType.CHAR;
+        case DOUBLE:
+            return CastType.DOUBLE;
+        case FLOAT: // FLOAT-to-DOUBLE widening in the CASE result changes the rendered value
+        case DECIMAL: // the CASE result would need the column's exact precision and scale
+        default:
+            return null;
+        }
+    }
+
+    private CastType inferFunctionType(MySQLComputableFunction func) {
+        MySQLExpression[] args = func.getArguments();
+        switch (func.getFunction()) {
+        case BIT_COUNT:
+            return CastType.SIGNED;
+        case IF:
+            // The result type aggregates the types of the two value arguments (the condition does not contribute).
+            return commonType(args[1], args[2]);
+        case COALESCE:
+        case IFNULL:
+        case LEAST:
+        case GREATEST:
+            return commonType(args);
+        default:
+            return null;
+        }
+    }
+
+    private CastType inferCaseType(MySQLCaseOperator caseOp) {
+        List<MySQLExpression> branches = new ArrayList<>(caseOp.getExpressions());
+        if (caseOp.getElseExpr() != null) {
+            branches.add(caseOp.getElseExpr());
+        }
+        return commonType(branches.toArray(new MySQLExpression[0]));
+    }
+
+    /**
+     * The common type of several result-type-determining subexpressions, or {@code null} if they do not have the
+     * same inferrable type (a conservative under-approximation of MySQL's aggregation rules).
+     */
+    private CastType commonType(MySQLExpression... exprs) {
+        CastType common = null;
+        for (MySQLExpression expr : exprs) {
+            CastType type = inferType(expr);
+            if (type == null || common != null && type != common) {
+                return null;
+            }
+            common = type;
+        }
+        return common;
     }
 
     @Override

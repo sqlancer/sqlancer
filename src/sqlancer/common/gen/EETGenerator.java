@@ -34,5 +34,5 @@ public interface EETGenerator<S extends Select<J, E, T, C>, J extends Join<E, T,
      * sqlancer.common.oracle.EETOracle} during construction; the oracle owns the returned transformer for the lifetime
      * of the test run.
      */
-    EETTransformer<E> createTransformer();
+    EETTransformer<E, ?> createTransformer();
 }

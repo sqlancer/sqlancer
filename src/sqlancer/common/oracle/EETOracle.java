@@ -32,7 +32,7 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
 
     private final G state;
     private EETGenerator<Z, J, E, T, C> gen;
-    private final EETTransformer<E> transformer;
+    private final EETTransformer<E, ?> transformer;
     private final ExpectedErrors errors;
 
     private Reproducer<G> reproducer;

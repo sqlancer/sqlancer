@@ -10,13 +10,16 @@ import sqlancer.common.ast.newast.Expression;
  * <p>
  * This class implements the seven transformation rules (Table 2 of the paper) and provides a template-method framework
  * for applying them throughout an expression's AST. Subclasses implement {@link #descend} to rebuild DBMS-specific AST
- * nodes from their transformed children, and the abstract factory methods to construct new nodes; everything else (the
- * rule logic, context threading, and tree-walking orchestration) is provided here.
+ * nodes from their transformed children, the abstract factory methods to construct new nodes, and the type hooks
+ * ({@link #inferType} and {@link #generateExpressionOfType}) that realize the paper's {@code rand_expr(type(expr))};
+ * everything else (the rule logic, context threading, and tree-walking orchestration) is provided here.
  *
  * @param <E>
- *            the DBMS-specific expression type
+ *            the DBMS-specific expression class
+ * @param <T>
+ *            the DBMS-specific type domain used by {@link #inferType} and {@link #generateExpressionOfType}
  */
-public abstract class EETTransformer<E extends Expression<?>> {
+public abstract class EETTransformer<E extends Expression<?>, T> {
 
     // true_expr(p) = p OR (NOT p) OR (p IS NULL) -> always TRUE
     private E trueExpr() {
@@ -28,6 +31,22 @@ public abstract class EETTransformer<E extends Expression<?>> {
     private E falseExpr() {
         E p = generateBooleanExpression();
         return and(and(p, not(p)), isNotNull(p));
+    }
+
+    /**
+     * Implements the paper's {@code rand_expr(type(expr))}: a random expression whose static type matches that of
+     * {@code expr}. Although the generated expression is never evaluated (it occupies the dead branch of rules No. 3
+     * and 4), its static type participates in the DBMS's CASE WHEN result-type resolution, so a type mismatch could
+     * alter the live branch's value or rendering. When the type of {@code expr} cannot be inferred, this falls back to
+     * {@code expr} itself, which trivially has the correct type (degenerating the rule to the {@code copy_expr} form
+     * of rules No. 5 and 6).
+     */
+    private E randExprOfSameType(E expr) {
+        T type = inferType(expr);
+        if (type == null) {
+            return expr;
+        }
+        return generateExpressionOfType(type);
     }
 
     /**
@@ -60,12 +79,12 @@ public abstract class EETTransformer<E extends Expression<?>> {
         case 2: // expr => true_expr AND expr
             return and(trueExpr(), expr);
         case 3: // expr => CASE WHEN false_expr THEN rand_expr(type(expr)) ELSE expr END
-            return caseWhen(falseExpr(), expr, expr);
+            return caseWhen(falseExpr(), randExprOfSameType(expr), expr);
         case 4: // expr => CASE WHEN true_expr THEN expr ELSE rand_expr(type(expr)) END
-            return caseWhen(trueExpr(), expr, expr);
+            return caseWhen(trueExpr(), expr, randExprOfSameType(expr));
         case 5: // expr => CASE WHEN rand_expr(boolean) THEN copy(expr) ELSE expr END
         case 6: // expr => CASE WHEN rand_expr(boolean) THEN expr ELSE copy(expr) END
-            return caseWhen(generateBooleanExpression(), expr, expr); 
+            return caseWhen(generateBooleanExpression(), expr, expr);
             // deep copy of expr is not needed, as the AST nodes are immutable anyway
         default:
             throw new AssertionError(rule);
@@ -125,6 +144,24 @@ public abstract class EETTransformer<E extends Expression<?>> {
 
     /** Generates a fresh random boolean expression, reusing the variables available to the query generator. */
     protected abstract E generateBooleanExpression();
+
+    /**
+     * Infers the static type of {@code expr}, or returns {@code null} if it cannot be determined. The type domain
+     * {@code T} is DBMS-specific and may be coarse: it only needs to be precise enough that replacing an expression
+     * with another of the same {@code T} leaves the DBMS's CASE WHEN result-type resolution unaffected. Returning
+     * {@code null} is always safe — rules No. 3 and 4 then fall back to reusing {@code expr} itself as the dead
+     * branch. Inference should therefore be conservative: prefer {@code null} over a type whose CASE WHEN behaviour is
+     * uncertain.
+     */
+    protected abstract T inferType(E expr);
+
+    /**
+     * Generates a fresh random expression of static type {@code type}, reusing the variables available to the query
+     * generator. DBMSs with a typed expression generator can delegate to it directly; DBMSs with an untyped generator
+     * can instead wrap an arbitrary random expression in a CAST to {@code type} (which requires every value of
+     * {@code T} to be a valid CAST target).
+     */
+    protected abstract E generateExpressionOfType(T type);
 
     /**
      * Whether {@code expr} may be wrapped in a CASE WHEN expression. Some expressions (e.g. table references) are not

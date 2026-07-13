@@ -367,7 +367,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     // --- EET oracle ---
 
     @Override
-    public EETTransformer<MySQLExpression> createTransformer() {
+    public EETTransformer<MySQLExpression, ?> createTransformer() {
         return new MySQLEETTransformer(this);
     }
 }
