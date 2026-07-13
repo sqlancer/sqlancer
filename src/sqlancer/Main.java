@@ -502,11 +502,13 @@ public final class Main {
                         astBasedReducer.reduce(state, reproducer, newGlobalState);
                     }
 
-                    try {
-                        logger.getReduceFileWriter().close();
-                        logger.reduceFileWriter = null;
-                    } catch (IOException e) {
-                        throw new AssertionError(e);
+                    if (logger.reduceFileWriter != null) {
+                        try {
+                            logger.reduceFileWriter.close();
+                            logger.reduceFileWriter = null;
+                        } catch (IOException e) {
+                            throw new AssertionError(e);
+                        }
                     }
 
                     throw new AssertionError("Found a potential bug, please check reducer log for detail.");
