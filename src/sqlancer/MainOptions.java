@@ -126,10 +126,10 @@ public class MainOptions {
     @Parameter(names = "--serialize-reproduce-state", description = "Serialize the state to reproduce")
     private boolean serializeReproduceState = false; // NOPMD
 
-    @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer")
+    @Parameter(names = "--use-reducer", description = "EXPERIMENTAL Attempt to reduce queries using a simple reducer. Implemented for TLP WHERE and NoREC only")
     private boolean useReducer = false; // NOPMD
 
-    @Parameter(names = "--reduce-ast", description = "EXPERIMENTAL perform AST reduction after statement reduction")
+    @Parameter(names = "--reduce-ast", description = "EXPERIMENTAL Perform AST reduction after statement reduction")
     private boolean reduceAST = false; // NOPMD
 
     @Parameter(names = "--statement-reducer-max-steps", description = "EXPERIMENTAL Maximum steps the statement reducer will do")
