@@ -104,8 +104,7 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
                     sb.append("-- ").append(thirdQueryString).append(';').append(System.lineSeparator());
                 } else {
                     sb.append("-- ").append(firstQueryString).append(" UNION ALL ").append(secondQueryString)
-                            .append(" UNION ALL ").append(thirdQueryString).append(';')
-                            .append(System.lineSeparator());
+                            .append(" UNION ALL ").append(thirdQueryString).append(';').append(System.lineSeparator());
                 }
             }
             return sb.toString();

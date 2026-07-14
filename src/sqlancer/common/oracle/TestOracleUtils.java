@@ -35,10 +35,9 @@ public final class TestOracleUtils {
     }
 
     /**
-     * Extracts the message of the DBMS error that caused an oracle query to fail unexpectedly, from the
-     * AssertionError that wraps it (see, e.g., ComparatorHelper#getResultSetFirstColumnAsString). Reproducers use it
-     * to check that a reduced test case still triggers the same error, rather than an unrelated one introduced by the
-     * reduction itself.
+     * Extracts the message of the DBMS error that caused an oracle query to fail unexpectedly, from the AssertionError
+     * that wraps it (see, e.g., ComparatorHelper#getResultSetFirstColumnAsString). Reproducers use it to check that a
+     * reduced test case still triggers the same error, rather than an unrelated one introduced by the reduction itself.
      *
      * @param error
      *            the AssertionError wrapping the DBMS error

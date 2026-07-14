@@ -103,8 +103,7 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
                     });
 
                     if (!initFlag) {
-                        newGlobalState.getLogger()
-                                .logReducer("warning: failed parsing the statement at transformer : " + t);
+                        System.out.println("Error when parsing the statement at transformer :" + t);
                         continue;
                     }
                     t.apply();
@@ -114,7 +113,8 @@ public class ASTBasedReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpeci
         } while (observeChange);
 
         newGlobalState.getState().setStatements(new ArrayList<>(reducedStatements));
-        newGlobalState.getLogger().logReduced(newGlobalState.getState());
+        newGlobalState.getLogger().logReduced(newGlobalState.getState(),
+                "AST-based reduction finished; the following statements remain");
     }
 
     public boolean bugStillTriggers() throws Exception {

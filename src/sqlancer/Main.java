@@ -80,6 +80,9 @@ public final class Main {
         private FileWriter queryPlanFileWriter;
         private FileWriter reduceFileWriter;
         private Path reproduceFilePath;
+        private List<Query<?>> reduceSetupStatements;
+        private String reduceBugInformation;
+        private int nrReductionAttempts;
 
         private static final List<String> INITIALIZED_PROVIDER_NAMES = new ArrayList<>();
         private final boolean logEachSelect;
@@ -262,33 +265,32 @@ public final class Main {
             }
         }
 
-        public void logReducer(String reducerLog) {
-            FileWriter reduceFileWriter = getReduceFileWriter();
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("[reducer log] ");
-            sb.append(reducerLog);
-            try {
-                reduceFileWriter.write(sb.toString());
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            } finally {
-                try {
-                    reduceFileWriter.flush();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
+        public void setReductionContext(List<Query<?>> setupStatements, String bugInformation) {
+            this.reduceSetupStatements = setupStatements;
+            this.reduceBugInformation = bugInformation;
         }
 
         public void logReduced(StateToReproduce state) {
+            nrReductionAttempts++;
+            logReduced(state, "Reduction attempt " + nrReductionAttempts
+                    + ": the bug was still triggered with the following statements");
+        }
+
+        public void logReduced(StateToReproduce state, String description) {
             FileWriter reduceFileWriter = getReduceFileWriter();
 
             StringBuilder sb = new StringBuilder();
-            for (Query<?> s : state.getStatements()) {
-                sb.append(databaseProvider.getLoggableFactory().createLoggable(s.getLogString()).getLogString());
+            sb.append("-- ").append(description).append(System.lineSeparator());
+            if (reduceSetupStatements != null && !reduceSetupStatements.isEmpty()) {
+                appendStatements(sb, reduceSetupStatements);
+                // e.g. DROP DATABASE IF EXISTS db; CREATE DATABASE db; USE db;
+                // these statements are executed at the start of every test case and are never reduced
             }
+            appendStatements(sb, state.getStatements());
+            if (reduceBugInformation != null) {
+                sb.append(reduceBugInformation);
+            }
+            sb.append(System.lineSeparator());
             try {
                 reduceFileWriter.write(sb.toString());
 
@@ -303,6 +305,12 @@ public final class Main {
                 }
             }
 
+        }
+
+        private void appendStatements(StringBuilder sb, List<Query<?>> statements) {
+            for (Query<?> s : statements) {
+                sb.append(databaseProvider.getLoggableFactory().createLoggable(s.getLogString()).getLogString());
+            }
         }
 
         public void logException(Throwable reduce, StateToReproduce state) {
@@ -460,6 +468,9 @@ public final class Main {
                 if (options.logEachSelect()) {
                     logger.writeCurrent(state.getState());
                 }
+                // statements logged so far stem from the database setup (e.g., DROP DATABASE IF
+                // EXISTS, CREATE DATABASE, USE), performed by createDatabase
+                int nrSetupStatements = stateToRepro.getStatements().size();
                 Reproducer<G> reproducer = null;
                 if (options.enableQPG()) {
                     provider.generateAndTestDatabaseWithQueryPlanGuidance(state);
@@ -484,6 +495,17 @@ public final class Main {
                         logger.getReduceFileWriter().write("current oracle does not support experimental reducer.");
                         throw new IgnoreMeException();
                     }
+
+                    // reduce only the generation statements: the database setup (logged by
+                    // createDatabase) is re-executed by the reducers for every candidate, and the
+                    // oracle queries (logged by the oracle's local state) by the reproducer
+                    List<Query<?>> allStatements = new ArrayList<>(stateToRepro.getStatements());
+                    List<Query<?>> setupStatements = new ArrayList<>(allStatements.subList(0, nrSetupStatements));
+                    List<Query<?>> oracleQueryStatements = stateToRepro.getLocalState() == null ? new ArrayList<>()
+                            : new ArrayList<>(stateToRepro.getLocalState().getStatements());
+                    stateToRepro.setStatements(new ArrayList<>(allStatements.subList(nrSetupStatements,
+                            allStatements.size() - oracleQueryStatements.size())));
+
                     G newGlobalState = createGlobalState();
                     newGlobalState.setState(stateToRepro);
                     newGlobalState.setRandomly(r);
@@ -493,6 +515,7 @@ public final class Main {
                     QueryManager<C> newManager = new QueryManager<>(newGlobalState);
                     newGlobalState.setStateLogger(new StateLogger(databaseName, provider, options));
                     newGlobalState.setManager(newManager);
+                    newGlobalState.getLogger().setReductionContext(setupStatements, reproducer.getBugInformation());
 
                     Reducer<G> reducer = new StatementReducer<>(provider);
                     reducer.reduce(state, reproducer, newGlobalState);
@@ -502,11 +525,18 @@ public final class Main {
                         astBasedReducer.reduce(state, reproducer, newGlobalState);
                     }
 
+                    // reassemble the statements so that the main log looks like one produced
+                    // without the reducer, with the generation statements replaced by the reduced
+                    // ones and the oracle queries at the end
+                    List<Query<?>> finalStatements = new ArrayList<>(setupStatements);
+                    finalStatements.addAll(stateToRepro.getStatements());
+                    finalStatements.addAll(oracleQueryStatements);
+                    stateToRepro.setStatements(finalStatements);
                     String bugInformation = reproducer.getBugInformation();
                     if (bugInformation != null) {
-                        // log through newGlobalState's logger: it already holds the reduce file
-                        // writer, and opening it through another StateLogger truncates the file
-                        newGlobalState.getLogger().logReducer(bugInformation);
+                        for (String line : bugInformation.split(System.lineSeparator())) {
+                            stateToRepro.logStatement(line);
+                        }
                     }
 
                     StateLogger reduceLogger = newGlobalState.getLogger();
