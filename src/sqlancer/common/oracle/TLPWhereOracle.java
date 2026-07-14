@@ -34,30 +34,37 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         final String secondQueryString;
         final String thirdQueryString;
         final String originalQueryString;
-        final List<String> resultSet;
         final boolean orderBy;
 
         TLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString,
-                String originalQueryString, List<String> resultSet, boolean orderBy) {
+                String originalQueryString, boolean orderBy) {
             this.firstQueryString = firstQueryString;
             this.secondQueryString = secondQueryString;
             this.thirdQueryString = thirdQueryString;
             this.originalQueryString = originalQueryString;
-            this.resultSet = resultSet;
             this.orderBy = orderBy;
         }
 
         @Override
         public boolean bugStillTriggers(G globalState) {
+            List<String> firstResultSet;
+            List<String> combinedString = new ArrayList<>();
+            List<String> secondResultSet;
             try {
-                List<String> combinedString1 = new ArrayList<>();
-                List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString,
-                        secondQueryString, thirdQueryString, combinedString1, !orderBy, globalState, errors);
-                ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet1, originalQueryString,
-                        combinedString1, globalState);
-            } catch (AssertionError triggeredError) {
+                firstResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
+                        globalState);
+                secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
+                        thirdQueryString, combinedString, !orderBy, globalState, errors);
+            } catch (SQLException | RuntimeException | AssertionError e) {
+                // the queries could not be executed on the reduced database (e.g., a statement they
+                // depend on was removed), which is not the result set mismatch that is being reduced
+                return false;
+            }
+            try {
+                ComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, originalQueryString,
+                        combinedString, globalState);
+            } catch (AssertionError resultSetMismatch) {
                 return true;
-            } catch (SQLException ignored) {
             }
             return false;
         }
@@ -107,7 +114,7 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         String thirdQueryString = select.asString();
 
         reproducer = new TLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString, originalQueryString,
-                firstResultSet, orderBy);
+                orderBy);
 
         List<String> combinedString = new ArrayList<>();
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,

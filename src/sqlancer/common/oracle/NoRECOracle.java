@@ -1,7 +1,6 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.function.Function;
 
 import sqlancer.IgnoreMeException;
@@ -42,7 +41,20 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
 
         @Override
         public boolean bugStillTriggers(G globalState) {
-            return !Objects.equals(optimizedQuery.apply(globalState), unoptimizedQuery.apply(globalState));
+            int optimizedCount;
+            int unoptimizedCount;
+            try {
+                optimizedCount = optimizedQuery.apply(globalState);
+                unoptimizedCount = unoptimizedQuery.apply(globalState);
+            } catch (RuntimeException | AssertionError e) {
+                // the queries could not be executed on the reduced database (e.g., a statement they
+                // depend on was removed), which is not the count mismatch that is being reduced
+                return false;
+            }
+            if (optimizedCount == -1 || unoptimizedCount == -1) {
+                return false;
+            }
+            return optimizedCount != unoptimizedCount;
         }
     }
 
