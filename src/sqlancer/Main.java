@@ -502,10 +502,18 @@ public final class Main {
                         astBasedReducer.reduce(state, reproducer, newGlobalState);
                     }
 
-                    if (logger.reduceFileWriter != null) {
+                    String bugInformation = reproducer.getBugInformation();
+                    if (bugInformation != null) {
+                        // log through newGlobalState's logger: it already holds the reduce file
+                        // writer, and opening it through another StateLogger truncates the file
+                        newGlobalState.getLogger().logReducer(bugInformation);
+                    }
+
+                    StateLogger reduceLogger = newGlobalState.getLogger();
+                    if (reduceLogger.reduceFileWriter != null) {
                         try {
-                            logger.reduceFileWriter.close();
-                            logger.reduceFileWriter = null;
+                            reduceLogger.reduceFileWriter.close();
+                            reduceLogger.reduceFileWriter = null;
                         } catch (IOException e) {
                             throw new AssertionError(e);
                         }
