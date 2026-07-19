@@ -34,6 +34,28 @@ public final class TestOracleUtils {
         return new AbstractTables<>(Randomly.nonEmptySubset(schema.getDatabaseTables()));
     }
 
+    /**
+     * Extracts the message of the DBMS error that caused an oracle query to fail unexpectedly, from the AssertionError
+     * that wraps it (see, e.g., ComparatorHelper#getResultSetFirstColumnAsString). Reproducers use it to check that a
+     * reduced test case still triggers the same error, rather than an unrelated one introduced by the reduction itself.
+     *
+     * @param error
+     *            the AssertionError wrapping the DBMS error
+     *
+     * @return the message of the innermost cause that has one, or the error's own message
+     */
+    public static String getUnexpectedErrorMessage(AssertionError error) {
+        String message = error.getMessage();
+        Throwable current = error.getCause();
+        while (current != null) {
+            if (current.getMessage() != null) {
+                message = current.getMessage();
+            }
+            current = current.getCause();
+        }
+        return message;
+    }
+
     public static <E extends Expression<C>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>> PredicateVariants<E, C> initializeTernaryPredicateVariants(
             PartitionGenerator<E, C> gen, E predicate) {
         if (gen == null) {

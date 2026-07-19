@@ -128,6 +128,10 @@ public class StateToReproduce implements Serializable {
             statements.add(databaseProvider.getLoggableFactory().getQueryForStateToReproduce(s));
         }
 
+        public List<Query<?>> getStatements() {
+            return Collections.unmodifiableList(statements);
+        }
+
         @Override
         public void close() {
             if (!success) {

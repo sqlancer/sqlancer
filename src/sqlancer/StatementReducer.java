@@ -77,7 +77,8 @@ public class StatementReducer<G extends GlobalState<O, ?, C>, O extends DBMSSpec
         // System.out.println("Reduced query:");
         // printQueries(knownToReproduceBugStatements);
         newGlobalState.getState().setStatements(new ArrayList<>(knownToReproduceBugStatements));
-        newGlobalState.getLogger().logReduced(newGlobalState.getState());
+        newGlobalState.getLogger().logReduced(newGlobalState.getState(),
+                "Statement reduction finished; the following statements remain");
 
     }
 

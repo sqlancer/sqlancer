@@ -34,32 +34,80 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         final String secondQueryString;
         final String thirdQueryString;
         final String originalQueryString;
-        final List<String> resultSet;
         final boolean orderBy;
+        // null if the original bug is a result set mismatch; otherwise, the message of the
+        // unexpected DBMS error that the original queries triggered
+        final String expectedErrorMessage;
 
         TLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString,
-                String originalQueryString, List<String> resultSet, boolean orderBy) {
+                String originalQueryString, boolean orderBy, String expectedErrorMessage) {
             this.firstQueryString = firstQueryString;
             this.secondQueryString = secondQueryString;
             this.thirdQueryString = thirdQueryString;
             this.originalQueryString = originalQueryString;
-            this.resultSet = resultSet;
             this.orderBy = orderBy;
+            this.expectedErrorMessage = expectedErrorMessage;
         }
 
         @Override
         public boolean bugStillTriggers(G globalState) {
+            List<String> firstResultSet;
+            List<String> combinedString = new ArrayList<>();
+            List<String> secondResultSet;
             try {
-                List<String> combinedString1 = new ArrayList<>();
-                List<String> secondResultSet1 = ComparatorHelper.getCombinedResultSet(firstQueryString,
-                        secondQueryString, thirdQueryString, combinedString1, !orderBy, globalState, errors);
-                ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet1, originalQueryString,
-                        combinedString1, globalState);
-            } catch (AssertionError triggeredError) {
+                firstResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
+                        globalState);
+                if (firstQueryString == null) {
+                    // the original bug was a DBMS error on the original query alone, which no
+                    // longer occurs
+                    return false;
+                }
+                secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
+                        thirdQueryString, combinedString, !orderBy, globalState, errors);
+            } catch (AssertionError unexpectedError) {
+                // a DBMS error reproduces the bug only if the original failure was the same error;
+                // other errors are artifacts of the reduction (e.g., a removed CREATE TABLE)
+                return expectedErrorMessage != null
+                        && expectedErrorMessage.equals(TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
+            } catch (SQLException | RuntimeException e) {
+                return false;
+            }
+            if (expectedErrorMessage != null) {
+                // the original bug was a DBMS error, which no longer occurs
+                return false;
+            }
+            try {
+                ComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, originalQueryString,
+                        combinedString, globalState);
+            } catch (AssertionError resultSetMismatch) {
                 return true;
-            } catch (SQLException ignored) {
             }
             return false;
+        }
+
+        @Override
+        public String getBugInformation() {
+            StringBuilder sb = new StringBuilder();
+            if (expectedErrorMessage == null) {
+                sb.append("-- On the database set up by the statements above, the result sets of the following"
+                        + " queries mismatch:").append(System.lineSeparator());
+            } else {
+                sb.append("-- On the database set up by the statements above, the following queries trigger an"
+                        + " unexpected error with message: ").append(expectedErrorMessage)
+                        .append(System.lineSeparator());
+            }
+            sb.append("-- ").append(originalQueryString).append(';').append(System.lineSeparator());
+            if (firstQueryString != null) {
+                if (orderBy) {
+                    sb.append("-- ").append(firstQueryString).append(';').append(System.lineSeparator());
+                    sb.append("-- ").append(secondQueryString).append(';').append(System.lineSeparator());
+                    sb.append("-- ").append(thirdQueryString).append(';').append(System.lineSeparator());
+                } else {
+                    sb.append("-- ").append(firstQueryString).append(" UNION ALL ").append(secondQueryString)
+                            .append(" UNION ALL ").append(thirdQueryString).append(';').append(System.lineSeparator());
+                }
+            }
+            return sb.toString();
         }
     }
 
@@ -89,8 +137,14 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
 
         String originalQueryString = select.asString();
         generatedQueryString = originalQueryString;
-        List<String> firstResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                state);
+        List<String> firstResultSet;
+        try {
+            firstResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
+        } catch (AssertionError unexpectedError) {
+            reproducer = new TLPWhereReproducer(null, null, null, originalQueryString, false,
+                    TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
+            throw unexpectedError;
+        }
 
         boolean orderBy = Randomly.getBooleanWithSmallProbability();
         if (orderBy) {
@@ -107,14 +161,20 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         String thirdQueryString = select.asString();
 
         List<String> combinedString = new ArrayList<>();
-        List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, !orderBy, state, errors);
-
-        ComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, originalQueryString, combinedString,
-                state);
+        List<String> secondResultSet;
+        try {
+            secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
+                    thirdQueryString, combinedString, !orderBy, state, errors);
+        } catch (AssertionError unexpectedError) {
+            reproducer = new TLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString,
+                    originalQueryString, orderBy, TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
+            throw unexpectedError;
+        }
 
         reproducer = new TLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString, originalQueryString,
-                firstResultSet, orderBy);
+                orderBy, null);
+        ComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, originalQueryString, combinedString,
+                state);
     }
 
     @Override

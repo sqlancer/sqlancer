@@ -1,7 +1,6 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.function.Function;
 
 import sqlancer.IgnoreMeException;
@@ -34,15 +33,60 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
     private static class NoRECReproducer<G extends SQLGlobalState<?, ?>> implements Reproducer<G> {
         private final Function<G, Integer> optimizedQuery;
         private final Function<G, Integer> unoptimizedQuery;
+        private final String optimizedQueryString;
+        private final String unoptimizedQueryString;
+        // null if the original bug is a count mismatch; otherwise, the message of the unexpected
+        // DBMS error that the original queries triggered
+        private final String expectedErrorMessage;
 
-        NoRECReproducer(Function<G, Integer> optimizedQuery, Function<G, Integer> unoptimizedQuery) {
+        NoRECReproducer(Function<G, Integer> optimizedQuery, Function<G, Integer> unoptimizedQuery,
+                String optimizedQueryString, String unoptimizedQueryString, String expectedErrorMessage) {
             this.optimizedQuery = optimizedQuery;
             this.unoptimizedQuery = unoptimizedQuery;
+            this.optimizedQueryString = optimizedQueryString;
+            this.unoptimizedQueryString = unoptimizedQueryString;
+            this.expectedErrorMessage = expectedErrorMessage;
         }
 
         @Override
         public boolean bugStillTriggers(G globalState) {
-            return !Objects.equals(optimizedQuery.apply(globalState), unoptimizedQuery.apply(globalState));
+            int optimizedCount;
+            int unoptimizedCount;
+            try {
+                optimizedCount = optimizedQuery.apply(globalState);
+                unoptimizedCount = unoptimizedQuery.apply(globalState);
+            } catch (AssertionError unexpectedError) {
+                // a DBMS error reproduces the bug only if the original failure was the same error;
+                // other errors are artifacts of the reduction (e.g., a removed CREATE TABLE)
+                return expectedErrorMessage != null
+                        && expectedErrorMessage.equals(TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
+            } catch (RuntimeException e) {
+                return false;
+            }
+            if (expectedErrorMessage != null) {
+                // the original bug was a DBMS error, which no longer occurs
+                return false;
+            }
+            if (optimizedCount == -1 || unoptimizedCount == -1) {
+                return false;
+            }
+            return optimizedCount != unoptimizedCount;
+        }
+
+        @Override
+        public String getBugInformation() {
+            StringBuilder sb = new StringBuilder();
+            if (expectedErrorMessage == null) {
+                sb.append("-- On the database set up by the statements above, the row counts of the following"
+                        + " queries mismatch:").append(System.lineSeparator());
+            } else {
+                sb.append("-- On the database set up by the statements above, the following queries trigger an"
+                        + " unexpected error with message: ").append(expectedErrorMessage)
+                        .append(System.lineSeparator());
+            }
+            sb.append("-- optimized: ").append(optimizedQueryString).append(';').append(System.lineSeparator());
+            sb.append("-- unoptimized: ").append(unoptimizedQueryString).append(';').append(System.lineSeparator());
+            return sb.toString();
         }
     }
 
@@ -82,21 +126,28 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
             state.getLogger().writeCurrent(unoptimizedQueryString);
         }
 
-        int optimizedCount = shouldUseAggregate ? extractCounts(optimizedQueryString, errors, state)
-                : countRows(optimizedQueryString, errors, state);
-        int unoptimizedCount = extractCounts(unoptimizedQueryString, errors, state);
+        Function<G, Integer> optimizedQuery = state -> shouldUseAggregate
+                ? extractCounts(optimizedQueryString, errors, state) : countRows(optimizedQueryString, errors, state);
+        Function<G, Integer> unoptimizedQuery = state -> extractCounts(unoptimizedQueryString, errors, state);
+
+        int optimizedCount;
+        int unoptimizedCount;
+        try {
+            optimizedCount = optimizedQuery.apply(state);
+            unoptimizedCount = unoptimizedQuery.apply(state);
+        } catch (AssertionError unexpectedError) {
+            reproducer = new NoRECReproducer<>(optimizedQuery, unoptimizedQuery, optimizedQueryString,
+                    unoptimizedQueryString, TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
+            throw unexpectedError;
+        }
 
         if (optimizedCount == -1 || unoptimizedCount == -1) {
             throw new IgnoreMeException();
         }
 
         if (unoptimizedCount != optimizedCount) {
-            Function<G, Integer> optimizedQuery = state -> shouldUseAggregate
-                    ? extractCounts(optimizedQueryString, errors, state)
-                    : countRows(optimizedQueryString, errors, state);
-
-            Function<G, Integer> unoptimizedQuery = state -> extractCounts(unoptimizedQueryString, errors, state);
-            reproducer = new NoRECReproducer<>(optimizedQuery, unoptimizedQuery);
+            reproducer = new NoRECReproducer<>(optimizedQuery, unoptimizedQuery, optimizedQueryString,
+                    unoptimizedQueryString, null);
 
             String queryFormatString = "-- %s;\n-- count: %d";
             String firstQueryStringWithCount = String.format(queryFormatString, optimizedQueryString, optimizedCount);
