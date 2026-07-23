@@ -185,13 +185,18 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
         }
         CastType operandType = inferType(op.getExpression());
         if (op.getOp() == MySQLUnaryPrefixOperator.PLUS) {
-            return operandType; // unary + is the identity
+            return operandType;
         }
-        // Unary -: strings are coerced to DOUBLE; negating UNSIGNED changes the type (and usually errors).
-        if (operandType == CastType.CHAR || operandType == CastType.DOUBLE) {
-            return CastType.DOUBLE;
+        if (op.getOp() == MySQLUnaryPrefixOperator.MINUS) {
+            if (operandType == CastType.UNSIGNED) {
+                return CastType.SIGNED;
+            } else if (operandType == CastType.FLOAT) {
+                return CastType.DOUBLE;
+            } else if (operandType != CastType.CHAR) {
+                return operandType;
+            }
         }
-        return operandType == CastType.SIGNED ? CastType.SIGNED : null;
+        return null;
     }
 
     private CastType inferConstantType(MySQLConstant constant) {
