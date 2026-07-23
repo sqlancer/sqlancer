@@ -30,9 +30,9 @@ public interface EETGenerator<S extends Select<J, E, T, C>, J extends Join<E, T,
     E generateBooleanExpression();
 
     /**
-     * Creates a DBMS-specific {@link EETTransformer} backed by this generator. Called once by {@link
-     * sqlancer.common.oracle.EETOracle} during construction; the oracle owns the returned transformer for the lifetime
-     * of the test run.
+     * Creates a DBMS-specific {@link EETTransformer} backed by this generator. Called once by
+     * {@link sqlancer.common.oracle.EETOracle} during construction; the oracle owns the returned transformer for the
+     * lifetime of the test run.
      */
     EETTransformer<E, ?> createTransformer();
 }

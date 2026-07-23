@@ -23,9 +23,9 @@ import sqlancer.common.schema.AbstractTables;
  *
  * <p>
  * The oracle generates a random query and then transforms its expressions (the WHERE predicate and the fetch columns)
- * into semantically equivalent ones using {@link EETGenerator#transformExpression}. Because the transformation preserves
- * semantics, the original and the transformed query must return the same result set; any discrepancy indicates a logic
- * bug in the DBMS.
+ * into semantically equivalent ones using {@link EETGenerator#transformExpression}. Because the transformation
+ * preserves semantics, the original and the transformed query must return the same result set; any discrepancy
+ * indicates a logic bug in the DBMS.
  */
 public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E extends Expression<C>, S extends AbstractSchema<?, T>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>, G extends SQLGlobalState<?, S>>
         implements TestOracle<G> {
@@ -102,8 +102,7 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
             }
             sb.append("-- original: ").append(originalQueryString).append(';').append(System.lineSeparator());
             if (transformedQueryString != null) {
-                sb.append("-- transformed: ").append(transformedQueryString).append(';')
-                        .append(System.lineSeparator());
+                sb.append("-- transformed: ").append(transformedQueryString).append(';').append(System.lineSeparator());
             }
             return sb.toString();
         }

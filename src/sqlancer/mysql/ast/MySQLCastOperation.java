@@ -7,9 +7,9 @@ public class MySQLCastOperation implements MySQLExpression {
 
     public enum CastType {
         SIGNED, UNSIGNED,
-        // CHAR and DOUBLE are used only by the EET oracle's type-pinning casts and are never evaluated, so
-        // MySQLConstant.castAs does not support them; they must not be returned by getRandom().
-        CHAR, DOUBLE;
+        // CHAR, FLOAT, DOUBLE and DECIMAL are used only by the EET oracle's type-pinning casts and are never
+        // evaluated, so MySQLConstant.castAs does not support them; they must not be returned by getRandom().
+        CHAR, FLOAT, DOUBLE, DECIMAL;
 
         public static CastType getRandom() {
             return SIGNED;

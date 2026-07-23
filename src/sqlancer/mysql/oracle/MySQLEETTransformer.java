@@ -80,8 +80,8 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
                     transformNode(op.getLeft(), SCALAR, false), transformNode(op.getRight(), SCALAR, false));
         } else if (expr instanceof MySQLInOperation) {
             MySQLInOperation op = (MySQLInOperation) expr;
-            List<MySQLExpression> listElements = op.getListElements().stream()
-                    .map(e -> transformNode(e, SCALAR, false)).collect(Collectors.toList());
+            List<MySQLExpression> listElements = op.getListElements().stream().map(e -> transformNode(e, SCALAR, false))
+                    .collect(Collectors.toList());
             return new MySQLInOperation(transformNode(op.getExpr(), SCALAR, false), listElements, op.isTrue());
         } else if (expr instanceof MySQLComputableFunction) {
             MySQLComputableFunction op = (MySQLComputableFunction) expr;
@@ -211,10 +211,18 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
             return CastType.SIGNED; // the table generator never creates UNSIGNED INT columns
         case VARCHAR:
             return CastType.CHAR;
+        case FLOAT:
+            // Assumes FLOAT columns are never created with (M, D); otherwise the CAST would need the exact
+            // precision/scale.
+            return CastType.FLOAT;
         case DOUBLE:
+            // Assumes DOUBLE columns are never created with (M, D); otherwise the CAST would need the exact
+            // precision/scale.
             return CastType.DOUBLE;
-        case FLOAT: // FLOAT-to-DOUBLE widening in the CASE result changes the rendered value
-        case DECIMAL: // the CASE result would need the column's exact precision and scale
+        case DECIMAL:
+            // Assumes DECIMAL columns are never created with (M, D); otherwise the CAST would need the exact
+            // precision/scale.
+            return CastType.DECIMAL;
         default:
             return null;
         }
@@ -247,8 +255,8 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
     }
 
     /**
-     * The common type of several result-type-determining subexpressions, or {@code null} if they do not have the
-     * same inferrable type (a conservative under-approximation of MySQL's aggregation rules).
+     * The common type of several result-type-determining subexpressions, or {@code null} if they do not have the same
+     * inferrable type (a conservative under-approximation of MySQL's aggregation rules).
      */
     private CastType commonType(MySQLExpression... exprs) {
         CastType common = null;

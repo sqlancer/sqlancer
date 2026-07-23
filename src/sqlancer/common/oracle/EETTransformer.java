@@ -38,8 +38,8 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      * {@code expr}. Although the generated expression is never evaluated (it occupies the dead branch of rules No. 3
      * and 4), its static type participates in the DBMS's CASE WHEN result-type resolution, so a type mismatch could
      * alter the live branch's value or rendering. When the type of {@code expr} cannot be inferred, this falls back to
-     * {@code expr} itself, which trivially has the correct type (degenerating the rule to the {@code copy_expr} form
-     * of rules No. 5 and 6).
+     * {@code expr} itself, which trivially has the correct type (degenerating the rule to the {@code copy_expr} form of
+     * rules No. 5 and 6).
      */
     private E randExprOfSameType(E expr) {
         T type = inferType(expr);
@@ -85,7 +85,7 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         case 5: // expr => CASE WHEN rand_expr(boolean) THEN copy(expr) ELSE expr END
         case 6: // expr => CASE WHEN rand_expr(boolean) THEN expr ELSE copy(expr) END
             return caseWhen(generateBooleanExpression(), expr, expr);
-            // deep copy of expr is not needed, as the AST nodes are immutable anyway
+        // deep copy of expr is not needed, as the AST nodes are immutable anyway
         default:
             throw new AssertionError(rule);
         }
@@ -111,9 +111,9 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
     }
 
     /**
-     * Rebuilds {@code expr} with its children transformed, threading the correct boolean/scalar context into each child.
-     * Leaf nodes (columns, constants, table references, ...) should be returned unchanged; any applicable transformation
-     * will still be applied to them by the calling {@link #transformNode}.
+     * Rebuilds {@code expr} with its children transformed, threading the correct boolean/scalar context into each
+     * child. Leaf nodes (columns, constants, table references, ...) should be returned unchanged; any applicable
+     * transformation will still be applied to them by the calling {@link #transformNode}.
      *
      * @param expr
      *            the expression to descend into
@@ -149,8 +149,8 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      * Infers the static type of {@code expr}, or returns {@code null} if it cannot be determined. The type domain
      * {@code T} is DBMS-specific and may be coarse: it only needs to be precise enough that replacing an expression
      * with another of the same {@code T} leaves the DBMS's CASE WHEN result-type resolution unaffected. Returning
-     * {@code null} is always safe — rules No. 3 and 4 then fall back to reusing {@code expr} itself as the dead
-     * branch. Inference should therefore be conservative: prefer {@code null} over a type whose CASE WHEN behaviour is
+     * {@code null} is always safe — rules No. 3 and 4 then fall back to reusing {@code expr} itself as the dead branch.
+     * Inference should therefore be conservative: prefer {@code null} over a type whose CASE WHEN behaviour is
      * uncertain.
      */
     protected abstract T inferType(E expr);
