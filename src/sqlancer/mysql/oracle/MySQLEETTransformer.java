@@ -32,9 +32,10 @@ import sqlancer.mysql.gen.MySQLExpressionGenerator;
  * nodes from their transformed children, threading the correct boolean/scalar context into each child.
  *
  * <p>
- * MySQL's expression generator is untyped, so type inference/generation works with a subset of MySQL's CAST target types
- * ({@link CastType}): {@link #inferType} conservatively classifies AST nodes into that domain (returning {@code null}
- * when uncertain), and {@link #generateExpressionOfType} pins the type of a random expression by wrapping it in a CAST.
+ * MySQL's expression generator is untyped, so type inference/generation works with a subset of MySQL's CAST target
+ * types ({@link CastType}): {@link #inferType} conservatively classifies AST nodes into that domain (returning
+ * {@code null} when uncertain), and {@link #generateExpressionOfType} pins the type of a random expression by wrapping
+ * it in a CAST.
  */
 public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCastOperation.CastType> {
 
@@ -216,17 +217,14 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
             return CastType.SIGNED; // the table generator never creates UNSIGNED INT columns
         case VARCHAR:
             return CastType.CHAR;
+        // FLOAT/DOUBLE/DECIMAL columns are created without (M, D) while EET is active, so the plain
+        // CAST target below matches the column's type. Reintroducing (M, D) for better coverage would
+        // require tracking it here and emitting the exact precision/scale in the CAST.
         case FLOAT:
-            // Assumes FLOAT columns are never created with (M, D); otherwise the CAST would need the exact
-            // precision/scale.
             return CastType.FLOAT;
         case DOUBLE:
-            // Assumes DOUBLE columns are never created with (M, D); otherwise the CAST would need the exact
-            // precision/scale.
             return CastType.DOUBLE;
         case DECIMAL:
-            // Assumes DECIMAL columns are never created with (M, D); otherwise the CAST would need the exact
-            // precision/scale.
             return CastType.DECIMAL;
         default:
             return null;

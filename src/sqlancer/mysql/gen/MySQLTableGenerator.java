@@ -368,8 +368,13 @@ public class MySQLTableGenerator {
         }
     }
 
-    public static void optionallyAddPrecisionAndScale(StringBuilder sb) {
-        if (Randomly.getBoolean() && !MySQLBugs.bug99183) {
+    private void optionallyAddPrecisionAndScale(StringBuilder sb) {
+        // The EET oracle's type inference assumes FLOAT/DOUBLE/DECIMAL columns are created without (M, D) (see
+        // MySQLEETTransformer#inferColumnType), so precision/scale is omitted while EET is active. This restriction can
+        // be lifted once (M, D) is tracked through the codebase and reflected in the CAST target types.
+        boolean eetActive = globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch(o -> o == MySQLOracleFactory.EET);
+        if (Randomly.getBoolean() && !MySQLBugs.bug99183 && !eetActive) {
             sb.append("(");
             // The maximum number of digits (M) for DECIMAL is 65
             long m = Randomly.getNotCachedInteger(1, 65);
