@@ -26,6 +26,21 @@ import sqlancer.common.schema.AbstractTables;
  * into semantically equivalent ones using {@link EETGenerator#transformExpression}. Because the transformation
  * preserves semantics, the original and the transformed query must return the same result set; any discrepancy
  * indicates a logic bug in the DBMS.
+ *
+ * @param <Z>
+ *            the DBMS-specific SELECT statement class
+ * @param <J>
+ *            the DBMS-specific JOIN clause class
+ * @param <E>
+ *            the DBMS-specific expression class
+ * @param <S>
+ *            the DBMS-specific schema class
+ * @param <T>
+ *            the DBMS-specific table class
+ * @param <C>
+ *            the DBMS-specific column class
+ * @param <G>
+ *            the DBMS-specific global state class
  */
 public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E extends Expression<C>, S extends AbstractSchema<?, T>, T extends AbstractTable<C, ?, ?>, C extends AbstractTableColumn<?, ?>, G extends SQLGlobalState<?, S>>
         implements TestOracle<G> {

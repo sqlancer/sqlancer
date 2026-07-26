@@ -24,7 +24,7 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
     // true_expr(p) = p OR (NOT p) OR (p IS NULL) -> always TRUE
     private E trueExpr() {
         E p = generateBooleanExpression();
-        return or(or(p, not(p)), isNull(p));
+        return orExpr(orExpr(p, not(p)), isNull(p));
     }
 
     // false_expr(p) = p AND (NOT p) AND (p IS NOT NULL) -> always FALSE
@@ -40,6 +40,11 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      * alter the live branch's value or rendering. When the type of {@code expr} cannot be inferred, this falls back to
      * {@code expr} itself, which trivially has the correct type (degenerating the rule to the {@code copy_expr} form of
      * rules No. 5 and 6).
+     *
+     * @param expr
+     *            the expression whose static type the generated expression must match
+     *
+     * @return a random expression whose static type matches that of {@code expr}
      */
     private E randExprOfSameType(E expr) {
         T type = inferType(expr);
@@ -75,7 +80,7 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         }
         switch (rule) {
         case 1: // expr => false_expr OR expr
-            return or(falseExpr(), expr);
+            return orExpr(falseExpr(), expr);
         case 2: // expr => true_expr AND expr
             return and(trueExpr(), expr);
         case 3: // expr => CASE WHEN false_expr THEN rand_expr(type(expr)) ELSE expr END
@@ -94,6 +99,13 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
     /**
      * Transforms {@code expr} into a semantically equivalent expression. A transformation rule is always applied at the
      * root, guaranteeing (unless only rule 7 is applicable) that the returned expression differs from the input.
+     *
+     * @param expr
+     *            the expression to transform
+     * @param booleanContext
+     *            whether {@code expr} is evaluated purely for its truth value
+     *
+     * @return a semantically equivalent expression
      */
     public E transform(E expr, boolean booleanContext) {
         return transformNode(expr, booleanContext, true);
@@ -101,6 +113,15 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
 
     /**
      * Descends into {@code expr}, rebuilds it from transformed children, then optionally applies a rule at this node.
+     *
+     * @param expr
+     *            the expression to transform
+     * @param booleanContext
+     *            whether {@code expr} is evaluated purely for its truth value
+     * @param forceApply
+     *            whether a rule must be applied at this node rather than only with some probability
+     *
+     * @return the transformed expression
      */
     protected E transformNode(E expr, boolean booleanContext, boolean forceApply) {
         E descended = descend(expr, booleanContext);
@@ -124,25 +145,79 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      */
     protected abstract E descend(E expr, boolean booleanContext);
 
-    /** Builds {@code left AND right}. */
+    /**
+     * Builds {@code left AND right}.
+     *
+     * @param left
+     *            the left operand
+     * @param right
+     *            the right operand
+     *
+     * @return the {@code left AND right} expression
+     */
     protected abstract E and(E left, E right);
 
-    /** Builds {@code left OR right}. */
-    protected abstract E or(E left, E right);
+    /**
+     * Builds {@code left OR right}.
+     *
+     * @param left
+     *            the left operand
+     * @param right
+     *            the right operand
+     *
+     * @return the {@code left OR right} expression
+     */
+    protected abstract E orExpr(E left, E right);
 
-    /** Builds {@code NOT expr}. */
+    /**
+     * Builds {@code NOT expr}.
+     *
+     * @param expr
+     *            the operand
+     *
+     * @return the {@code NOT expr} expression
+     */
     protected abstract E not(E expr);
 
-    /** Builds {@code expr IS NULL}. */
+    /**
+     * Builds {@code expr IS NULL}.
+     *
+     * @param expr
+     *            the operand
+     *
+     * @return the {@code expr IS NULL} expression
+     */
     protected abstract E isNull(E expr);
 
-    /** Builds {@code expr IS NOT NULL}. */
+    /**
+     * Builds {@code expr IS NOT NULL}.
+     *
+     * @param expr
+     *            the operand
+     *
+     * @return the {@code expr IS NOT NULL} expression
+     */
     protected abstract E isNotNull(E expr);
 
-    /** Builds {@code CASE WHEN condition THEN thenExpr ELSE elseExpr END}. */
+    /**
+     * Builds {@code CASE WHEN condition THEN thenExpr ELSE elseExpr END}.
+     *
+     * @param condition
+     *            the WHEN condition
+     * @param thenExpr
+     *            the THEN branch
+     * @param elseExpr
+     *            the ELSE branch
+     *
+     * @return the CASE WHEN expression
+     */
     protected abstract E caseWhen(E condition, E thenExpr, E elseExpr);
 
-    /** Generates a fresh random boolean expression, reusing the variables available to the query generator. */
+    /**
+     * Generates a fresh random boolean expression, reusing the variables available to the query generator.
+     *
+     * @return a fresh random boolean expression
+     */
     protected abstract E generateBooleanExpression();
 
     /**
@@ -152,6 +227,11 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      * {@code null} is always safe — rules No. 3 and 4 then fall back to reusing {@code expr} itself as the dead branch.
      * Inference should therefore be conservative: prefer {@code null} over a type whose CASE WHEN behaviour is
      * uncertain.
+     *
+     * @param expr
+     *            the expression whose static type is to be inferred
+     *
+     * @return the inferred static type of {@code expr}, or {@code null} if it cannot be determined
      */
     protected abstract T inferType(E expr);
 
@@ -160,12 +240,22 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      * generator. DBMSs with a typed expression generator can delegate to it directly; DBMSs with an untyped generator
      * can instead wrap an arbitrary random expression in a CAST to {@code type} (which requires every value of
      * {@code T} to be a valid CAST target).
+     *
+     * @param type
+     *            the static type the generated expression must have
+     *
+     * @return a fresh random expression of static type {@code type}
      */
     protected abstract E generateExpressionOfType(T type);
 
     /**
      * Whether {@code expr} may be wrapped in a CASE WHEN expression. Some expressions (e.g. table references) are not
      * CASE-WHEN applicable and must be transformed to themselves (rule No. 7 of the EET paper).
+     *
+     * @param expr
+     *            the expression to test
+     *
+     * @return {@code true} if {@code expr} may be wrapped in a CASE WHEN expression
      */
     protected abstract boolean isCaseWhenApplicable(E expr);
 }

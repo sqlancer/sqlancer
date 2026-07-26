@@ -118,7 +118,7 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
     }
 
     @Override
-    protected MySQLExpression or(MySQLExpression left, MySQLExpression right) {
+    protected MySQLExpression orExpr(MySQLExpression left, MySQLExpression right) {
         return new MySQLBinaryLogicalOperation(left, right, MySQLBinaryLogicalOperator.OR);
     }
 
@@ -260,6 +260,11 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
     /**
      * The common type of several result-type-determining subexpressions, or {@code null} if they do not have the same
      * inferrable type (a conservative under-approximation of MySQL's aggregation rules).
+     *
+     * @param exprs
+     *            the result-type-determining subexpressions
+     *
+     * @return the common inferred type of {@code exprs}, or {@code null} if they do not share one
      */
     private CastType commonType(MySQLExpression... exprs) {
         CastType common = null;

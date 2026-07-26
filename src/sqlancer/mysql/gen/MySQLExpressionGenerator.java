@@ -12,6 +12,7 @@ import sqlancer.common.gen.CERTGenerator;
 import sqlancer.common.gen.EETGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.oracle.EETTransformer;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
@@ -46,7 +47,6 @@ import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
-import sqlancer.common.oracle.EETTransformer;
 import sqlancer.mysql.oracle.MySQLEETTransformer;
 
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
