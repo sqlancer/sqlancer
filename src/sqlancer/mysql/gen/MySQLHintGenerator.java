@@ -170,7 +170,7 @@ public class MySQLHintGenerator {
         MySQLTable table = Randomly.fromList(tables);
         List<MySQLIndex> allIndexes = table.getIndexes();
         sb.append(table.getName());
-        sb.append(", ");
+        sb.append(" ");
         if (allIndexes.isEmpty()) {
             sb.append("PRIMARY");
         } else {
