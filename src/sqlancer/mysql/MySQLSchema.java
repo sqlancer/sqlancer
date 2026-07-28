@@ -57,6 +57,7 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
 
         private final boolean isPrimaryKey;
         private final int precision;
+        private final int scale;
 
         public enum CollateSequence {
             NOCASE, RTRIM, BINARY;
@@ -66,14 +67,19 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
             }
         }
 
-        public MySQLColumn(String name, MySQLDataType columnType, boolean isPrimaryKey, int precision) {
+        public MySQLColumn(String name, MySQLDataType columnType, boolean isPrimaryKey, int precision, int scale) {
             super(name, null, columnType);
             this.isPrimaryKey = isPrimaryKey;
             this.precision = precision;
+            this.scale = scale;
         }
 
         public int getPrecision() {
             return precision;
+        }
+
+        public int getScale() {
+            return scale;
         }
 
         @Override
@@ -276,8 +282,10 @@ public class MySQLSchema extends AbstractSchema<MySQLGlobalState, MySQLTable> {
                     String columnName = rs.getString("COLUMN_NAME");
                     String dataType = rs.getString("DATA_TYPE");
                     int precision = rs.getInt("NUMERIC_PRECISION");
+                    int scale = rs.getInt("NUMERIC_SCALE");
                     boolean isPrimaryKey = rs.getString("COLUMN_KEY").equals("PRI");
-                    MySQLColumn c = new MySQLColumn(columnName, getColumnType(dataType), isPrimaryKey, precision);
+                    MySQLColumn c = new MySQLColumn(columnName, getColumnType(dataType), isPrimaryKey, precision,
+                            scale);
                     columns.add(c);
                 }
             }
