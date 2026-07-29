@@ -1,5 +1,8 @@
 package sqlancer.common.gen;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.oracle.EETTransformer;
 import sqlancer.common.schema.AbstractTable;
@@ -122,17 +125,40 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
     }
 
     /**
-     * SQL that deletes the rows of {@code table} matching {@code predicate}.
+     * SQL that deletes the rows of {@code table} matching {@code predicate}, optionally limited to the first
+     * {@code limit} rows.
+     *
+     * <p>
+     * When {@code limit} is non-null, the statement is ordered by {@code orderByColumns} followed by
+     * {@link #ROW_ID_COLUMN} as a tiebreaker. Because the identifiers are unique, this is always a total order (even when
+     * the ordering columns tie), so the "first {@code limit}" rows are identical for the original and
+     * transformed statements. Varying the ordering columns exercises more access
+     * paths than the row id alone would. The caller must pass the same {@code orderByColumns} and {@code limit}
+     * to both statements; neither is transformed.
      *
      * @param table
      *            the table to delete from
      * @param predicate
      *            the WHERE predicate; rendered via {@link #asString}
+     * @param orderByColumns
+     *            the columns to order by before the row-id tiebreaker (may be empty); only used when {@code limit} is
+     *            non-null
+     * @param limit
+     *            the maximum number of rows to delete, or {@code null} for no limit
      *
      * @return the SQL statement
      */
-    default String deleteStatement(T table, E predicate) {
-        return "DELETE FROM " + table.getName() + " WHERE " + asString(predicate);
+    default String deleteStatement(T table, E predicate, List<C> orderByColumns, Integer limit) {
+        String statement = "DELETE FROM " + table.getName() + " WHERE " + asString(predicate);
+        if (limit != null) {
+            List<String> orderBy = new ArrayList<>();
+            for (C column : orderByColumns) {
+                orderBy.add(column.getName());
+            }
+            orderBy.add(ROW_ID_COLUMN); // unique tiebreaker: guarantees a total order regardless of the columns above
+            statement += " ORDER BY " + String.join(", ", orderBy) + " LIMIT " + limit;
+        }
+        return statement;
     }
 
     /**

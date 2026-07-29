@@ -84,8 +84,17 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         // The WHERE predicate is evaluated in a boolean context.
         E transformedPredicate = transformer.transform(predicate, true);
 
-        String originalDelete = gen.deleteStatement(table, predicate);
-        String transformedDelete = gen.deleteStatement(table, transformedPredicate);
+        // Optionally cap the DELETE with a LIMIT. The limit and its ordering (a random column subset, made a total
+        // order by the row-id tiebreaker) are decided once and applied identically to both statements, so the capped
+        // row set is deterministic and equal across the runs while still exercising varied orderings.
+        Integer limit = null;
+        List<C> orderByColumns = List.of();
+        if (Randomly.getBoolean()) {
+            limit = (int) Randomly.getNotCachedInteger(0, 10);
+            orderByColumns = Randomly.subset(table.getColumns());
+        }
+        String originalDelete = gen.deleteStatement(table, predicate, orderByColumns, limit);
+        String transformedDelete = gen.deleteStatement(table, transformedPredicate, orderByColumns, limit);
         generatedQueryString = originalDelete;
 
         // Add the auxiliary column outside the try, then guard everything after it with the finally that drops it:
