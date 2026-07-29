@@ -1,7 +1,9 @@
 package sqlancer.mysql.gen;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -255,6 +257,18 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     }
 
     @Override
+    public List<Map.Entry<MySQLColumn, MySQLExpression>> generateSetAssignments() {
+        List<Map.Entry<MySQLColumn, MySQLExpression>> assignments = new ArrayList<>();
+        for (MySQLColumn column : Randomly.nonEmptySubset(columns)) {
+            // As with the normal UPDATE workload, the value is an arbitrary expression (not type-matched to the
+            // column);
+            // any resulting type/range error is on the oracle's expected-error allow-list.
+            assignments.add(new AbstractMap.SimpleEntry<>(column, generateExpression()));
+        }
+        return assignments;
+    }
+
+    @Override
     public MySQLSelect generateSelect() {
         return new MySQLSelect();
     }
@@ -384,8 +398,8 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     @Override
     public String stampRowIdsStatement(MySQLTable table) {
         // MySQL's UUID() gives each existing row a distinct value in a single statement. Stamping happens once, before
-        // both rolled-back DELETE runs, so both observe identical identifiers; the standard-SQL statements (add/drop
-        // column, delete, snapshot, transaction control) use EETDMLGenerator's defaults.
+        // both rolled-back statement runs, so both observe identical identifiers; the standard-SQL statements (add/drop
+        // column, delete/update, snapshot, transaction control) use EETDMLGenerator's defaults.
         return String.format("UPDATE %s SET %s = UUID()", table.getName(), ROW_ID_COLUMN);
     }
 
