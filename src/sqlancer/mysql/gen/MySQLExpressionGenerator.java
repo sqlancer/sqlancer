@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.CERTGenerator;
+import sqlancer.common.gen.EETDMLGenerator;
 import sqlancer.common.gen.EETGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
@@ -19,6 +20,7 @@ import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
+import sqlancer.mysql.MySQLVisitor;
 import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLAggregate.MySQLAggregateFunction;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
@@ -52,7 +54,8 @@ import sqlancer.mysql.oracle.MySQLEETTransformer;
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
         implements TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
         CERTGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
-        EETGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
+        EETGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
+        EETDMLGenerator<MySQLExpression, MySQLTable, MySQLColumn> {
 
     private final MySQLGlobalState state;
     private MySQLRowValue rowVal;
@@ -364,10 +367,25 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         }
     }
 
-    // --- EET oracle ---
+    // --- EET oracle (including DML) ---
 
     @Override
     public EETTransformer<MySQLExpression, ?> createTransformer() {
         return new MySQLEETTransformer(this);
+    }
+
+    // --- EET DML only ---
+
+    @Override
+    public String asString(MySQLExpression expr) {
+        return MySQLVisitor.asString(expr);
+    }
+
+    @Override
+    public String stampRowIdsStatement(MySQLTable table) {
+        // MySQL's UUID() gives each existing row a distinct value in a single statement. Stamping happens once, before
+        // both rolled-back DELETE runs, so both observe identical identifiers; the standard-SQL statements (add/drop
+        // column, delete, snapshot, transaction control) use EETDMLGenerator's defaults.
+        return String.format("UPDATE %s SET %s = UUID()", table.getName(), ROW_ID_COLUMN);
     }
 }
