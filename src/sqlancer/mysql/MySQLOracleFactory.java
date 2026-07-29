@@ -99,7 +99,11 @@ public enum MySQLOracleFactory implements OracleFactory<MySQLGlobalState> {
         public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
             MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState);
             ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(MySQLErrors.getExpressionErrors())
-                    .withRegex(MySQLErrors.getExpressionRegexErrors()).with(MySQLErrors.getDMLErrors()).build();
+                    .withRegex(MySQLErrors.getExpressionRegexErrors())
+                    // The DML statements and the row-identity setup (adding/stamping the auxiliary column) touch rows,
+                    // so they can raise the full range of DML errors — e.g. functional-index maintenance truncation —
+                    // beyond the SELECT-based expression errors.
+                    .with(MySQLErrors.getDMLErrors()).build();
             return new EETDMLOracle<>(globalState, gen, expectedErrors);
         }
     };

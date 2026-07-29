@@ -66,7 +66,7 @@ public final class MySQLErrors {
     }
 
     public static List<String> getDMLErrors() {
-        ArrayList<String> errors = new ArrayList<>();
+        ArrayList<String> errors = new ArrayList<>(getInsertUpdateErrors());
 
         // WHERE-clause type coercion (e.g. string -> number) is only a warning in SELECT but a hard error in
         // DELETE/UPDATE under strict sql_mode (MySQL 1292). A semantics-preserving transform may benignly change

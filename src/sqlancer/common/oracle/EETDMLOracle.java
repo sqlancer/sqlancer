@@ -99,11 +99,17 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
 
         // Add the auxiliary column outside the try, then guard everything after it with the finally that drops it:
         // the ALTER auto-commits (it is not undone by ROLLBACK), so a failure between adding and dropping would leak
-        // the column into the next iteration and cause cascading duplicate-column failures.
-        new SQLQueryAdapter(gen.addRowIdColumnStatement(table), true).execute(state);
+        // the column into the next iteration and cause cascading duplicate-column failures. The row-identity setup
+        // touches rows, so — like the DELETE itself — it can raise tolerated errors (e.g. functional-index maintenance
+        // truncation); such an error aborts the iteration (IgnoreMeException) rather than being reported as a bug.
+        if (!new SQLQueryAdapter(gen.addRowIdColumnStatement(table), errors, true).execute(state)) {
+            throw new IgnoreMeException();
+        }
         try {
             // Stamp identifiers once, in autocommit mode, before both DELETEs run: both then observe the same rows.
-            new SQLQueryAdapter(gen.stampRowIdsStatement(table)).execute(state);
+            if (!new SQLQueryAdapter(gen.stampRowIdsStatement(table), errors).execute(state)) {
+                throw new IgnoreMeException();
+            }
 
             Set<String> originalSurvivors = executeDeleteAndSnapshot(table, originalDelete);
             Set<String> transformedSurvivors = executeDeleteAndSnapshot(table, transformedDelete);
@@ -113,7 +119,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
                         mismatchMessage(originalDelete, transformedDelete, originalSurvivors, transformedSurvivors));
             }
         } finally {
-            new SQLQueryAdapter(gen.dropRowIdColumnStatement(table), true).execute(state);
+            new SQLQueryAdapter(gen.dropRowIdColumnStatement(table), errors, true).execute(state);
         }
     }
 

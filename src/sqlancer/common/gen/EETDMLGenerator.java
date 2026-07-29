@@ -130,11 +130,10 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      *
      * <p>
      * When {@code limit} is non-null, the statement is ordered by {@code orderByColumns} followed by
-     * {@link #ROW_ID_COLUMN} as a tiebreaker. Because the identifiers are unique, this is always a total order (even when
-     * the ordering columns tie), so the "first {@code limit}" rows are identical for the original and
-     * transformed statements. Varying the ordering columns exercises more access
-     * paths than the row id alone would. The caller must pass the same {@code orderByColumns} and {@code limit}
-     * to both statements; neither is transformed.
+     * {@link #ROW_ID_COLUMN} as a tiebreaker. Because the identifiers are unique, this is always a total order (even
+     * when the ordering columns tie), so the "first {@code limit}" rows are identical for the original and transformed
+     * statements. Varying the ordering columns exercises more access paths than the row id alone would. The caller must
+     * pass the same {@code orderByColumns} and {@code limit} to both statements; neither is transformed.
      *
      * @param table
      *            the table to delete from
