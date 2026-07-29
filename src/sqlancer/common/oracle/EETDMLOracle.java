@@ -3,8 +3,12 @@ package sqlancer.common.oracle;
 import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -61,6 +65,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
     private final EETTransformer<E, ?> transformer;
     private final ExpectedErrors errors;
 
+    private static final int MAX_DIFF_ROWS_REPORTED = 10; // max differing post-image rows displayed in report log
     private String generatedQueryString;
 
     public EETDMLOracle(G state, EETDMLGenerator<E, T, C> gen, ExpectedErrors expectedErrors) {
@@ -137,8 +142,8 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             List<List<String>> transformedImage = executeAndSnapshotPostImage(table, transformedStatement, columnCount);
 
             if (!originalImage.equals(transformedImage)) {
-                throw new AssertionError(
-                        mismatchMessage(originalStatement, transformedStatement, originalImage, transformedImage));
+                throw new AssertionError(mismatchMessage(table, originalStatement, transformedStatement, originalImage,
+                        transformedImage));
             }
         } finally {
             new SQLQueryAdapter(gen.dropRowIdColumnStatement(table), errors, true).execute(state);
@@ -234,14 +239,56 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         return rows;
     }
 
-    private static String mismatchMessage(String originalStatement, String transformedStatement,
+    private String mismatchMessage(T table, String originalStatement, String transformedStatement,
             List<List<String>> originalImage, List<List<String>> transformedImage) {
-        return new StringBuilder()
-                .append("-- The original and transformed statements left the database in different states")
-                .append(" (different post-images):").append(System.lineSeparator()).append("-- original (")
-                .append(originalImage.size()).append(" rows): ").append(originalStatement).append(';')
-                .append(System.lineSeparator()).append("-- transformed (").append(transformedImage.size())
-                .append(" rows): ").append(transformedStatement).append(';').append(System.lineSeparator()).toString();
+        List<String> header = new ArrayList<>();
+        header.add(EETDMLGenerator.ROW_ID_COLUMN);
+        for (C column : table.getColumns()) {
+            header.add(column.getName());
+        }
+
+        Map<String, List<String>> originalByRowId = indexByRowId(originalImage);
+        Map<String, List<String>> transformedByRowId = indexByRowId(transformedImage);
+        Set<String> allRowIds = new TreeSet<>();
+        allRowIds.addAll(originalByRowId.keySet());
+        allRowIds.addAll(transformedByRowId.keySet());
+
+        String nl = System.lineSeparator();
+        StringBuilder message = new StringBuilder()
+                .append("-- The original and transformed statements left the database in different states.").append(nl)
+                .append("-- original:    ").append(originalStatement).append(';').append(nl).append("-- transformed: ")
+                .append(transformedStatement).append(';').append(nl).append("-- differing post-image rows (")
+                .append(String.join(", ", header)).append("):").append(nl);
+        int shown = 0;
+        for (String rowId : allRowIds) {
+            List<String> originalRow = originalByRowId.get(rowId);
+            List<String> transformedRow = transformedByRowId.get(rowId);
+            if (Objects.equals(originalRow, transformedRow)) {
+                continue;
+            }
+            if (shown == MAX_DIFF_ROWS_REPORTED) {
+                message.append("--   ... (further differences omitted)").append(nl);
+                break;
+            }
+            message.append("--   original:    ").append(renderRow(originalRow)).append(nl);
+            message.append("--   transformed: ").append(renderRow(transformedRow)).append(nl);
+            shown++;
+        }
+        return message.toString();
+    }
+
+    // Indexes a post-image by its row identifier (the first column of each row)
+    private static Map<String, List<String>> indexByRowId(List<List<String>> image) {
+        Map<String, List<String>> byRowId = new LinkedHashMap<>();
+        for (List<String> row : image) {
+            byRowId.put(row.get(0), row);
+        }
+        return byRowId;
+    }
+
+    // Renders a post-image row for the finding message, or "(row absent)" when the row is missing on that side
+    private static String renderRow(List<String> row) {
+        return row == null ? "(row absent)" : row.toString();
     }
 
     @Override
