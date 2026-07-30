@@ -1,5 +1,8 @@
 package sqlancer.common.oracle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Expression;
 
@@ -35,11 +38,10 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
 
     /**
      * Implements the paper's {@code rand_expr(type(expr))}: a random expression whose static type matches that of
-     * {@code expr}. Although the generated expression is never evaluated (it occupies the dead branch of rules No. 3
+     * {@code expr}. Although the generated expression is never evaluated (it occupies the redundant branch of rules 3
      * and 4), its static type participates in the DBMS's CASE WHEN result-type resolution, so a type mismatch could
      * alter the live branch's value or rendering. When the type of {@code expr} cannot be inferred, this falls back to
-     * {@code expr} itself, which trivially has the correct type (degenerating the rule to the {@code copy_expr} form of
-     * rules No. 5 and 6).
+     * {@code expr} itself, which trivially has the correct type (degenerating to rules 5 and 6).
      *
      * @param expr
      *            the expression whose static type the generated expression must match
@@ -55,45 +57,142 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
     }
 
     /**
+     * The first six transformation rules of the EET paper (Table 2). Each rule knows how to apply itself
+     * ({@link #apply}) and in which contexts it preserves the expression's value ({@link #isApplicable}). Rule No. 7
+     * (transform the expression to itself) is not modelled here: it is the fallback applied by {@link #applyRandomRule}
+     * when no other rule is applicable.
+     */
+    private enum Rule {
+        // expr => false_expr OR expr
+        RULE_1 {
+            @Override
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
+                return t.orExpr(t.falseExpr(), expr);
+            }
+
+            @Override
+            boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable) {
+                // Reduces the expression to a boolean value, so it is value-preserving only in a boolean context.
+                return booleanContext;
+            }
+        },
+        // expr => true_expr AND expr
+        RULE_2 {
+            @Override
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
+                return t.and(t.trueExpr(), expr);
+            }
+
+            @Override
+            boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable) {
+                // Reduces the expression to a boolean value, so it is value-preserving only in a boolean context.
+                return booleanContext;
+            }
+        },
+        // expr => CASE WHEN false_expr THEN rand_expr(type(expr)) ELSE expr END
+        RULE_3 {
+            @Override
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
+                return t.caseWhen(t.falseExpr(), t.randExprOfSameType(expr), expr);
+            }
+
+            @Override
+            boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable) {
+                return caseWhenApplicable;
+            }
+        },
+        // expr => CASE WHEN true_expr THEN expr ELSE rand_expr(type(expr)) END
+        RULE_4 {
+            @Override
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
+                return t.caseWhen(t.trueExpr(), expr, t.randExprOfSameType(expr));
+            }
+
+            @Override
+            boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable) {
+                return caseWhenApplicable;
+            }
+        },
+        // expr => CASE WHEN rand_expr(boolean) THEN copy(expr) ELSE expr END
+        RULE_5 {
+            @Override
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
+                // deep copy of expr is not needed, as the AST nodes are immutable anyway
+                return t.caseWhen(t.generateBooleanExpression(), expr, expr);
+            }
+
+            @Override
+            boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable) {
+                return caseWhenApplicable;
+            }
+        },
+        // expr => CASE WHEN rand_expr(boolean) THEN expr ELSE copy(expr) END
+        RULE_6 {
+            @Override
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
+                // deep copy of expr is not needed, as the AST nodes are immutable anyway
+                return t.caseWhen(t.generateBooleanExpression(), expr, expr);
+            }
+
+            @Override
+            boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable) {
+                return caseWhenApplicable;
+            }
+        };
+
+        /**
+         * Applies this rule to {@code expr}, producing a semantically equivalent expression.
+         *
+         * @param <E>
+         *            the DBMS-specific expression class
+         * @param <T>
+         *            the DBMS-specific type domain
+         * @param t
+         *            the transformer providing the DBMS-specific node factories
+         * @param expr
+         *            the expression to transform
+         *
+         * @return a semantically equivalent expression
+         */
+        abstract <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr);
+
+        /**
+         * Whether this rule preserves {@code expr}'s value in the given context.
+         *
+         * @param booleanContext
+         *            whether {@code expr} is evaluated purely for its truth value (rules 1 and 2 are only applicable if
+         *            this is the case)
+         * @param caseWhenApplicable
+         *            whether {@code expr} may be wrapped in a CASE WHEN expression
+         *
+         * @return {@code true} if this rule preserves {@code expr}'s value in the given context
+         */
+        abstract boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable);
+    }
+
+    /**
      * Applies a randomly chosen applicable transformation rule to {@code expr}, returning a semantically equivalent
-     * expression.
+     * expression. When no rule is applicable, {@code expr} is returned unchanged (rule No. 7 of the EET paper).
      *
      * @param expr
      *            the expression to transform
      * @param booleanContext
-     *            whether {@code expr} is evaluated purely for its truth value; only in a boolean context may the
-     *            determined-boolean rules (No. 1 and 2), which reduce the expression to a boolean value, be applied
+     *            whether {@code expr} is evaluated purely for its truth value
      *
      * @return a semantically equivalent expression
      */
     protected E applyRandomRule(E expr, boolean booleanContext) {
-        int rule;
-        if (booleanContext) {
-            // Rules No. 1-6 are all value-preserving in a boolean context.
-            rule = Randomly.fromOptions(1, 2, 3, 4, 5, 6);
-        } else {
-            if (!isCaseWhenApplicable(expr)) {
-                return expr; // rule No. 7: transform the expression to itself
+        boolean caseWhenApplicable = isCaseWhenApplicable(expr);
+        List<Rule> applicableRules = new ArrayList<>();
+        for (Rule rule : Rule.values()) {
+            if (rule.isApplicable(booleanContext, caseWhenApplicable)) {
+                applicableRules.add(rule);
             }
-            // In a scalar context only the CASE WHEN rules preserve the exact value and type.
-            rule = Randomly.fromOptions(3, 4, 5, 6);
         }
-        switch (rule) {
-        case 1: // expr => false_expr OR expr
-            return orExpr(falseExpr(), expr);
-        case 2: // expr => true_expr AND expr
-            return and(trueExpr(), expr);
-        case 3: // expr => CASE WHEN false_expr THEN rand_expr(type(expr)) ELSE expr END
-            return caseWhen(falseExpr(), randExprOfSameType(expr), expr);
-        case 4: // expr => CASE WHEN true_expr THEN expr ELSE rand_expr(type(expr)) END
-            return caseWhen(trueExpr(), expr, randExprOfSameType(expr));
-        case 5: // expr => CASE WHEN rand_expr(boolean) THEN copy(expr) ELSE expr END
-        case 6: // expr => CASE WHEN rand_expr(boolean) THEN expr ELSE copy(expr) END
-            return caseWhen(generateBooleanExpression(), expr, expr);
-        // deep copy of expr is not needed, as the AST nodes are immutable anyway
-        default:
-            throw new AssertionError(rule);
+        if (applicableRules.isEmpty()) {
+            return expr; // rule 7 fallback: transform expression to itself
         }
+        return Randomly.fromList(applicableRules).apply(this, expr);
     }
 
     /**
