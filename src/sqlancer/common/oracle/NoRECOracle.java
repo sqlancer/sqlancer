@@ -30,63 +30,55 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
     private Reproducer<G> reproducer;
     private String lastQueryString;
 
-    private static class NoRECReproducer<G extends SQLGlobalState<?, ?>> implements Reproducer<G> {
+    private static class NoRECReproducer<G extends SQLGlobalState<?, ?>>
+            extends AbstractComparisonReproducer<G, Integer> {
         private final Function<G, Integer> optimizedQuery;
         private final Function<G, Integer> unoptimizedQuery;
         private final String optimizedQueryString;
         private final String unoptimizedQueryString;
-        // null if the original bug is a count mismatch; otherwise, the message of the unexpected
-        // DBMS error that the original queries triggered
-        private final String expectedErrorMessage;
 
         NoRECReproducer(Function<G, Integer> optimizedQuery, Function<G, Integer> unoptimizedQuery,
                 String optimizedQueryString, String unoptimizedQueryString, String expectedErrorMessage) {
+            super(expectedErrorMessage);
             this.optimizedQuery = optimizedQuery;
             this.unoptimizedQuery = unoptimizedQuery;
             this.optimizedQueryString = optimizedQueryString;
             this.unoptimizedQueryString = unoptimizedQueryString;
-            this.expectedErrorMessage = expectedErrorMessage;
         }
 
         @Override
-        public boolean bugStillTriggers(G globalState) {
-            int optimizedCount;
-            int unoptimizedCount;
-            try {
-                optimizedCount = optimizedQuery.apply(globalState);
-                unoptimizedCount = unoptimizedQuery.apply(globalState);
-            } catch (AssertionError unexpectedError) {
-                // a DBMS error reproduces the bug only if the original failure was the same error;
-                // other errors are artifacts of the reduction (e.g., a removed CREATE TABLE)
-                return expectedErrorMessage != null
-                        && expectedErrorMessage.equals(TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
-            } catch (RuntimeException e) {
-                return false;
-            }
-            if (expectedErrorMessage != null) {
-                // the original bug was a DBMS error, which no longer occurs
-                return false;
-            }
+        protected boolean hasTransformedSide() {
+            return true;
+        }
+
+        @Override
+        protected Integer evaluateOriginal(G globalState) {
+            return optimizedQuery.apply(globalState);
+        }
+
+        @Override
+        protected Integer evaluateTransformed(G globalState) {
+            return unoptimizedQuery.apply(globalState);
+        }
+
+        @Override
+        protected boolean sidesDiffer(Integer optimizedCount, Integer unoptimizedCount, G globalState) {
             if (optimizedCount == -1 || unoptimizedCount == -1) {
                 return false;
             }
-            return optimizedCount != unoptimizedCount;
+            return optimizedCount.intValue() != unoptimizedCount.intValue();
         }
 
         @Override
-        public String getBugInformation() {
-            StringBuilder sb = new StringBuilder();
-            if (expectedErrorMessage == null) {
-                sb.append("-- On the database set up by the statements above, the row counts of the following"
-                        + " queries mismatch:").append(System.lineSeparator());
-            } else {
-                sb.append("-- On the database set up by the statements above, the following queries trigger an"
-                        + " unexpected error with message: ").append(expectedErrorMessage)
-                        .append(System.lineSeparator());
-            }
+        protected String mismatchHeaderLine() {
+            return "-- On the database set up by the statements above, the row counts of the following"
+                    + " queries mismatch:";
+        }
+
+        @Override
+        protected void appendQueryLines(StringBuilder sb) {
             sb.append("-- optimized: ").append(optimizedQueryString).append(';').append(System.lineSeparator());
             sb.append("-- unoptimized: ").append(unoptimizedQueryString).append(';').append(System.lineSeparator());
-            return sb.toString();
         }
     }
 

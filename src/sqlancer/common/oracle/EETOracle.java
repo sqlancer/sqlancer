@@ -53,50 +53,38 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
     private Reproducer<G> reproducer;
     private String generatedQueryString;
 
-    private final class EETReproducer implements Reproducer<G> {
+    private final class EETReproducer extends AbstractComparisonReproducer<G, List<String>> {
         private final String originalQueryString;
         // null if the original bug was a DBMS error on the original query alone
         private final String transformedQueryString;
-        // null if the original bug is a result set mismatch; otherwise, the message of the
-        // unexpected DBMS error that the original or transformed query triggered
-        private final String expectedErrorMessage;
 
         EETReproducer(String originalQueryString, String transformedQueryString, String expectedErrorMessage) {
+            super(expectedErrorMessage);
             this.originalQueryString = originalQueryString;
             this.transformedQueryString = transformedQueryString;
-            this.expectedErrorMessage = expectedErrorMessage;
         }
 
         @Override
-        public boolean bugStillTriggers(G globalState) {
-            List<String> originalResultSet;
-            List<String> transformedResultSet;
+        protected boolean hasTransformedSide() {
+            return transformedQueryString != null;
+        }
+
+        @Override
+        protected List<String> evaluateOriginal(G globalState) throws SQLException {
+            // Re-execute against the current (reduced) database instead of comparing against a cached result set,
+            // which would be stale once statements have been removed.
+            return ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, globalState);
+        }
+
+        @Override
+        protected List<String> evaluateTransformed(G globalState) throws SQLException {
+            return ComparatorHelper.getResultSetFirstColumnAsString(transformedQueryString, errors, globalState);
+        }
+
+        @Override
+        protected boolean sidesDiffer(List<String> original, List<String> transformed, G globalState) {
             try {
-                // Re-execute both queries against the current (reduced) database instead of comparing
-                // against a cached result set, which would be stale once statements have been removed.
-                originalResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                        globalState);
-                if (transformedQueryString == null) {
-                    // the original bug was a DBMS error on the original query alone, which no
-                    // longer occurs
-                    return false;
-                }
-                transformedResultSet = ComparatorHelper.getResultSetFirstColumnAsString(transformedQueryString, errors,
-                        globalState);
-            } catch (AssertionError unexpectedError) {
-                // a DBMS error reproduces the bug only if the original failure was the same error;
-                // other errors are artifacts of the reduction (e.g., a removed CREATE TABLE)
-                return expectedErrorMessage != null
-                        && expectedErrorMessage.equals(TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
-            } catch (SQLException | RuntimeException e) {
-                return false;
-            }
-            if (expectedErrorMessage != null) {
-                // the original bug was a DBMS error, which no longer occurs
-                return false;
-            }
-            try {
-                ComparatorHelper.assumeResultSetsAreEqual(originalResultSet, transformedResultSet, originalQueryString,
+                ComparatorHelper.assumeResultSetsAreEqual(original, transformed, originalQueryString,
                         List.of(transformedQueryString), globalState);
             } catch (AssertionError resultSetMismatch) {
                 return true;
@@ -105,21 +93,17 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
         }
 
         @Override
-        public String getBugInformation() {
-            StringBuilder sb = new StringBuilder();
-            if (expectedErrorMessage == null) {
-                sb.append("-- On the database set up by the statements above, the result sets of the following"
-                        + " queries mismatch:").append(System.lineSeparator());
-            } else {
-                sb.append("-- On the database set up by the statements above, the following queries trigger an"
-                        + " unexpected error with message: ").append(expectedErrorMessage)
-                        .append(System.lineSeparator());
-            }
+        protected String mismatchHeaderLine() {
+            return "-- On the database set up by the statements above, the result sets of the following"
+                    + " queries mismatch:";
+        }
+
+        @Override
+        protected void appendQueryLines(StringBuilder sb) {
             sb.append("-- original: ").append(originalQueryString).append(';').append(System.lineSeparator());
             if (transformedQueryString != null) {
                 sb.append("-- transformed: ").append(transformedQueryString).append(';').append(System.lineSeparator());
             }
-            return sb.toString();
         }
     }
 

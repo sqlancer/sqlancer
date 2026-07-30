@@ -29,56 +29,59 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
     private Reproducer<G> reproducer;
     private String generatedQueryString;
 
-    private class TLPWhereReproducer implements Reproducer<G> {
+    // A side's result set, together with the human-readable combined-query strings that
+    // getCombinedResultSet fills in for the transformed side (unused, and null, for the original side)
+    private static final class TLPResultSet {
+        final List<String> resultSet;
+        final List<String> combinedString;
+
+        TLPResultSet(List<String> resultSet, List<String> combinedString) {
+            this.resultSet = resultSet;
+            this.combinedString = combinedString;
+        }
+    }
+
+    private class TLPWhereReproducer extends AbstractComparisonReproducer<G, TLPResultSet> {
         final String firstQueryString;
         final String secondQueryString;
         final String thirdQueryString;
         final String originalQueryString;
         final boolean orderBy;
-        // null if the original bug is a result set mismatch; otherwise, the message of the
-        // unexpected DBMS error that the original queries triggered
-        final String expectedErrorMessage;
 
         TLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString,
                 String originalQueryString, boolean orderBy, String expectedErrorMessage) {
+            super(expectedErrorMessage);
             this.firstQueryString = firstQueryString;
             this.secondQueryString = secondQueryString;
             this.thirdQueryString = thirdQueryString;
             this.originalQueryString = originalQueryString;
             this.orderBy = orderBy;
-            this.expectedErrorMessage = expectedErrorMessage;
         }
 
         @Override
-        public boolean bugStillTriggers(G globalState) {
-            List<String> firstResultSet;
+        protected boolean hasTransformedSide() {
+            return firstQueryString != null;
+        }
+
+        @Override
+        protected TLPResultSet evaluateOriginal(G globalState) throws SQLException {
+            return new TLPResultSet(
+                    ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, globalState), null);
+        }
+
+        @Override
+        protected TLPResultSet evaluateTransformed(G globalState) throws SQLException {
             List<String> combinedString = new ArrayList<>();
-            List<String> secondResultSet;
+            List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
+                    thirdQueryString, combinedString, !orderBy, globalState, errors);
+            return new TLPResultSet(secondResultSet, combinedString);
+        }
+
+        @Override
+        protected boolean sidesDiffer(TLPResultSet original, TLPResultSet transformed, G globalState) {
             try {
-                firstResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors,
-                        globalState);
-                if (firstQueryString == null) {
-                    // the original bug was a DBMS error on the original query alone, which no
-                    // longer occurs
-                    return false;
-                }
-                secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                        thirdQueryString, combinedString, !orderBy, globalState, errors);
-            } catch (AssertionError unexpectedError) {
-                // a DBMS error reproduces the bug only if the original failure was the same error;
-                // other errors are artifacts of the reduction (e.g., a removed CREATE TABLE)
-                return expectedErrorMessage != null
-                        && expectedErrorMessage.equals(TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
-            } catch (SQLException | RuntimeException e) {
-                return false;
-            }
-            if (expectedErrorMessage != null) {
-                // the original bug was a DBMS error, which no longer occurs
-                return false;
-            }
-            try {
-                ComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, originalQueryString,
-                        combinedString, globalState);
+                ComparatorHelper.assumeResultSetsAreEqual(original.resultSet, transformed.resultSet,
+                        originalQueryString, transformed.combinedString, globalState);
             } catch (AssertionError resultSetMismatch) {
                 return true;
             }
@@ -86,16 +89,13 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         }
 
         @Override
-        public String getBugInformation() {
-            StringBuilder sb = new StringBuilder();
-            if (expectedErrorMessage == null) {
-                sb.append("-- On the database set up by the statements above, the result sets of the following"
-                        + " queries mismatch:").append(System.lineSeparator());
-            } else {
-                sb.append("-- On the database set up by the statements above, the following queries trigger an"
-                        + " unexpected error with message: ").append(expectedErrorMessage)
-                        .append(System.lineSeparator());
-            }
+        protected String mismatchHeaderLine() {
+            return "-- On the database set up by the statements above, the result sets of the following"
+                    + " queries mismatch:";
+        }
+
+        @Override
+        protected void appendQueryLines(StringBuilder sb) {
             sb.append("-- ").append(originalQueryString).append(';').append(System.lineSeparator());
             if (firstQueryString != null) {
                 if (orderBy) {
@@ -107,7 +107,6 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
                             .append(" UNION ALL ").append(thirdQueryString).append(';').append(System.lineSeparator());
                 }
             }
-            return sb.toString();
         }
     }
 
