@@ -55,18 +55,11 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
 
     private final class EETReproducer extends AbstractComparisonReproducer<G, List<String>> {
         private final String originalQueryString;
-        // null if the original bug was a DBMS error on the original query alone
         private final String transformedQueryString;
 
-        EETReproducer(String originalQueryString, String transformedQueryString, String expectedErrorMessage) {
-            super(expectedErrorMessage);
+        EETReproducer(String originalQueryString, String transformedQueryString) {
             this.originalQueryString = originalQueryString;
             this.transformedQueryString = transformedQueryString;
-        }
-
-        @Override
-        protected boolean hasTransformedSide() {
-            return transformedQueryString != null;
         }
 
         @Override
@@ -100,11 +93,32 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
 
         @Override
         protected void appendQueryLines(StringBuilder sb) {
-            sb.append("-- original: ").append(originalQueryString).append(';').append(System.lineSeparator());
-            if (transformedQueryString != null) {
-                sb.append("-- transformed: ").append(transformedQueryString).append(';').append(System.lineSeparator());
-            }
+            renderQueryLines(sb, originalQueryString, transformedQueryString);
         }
+    }
+
+    // Renders the failing queries as commented lines, shared by the mismatch and the unexpected-error reproducers.
+    // transformedQueryString is null when the error struck the original query before any transformation existed.
+    private static void renderQueryLines(StringBuilder sb, String originalQueryString, String transformedQueryString) {
+        sb.append("-- original: ").append(originalQueryString).append(';').append(System.lineSeparator());
+        if (transformedQueryString != null) {
+            sb.append("-- transformed: ").append(transformedQueryString).append(';').append(System.lineSeparator());
+        }
+    }
+
+    // Builds the reproducer for an unexpected DBMS error, which re-runs the query (or both queries) and checks the same
+    // error still fires. transformedQueryString is null when only the original query ran before the error.
+    private UnexpectedErrorReproducer<G> errorReproducer(String originalQueryString, String transformedQueryString,
+            String expectedErrorMessage) {
+        UnexpectedErrorReproducer.Execution<G> execution = globalState -> {
+            ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, globalState);
+            if (transformedQueryString != null) {
+                ComparatorHelper.getResultSetFirstColumnAsString(transformedQueryString, errors, globalState);
+            }
+        };
+        StringBuilder sb = new StringBuilder();
+        renderQueryLines(sb, originalQueryString, transformedQueryString);
+        return new UnexpectedErrorReproducer<>(execution, expectedErrorMessage, sb.toString());
     }
 
     public EETOracle(G state, EETGenerator<Z, J, E, T, C> gen, ExpectedErrors expectedErrors) {
@@ -139,8 +153,8 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
             originalResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
         } catch (AssertionError unexpectedError) {
             // an unexpected DBMS error on the original query alone is itself a bug worth reducing;
-            // transformedQueryString is null because no transformed query is involved
-            reproducer = new EETReproducer(originalQueryString, null,
+            // there is no transformed query yet, so only the original is replayed
+            reproducer = errorReproducer(originalQueryString, null,
                     TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
             throw unexpectedError;
         }
@@ -160,14 +174,14 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
         } catch (AssertionError unexpectedError) {
             // the semantics-preserving transformation made the query trigger a DBMS error that the
             // original did not, which is a bug worth reducing
-            reproducer = new EETReproducer(originalQueryString, transformedQueryString,
+            reproducer = errorReproducer(originalQueryString, transformedQueryString,
                     TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
             throw unexpectedError;
         }
 
         // Set the reproducer before the assertion: assumeResultSetsAreEqual throws when the bug is
         // detected, so creating the reproducer afterwards would leave it null and prevent any reduction.
-        reproducer = new EETReproducer(originalQueryString, transformedQueryString, null);
+        reproducer = new EETReproducer(originalQueryString, transformedQueryString);
 
         ComparatorHelper.assumeResultSetsAreEqual(originalResultSet, transformedResultSet, originalQueryString,
                 List.of(transformedQueryString), state);

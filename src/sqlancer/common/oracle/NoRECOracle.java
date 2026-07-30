@@ -38,17 +38,11 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
         private final String unoptimizedQueryString;
 
         NoRECReproducer(Function<G, Integer> optimizedQuery, Function<G, Integer> unoptimizedQuery,
-                String optimizedQueryString, String unoptimizedQueryString, String expectedErrorMessage) {
-            super(expectedErrorMessage);
+                String optimizedQueryString, String unoptimizedQueryString) {
             this.optimizedQuery = optimizedQuery;
             this.unoptimizedQuery = unoptimizedQuery;
             this.optimizedQueryString = optimizedQueryString;
             this.unoptimizedQueryString = unoptimizedQueryString;
-        }
-
-        @Override
-        protected boolean hasTransformedSide() {
-            return true;
         }
 
         @Override
@@ -77,9 +71,27 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
 
         @Override
         protected void appendQueryLines(StringBuilder sb) {
-            sb.append("-- optimized: ").append(optimizedQueryString).append(';').append(System.lineSeparator());
-            sb.append("-- unoptimized: ").append(unoptimizedQueryString).append(';').append(System.lineSeparator());
+            renderQueryLines(sb, optimizedQueryString, unoptimizedQueryString);
         }
+    }
+
+    // Renders the failing queries as commented lines, shared by the mismatch and the unexpected-error reproducers.
+    private static void renderQueryLines(StringBuilder sb, String optimizedQueryString, String unoptimizedQueryString) {
+        sb.append("-- optimized: ").append(optimizedQueryString).append(';').append(System.lineSeparator());
+        sb.append("-- unoptimized: ").append(unoptimizedQueryString).append(';').append(System.lineSeparator());
+    }
+
+    // Builds the reproducer for an unexpected DBMS error, which re-runs both queries and checks the same error fires.
+    private static <G extends SQLGlobalState<?, ?>> UnexpectedErrorReproducer<G> errorReproducer(
+            Function<G, Integer> optimizedQuery, Function<G, Integer> unoptimizedQuery, String optimizedQueryString,
+            String unoptimizedQueryString, String expectedErrorMessage) {
+        UnexpectedErrorReproducer.Execution<G> execution = globalState -> {
+            optimizedQuery.apply(globalState);
+            unoptimizedQuery.apply(globalState);
+        };
+        StringBuilder sb = new StringBuilder();
+        renderQueryLines(sb, optimizedQueryString, unoptimizedQueryString);
+        return new UnexpectedErrorReproducer<>(execution, expectedErrorMessage, sb.toString());
     }
 
     public NoRECOracle(G state, NoRECGenerator<Z, J, E, T, C> gen, ExpectedErrors expectedErrors) {
@@ -128,8 +140,8 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
             optimizedCount = optimizedQuery.apply(state);
             unoptimizedCount = unoptimizedQuery.apply(state);
         } catch (AssertionError unexpectedError) {
-            reproducer = new NoRECReproducer<>(optimizedQuery, unoptimizedQuery, optimizedQueryString,
-                    unoptimizedQueryString, TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
+            reproducer = errorReproducer(optimizedQuery, unoptimizedQuery, optimizedQueryString, unoptimizedQueryString,
+                    TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
             throw unexpectedError;
         }
 
@@ -139,7 +151,7 @@ public class NoRECOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, 
 
         if (unoptimizedCount != optimizedCount) {
             reproducer = new NoRECReproducer<>(optimizedQuery, unoptimizedQuery, optimizedQueryString,
-                    unoptimizedQueryString, null);
+                    unoptimizedQueryString);
 
             String queryFormatString = "-- %s;\n-- count: %d";
             String firstQueryStringWithCount = String.format(queryFormatString, optimizedQueryString, optimizedCount);

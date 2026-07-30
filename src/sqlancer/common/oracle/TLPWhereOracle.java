@@ -49,18 +49,12 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         final boolean orderBy;
 
         TLPWhereReproducer(String firstQueryString, String secondQueryString, String thirdQueryString,
-                String originalQueryString, boolean orderBy, String expectedErrorMessage) {
-            super(expectedErrorMessage);
+                String originalQueryString, boolean orderBy) {
             this.firstQueryString = firstQueryString;
             this.secondQueryString = secondQueryString;
             this.thirdQueryString = thirdQueryString;
             this.originalQueryString = originalQueryString;
             this.orderBy = orderBy;
-        }
-
-        @Override
-        protected boolean hasTransformedSide() {
-            return firstQueryString != null;
         }
 
         @Override
@@ -96,18 +90,42 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
 
         @Override
         protected void appendQueryLines(StringBuilder sb) {
-            sb.append("-- ").append(originalQueryString).append(';').append(System.lineSeparator());
-            if (firstQueryString != null) {
-                if (orderBy) {
-                    sb.append("-- ").append(firstQueryString).append(';').append(System.lineSeparator());
-                    sb.append("-- ").append(secondQueryString).append(';').append(System.lineSeparator());
-                    sb.append("-- ").append(thirdQueryString).append(';').append(System.lineSeparator());
-                } else {
-                    sb.append("-- ").append(firstQueryString).append(" UNION ALL ").append(secondQueryString)
-                            .append(" UNION ALL ").append(thirdQueryString).append(';').append(System.lineSeparator());
-                }
+            renderQueryLines(sb, originalQueryString, firstQueryString, secondQueryString, thirdQueryString, orderBy);
+        }
+    }
+
+    // Renders the failing queries as commented lines, shared by the mismatch and the unexpected-error reproducers. The
+    // partition queries are null when the error struck the original query before they were built.
+    private static void renderQueryLines(StringBuilder sb, String originalQueryString, String firstQueryString,
+            String secondQueryString, String thirdQueryString, boolean orderBy) {
+        sb.append("-- ").append(originalQueryString).append(';').append(System.lineSeparator());
+        if (firstQueryString != null) {
+            if (orderBy) {
+                sb.append("-- ").append(firstQueryString).append(';').append(System.lineSeparator());
+                sb.append("-- ").append(secondQueryString).append(';').append(System.lineSeparator());
+                sb.append("-- ").append(thirdQueryString).append(';').append(System.lineSeparator());
+            } else {
+                sb.append("-- ").append(firstQueryString).append(" UNION ALL ").append(secondQueryString)
+                        .append(" UNION ALL ").append(thirdQueryString).append(';').append(System.lineSeparator());
             }
         }
+    }
+
+    // Builds the reproducer for an unexpected DBMS error, which re-runs the query (or the whole-table query plus the
+    // three partition queries) and checks the same error still fires. The partition queries are null when the error
+    // struck the original query before they were built.
+    private UnexpectedErrorReproducer<G> errorReproducer(String originalQueryString, String firstQueryString,
+            String secondQueryString, String thirdQueryString, boolean orderBy, String expectedErrorMessage) {
+        UnexpectedErrorReproducer.Execution<G> execution = globalState -> {
+            ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, globalState);
+            if (firstQueryString != null) {
+                ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString, thirdQueryString,
+                        new ArrayList<>(), !orderBy, globalState, errors);
+            }
+        };
+        StringBuilder sb = new StringBuilder();
+        renderQueryLines(sb, originalQueryString, firstQueryString, secondQueryString, thirdQueryString, orderBy);
+        return new UnexpectedErrorReproducer<>(execution, expectedErrorMessage, sb.toString());
     }
 
     public TLPWhereOracle(G state, TLPWhereGenerator<Z, J, E, T, C> gen, ExpectedErrors expectedErrors) {
@@ -140,7 +158,7 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
         try {
             firstResultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
         } catch (AssertionError unexpectedError) {
-            reproducer = new TLPWhereReproducer(null, null, null, originalQueryString, false,
+            reproducer = errorReproducer(originalQueryString, null, null, null, false,
                     TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
             throw unexpectedError;
         }
@@ -165,13 +183,13 @@ public class TLPWhereOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C
             secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                     thirdQueryString, combinedString, !orderBy, state, errors);
         } catch (AssertionError unexpectedError) {
-            reproducer = new TLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString,
-                    originalQueryString, orderBy, TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
+            reproducer = errorReproducer(originalQueryString, firstQueryString, secondQueryString, thirdQueryString,
+                    orderBy, TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
             throw unexpectedError;
         }
 
         reproducer = new TLPWhereReproducer(firstQueryString, secondQueryString, thirdQueryString, originalQueryString,
-                orderBy, null);
+                orderBy);
         ComparatorHelper.assumeResultSetsAreEqual(firstResultSet, secondResultSet, originalQueryString, combinedString,
                 state);
     }
