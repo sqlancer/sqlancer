@@ -194,7 +194,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
             nrPerformed = r.getInteger(0, 2);
             break;
         case CREATE_TABLESPACE:
-            nrPerformed = r.getInteger(0, 2);
+            nrPerformed = globalState.getDbmsSpecificOptions().isTestTablespaces() ? r.getInteger(0, 2) : 0;
             break;
         case UPDATE:
             nrPerformed = r.getInteger(0, 10);
