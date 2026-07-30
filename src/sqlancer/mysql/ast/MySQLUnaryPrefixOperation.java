@@ -62,6 +62,10 @@ public class MySQLUnaryPrefixOperation extends UnaryOperatorNode<MySQLExpression
         super(expr, op);
     }
 
+    public MySQLUnaryPrefixOperator getOp() {
+        return op;
+    }
+
     @Override
     public MySQLConstant getExpectedValue() {
         MySQLConstant subExprVal = expr.getExpectedValue();

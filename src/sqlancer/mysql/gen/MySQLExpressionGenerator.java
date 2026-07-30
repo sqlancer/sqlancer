@@ -9,8 +9,10 @@ import java.util.stream.IntStream;
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.common.gen.CERTGenerator;
+import sqlancer.common.gen.EETGenerator;
 import sqlancer.common.gen.TLPWhereGenerator;
 import sqlancer.common.gen.UntypedExpressionGenerator;
+import sqlancer.common.oracle.EETTransformer;
 import sqlancer.common.schema.AbstractTables;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
@@ -45,10 +47,12 @@ import sqlancer.mysql.ast.MySQLTableReference;
 import sqlancer.mysql.ast.MySQLUnaryPostfixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation;
 import sqlancer.mysql.ast.MySQLUnaryPrefixOperation.MySQLUnaryPrefixOperator;
+import sqlancer.mysql.oracle.MySQLEETTransformer;
 
 public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLExpression, MySQLColumn>
         implements TLPWhereGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
-        CERTGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
+        CERTGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn>,
+        EETGenerator<MySQLSelect, MySQLJoin, MySQLExpression, MySQLTable, MySQLColumn> {
 
     private final MySQLGlobalState state;
     private MySQLRowValue rowVal;
@@ -218,6 +222,22 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         return newOrderBys;
     }
 
+    public MySQLAggregate generateAggregate() {
+        MySQLAggregateFunction func = Randomly.fromOptions(MySQLAggregateFunction.values());
+
+        if (func.isVariadic()) {
+            int nrExprs = Randomly.smallNumber() + 1;
+            List<MySQLExpression> exprs = IntStream.range(0, nrExprs).mapToObj(index -> generateExpression())
+                    .collect(Collectors.toList());
+
+            return new MySQLAggregate(exprs, func);
+        } else {
+            return new MySQLAggregate(List.of(generateExpression()), func);
+        }
+    }
+
+    // --- Shared oracle infrastructure (TLPWhere / CERT / EET) ---
+
     @Override
     public MySQLExpressionGenerator setTablesAndColumns(AbstractTables<MySQLTable, MySQLColumn> tables) {
         this.columns = tables.getColumns();
@@ -251,25 +271,13 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         return columns.stream().map(c -> new MySQLColumnReference(c, null)).collect(Collectors.toList());
     }
 
+    // --- CERT oracle ---
+
     @Override
     public String generateExplainQuery(MySQLSelect select) {
         return "EXPLAIN FORMAT=TRADITIONAL " + select.asString(); // as of MySQL 9.5.0, default EXPLAIN format changed
                                                                   // from TRADITIONAL to TREE, hence TRADITIONAL must
                                                                   // now be specified
-    }
-
-    public MySQLAggregate generateAggregate() {
-        MySQLAggregateFunction func = Randomly.fromOptions(MySQLAggregateFunction.values());
-
-        if (func.isVariadic()) {
-            int nrExprs = Randomly.smallNumber() + 1;
-            List<MySQLExpression> exprs = IntStream.range(0, nrExprs).mapToObj(index -> generateExpression())
-                    .collect(Collectors.toList());
-
-            return new MySQLAggregate(exprs, func);
-        } else {
-            return new MySQLAggregate(List.of(generateExpression()), func);
-        }
     }
 
     @Override
@@ -354,5 +362,12 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
             select.setWhereClause(newWhere);
             return true;
         }
+    }
+
+    // --- EET oracle ---
+
+    @Override
+    public EETTransformer<MySQLExpression, ?> createTransformer() {
+        return new MySQLEETTransformer(this);
     }
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CERTOracle;
+import sqlancer.common.oracle.EETOracle;
 import sqlancer.common.oracle.TLPWhereOracle;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
@@ -81,6 +82,15 @@ public enum MySQLOracleFactory implements OracleFactory<MySQLGlobalState> {
         @Override
         public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
             return new MySQLDQEOracle(globalState);
+        }
+    },
+    EET {
+        @Override
+        public TestOracle<MySQLGlobalState> create(MySQLGlobalState globalState) throws SQLException {
+            MySQLExpressionGenerator gen = new MySQLExpressionGenerator(globalState);
+            ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(MySQLErrors.getExpressionErrors())
+                    .withRegex(MySQLErrors.getExpressionRegexErrors()).build();
+            return new EETOracle<>(globalState, gen, expectedErrors);
         }
     };
 }
