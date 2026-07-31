@@ -123,6 +123,7 @@ public final class PostgresCommon {
         errors.add("cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
         errors.add("is not a number");
         errors.add("\"EEEE\" must be the last pattern used");
+        errors.add("is incompatible with other formats");
 
         return errors;
     }
