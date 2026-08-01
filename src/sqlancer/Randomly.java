@@ -510,6 +510,29 @@ public final class Randomly {
         return getThreadRandom().get().nextDouble();
     }
 
+    /**
+     * Computes {@code value} with this thread's random number generator temporarily replaced by a fixed-seed one,
+     * restoring the previous generator afterwards. This makes computations that draw randomness deterministic: for
+     * example, rendering an AST to SQL draws random textual variants in some DBMS implementations, and test-case
+     * reduction relies on re-rendering the same AST to the same string.
+     *
+     * @param <T>
+     *            the type of the computed value
+     * @param value
+     *            the computation to run deterministically
+     *
+     * @return the computed value
+     */
+    public static <T> T withFixedSeedRandom(Supplier<T> value) {
+        Random previousRandom = THREAD_RANDOM.get();
+        THREAD_RANDOM.set(new Random(0));
+        try {
+            return value.get();
+        } finally {
+            THREAD_RANDOM.set(previousRandom);
+        }
+    }
+
     public String getChar() {
         while (true) {
             String s = getString();

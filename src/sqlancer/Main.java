@@ -270,6 +270,11 @@ public final class Main {
             this.reduceBugInformation = bugInformation;
         }
 
+        // for reducers that rewrite the failing queries themselves (e.g., TransformationReducer)
+        public void updateReducedBugInformation(String bugInformation) {
+            this.reduceBugInformation = bugInformation;
+        }
+
         public void logReduced(StateToReproduce state) {
             nrReductionAttempts++;
             logReduced(state, "Reduction attempt " + nrReductionAttempts
@@ -524,6 +529,11 @@ public final class Main {
                         Reducer<G> astBasedReducer = new ASTBasedReducer<>(provider);
                         astBasedReducer.reduce(state, reproducer, newGlobalState);
                     }
+
+                    // reduces the oracle's transformed query itself; a no-op for reproducers whose queries are not
+                    // built from reducible transformations
+                    Reducer<G> transformationReducer = new TransformationReducer<>(provider);
+                    transformationReducer.reduce(state, reproducer, newGlobalState);
 
                     // reassemble the statements so that the main log looks like one produced
                     // without the reducer, with the generation statements replaced by the reduced

@@ -2,6 +2,8 @@ package sqlancer.common.oracle;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.IntPredicate;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Expression;
@@ -17,6 +19,13 @@ import sqlancer.common.ast.newast.Expression;
  * ({@link #inferType} and {@link #generateExpressionOfType}) that realize the paper's {@code rand_expr(type(expr))};
  * everything else (the rule logic, context threading, and tree-walking orchestration) is provided here.
  *
+ * <p>
+ * Every {@link #transform} call records the rule applications it performs. The resulting {@link TransformationRecord}
+ * can later be passed to {@link #replay}, which re-applies the recorded rules with any subset of them disabled; because
+ * each rule application is individually equivalence-preserving, every such replay yields an expression that is still
+ * semantically equivalent to the input. Test-case reduction uses this to undo transformations one subset at a time
+ * while preserving the oracle's soundness.
+ *
  * @param <E>
  *            the DBMS-specific expression class
  * @param <T>
@@ -24,36 +33,72 @@ import sqlancer.common.ast.newast.Expression;
  */
 public abstract class EETTransformer<E extends Expression<?>, T> {
 
-    // true_expr(p) = p OR (NOT p) OR (p IS NULL) -> always TRUE
-    private E trueExpr() {
-        E p = generateBooleanExpression();
-        return orExpr(orExpr(p, not(p)), isNull(p));
-    }
+    private List<Application<E, T>> recording; // non-null while transform() is recording its rule applications
+    private TransformationRecord lastRecord;
 
-    // false_expr(p) = p AND (NOT p) AND (p IS NOT NULL) -> always FALSE
-    private E falseExpr() {
-        E p = generateBooleanExpression();
-        return and(and(p, not(p)), isNotNull(p));
+    private List<Application<E, T>> replayApplications; // non-null while replay() is re-applying a record
+    private IntPredicate replayEnabledSites;
+    private int replayCursor;
+    private int replaySiteCursor;
+
+    /**
+     * The decision made at one {@link #transformNode} call: which rule (if any) was applied at that node, together with
+     * the auxiliary expressions the rule drew randomly. Recording these decisions makes a transformation replayable
+     * with any subset of its rule applications disabled (see {@link #replay}).
+     *
+     * @param <E>
+     *            the DBMS-specific expression class
+     * @param <T>
+     *            the DBMS-specific type domain
+     */
+    private static final class Application<E, T> {
+        private static final Application<?, ?> NONE = new Application<>(null, null, null, null);
+
+        private final Rule rule; // null when no rule was applied at this node
+        private final E auxiliary; // rules No. 1-4: the fresh predicate p; rules No. 5 and 6: the CASE WHEN condition
+        private final E deadBranch; // rules No. 3 and 4: the recorded rand_expr, or null when it degenerated to a copy
+        private final T deadBranchType; // rules No. 3 and 4: the inferred type deadBranch was generated for
+
+        Application(Rule rule, E auxiliary, E deadBranch, T deadBranchType) {
+            this.rule = rule;
+            this.auxiliary = auxiliary;
+            this.deadBranch = deadBranch;
+            this.deadBranchType = deadBranchType;
+        }
     }
 
     /**
-     * Implements the paper's {@code rand_expr(type(expr))}: a random expression whose static type matches that of
-     * {@code expr}. Although the generated expression is never evaluated (it occupies the redundant branch of rules 3
-     * and 4), its static type participates in the DBMS's CASE WHEN result-type resolution, so a type mismatch could
-     * alter the live branch's value or rendering. When the type of {@code expr} cannot be inferred, this falls back to
-     * {@code expr} itself, which trivially has the correct type (degenerating to rules 5 and 6).
-     *
-     * @param expr
-     *            the expression whose static type the generated expression must match
-     *
-     * @return a random expression whose static type matches that of {@code expr}
+     * The rule applications recorded by one {@link #transform} call. The record is opaque: callers can only query the
+     * number of transformation sites and pass the record back to {@link #replay} on the transformer that produced it.
      */
-    private E randExprOfSameType(E expr) {
-        T type = inferType(expr);
-        if (type == null) {
-            return expr;
+    public static final class TransformationRecord {
+        private final List<Application<?, ?>> applications;
+        private final int siteCount;
+
+        private TransformationRecord(List<Application<?, ?>> applications) {
+            this.applications = applications;
+            this.siteCount = (int) applications.stream().filter(application -> application.rule != null).count();
         }
-        return generateExpressionOfType(type);
+
+        /**
+         * The number of transformation sites (rule applications) in this record. {@link #replay} numbers the sites
+         * {@code 0} to {@code getSiteCount() - 1} in the order they were recorded.
+         *
+         * @return the number of transformation sites
+         */
+        public int getSiteCount() {
+            return siteCount;
+        }
+    }
+
+    // true_expr(p) = p OR (NOT p) OR (p IS NULL) -> always TRUE, for any predicate p
+    private E trueExpr(E p) {
+        return orExpr(orExpr(p, not(p)), isNull(p));
+    }
+
+    // false_expr(p) = p AND (NOT p) AND (p IS NOT NULL) -> always FALSE, for any predicate p
+    private E falseExpr(E p) {
+        return and(and(p, not(p)), isNotNull(p));
     }
 
     /**
@@ -61,13 +106,18 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      * ({@link #apply}) and in which contexts it preserves the expression's value ({@link #isApplicable}). Rule No. 7
      * (transform the expression to itself) is not modelled here: it is the fallback applied by {@link #applyRandomRule}
      * when no other rule is applicable.
+     *
+     * <p>
+     * A rule draws no randomness of its own: the auxiliary expressions it wraps the transformed expression in come from
+     * the {@link Application} recorded for it, so applying a rule again during {@link EETTransformer#replay} reproduces
+     * the same expression.
      */
     private enum Rule {
         // expr => false_expr OR expr
         RULE_1 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
-                return t.orExpr(t.falseExpr(), expr);
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
+                return t.orExpr(t.falseExpr(application.auxiliary), expr);
             }
 
             @Override
@@ -79,8 +129,8 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => true_expr AND expr
         RULE_2 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
-                return t.and(t.trueExpr(), expr);
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
+                return t.and(t.trueExpr(application.auxiliary), expr);
             }
 
             @Override
@@ -92,33 +142,43 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => CASE WHEN false_expr THEN rand_expr(type(expr)) ELSE expr END
         RULE_3 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
-                return t.caseWhen(t.falseExpr(), t.randExprOfSameType(expr), expr);
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
+                return t.caseWhen(t.falseExpr(application.auxiliary), t.deadBranch(application, expr), expr);
             }
 
             @Override
             boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable) {
                 return caseWhenApplicable;
+            }
+
+            @Override
+            boolean usesDeadBranch() {
+                return true;
             }
         },
         // expr => CASE WHEN true_expr THEN expr ELSE rand_expr(type(expr)) END
         RULE_4 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
-                return t.caseWhen(t.trueExpr(), expr, t.randExprOfSameType(expr));
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
+                return t.caseWhen(t.trueExpr(application.auxiliary), expr, t.deadBranch(application, expr));
             }
 
             @Override
             boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable) {
                 return caseWhenApplicable;
             }
+
+            @Override
+            boolean usesDeadBranch() {
+                return true;
+            }
         },
         // expr => CASE WHEN rand_expr(boolean) THEN copy(expr) ELSE expr END
         RULE_5 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
                 // deep copy of expr is not needed, as the AST nodes are immutable anyway
-                return t.caseWhen(t.generateBooleanExpression(), expr, expr);
+                return t.caseWhen(application.auxiliary, expr, expr);
             }
 
             @Override
@@ -129,9 +189,9 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => CASE WHEN rand_expr(boolean) THEN expr ELSE copy(expr) END
         RULE_6 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr) {
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
                 // deep copy of expr is not needed, as the AST nodes are immutable anyway
-                return t.caseWhen(t.generateBooleanExpression(), expr, expr);
+                return t.caseWhen(application.auxiliary, expr, expr);
             }
 
             @Override
@@ -141,7 +201,8 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         };
 
         /**
-         * Applies this rule to {@code expr}, producing a semantically equivalent expression.
+         * Applies this rule to {@code expr}, producing a semantically equivalent expression built from the auxiliary
+         * expressions {@code application} recorded for it.
          *
          * @param <E>
          *            the DBMS-specific expression class
@@ -149,12 +210,14 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
          *            the DBMS-specific type domain
          * @param t
          *            the transformer providing the DBMS-specific node factories
+         * @param application
+         *            the recorded application of this rule, supplying its auxiliary expressions
          * @param expr
          *            the expression to transform
          *
          * @return a semantically equivalent expression
          */
-        abstract <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, E expr);
+        abstract <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr);
 
         /**
          * Whether this rule preserves {@code expr}'s value in the given context.
@@ -168,11 +231,22 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
          * @return {@code true} if this rule preserves {@code expr}'s value in the given context
          */
         abstract boolean isApplicable(boolean booleanContext, boolean caseWhenApplicable);
+
+        /**
+         * Whether an application of this rule carries a dead branch: an expression occupying the redundant branch of
+         * its CASE WHEN, which is never evaluated (see {@link EETTransformer#randomApplication}).
+         *
+         * @return {@code true} if applications of this rule carry a dead branch
+         */
+        boolean usesDeadBranch() {
+            return false;
+        }
     }
 
     /**
      * Applies a randomly chosen applicable transformation rule to {@code expr}, returning a semantically equivalent
-     * expression. When no rule is applicable, {@code expr} is returned unchanged (rule No. 7 of the EET paper).
+     * expression. When no rule is applicable, {@code expr} is returned unchanged (rule No. 7 of the EET paper). The
+     * decision is recorded for later {@link #replay}.
      *
      * @param expr
      *            the expression to transform
@@ -190,14 +264,63 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
             }
         }
         if (applicableRules.isEmpty()) {
+            record(noApplication());
             return expr; // rule 7 fallback: transform expression to itself
         }
-        return Randomly.fromList(applicableRules).apply(this, expr);
+        Application<E, T> application = randomApplication(Randomly.fromList(applicableRules), expr);
+        record(application);
+        return application.rule.apply(this, application, expr);
+    }
+
+    /**
+     * Draws the random ingredients of one application of {@code rule} to {@code expr}. For the rules that use one, the
+     * dead branch implements the paper's {@code rand_expr(type(expr))}: a random expression whose static type matches
+     * that of {@code expr}. Although that expression is never evaluated, its static type participates in the DBMS's
+     * CASE WHEN result-type resolution, so a type mismatch could alter the live branch's value or rendering. When the
+     * type of {@code expr} cannot be inferred, no dead-branch expression is generated and the rule degenerates to the
+     * {@code copy_expr} form of rules No. 5 and 6 (see {@link #deadBranch}).
+     *
+     * @param rule
+     *            the transformation rule to draw an application of
+     * @param expr
+     *            the expression the application will wrap
+     *
+     * @return the drawn application
+     */
+    private Application<E, T> randomApplication(Rule rule, E expr) {
+        if (rule.usesDeadBranch()) {
+            T type = inferType(expr);
+            E deadBranch = type == null ? null : generateExpressionOfType(type);
+            return new Application<>(rule, generateBooleanExpression(), deadBranch, type);
+        }
+        return new Application<>(rule, generateBooleanExpression(), null, null);
+    }
+
+    /**
+     * The dead branch of an application of rule No. 3 or 4 around the live expression {@code expr}: the recorded random
+     * expression when its type still matches the type inferred for {@code expr}, and {@code expr} itself otherwise (the
+     * {@code copy_expr} degeneration, which trivially has the correct type). The types can stop matching during
+     * {@link #replay}: disabling transformation sites inside {@code expr} may change its inferred type, and reusing the
+     * recorded dead branch would then no longer be equivalence-preserving.
+     *
+     * @param application
+     *            the application whose dead branch is built
+     * @param expr
+     *            the live expression the application wraps
+     *
+     * @return the dead-branch expression
+     */
+    private E deadBranch(Application<E, T> application, E expr) {
+        if (application.deadBranch != null && Objects.equals(application.deadBranchType, inferType(expr))) {
+            return application.deadBranch;
+        }
+        return expr;
     }
 
     /**
      * Transforms {@code expr} into a semantically equivalent expression. A transformation rule is always applied at the
-     * root, guaranteeing (unless only rule 7 is applicable) that the returned expression differs from the input.
+     * root, guaranteeing (unless only rule 7 is applicable) that the returned expression differs from the input. The
+     * rule applications performed are recorded and available via {@link #getLastTransformationRecord()}.
      *
      * @param expr
      *            the expression to transform
@@ -207,11 +330,75 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      * @return a semantically equivalent expression
      */
     public E transform(E expr, boolean booleanContext) {
-        return transformNode(expr, booleanContext, true);
+        recording = new ArrayList<>();
+        try {
+            E transformed = transformNode(expr, booleanContext, true);
+            lastRecord = new TransformationRecord(new ArrayList<>(recording));
+            return transformed;
+        } finally {
+            recording = null;
+        }
     }
 
     /**
-     * Descends into {@code expr}, rebuilds it from transformed children, then optionally applies a rule at this node.
+     * Returns the record of the rule applications performed by the most recent {@link #transform} call, for later
+     * {@link #replay}.
+     *
+     * @return the most recent transformation record, or {@code null} if {@link #transform} has not been called yet
+     */
+    public TransformationRecord getLastTransformationRecord() {
+        return lastRecord;
+    }
+
+    /**
+     * Re-applies a recorded transformation to {@code expr} (the same expression that was passed to the
+     * {@link #transform} call that produced {@code record}), keeping only the rule applications whose site index is
+     * accepted by {@code enabledSites}; a disabled application leaves its subexpression untransformed. Because every
+     * recorded rule application is individually equivalence-preserving, the returned expression is semantically
+     * equivalent to {@code expr} for any subset of enabled sites, which makes replay suitable for test-case reduction:
+     * transformations are undone one subset at a time while the transformed query remains equivalent to the original.
+     *
+     * <p>
+     * Replay walks the tree through the same {@link #descend} calls as the recording run, so it relies on
+     * {@code descend} rebuilding nodes deterministically. No new random expressions are generated: all auxiliary
+     * expressions are reused from the record.
+     *
+     * @param expr
+     *            the expression the record's transform call originally transformed
+     * @param booleanContext
+     *            whether {@code expr} is evaluated purely for its truth value (must match the original call)
+     * @param record
+     *            the record produced by this transformer's {@link #transform} call on {@code expr}
+     * @param enabledSites
+     *            accepts the site indices ({@code 0} to {@code record.getSiteCount() - 1}) to keep applied
+     *
+     * @return the partially transformed expression
+     */
+    @SuppressWarnings("unchecked")
+    public E replay(E expr, boolean booleanContext, TransformationRecord record, IntPredicate enabledSites) {
+        replayApplications = new ArrayList<>();
+        for (Application<?, ?> application : record.applications) {
+            // safe: the record was produced by a transformer with the same type parameters
+            replayApplications.add((Application<E, T>) application);
+        }
+        replayEnabledSites = enabledSites;
+        replayCursor = 0;
+        replaySiteCursor = 0;
+        try {
+            E replayed = transformNode(expr, booleanContext, true);
+            if (replayCursor != replayApplications.size()) {
+                throw new IllegalStateException("The replay visited fewer nodes than the record contains");
+            }
+            return replayed;
+        } finally {
+            replayApplications = null;
+            replayEnabledSites = null;
+        }
+    }
+
+    /**
+     * Descends into {@code expr}, rebuilds it from transformed children, then optionally applies a rule at this node
+     * (or, during {@link #replay}, re-applies the recorded rule if its site is enabled).
      *
      * @param expr
      *            the expression to transform
@@ -224,16 +411,57 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      */
     protected E transformNode(E expr, boolean booleanContext, boolean forceApply) {
         E descended = descend(expr, booleanContext);
+        if (replayApplications != null) {
+            return replayApplication(descended);
+        }
         if (forceApply || Randomly.getBoolean()) {
             return applyRandomRule(descended, booleanContext);
         }
+        record(noApplication());
         return descended;
+    }
+
+    /**
+     * Consumes the next recorded decision and re-applies it to the rebuilt node, unless no rule was applied there or
+     * the application's site is disabled.
+     *
+     * @param descended
+     *            the rebuilt node the decision applies to
+     *
+     * @return the (possibly wrapped) node
+     */
+    private E replayApplication(E descended) {
+        if (replayCursor >= replayApplications.size()) {
+            throw new IllegalStateException("The replay visited more nodes than the record contains");
+        }
+        Application<E, T> application = replayApplications.get(replayCursor++);
+        if (application.rule == null) {
+            return descended;
+        }
+        int site = replaySiteCursor++;
+        if (!replayEnabledSites.test(site)) {
+            return descended;
+        }
+        return application.rule.apply(this, application, descended);
+    }
+
+    private void record(Application<E, T> application) {
+        if (recording != null) {
+            recording.add(application);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Application<E, T> noApplication() {
+        return (Application<E, T>) Application.NONE;
     }
 
     /**
      * Rebuilds {@code expr} with its children transformed, threading the correct boolean/scalar context into each
      * child. Leaf nodes (columns, constants, table references, ...) should be returned unchanged; any applicable
-     * transformation will still be applied to them by the calling {@link #transformNode}.
+     * transformation will still be applied to them by the calling {@link #transformNode}. Implementations must be
+     * deterministic (in particular, visit the children of a given node in a fixed order), as {@link #replay} matches
+     * recorded rule applications to nodes by their visiting order.
      *
      * @param expr
      *            the expression to descend into
