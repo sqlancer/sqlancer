@@ -2,6 +2,7 @@ package sqlancer.common.oracle;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -94,34 +95,73 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
         }
 
         @Override
-        public void setEnabledTransformationSites(Set<Integer> enabledSites) {
-            if (enabledSites.size() == getTransformationSiteCount()) {
-                // With every site enabled, the transformed query is the unreduced one; keep the exact string that
-                // originally detected the bug rather than re-rendering it (rendering an AST draws random textual
+        public Set<Integer> getDeadBranchSites() {
+            // Global site indices are assigned over the fetch columns' records first (in column order), then the
+            // WHERE clause's record.
+            Set<Integer> deadBranchSites = new HashSet<>();
+            int offset = 0;
+            for (EETTransformer.TransformationRecord record : fetchColumnRecords) {
+                for (int site : record.getDeadBranchSites()) {
+                    deadBranchSites.add(offset + site);
+                }
+                offset += record.getSiteCount();
+            }
+            for (int site : whereClauseRecord.getDeadBranchSites()) {
+                deadBranchSites.add(offset + site);
+            }
+            return deadBranchSites;
+        }
+
+        @Override
+        public void applyTransformationSites(Set<Integer> enabledSites, Set<Integer> constantConditionSites,
+                Set<Integer> copiedDeadBranchSites) {
+            if (enabledSites.size() == getTransformationSiteCount() && constantConditionSites.isEmpty()
+                    && copiedDeadBranchSites.isEmpty()) {
+                // With every site fully enabled, the transformed query is the unreduced one; keep the exact string
+                // that originally detected the bug rather than re-rendering it (rendering an AST draws random textual
                 // variants, so a re-render would produce a semantically equal but untested string).
                 transformedQueryString = initialTransformedQueryString;
                 return;
             }
-            // Pin the RNG while re-rendering so the same enabled sites always yield the same query string; the string
-            // tested during reduction is then exactly the string the reduced test case reports.
+            // Pin the RNG while re-rendering so the same site configuration always yields the same query string; the
+            // string tested during reduction is then exactly the string the reduced test case reports.
             transformedQueryString = Randomly.withFixedSeedRandom(() -> {
                 // Global site indices are assigned over the fetch columns' records first (in column order), then the
                 // WHERE clause's record.
                 List<E> replayedFetchColumns = new ArrayList<>();
                 int offset = 0;
                 for (int i = 0; i < fetchColumns.size(); i++) {
-                    int base = offset;
                     replayedFetchColumns.add(transformer.replay(fetchColumns.get(i), false, fetchColumnRecords.get(i),
-                            site -> enabledSites.contains(base + site)));
+                            directives(enabledSites, constantConditionSites, copiedDeadBranchSites, offset)));
                     offset += fetchColumnRecords.get(i).getSiteCount();
                 }
-                int whereBase = offset;
                 E replayedWhereClause = transformer.replay(whereClause, true, whereClauseRecord,
-                        site -> enabledSites.contains(whereBase + site));
+                        directives(enabledSites, constantConditionSites, copiedDeadBranchSites, offset));
                 select.setFetchColumns(replayedFetchColumns);
                 select.setWhereClause(replayedWhereClause);
                 return select.asString();
             });
+        }
+
+        // Translates the global-index site sets into a record-local directives view starting at the given offset.
+        private EETTransformer.SiteDirectives directives(Set<Integer> enabledSites, Set<Integer> constantConditionSites,
+                Set<Integer> copiedDeadBranchSites, int offset) {
+            return new EETTransformer.SiteDirectives() {
+                @Override
+                public boolean isEnabled(int site) {
+                    return enabledSites.contains(offset + site);
+                }
+
+                @Override
+                public boolean useConstantCondition(int site) {
+                    return constantConditionSites.contains(offset + site);
+                }
+
+                @Override
+                public boolean useCopiedDeadBranch(int site) {
+                    return copiedDeadBranchSites.contains(offset + site);
+                }
+            };
         }
 
         @Override
