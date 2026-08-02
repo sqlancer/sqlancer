@@ -132,36 +132,17 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
                 int offset = 0;
                 for (int i = 0; i < fetchColumns.size(); i++) {
                     replayedFetchColumns.add(transformer.replay(fetchColumns.get(i), false, fetchColumnRecords.get(i),
-                            directives(enabledSites, constantConditionSites, copiedDeadBranchSites, offset)));
+                            EETTransformer.SiteDirectives.forSites(enabledSites, constantConditionSites,
+                                    copiedDeadBranchSites, offset)));
                     offset += fetchColumnRecords.get(i).getSiteCount();
                 }
                 E replayedWhereClause = transformer.replay(whereClause, true, whereClauseRecord,
-                        directives(enabledSites, constantConditionSites, copiedDeadBranchSites, offset));
+                        EETTransformer.SiteDirectives.forSites(enabledSites, constantConditionSites,
+                                copiedDeadBranchSites, offset));
                 select.setFetchColumns(replayedFetchColumns);
                 select.setWhereClause(replayedWhereClause);
                 return select.asString();
             });
-        }
-
-        // Translates the global-index site sets into a record-local directives view starting at the given offset.
-        private EETTransformer.SiteDirectives directives(Set<Integer> enabledSites, Set<Integer> constantConditionSites,
-                Set<Integer> copiedDeadBranchSites, int offset) {
-            return new EETTransformer.SiteDirectives() {
-                @Override
-                public boolean isEnabled(int site) {
-                    return enabledSites.contains(offset + site);
-                }
-
-                @Override
-                public boolean useConstantCondition(int site) {
-                    return constantConditionSites.contains(offset + site);
-                }
-
-                @Override
-                public boolean useCopiedDeadBranch(int site) {
-                    return copiedDeadBranchSites.contains(offset + site);
-                }
-            };
         }
 
         @Override

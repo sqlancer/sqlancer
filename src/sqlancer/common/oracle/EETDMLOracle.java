@@ -3,17 +3,20 @@ package sqlancer.common.oracle;
 import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
+import sqlancer.TransformationReproducer;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.gen.EETDMLGenerator;
 import sqlancer.common.query.ExpectedErrors;
@@ -98,6 +101,69 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             this.selectPostImage = selectPostImage;
             this.columnCount = columnCount;
         }
+
+        // A copy differing only in the transformed statement, used when transformation reduction re-renders it.
+        ComparisonQueries withTransformedStatement(String newTransformedStatement) {
+            return new ComparisonQueries(originalStatement, newTransformedStatement, addRowIdColumn, stampRowIds,
+                    beginTransaction, rollback, dropRowIdColumn, selectPostImage, columnCount);
+        }
+    }
+
+    // Records the transformations applied to a DML statement's expressions so the transformed statement can be
+    // re-rendered with any subset of the transformation sites disabled or simplified (for transformation reduction).
+    // The transformable expressions are held in a fixed order, each assigned a contiguous block of global site indices;
+    // reassemble rebuilds the DML statement string from the (replayed) expressions in that same order. Each statement
+    // kind's generator method documents the order it puts its expressions in.
+    private static final class DMLTransformation<E extends Expression<?>> {
+        private final EETTransformer<E, ?> transformer;
+        private final List<E> originalExpressions;
+        private final List<Boolean> booleanContexts;
+        private final List<EETTransformer.TransformationRecord> records;
+        private final Function<List<E>, String> reassemble;
+
+        DMLTransformation(EETTransformer<E, ?> transformer, List<E> originalExpressions, List<Boolean> booleanContexts,
+                List<EETTransformer.TransformationRecord> records, Function<List<E>, String> reassemble) {
+            this.transformer = transformer;
+            this.originalExpressions = originalExpressions;
+            this.booleanContexts = booleanContexts;
+            this.records = records;
+            this.reassemble = reassemble;
+        }
+
+        int getSiteCount() {
+            int siteCount = 0;
+            for (EETTransformer.TransformationRecord record : records) {
+                siteCount += record.getSiteCount();
+            }
+            return siteCount;
+        }
+
+        Set<Integer> getDeadBranchSites() {
+            Set<Integer> deadBranchSites = new HashSet<>();
+            int offset = 0;
+            for (EETTransformer.TransformationRecord record : records) {
+                for (int site : record.getDeadBranchSites()) {
+                    deadBranchSites.add(offset + site);
+                }
+                offset += record.getSiteCount();
+            }
+            return deadBranchSites;
+        }
+
+        // Re-renders the transformed statement with the given per-site configuration; each expression is replayed with
+        // its record and the block of global site indices starting at its running offset.
+        String render(Set<Integer> enabledSites, Set<Integer> constantConditionSites,
+                Set<Integer> copiedDeadBranchSites) {
+            List<E> replayed = new ArrayList<>();
+            int offset = 0;
+            for (int i = 0; i < originalExpressions.size(); i++) {
+                replayed.add(transformer.replay(originalExpressions.get(i), booleanContexts.get(i), records.get(i),
+                        EETTransformer.SiteDirectives.forSites(enabledSites, constantConditionSites,
+                                copiedDeadBranchSites, offset)));
+                offset += records.get(i).getSiteCount();
+            }
+            return reassemble.apply(replayed);
+        }
     }
 
     // The post-images the original and transformed statements produced, compared for equality to detect the bug.
@@ -113,19 +179,32 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
 
     // Reproduces a post-image mismatch against the reduced database. Unlike EETOracle's comparison reproducer this does
     // not extend AbstractComparisonReproducer: the two sides are not independent, because the row-id stamping (UUID())
-    // must run once so both observe the same rows, so both post-images are computed together.
-    private final class EETDMLReproducer implements Reproducer<G> {
-        private final ComparisonQueries queries;
+    // must run once so both observe the same rows, so both post-images are computed together. Implements
+    // TransformationReproducer so the transformed statement can be reduced by disabling and simplifying its
+    // transformation sites, mirroring EETOracle.
+    private final class EETDMLReproducer implements TransformationReproducer<G> {
+        private final ComparisonQueries baseQueries;
+        private final DMLTransformation<E> transformation;
+        private final String initialTransformedStatement;
+        // Mutable: transformation reduction re-renders the transformed statement with some sites disabled/simplified.
+        private String transformedStatement;
 
-        EETDMLReproducer(ComparisonQueries queries) {
-            this.queries = queries;
+        EETDMLReproducer(ComparisonQueries queries, DMLTransformation<E> transformation) {
+            this.baseQueries = queries;
+            this.transformation = transformation;
+            this.initialTransformedStatement = queries.transformedStatement;
+            this.transformedStatement = queries.transformedStatement;
+        }
+
+        private ComparisonQueries currentQueries() {
+            return baseQueries.withTransformedStatement(transformedStatement);
         }
 
         @Override
         public boolean bugStillTriggers(G globalState) {
             PostImages images;
             try {
-                images = computePostImages(globalState, queries);
+                images = computePostImages(globalState, currentQueries());
             } catch (AssertionError | SQLException | RuntimeException e) {
                 // any failure re-running the comparison means this reduced database no longer shows the mismatch
                 return false;
@@ -134,11 +213,38 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         }
 
         @Override
+        public int getTransformationSiteCount() {
+            return transformation.getSiteCount();
+        }
+
+        @Override
+        public Set<Integer> getDeadBranchSites() {
+            return transformation.getDeadBranchSites();
+        }
+
+        @Override
+        public void applyTransformationSites(Set<Integer> enabledSites, Set<Integer> constantConditionSites,
+                Set<Integer> copiedDeadBranchSites) {
+            if (enabledSites.size() == getTransformationSiteCount() && constantConditionSites.isEmpty()
+                    && copiedDeadBranchSites.isEmpty()) {
+                // With every site fully enabled, keep the exact string that originally detected the bug rather than
+                // re-rendering it (rendering an AST draws random textual variants, so a re-render would produce a
+                // semantically equal but untested string).
+                transformedStatement = initialTransformedStatement;
+                return;
+            }
+            // Pin the RNG while re-rendering so the same site configuration always yields the same statement string;
+            // the string tested during reduction is then exactly the string the reduced test case reports.
+            transformedStatement = Randomly.withFixedSeedRandom(
+                    () -> transformation.render(enabledSites, constantConditionSites, copiedDeadBranchSites));
+        }
+
+        @Override
         public String getBugInformation() {
             StringBuilder sb = new StringBuilder();
             sb.append("-- On the database set up by the statements above, the following statements leave the database"
                     + " in different states:").append(System.lineSeparator());
-            renderStatementLines(sb, queries);
+            renderStatementLines(sb, currentQueries());
             return sb.toString();
         }
     }
@@ -184,6 +290,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         E predicate = gen.generateBooleanExpression();
         // The WHERE predicate is evaluated in a boolean context.
         E transformedPredicate = transformer.transform(predicate, true);
+        EETTransformer.TransformationRecord predicateRecord = transformer.getLastTransformationRecord();
 
         // Optionally cap the statement with a LIMIT. The limit and its ordering (a random column subset, made a total
         // order by the row-id tiebreaker) are decided once and applied identically to both statements, so the capped
@@ -194,12 +301,11 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             limit = (int) Randomly.getNotCachedInteger(0, 10);
             orderByColumns = Randomly.subset(table.getColumns());
         }
-
         // Generators for the different kinds of statement this oracle supports. One is chosen at random per check
         List<DMLStatementGenerator<E, T, C>> statementGenerators = List.of(this::generateDeleteStatements,
                 this::generateUpdateStatements, this::generateInsertStatements);
-        StatementPair statements = Randomly.fromList(statementGenerators).generate(table, predicate,
-                transformedPredicate, orderByColumns, limit);
+        StatementPair<E> statements = Randomly.fromList(statementGenerators).generate(table, predicate,
+                transformedPredicate, predicateRecord, orderByColumns, limit);
         String originalStatement = statements.original;
         String transformedStatement = statements.transformed;
         generatedQueryString = originalStatement;
@@ -220,7 +326,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             throw unexpectedError;
         }
 
-        reproducer = new EETDMLReproducer(queries);
+        reproducer = new EETDMLReproducer(queries, statements.transformation);
         if (!images.original.equals(images.transformed)) {
             throw new AssertionError(mismatchMessage(table, originalStatement, transformedStatement, images.original,
                     images.transformed));
@@ -276,26 +382,34 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *            the DBMS-specific column class
      */
     @FunctionalInterface
-    private interface DMLStatementGenerator<E, T, C> {
-        StatementPair generate(T table, E predicate, E transformedPredicate, List<C> orderByColumns, Integer limit);
+    private interface DMLStatementGenerator<E extends Expression<?>, T, C> {
+        StatementPair<E> generate(T table, E predicate, E transformedPredicate,
+                EETTransformer.TransformationRecord predicateRecord, List<C> orderByColumns, Integer limit);
     }
 
     /**
-     * A DML statement and its transformed counterpart, which must leave the database in the same state.
+     * A DML statement and its transformed counterpart, which must leave the database in the same state, together with
+     * the record of how the transformed one was built (so reduction can re-render it with fewer transformations).
+     *
+     * @param <E>
+     *            the DBMS-specific expression class
      */
-    private static final class StatementPair {
+    private static final class StatementPair<E extends Expression<?>> {
         private final String original;
         private final String transformed;
+        private final DMLTransformation<E> transformation;
 
-        StatementPair(String original, String transformed) {
+        StatementPair(String original, String transformed, DMLTransformation<E> transformation) {
             this.original = original;
             this.transformed = transformed;
+            this.transformation = transformation;
         }
     }
 
     /**
      * Generates an UPDATE and its transformed counterpart. Besides the WHERE predicate, UPDATE also transforms the
-     * written values: each SET value expression is transformed in a scalar context.
+     * written values: each SET value expression is transformed in a scalar context. Its transformation sites are
+     * ordered SET values first, then the predicate.
      *
      * @param table
      *            the table being modified
@@ -303,23 +417,40 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *            the WHERE predicate of the original statement
      * @param transformedPredicate
      *            the transformed WHERE predicate, used by the transformed statement
+     * @param predicateRecord
+     *            the record of the predicate's transformation
      * @param orderByColumns
      *            the columns ordering the statement, empty if it is not capped by a limit
      * @param limit
      *            the maximum number of rows to modify, or {@code null} for no limit
      *
-     * @return the original statement together with its transformed counterpart
+     * @return the original statement, its transformed counterpart and the latter's transformation record
      */
-    private StatementPair generateUpdateStatements(T table, E predicate, E transformedPredicate, List<C> orderByColumns,
-            Integer limit) {
+    private StatementPair<E> generateUpdateStatements(T table, E predicate, E transformedPredicate,
+            EETTransformer.TransformationRecord predicateRecord, List<C> orderByColumns, Integer limit) {
         List<Map.Entry<C, E>> assignments = gen.generateSetAssignments();
         List<Map.Entry<C, E>> transformedAssignments = new ArrayList<>();
+        List<E> expressions = new ArrayList<>();
+        List<Boolean> booleanContexts = new ArrayList<>();
+        List<EETTransformer.TransformationRecord> records = new ArrayList<>();
+        List<C> assignmentColumns = new ArrayList<>();
         for (Map.Entry<C, E> assignment : assignments) {
             E transformedValue = transformer.transform(assignment.getValue(), false);
             transformedAssignments.add(new AbstractMap.SimpleEntry<>(assignment.getKey(), transformedValue));
+            expressions.add(assignment.getValue());
+            booleanContexts.add(false);
+            records.add(transformer.getLastTransformationRecord());
+            assignmentColumns.add(assignment.getKey());
         }
-        return new StatementPair(gen.updateStatement(table, assignments, predicate, orderByColumns, limit),
-                gen.updateStatement(table, transformedAssignments, transformedPredicate, orderByColumns, limit));
+        expressions.add(predicate);
+        booleanContexts.add(true);
+        records.add(predicateRecord);
+        DMLTransformation<E> transformation = new DMLTransformation<>(transformer, expressions, booleanContexts,
+                records, replayed -> gen.updateStatement(table, zipAssignments(assignmentColumns, replayed),
+                        replayed.get(replayed.size() - 1), orderByColumns, limit));
+        return new StatementPair<>(gen.updateStatement(table, assignments, predicate, orderByColumns, limit),
+                gen.updateStatement(table, transformedAssignments, transformedPredicate, orderByColumns, limit),
+                transformation);
     }
 
     /**
@@ -331,22 +462,28 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *            the WHERE predicate of the original statement
      * @param transformedPredicate
      *            the transformed WHERE predicate, used by the transformed statement
+     * @param predicateRecord
+     *            the record of the predicate's transformation, which is DELETE's only transformation site
      * @param orderByColumns
      *            the columns ordering the statement, empty if it is not capped by a limit
      * @param limit
      *            the maximum number of rows to modify, or {@code null} for no limit
      *
-     * @return the original statement together with its transformed counterpart
+     * @return the original statement, its transformed counterpart and the latter's transformation record
      */
-    private StatementPair generateDeleteStatements(T table, E predicate, E transformedPredicate, List<C> orderByColumns,
-            Integer limit) {
-        return new StatementPair(gen.deleteStatement(table, predicate, orderByColumns, limit),
-                gen.deleteStatement(table, transformedPredicate, orderByColumns, limit));
+    private StatementPair<E> generateDeleteStatements(T table, E predicate, E transformedPredicate,
+            EETTransformer.TransformationRecord predicateRecord, List<C> orderByColumns, Integer limit) {
+        DMLTransformation<E> transformation = new DMLTransformation<>(transformer, List.of(predicate), List.of(true),
+                List.of(predicateRecord),
+                replayed -> gen.deleteStatement(table, replayed.get(0), orderByColumns, limit));
+        return new StatementPair<>(gen.deleteStatement(table, predicate, orderByColumns, limit),
+                gen.deleteStatement(table, transformedPredicate, orderByColumns, limit), transformation);
     }
 
     /**
      * Generates an {@code INSERT ... SELECT} and its transformed counterpart. Besides the WHERE predicate, which
-     * filters the source rows and is optional here, INSERT also transforms each inserted value in a scalar context.
+     * filters the source rows and is optional here, INSERT also transforms each inserted value in a scalar context. Its
+     * transformation sites are ordered inserted values first, then the predicate when there is one.
      *
      * <p>
      * The ordering and limit cap the source rows the statement reads, so it inserts one row per source row kept.
@@ -357,25 +494,43 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *            the WHERE predicate of the original statement
      * @param transformedPredicate
      *            the transformed WHERE predicate, used by the transformed statement
+     * @param predicateRecord
+     *            the record of the predicate's transformation, unused when no predicate is generated
      * @param orderByColumns
      *            the columns ordering the source rows, empty if the statement is not capped by a limit
      * @param limit
      *            the maximum number of source rows to insert from, or {@code null} for no limit
      *
-     * @return the original statement together with its transformed counterpart
+     * @return the original statement, its transformed counterpart and the latter's transformation record
      */
-    private StatementPair generateInsertStatements(T table, E predicate, E transformedPredicate, List<C> orderByColumns,
-            Integer limit) {
+    private StatementPair<E> generateInsertStatements(T table, E predicate, E transformedPredicate,
+            EETTransformer.TransformationRecord predicateRecord, List<C> orderByColumns, Integer limit) {
         List<E> values = gen.generateInsertValues();
         List<E> transformedValues = new ArrayList<>();
+        List<E> expressions = new ArrayList<>();
+        List<Boolean> booleanContexts = new ArrayList<>();
+        List<EETTransformer.TransformationRecord> records = new ArrayList<>();
         for (E value : values) {
             transformedValues.add(transformer.transform(value, false));
+            expressions.add(value);
+            booleanContexts.add(false);
+            records.add(transformer.getLastTransformationRecord());
         }
         boolean withPredicate = Randomly.getBoolean();
-        return new StatementPair(
+        if (withPredicate) {
+            expressions.add(predicate);
+            booleanContexts.add(true);
+            records.add(predicateRecord);
+        }
+        int valueCount = values.size();
+        DMLTransformation<E> transformation = new DMLTransformation<>(transformer, expressions, booleanContexts,
+                records, replayed -> gen.insertStatement(table, replayed.subList(0, valueCount),
+                        withPredicate ? replayed.get(valueCount) : null, orderByColumns, limit));
+        return new StatementPair<>(
                 gen.insertStatement(table, values, withPredicate ? predicate : null, orderByColumns, limit),
                 gen.insertStatement(table, transformedValues, withPredicate ? transformedPredicate : null,
-                        orderByColumns, limit));
+                        orderByColumns, limit),
+                transformation);
     }
 
     /**
@@ -504,6 +659,16 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             shown++;
         }
         return message.toString();
+    }
+
+    // Pairs each assignment column with the correspondingly positioned (replayed) SET value expression. The values
+    // list has one trailing element (the predicate) beyond the columns, which is left unpaired.
+    private List<Map.Entry<C, E>> zipAssignments(List<C> columns, List<E> values) {
+        List<Map.Entry<C, E>> assignments = new ArrayList<>();
+        for (int i = 0; i < columns.size(); i++) {
+            assignments.add(new AbstractMap.SimpleEntry<>(columns.get(i), values.get(i)));
+        }
+        return assignments;
     }
 
     // Indexes a post-image by its row identifier, which each row holds at rowIdIndex
