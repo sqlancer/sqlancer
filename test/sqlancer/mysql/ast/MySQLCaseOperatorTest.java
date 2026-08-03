@@ -14,7 +14,7 @@ public class MySQLCaseOperatorTest {
 
     @Test
     void getExpectedValue_switchConditionMatchesWhen_ReturnsThen() {
-        MySQLSchema.MySQLColumn aCol = new MySQLSchema.MySQLColumn("a", MySQLSchema.MySQLDataType.INT, false, 0);
+        MySQLSchema.MySQLColumn aCol = new MySQLSchema.MySQLColumn("a", MySQLSchema.MySQLDataType.INT, false, 0, 0);
         MySQLColumnReference switchExpr = new MySQLColumnReference(aCol, MySQLIntConstant.createIntConstant(1));
         List<MySQLExpression> whenExprs = List.of(MySQLIntConstant.createIntConstant(1),
                 MySQLIntConstant.createIntConstant(2));
@@ -29,7 +29,7 @@ public class MySQLCaseOperatorTest {
 
     @Test
     void getExpectedValue_switchConditionHasNoMatches_ReturnsElse() {
-        MySQLSchema.MySQLColumn aCol = new MySQLSchema.MySQLColumn("a", MySQLSchema.MySQLDataType.INT, false, 0);
+        MySQLSchema.MySQLColumn aCol = new MySQLSchema.MySQLColumn("a", MySQLSchema.MySQLDataType.INT, false, 0, 0);
         MySQLColumnReference switchExpr = new MySQLColumnReference(aCol, MySQLIntConstant.createNullConstant());
         List<MySQLExpression> whenExprs = List.of(MySQLIntConstant.createIntConstant(1),
                 MySQLIntConstant.createIntConstant(2));

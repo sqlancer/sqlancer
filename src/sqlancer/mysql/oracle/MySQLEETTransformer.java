@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.common.oracle.EETTransformer;
+import sqlancer.mysql.MySQLSchema.MySQLColumn;
 import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
@@ -33,11 +34,11 @@ import sqlancer.mysql.gen.MySQLExpressionGenerator;
  *
  * <p>
  * MySQL's expression generator is untyped, so type inference/generation works with a subset of MySQL's CAST target
- * types ({@link CastType}): {@link #inferType} conservatively classifies AST nodes into that domain (returning
- * {@code null} when uncertain), and {@link #generateExpressionOfType} pins the type of a random expression by wrapping
- * it in a CAST.
+ * types ({@link CastType}, which carries {@code (M, D)} for DECIMAL): {@link #inferType} conservatively classifies AST
+ * nodes into that domain (returning {@code null} when uncertain), and {@link #generateExpressionOfType} pins the type
+ * of a random expression by wrapping it in a CAST.
  */
-public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCastOperation.CastType> {
+public class MySQLEETTransformer extends EETTransformer<MySQLExpression, CastType> {
 
     private static final boolean BOOLEAN = true;
     private static final boolean SCALAR = false;
@@ -212,20 +213,22 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
     }
 
     private CastType inferColumnType(MySQLColumnReference ref) {
-        switch (ref.getColumn().getType()) {
+        MySQLColumn column = ref.getColumn();
+        switch (column.getType()) {
         case INT:
             return CastType.SIGNED; // the table generator never creates UNSIGNED INT columns
         case VARCHAR:
             return CastType.CHAR;
-        // FLOAT/DOUBLE/DECIMAL columns are created without (M, D) while EET is active, so the plain
-        // CAST target below matches the column's type. Reintroducing (M, D) for better coverage would
-        // require tracking it here and emitting the exact precision/scale in the CAST.
         case FLOAT:
+            // FLOAT/DOUBLE columns are created without (M, D) while EET is active (the (M, D) form is deprecated and
+            // not a valid CAST target), so the plain CAST target matches the column's type.
             return CastType.FLOAT;
         case DOUBLE:
             return CastType.DOUBLE;
         case DECIMAL:
-            return CastType.DECIMAL;
+            // DECIMAL columns may carry (M, D); CAST(... AS DECIMAL(M, D)) reproduces the column's exact type. The
+            // schema reports (M, D) even for a plain DECIMAL column (defaulting to (10, 0)).
+            return CastType.decimal(column.getPrecision(), column.getScale());
         default:
             return null;
         }
@@ -259,7 +262,8 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
 
     /**
      * The common type of several result-type-determining subexpressions, or {@code null} if they do not have the same
-     * inferrable type (a conservative under-approximation of MySQL's aggregation rules).
+     * inferrable type (a conservative under-approximation of MySQL's aggregation rules). Two DECIMAL subexpressions
+     * with differing {@code (M, D)} therefore yield {@code null} rather than a guessed aggregate.
      *
      * @param exprs
      *            the result-type-determining subexpressions
@@ -270,7 +274,8 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, MySQLCa
         CastType common = null;
         for (MySQLExpression expr : exprs) {
             CastType type = inferType(expr);
-            if (type == null || common != null && type != common) {
+            // equals (not ==) so two DECIMAL types with matching (M, D) but distinct instances compare as equal.
+            if (type == null || common != null && !type.equals(common)) {
                 return null;
             }
             common = type;
