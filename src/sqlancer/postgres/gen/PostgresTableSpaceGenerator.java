@@ -1,5 +1,6 @@
 package sqlancer.postgres.gen;
 
+import sqlancer.IgnoreMeException;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
@@ -19,10 +20,12 @@ public class PostgresTableSpaceGenerator {
     }
 
     public static SQLQueryAdapter generate(PostgresGlobalState globalState) {
-        // Skip tablespace generation if the option is disabled
+        // PostgresProvider.mapActions does not schedule this action when the option is disabled, but QPG
+        // selects actions by index without consulting the schedule, so the generator has to report that
+        // it has nothing to generate.
         PostgresOptions options = globalState.getDbmsSpecificOptions();
         if (!options.isTestTablespaces()) {
-            return null;
+            throw new IgnoreMeException();
         }
         return new PostgresTableSpaceGenerator(globalState).generateTableSpace();
     }
