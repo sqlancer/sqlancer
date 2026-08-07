@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import sqlancer.Randomly;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLTables;
+import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLConstant;
 import sqlancer.mysql.ast.MySQLExpression;
 import sqlancer.mysql.ast.MySQLSelect;
@@ -26,6 +27,7 @@ public final class MySQLRandomQuerySynthesizer {
         List<MySQLExpression> columnsWithoutAggregations = new ArrayList<>();
 
         boolean hasGeneratedAggregate = false;
+        boolean hasGeneratedWindowFunction = false;
 
         select.setSelectType(Randomly.fromOptions(MySQLSelect.SelectType.values()));
         for (int i = 0; i < nrColumns; i++) {
@@ -34,7 +36,12 @@ public final class MySQLRandomQuerySynthesizer {
                 allColumns.add(expression);
                 columnsWithoutAggregations.add(expression);
             } else {
-                allColumns.add(gen.generateAggregate());
+                MySQLAggregate aggregate = gen.generateAggregate();
+                if (Randomly.getBoolean() && !hasGeneratedWindowFunction) {
+                    aggregate.setWindowSpecification(generateWindowSpecification());
+                    hasGeneratedWindowFunction = true;
+                }
+                allColumns.add(aggregate);
                 hasGeneratedAggregate = true;
             }
         }
@@ -62,6 +69,35 @@ public final class MySQLRandomQuerySynthesizer {
             }
         }
         return select;
+    }
+
+    private static String generateWindowSpecification() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("OVER (");
+
+        if (Randomly.getBoolean()) {
+            sb.append("PARTITION BY ");
+        }
+
+        if (Randomly.getBoolean()) {
+            if (sb.length() > 6) {
+                sb.append(" ");
+            }
+            sb.append("ORDER BY ");
+        }
+
+        if (Randomly.getBoolean()) {
+            if (sb.length() > 6) {
+                sb.append(" ");
+            }
+            sb.append(Randomly.fromOptions("ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW",
+                    "ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING",
+                    "RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW",
+                    "RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING"));
+        }
+
+        sb.append(")");
+        return sb.toString();
     }
 
 }
