@@ -83,6 +83,13 @@ public class SQLite3Aggregate extends SQLite3Expression {
                 }
             }
 
+        },
+        // string_agg(value, separator) - added in 3.44.0, requires 2 args
+        STRING_AGG() {
+            @Override
+            public SQLite3Constant apply(SQLite3Constant exprVal) {
+                return null;
+            }
         };
 
         public abstract SQLite3Constant apply(SQLite3Constant exprVal);
