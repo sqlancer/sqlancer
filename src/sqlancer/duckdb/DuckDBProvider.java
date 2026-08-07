@@ -153,7 +153,9 @@ public class DuckDBProvider extends SQLProviderAdapter<DuckDBGlobalState, DuckDB
         Statement stmt = conn.createStatement();
         stmt.execute("PRAGMA checkpoint_threshold='1 byte';");
         stmt.close();
-        return new SQLConnection(conn);
+        SQLConnection sqlConn = new SQLConnection(conn);
+        sqlConn.setGlobalState(globalState);
+        return sqlConn;
     }
 
     @Override
