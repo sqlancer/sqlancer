@@ -141,7 +141,33 @@ public enum PostgresFunctionWithUnknownResult {
     RANGE_MERGE("range_merge", PostgresDataType.RANGE, PostgresDataType.RANGE, PostgresDataType.RANGE), //
 
     // https://www.postgresql.org/docs/13/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE
-    GET_COLUMN_SIZE("get_column_size", PostgresDataType.INT, PostgresDataType.TEXT);
+    GET_COLUMN_SIZE("get_column_size", PostgresDataType.INT, PostgresDataType.TEXT),
+
+    // Extract function implementation
+    EXTRACT("extract", PostgresDataType.FLOAT, PostgresDataType.TEXT, PostgresDataType.TIMESTAMP, PostgresDataType.DATE,
+            PostgresDataType.TIME) {
+        @Override
+        public PostgresExpression[] getArguments(PostgresDataType returnType, PostgresExpressionGenerator gen,
+                int depth) {
+            PostgresExpression[] args = new PostgresExpression[2];
+            PostgresDataType sourceType = Randomly.fromOptions(PostgresDataType.TIMESTAMP, PostgresDataType.DATE,
+                    PostgresDataType.TIME);
+            args[1] = gen.generateExpression(depth + 1, sourceType);
+
+            String[] validFields;
+            if (sourceType == PostgresDataType.DATE) {
+                validFields = new String[] { "YEAR", "MONTH", "DAY", "DECADE", "CENTURY", "MILLENNIUM", "QUARTER",
+                        "WEEK", "DOY", "DOW", "ISODOW", "ISOYEAR" };
+            } else if (sourceType == PostgresDataType.TIME) {
+                validFields = new String[] { "HOUR", "MINUTE", "SECOND" };
+            } else {
+                validFields = new String[] { "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "DECADE", "CENTURY",
+                        "MILLENNIUM", "QUARTER", "WEEK", "DOY", "DOW", "ISODOW", "ISOYEAR", "EPOCH" };
+            }
+            args[0] = PostgresConstant.createTextConstant(Randomly.fromOptions(validFields));
+            return args;
+        }
+    };
     // PG_DATABASE_SIZE("pg_database_size", PostgresDataType.INT, PostgresDataType.INT);
     // PG_SIZE_BYTES("pg_size_bytes", PostgresDataType.INT, PostgresDataType.TEXT);
 
