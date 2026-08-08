@@ -16,4 +16,13 @@ public class MySQLGlobalState extends SQLGlobalState<MySQLOptions, MySQLSchema> 
         return getDbmsSpecificOptions().oracles.stream().anyMatch(o -> o == MySQLOracleFactory.PQS);
     }
 
+    public boolean usesEET() {
+        return getDbmsSpecificOptions().getTestOracleFactory().stream()
+                .anyMatch(o -> o == MySQLOracleFactory.EET || o == MySQLOracleFactory.EET_DML);
+    }
+
+    public boolean usesEETDML() {
+        return getDbmsSpecificOptions().getTestOracleFactory().stream().anyMatch(o -> o == MySQLOracleFactory.EET_DML);
+    }
+
 }

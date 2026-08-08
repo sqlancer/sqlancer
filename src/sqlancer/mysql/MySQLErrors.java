@@ -65,4 +65,21 @@ public final class MySQLErrors {
         errors.addAll(getInsertUpdateErrors());
     }
 
+    public static List<String> getDMLErrors() {
+        ArrayList<String> errors = new ArrayList<>(getInsertUpdateErrors());
+
+        // WHERE-clause type coercion (e.g. string -> number) is only a warning in SELECT but a hard error in
+        // DELETE/UPDATE under strict sql_mode (MySQL 1292). A semantics-preserving transform may benignly change
+        // whether it fires, so it is tolerated rather than flagged.
+        errors.add("Truncated incorrect");
+        // Foreign key constraint failure when deleting/updating a referenced row.
+        errors.add("a foreign key constraint fails");
+
+        return errors;
+    }
+
+    public static void addDMLErrors(ExpectedErrors errors) {
+        errors.addAll(getDMLErrors());
+    }
+
 }

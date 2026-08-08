@@ -198,7 +198,10 @@ public class MySQLTableGenerator {
                 // "NDB": java.sql.SQLSyntaxErrorException: Unknown storage engine 'NDB'
                 // "EXAMPLE": java.sql.SQLSyntaxErrorException: Unknown storage engine 'EXAMPLE'
                 // "MERGE": java.sql.SQLException: Table 't0' is read only
-                String fromOptions = Randomly.fromOptions("InnoDB", "MyISAM", "MEMORY", "HEAP", "CSV", "ARCHIVE");
+                // The EET DML oracle rolls back each statement to compare database states, which requires a
+                // transactional engine, so only InnoDB is used while it is active.
+                String fromOptions = globalState.usesEETDML() ? "InnoDB"
+                        : Randomly.fromOptions("InnoDB", "MyISAM", "MEMORY", "HEAP", "CSV", "ARCHIVE");
                 this.engine = MySQLEngine.get(fromOptions);
                 sb.append("ENGINE = ");
                 sb.append(fromOptions);
@@ -362,7 +365,8 @@ public class MySQLTableGenerator {
             }
             if (Randomly.getBoolean() && !globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
                     .anyMatch(o -> o == MySQLOracleFactory.TLP_WHERE || o == MySQLOracleFactory.PQS
-                            || o == MySQLOracleFactory.DQP || o == MySQLOracleFactory.EET)) {
+                            || o == MySQLOracleFactory.DQP || o == MySQLOracleFactory.EET
+                            || o == MySQLOracleFactory.EET_DML)) {
                 sb.append(" ZEROFILL");
             }
         }
@@ -373,9 +377,9 @@ public class MySQLTableGenerator {
     // it is therefore omitted while EET is active. DECIMAL(M, D) has no such restriction: the EET oracle tracks its
     // (M, D) and reproduces it via CAST(... AS DECIMAL(M, D)), so it keeps using optionallyAddPrecisionAndScale.
     private void optionallyAddFloatingPointPrecisionAndScale(StringBuilder sb) {
-        boolean eetActive = globalState.getDbmsSpecificOptions().getTestOracleFactory().stream()
-                .anyMatch(o -> o == MySQLOracleFactory.EET);
-        if (!eetActive) {
+        // Both EET oracles rely on the same type inference (MySQLEETTransformer), so both omit FLOAT(M, D)/DOUBLE(M,
+        // D).
+        if (!globalState.usesEET()) {
             optionallyAddPrecisionAndScale(sb);
         }
     }
