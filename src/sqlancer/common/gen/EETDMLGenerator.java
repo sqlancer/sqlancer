@@ -2,6 +2,7 @@ package sqlancer.common.gen;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.oracle.EETTransformer;
@@ -19,7 +20,8 @@ import sqlancer.common.schema.AbstractTables;
  * Adapted from the DQE oracle, state is observed with an auxiliary column ({@link EETDMLGenerator#ROW_ID_COLUMN}) which
  * uniquely identifies each row. The rows are stamped with identifiers once, before both executions of the statement run
  * (each in a rolled-back transaction), so both executions observe the same identifiers regardless of how they are
- * produced.
+ * produced. The resulting state is compared as a full post-image (each surviving row's identifier and content column
+ * values), which covers every DML statement: a DELETE removes rows from it, an UPDATE changes values in it.
  *
  * <p>
  * Most of these statements are standard SQL, likely common to most DBMSs, so are provided as {@code default} methods.
@@ -54,6 +56,15 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      * @return a fresh random boolean expression
      */
     E generateBooleanExpression();
+
+    /**
+     * Generates a fresh set of {@code column = value} assignments over the current tables' columns, used as an UPDATE
+     * statement's SET clause. The columns are a random non-empty subset and each value is a fresh random expression;
+     * both the columns and their assigned expressions are transformed by the oracle.
+     *
+     * @return the assignments, as {@code (column, value expression)} pairs (at least one)
+     */
+    List<Map.Entry<C, E>> generateSetAssignments();
 
     /**
      * Creates a DBMS-specific {@link EETTransformer} backed by this generator, used to rewrite the statement's
@@ -122,27 +133,32 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
     }
 
     /**
-     * SQL that selects the {@link #ROW_ID_COLUMN} of every row of {@code table} (the surviving-row snapshot).
+     * SQL that reads back the full post-image of {@code table}: the {@link #ROW_ID_COLUMN} identifier and every content
+     * column of every surviving row, ordered by the (unique) identifier so the two statements' snapshots align
+     * row-for-row.
+     *
+     * <p>
+     * This single value-level snapshot is the comparison surface for all DML statements: a DELETE removes rows from it,
+     * an UPDATE changes column values in it. Row identity alone (which the identifier already captures) would suffice
+     * for DELETE, but not for UPDATE, where the two runs could touch the same rows yet write different values.
      *
      * @param table
      *            the table to snapshot
      *
-     * @return the SQL statement; its first result column must be the identifiers
+     * @return the SQL statement; its first result column is the identifier, followed by {@code table}'s content columns
      */
-    default String selectRowIdsStatement(T table) {
-        return "SELECT " + ROW_ID_COLUMN + " FROM " + table.getName();
+    default String selectPostImageStatement(T table) {
+        List<String> selected = new ArrayList<>();
+        selected.add(ROW_ID_COLUMN);
+        for (C column : table.getColumns()) {
+            selected.add(column.getName());
+        }
+        return "SELECT " + String.join(", ", selected) + " FROM " + table.getName() + " ORDER BY " + ROW_ID_COLUMN;
     }
 
     /**
      * SQL that deletes the rows of {@code table} matching {@code predicate}, optionally limited to the first
-     * {@code limit} rows.
-     *
-     * <p>
-     * When {@code limit} is non-null, the statement is ordered by {@code orderByColumns} followed by
-     * {@link #ROW_ID_COLUMN} as a tiebreaker. Because the identifiers are unique, this is always a total order (even
-     * when the ordering columns tie), so the "first {@code limit}" rows are identical for the original and transformed
-     * statements. Varying the ordering columns exercises more access paths than the row id alone would. The caller must
-     * pass the same {@code orderByColumns} and {@code limit} to both statements; neither is transformed.
+     * {@code limit} rows (see {@link #orderByLimitClause}).
      *
      * @param table
      *            the table to delete from
@@ -157,16 +173,67 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      * @return the SQL statement
      */
     default String deleteStatement(T table, E predicate, List<C> orderByColumns, Integer limit) {
-        String statement = "DELETE FROM " + table.getName() + " WHERE " + asString(predicate);
-        if (limit != null) {
-            List<String> orderBy = new ArrayList<>();
-            for (C column : orderByColumns) {
-                orderBy.add(column.getName());
-            }
-            orderBy.add(ROW_ID_COLUMN); // unique tiebreaker: guarantees a total order regardless of the columns above
-            statement += " ORDER BY " + String.join(", ", orderBy) + " LIMIT " + limit;
+        return "DELETE FROM " + table.getName() + " WHERE " + asString(predicate)
+                + orderByLimitClause(orderByColumns, limit);
+    }
+
+    /**
+     * SQL that updates the rows of {@code table} matching {@code predicate}, setting each column in {@code assignments}
+     * to its assigned value expression, optionally limited to the first {@code limit} rows (see
+     * {@link #orderByLimitClause}).
+     *
+     * @param table
+     *            the table to update
+     * @param assignments
+     *            the {@code (column, value expression)} pairs to assign; each value is rendered via {@link #asString}
+     * @param predicate
+     *            the WHERE predicate; rendered via {@link #asString}
+     * @param orderByColumns
+     *            the columns to order by before the row-id tiebreaker (may be empty); only used when {@code limit} is
+     *            non-null
+     * @param limit
+     *            the maximum number of rows to update, or {@code null} for no limit
+     *
+     * @return the SQL statement
+     */
+    default String updateStatement(T table, List<Map.Entry<C, E>> assignments, E predicate, List<C> orderByColumns,
+            Integer limit) {
+        List<String> setClauses = new ArrayList<>();
+        for (Map.Entry<C, E> assignment : assignments) {
+            setClauses.add(assignment.getKey().getName() + " = " + asString(assignment.getValue()));
         }
-        return statement;
+        return "UPDATE " + table.getName() + " SET " + String.join(", ", setClauses) + " WHERE " + asString(predicate)
+                + orderByLimitClause(orderByColumns, limit);
+    }
+
+    /**
+     * Renders the trailing {@code ORDER BY ... LIMIT n} clause shared by {@link #deleteStatement} and
+     * {@link #updateStatement}, or the empty string when {@code limit} is null.
+     *
+     * <p>
+     * The rows are ordered by {@code orderByColumns} followed by {@link #ROW_ID_COLUMN} as a tiebreaker. Because the
+     * identifiers are unique, this is always a total order (even when the ordering columns tie), so the "first
+     * {@code limit}" rows are identical for the original and transformed statements. Varying the ordering columns
+     * exercises more access paths than the row id alone would. The caller must pass the same {@code orderByColumns} and
+     * {@code limit} to both statements; neither is transformed.
+     *
+     * @param orderByColumns
+     *            the columns to order by before the row-id tiebreaker (may be empty)
+     * @param limit
+     *            the maximum number of rows, or {@code null} for no limit (yielding an empty clause)
+     *
+     * @return the {@code ORDER BY ... LIMIT n} clause, or the empty string when {@code limit} is null
+     */
+    default String orderByLimitClause(List<C> orderByColumns, Integer limit) {
+        if (limit == null) {
+            return "";
+        }
+        List<String> orderBy = new ArrayList<>();
+        for (C column : orderByColumns) {
+            orderBy.add(column.getName());
+        }
+        orderBy.add(ROW_ID_COLUMN); // unique tiebreaker: guarantees a total order regardless of the columns above
+        return " ORDER BY " + String.join(", ", orderBy) + " LIMIT " + limit;
     }
 
     /**
