@@ -77,7 +77,7 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
 
     /**
      * SQL that assigns every existing row of {@code table} a distinct, stable identifier in the {@link #ROW_ID_COLUMN}
-     * column. DBMS-specific because it names the DBMS's UUID-generating function.
+     * column. For example, a 36-character UUID string.
      *
      * @param table
      *            the table whose rows are stamped
@@ -86,10 +86,19 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      */
     String stampRowIdsStatement(T table);
 
+    /**
+     * The SQL type of the auxiliary {@link #ROW_ID_COLUMN} column. It must be able to hold the identifiers that
+     * {@link #stampRowIdsStatement} produces, so it belongs with that statement as the other half of the row-id
+     * representation. For example, {@code VARCHAR(36)} would fit a 36-character UUID string.
+     *
+     * @return the column type
+     */
+    String rowIdColumnType();
+
     // --- Standard-SQL statements (override only where the DBMS's dialect differs) ---
 
     /**
-     * SQL that adds the auxiliary {@link #ROW_ID_COLUMN} column to {@code table}.
+     * SQL that adds the auxiliary {@link #ROW_ID_COLUMN} column to {@code table}, typed as {@link #rowIdColumnType}.
      *
      * @param table
      *            the table to add the column to
@@ -97,7 +106,7 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      * @return the SQL statement
      */
     default String addRowIdColumnStatement(T table) {
-        return "ALTER TABLE " + table.getName() + " ADD COLUMN " + ROW_ID_COLUMN + " VARCHAR(36)";
+        return "ALTER TABLE " + table.getName() + " ADD COLUMN " + ROW_ID_COLUMN + " " + rowIdColumnType();
     }
 
     /**

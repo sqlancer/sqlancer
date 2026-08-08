@@ -388,4 +388,10 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         // column, delete, snapshot, transaction control) use EETDMLGenerator's defaults.
         return String.format("UPDATE %s SET %s = UUID()", table.getName(), ROW_ID_COLUMN);
     }
+
+    @Override
+    public String rowIdColumnType() {
+        // Holds a 36-character UUID string produced by stampRowIdsStatement.
+        return "VARCHAR(36)";
+    }
 }
