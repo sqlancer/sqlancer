@@ -325,6 +325,7 @@ public final class Main {
                 try {
                     logFileWriter2.flush();
                 } catch (IOException e) {
+                    System.err.println("ERROR: Failed to flush log file after executing SQL statements.");
                     e.printStackTrace();
                 }
             }
