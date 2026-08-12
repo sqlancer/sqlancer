@@ -123,8 +123,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         }
         generatedQueryString = originalStatement;
 
-        // The post-image select reads the identifier plus every content column of the table, in that order.
-        int columnCount = table.getColumns().size() + 1;
+        int columnCount = gen.postImageColumns(table).size();
 
         // Add the auxiliary column outside the try, then guard everything after it with the finally that drops it: the
         // ALTER auto-commits (it is not undone by ROLLBACK), so a failure between adding and dropping would leak the
@@ -241,14 +240,12 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
 
     private String mismatchMessage(T table, String originalStatement, String transformedStatement,
             List<List<String>> originalImage, List<List<String>> transformedImage) {
-        List<String> header = new ArrayList<>();
-        header.add(EETDMLGenerator.ROW_ID_COLUMN);
-        for (C column : table.getColumns()) {
-            header.add(column.getName());
-        }
+        List<String> header = gen.postImageColumns(table);
+        // Where the identifier sits within a post-image row, per the layout the generator defines
+        int rowIdIndex = header.indexOf(EETDMLGenerator.ROW_ID_COLUMN);
 
-        Map<String, List<String>> originalByRowId = indexByRowId(originalImage);
-        Map<String, List<String>> transformedByRowId = indexByRowId(transformedImage);
+        Map<String, List<String>> originalByRowId = indexByRowId(originalImage, rowIdIndex);
+        Map<String, List<String>> transformedByRowId = indexByRowId(transformedImage, rowIdIndex);
         Set<String> allRowIds = new TreeSet<>();
         allRowIds.addAll(originalByRowId.keySet());
         allRowIds.addAll(transformedByRowId.keySet());
@@ -277,11 +274,11 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         return message.toString();
     }
 
-    // Indexes a post-image by its row identifier (the first column of each row)
-    private static Map<String, List<String>> indexByRowId(List<List<String>> image) {
+    // Indexes a post-image by its row identifier, which each row holds at rowIdIndex
+    private static Map<String, List<String>> indexByRowId(List<List<String>> image, int rowIdIndex) {
         Map<String, List<String>> byRowId = new LinkedHashMap<>();
         for (List<String> row : image) {
-            byRowId.put(row.get(0), row);
+            byRowId.put(row.get(rowIdIndex), row);
         }
         return byRowId;
     }

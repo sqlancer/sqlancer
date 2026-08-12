@@ -145,15 +145,31 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      * @param table
      *            the table to snapshot
      *
-     * @return the SQL statement; its first result column is the identifier, followed by {@code table}'s content columns
+     * @return the SQL statement; its result columns are those of {@link #postImageColumns}, in that order
      */
     default String selectPostImageStatement(T table) {
-        List<String> selected = new ArrayList<>();
-        selected.add(ROW_ID_COLUMN);
+        return "SELECT " + String.join(", ", postImageColumns(table)) + " FROM " + table.getName() + " ORDER BY "
+                + ROW_ID_COLUMN;
+    }
+
+    /**
+     * The columns a post-image row consists of, in the order {@link #selectPostImageStatement} returns them: the
+     * {@link #ROW_ID_COLUMN} identifier followed by {@code table}'s content columns. This is the sole definition of the
+     * post-image layout, so a consumer can find the identifier's position by looking up {@link #ROW_ID_COLUMN} here
+     * rather than assuming one.
+     *
+     * @param table
+     *            the table being snapshot
+     *
+     * @return the post-image column names, in order
+     */
+    default List<String> postImageColumns(T table) {
+        List<String> columns = new ArrayList<>();
+        columns.add(ROW_ID_COLUMN);
         for (C column : table.getColumns()) {
-            selected.add(column.getName());
+            columns.add(column.getName());
         }
-        return "SELECT " + String.join(", ", selected) + " FROM " + table.getName() + " ORDER BY " + ROW_ID_COLUMN;
+        return columns;
     }
 
     /**
