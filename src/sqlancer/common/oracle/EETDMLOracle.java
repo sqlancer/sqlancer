@@ -104,23 +104,11 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             orderByColumns = Randomly.subset(table.getColumns());
         }
 
-        String originalStatement;
-        String transformedStatement;
-        if (Randomly.getBoolean()) {
-            // UPDATE also transforms the written values: each SET value expression is transformed in a scalar context.
-            List<Map.Entry<C, E>> assignments = gen.generateSetAssignments();
-            List<Map.Entry<C, E>> transformedAssignments = new ArrayList<>();
-            for (Map.Entry<C, E> assignment : assignments) {
-                E transformedValue = transformer.transform(assignment.getValue(), false);
-                transformedAssignments.add(new AbstractMap.SimpleEntry<>(assignment.getKey(), transformedValue));
-            }
-            originalStatement = gen.updateStatement(table, assignments, predicate, orderByColumns, limit);
-            transformedStatement = gen.updateStatement(table, transformedAssignments, transformedPredicate,
-                    orderByColumns, limit);
-        } else {
-            originalStatement = gen.deleteStatement(table, predicate, orderByColumns, limit);
-            transformedStatement = gen.deleteStatement(table, transformedPredicate, orderByColumns, limit);
-        }
+        StatementPair statements = Randomly.getBoolean()
+                ? generateUpdateStatements(table, predicate, transformedPredicate, orderByColumns, limit)
+                : generateDeleteStatements(table, predicate, transformedPredicate, orderByColumns, limit);
+        String originalStatement = statements.original;
+        String transformedStatement = statements.transformed;
         generatedQueryString = originalStatement;
 
         int columnCount = gen.postImageColumns(table).size();
@@ -147,6 +135,70 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         } finally {
             new SQLQueryAdapter(gen.dropRowIdColumnStatement(table), errors, true).execute(state);
         }
+    }
+
+    /**
+     * A DML statement and its transformed counterpart, which must leave the database in the same state.
+     */
+    private static final class StatementPair {
+        private final String original;
+        private final String transformed;
+
+        StatementPair(String original, String transformed) {
+            this.original = original;
+            this.transformed = transformed;
+        }
+    }
+
+    /**
+     * Generates an UPDATE and its transformed counterpart. Besides the WHERE predicate, UPDATE also transforms the
+     * written values: each SET value expression is transformed in a scalar context.
+     *
+     * @param table
+     *            the table being modified
+     * @param predicate
+     *            the WHERE predicate of the original statement
+     * @param transformedPredicate
+     *            the transformed WHERE predicate, used by the transformed statement
+     * @param orderByColumns
+     *            the columns ordering the statement, empty if it is not capped by a limit
+     * @param limit
+     *            the maximum number of rows to modify, or {@code null} for no limit
+     *
+     * @return the original statement together with its transformed counterpart
+     */
+    private StatementPair generateUpdateStatements(T table, E predicate, E transformedPredicate, List<C> orderByColumns,
+            Integer limit) {
+        List<Map.Entry<C, E>> assignments = gen.generateSetAssignments();
+        List<Map.Entry<C, E>> transformedAssignments = new ArrayList<>();
+        for (Map.Entry<C, E> assignment : assignments) {
+            E transformedValue = transformer.transform(assignment.getValue(), false);
+            transformedAssignments.add(new AbstractMap.SimpleEntry<>(assignment.getKey(), transformedValue));
+        }
+        return new StatementPair(gen.updateStatement(table, assignments, predicate, orderByColumns, limit),
+                gen.updateStatement(table, transformedAssignments, transformedPredicate, orderByColumns, limit));
+    }
+
+    /**
+     * Generates a DELETE and its transformed counterpart, which differ only in their WHERE predicate.
+     *
+     * @param table
+     *            the table being modified
+     * @param predicate
+     *            the WHERE predicate of the original statement
+     * @param transformedPredicate
+     *            the transformed WHERE predicate, used by the transformed statement
+     * @param orderByColumns
+     *            the columns ordering the statement, empty if it is not capped by a limit
+     * @param limit
+     *            the maximum number of rows to modify, or {@code null} for no limit
+     *
+     * @return the original statement together with its transformed counterpart
+     */
+    private StatementPair generateDeleteStatements(T table, E predicate, E transformedPredicate, List<C> orderByColumns,
+            Integer limit) {
+        return new StatementPair(gen.deleteStatement(table, predicate, orderByColumns, limit),
+                gen.deleteStatement(table, transformedPredicate, orderByColumns, limit));
     }
 
     /**
