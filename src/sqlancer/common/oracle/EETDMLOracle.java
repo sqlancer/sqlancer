@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -37,13 +38,15 @@ import sqlancer.common.schema.AbstractTables;
  * statements can be compared against the same starting state without permanently modifying the database. The state is
  * captured as a full post-image: each surviving row's identifier together with its content column values, ordered by
  * the identifier. This single value-level surface covers every DML statement — a DELETE removes rows from it, an UPDATE
- * changes values in it (row identity alone would suffice for DELETE, but not for UPDATE, which also transforms the
- * written values). Because rolling back a statement requires a transactional storage engine, the DBMS-specific setup
- * must ensure only such engines are used while this oracle is active.
+ * changes values in it, an INSERT adds rows to it (row identity alone would suffice for DELETE, but not for UPDATE,
+ * which also transforms the written values). Because rolling back a statement requires a transactional storage engine,
+ * the DBMS-specific setup must ensure only such engines are used while this oracle is active.
  *
  * <p>
- * DELETE and UPDATE are currently supported (one is chosen at random per check). Statement reduction is not yet
- * implemented (there is no {@link sqlancer.Reproducer Reproducer}), so the finding is reported without database
+ * DELETE, UPDATE and INSERT are currently supported (one is chosen at random per check). INSERT uses the
+ * {@code INSERT ... SELECT} form so its transformed value expressions may reference columns; each inserted row is given
+ * a deterministic identifier derived from its source row so the two runs' post-images align. Statement reduction is not
+ * yet implemented (there is no {@link sqlancer.Reproducer Reproducer}), so the finding is reported without database
  * reduction.
  *
  * @param <E>
@@ -97,16 +100,16 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         // Optionally cap the statement with a LIMIT. The limit and its ordering (a random column subset, made a total
         // order by the row-id tiebreaker) are decided once and applied identically to both statements, so the capped
         // row set is deterministic and equal across the runs while still exercising varied orderings.
-        Integer limit = null;
-        List<C> orderByColumns = List.of();
-        if (Randomly.getBoolean()) {
-            limit = (int) Randomly.getNotCachedInteger(0, 10);
-            orderByColumns = Randomly.subset(table.getColumns());
-        }
+        boolean withLimit = Randomly.getBoolean();
+        Integer limit = withLimit ? (int) Randomly.getNotCachedInteger(0, 10) : null;
+        List<C> orderByColumns = withLimit ? Randomly.subset(table.getColumns()) : List.of();
 
-        StatementPair statements = Randomly.getBoolean()
-                ? generateUpdateStatements(table, predicate, transformedPredicate, orderByColumns, limit)
-                : generateDeleteStatements(table, predicate, transformedPredicate, orderByColumns, limit);
+        // Generators for the different kinds of statement this oracle supports. One is chosen at random per check
+        List<Supplier<StatementPair>> statementGenerators = List.of(
+                () -> generateDeleteStatements(table, predicate, transformedPredicate, orderByColumns, limit),
+                () -> generateUpdateStatements(table, predicate, transformedPredicate, orderByColumns, limit),
+                () -> generateInsertStatements(table, predicate, transformedPredicate));
+        StatementPair statements = Randomly.fromList(statementGenerators).get();
         String originalStatement = statements.original;
         String transformedStatement = statements.transformed;
         generatedQueryString = originalStatement;
@@ -199,6 +202,36 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             Integer limit) {
         return new StatementPair(gen.deleteStatement(table, predicate, orderByColumns, limit),
                 gen.deleteStatement(table, transformedPredicate, orderByColumns, limit));
+    }
+
+    /**
+     * Generates an {@code INSERT ... SELECT} and its transformed counterpart. Besides the WHERE predicate, which
+     * filters the source rows and is optional here, INSERT also transforms each inserted value in a scalar context.
+     *
+     * <p>
+     * Unlike DELETE and UPDATE, no limit is applied: {@link EETDMLGenerator#insertStatement} renders no ordering or
+     * limit, so one row is inserted per source row the predicate keeps. Nothing about INSERT rules a limit out — its
+     * source SELECT could carry the same ordering and limit the other statement kinds use, and the two runs would still
+     * read the same source rows — it is just not generated.
+     *
+     * @param table
+     *            the table being modified
+     * @param predicate
+     *            the WHERE predicate of the original statement
+     * @param transformedPredicate
+     *            the transformed WHERE predicate, used by the transformed statement
+     *
+     * @return the original statement together with its transformed counterpart
+     */
+    private StatementPair generateInsertStatements(T table, E predicate, E transformedPredicate) {
+        List<E> values = gen.generateInsertValues();
+        List<E> transformedValues = new ArrayList<>();
+        for (E value : values) {
+            transformedValues.add(transformer.transform(value, false));
+        }
+        boolean withPredicate = Randomly.getBoolean();
+        return new StatementPair(gen.insertStatement(table, values, withPredicate ? predicate : null),
+                gen.insertStatement(table, transformedValues, withPredicate ? transformedPredicate : null));
     }
 
     /**
