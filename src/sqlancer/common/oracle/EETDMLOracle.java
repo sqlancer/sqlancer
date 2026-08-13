@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Supplier;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
@@ -100,16 +99,18 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         // Optionally cap the statement with a LIMIT. The limit and its ordering (a random column subset, made a total
         // order by the row-id tiebreaker) are decided once and applied identically to both statements, so the capped
         // row set is deterministic and equal across the runs while still exercising varied orderings.
-        boolean withLimit = Randomly.getBoolean();
-        Integer limit = withLimit ? (int) Randomly.getNotCachedInteger(0, 10) : null;
-        List<C> orderByColumns = withLimit ? Randomly.subset(table.getColumns()) : List.of();
+        Integer limit = null;
+        List<C> orderByColumns = List.of();
+        if (Randomly.getBoolean()) {
+            limit = (int) Randomly.getNotCachedInteger(0, 10);
+            orderByColumns = Randomly.subset(table.getColumns());
+        }
 
         // Generators for the different kinds of statement this oracle supports. One is chosen at random per check
-        List<Supplier<StatementPair>> statementGenerators = List.of(
-                () -> generateDeleteStatements(table, predicate, transformedPredicate, orderByColumns, limit),
-                () -> generateUpdateStatements(table, predicate, transformedPredicate, orderByColumns, limit),
-                () -> generateInsertStatements(table, predicate, transformedPredicate));
-        StatementPair statements = Randomly.fromList(statementGenerators).get();
+        List<DMLStatementGenerator<E, T, C>> statementGenerators = List.of(this::generateDeleteStatements,
+                this::generateUpdateStatements, this::generateInsertStatements);
+        StatementPair statements = Randomly.fromList(statementGenerators).generate(table, predicate,
+                transformedPredicate, orderByColumns, limit);
         String originalStatement = statements.original;
         String transformedStatement = statements.transformed;
         generatedQueryString = originalStatement;
@@ -138,6 +139,22 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         } finally {
             new SQLQueryAdapter(gen.dropRowIdColumnStatement(table), errors, true).execute(state);
         }
+    }
+
+    /**
+     * Generates a DML statement of one kind together with its transformed counterpart. The kinds share this signature
+     * so the oracle can pick one of them at random per check.
+     *
+     * @param <E>
+     *            the DBMS-specific expression class
+     * @param <T>
+     *            the DBMS-specific table class
+     * @param <C>
+     *            the DBMS-specific column class
+     */
+    @FunctionalInterface
+    private interface DMLStatementGenerator<E, T, C> {
+        StatementPair generate(T table, E predicate, E transformedPredicate, List<C> orderByColumns, Integer limit);
     }
 
     /**
@@ -209,10 +226,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      * filters the source rows and is optional here, INSERT also transforms each inserted value in a scalar context.
      *
      * <p>
-     * Unlike DELETE and UPDATE, no limit is applied: {@link EETDMLGenerator#insertStatement} renders no ordering or
-     * limit, so one row is inserted per source row the predicate keeps. Nothing about INSERT rules a limit out — its
-     * source SELECT could carry the same ordering and limit the other statement kinds use, and the two runs would still
-     * read the same source rows — it is just not generated.
+     * The ordering and limit cap the source rows the statement reads, so it inserts one row per source row kept.
      *
      * @param table
      *            the table being modified
@@ -220,18 +234,25 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *            the WHERE predicate of the original statement
      * @param transformedPredicate
      *            the transformed WHERE predicate, used by the transformed statement
+     * @param orderByColumns
+     *            the columns ordering the source rows, empty if the statement is not capped by a limit
+     * @param limit
+     *            the maximum number of source rows to insert from, or {@code null} for no limit
      *
      * @return the original statement together with its transformed counterpart
      */
-    private StatementPair generateInsertStatements(T table, E predicate, E transformedPredicate) {
+    private StatementPair generateInsertStatements(T table, E predicate, E transformedPredicate, List<C> orderByColumns,
+            Integer limit) {
         List<E> values = gen.generateInsertValues();
         List<E> transformedValues = new ArrayList<>();
         for (E value : values) {
             transformedValues.add(transformer.transform(value, false));
         }
         boolean withPredicate = Randomly.getBoolean();
-        return new StatementPair(gen.insertStatement(table, values, withPredicate ? predicate : null),
-                gen.insertStatement(table, transformedValues, withPredicate ? transformedPredicate : null));
+        return new StatementPair(
+                gen.insertStatement(table, values, withPredicate ? predicate : null, orderByColumns, limit),
+                gen.insertStatement(table, transformedValues, withPredicate ? transformedPredicate : null,
+                        orderByColumns, limit));
     }
 
     /**

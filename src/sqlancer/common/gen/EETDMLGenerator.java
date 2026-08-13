@@ -245,7 +245,8 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
 
     /**
      * SQL that inserts a new row into {@code table} for each source row (optionally filtered by {@code predicate}),
-     * setting each content column to its corresponding value in {@code values}.
+     * setting each content column to its corresponding value in {@code values}, optionally limited to the first
+     * {@code limit} source rows (see {@link #orderByLimitClause}).
      *
      * <p>
      * The {@code INSERT ... SELECT} form is used rather than {@code INSERT ... VALUES} because the transformed value
@@ -263,10 +264,15 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      * @param predicate
      *            the WHERE predicate filtering the source rows, or {@code null} to insert from every source row;
      *            rendered via {@link #asString}
+     * @param orderByColumns
+     *            the columns to order the source rows by before the row-id tiebreaker (may be empty); only used when
+     *            {@code limit} is non-null
+     * @param limit
+     *            the maximum number of source rows to insert from, or {@code null} for no limit
      *
      * @return the SQL statement
      */
-    default String insertStatement(T table, List<E> values, E predicate) {
+    default String insertStatement(T table, List<E> values, E predicate, List<C> orderByColumns, Integer limit) {
         List<String> columnNames = new ArrayList<>();
         columnNames.add(ROW_ID_COLUMN);
         List<String> selectItems = new ArrayList<>();
@@ -281,12 +287,12 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
         if (predicate != null) {
             statement += " WHERE " + asString(predicate);
         }
-        return statement;
+        return statement + orderByLimitClause(orderByColumns, limit);
     }
 
     /**
-     * Renders the trailing {@code ORDER BY ... LIMIT n} clause shared by {@link #deleteStatement} and
-     * {@link #updateStatement}, or the empty string when {@code limit} is null.
+     * Renders the trailing {@code ORDER BY ... LIMIT n} clause shared by {@link #deleteStatement},
+     * {@link #updateStatement} and {@link #insertStatement}, or the empty string when {@code limit} is null.
      *
      * <p>
      * The rows are ordered by {@code orderByColumns} followed by {@link #ROW_ID_COLUMN} as a tiebreaker. Because the
