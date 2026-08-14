@@ -242,8 +242,8 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         @Override
         public String getBugInformation() {
             StringBuilder sb = new StringBuilder();
-            sb.append("-- On the database set up by the statements above, the following statements leave the database"
-                    + " in different states:").append(System.lineSeparator());
+            sb.append("-- On the database set up by the statements above, the original and transformed statements below"
+                    + " leave the database in different states.").append(System.lineSeparator());
             renderStatementLines(sb, currentQueries());
             return sb.toString();
         }
@@ -258,10 +258,46 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         return new UnexpectedErrorReproducer<>(execution, expectedErrorMessage, sb.toString());
     }
 
-    // Renders the failing statements as commented lines, shared by the mismatch and the unexpected-error reproducers.
+    /**
+     * Renders the whole comparison, shared by the mismatch message and both reproducers. Every statement the oracle ran
+     * is listed, in the order it ran, as runnable SQL: only the explanatory lines around them are commented out, so the
+     * block can be selected and run as-is to reproduce the comparison by hand. The two post-image SELECTs it contains
+     * return the states being compared.
+     *
+     * <p>
+     * The two DML statements alone would not be runnable. They reference the auxiliary {@code rowid} column (in their
+     * ORDER BY tiebreaker, and, for INSERT, in their column list), which the oracle adds and drops around the
+     * comparison rather than leaving in the schema, so it appears nowhere in the setup statements a test case reports.
+     *
+     * @param sb
+     *            the builder to append to
+     * @param queries
+     *            the statements and auxiliary SQL the comparison ran
+     */
     private static void renderStatementLines(StringBuilder sb, ComparisonQueries queries) {
-        sb.append("-- original:    ").append(queries.originalStatement).append(';').append(System.lineSeparator());
-        sb.append("-- transformed: ").append(queries.transformedStatement).append(';').append(System.lineSeparator());
+        sb.append("-- The statements below reproduce the comparison. They add the"
+                + " auxiliary row-identifier column the two statements reference (which is not part of the schema"
+                + " above) and drop it again, so run them as a whole. The two post-image SELECTs return the states"
+                + " being compared:").append(System.lineSeparator());
+        renderStatement(sb, queries.addRowIdColumn);
+        renderStatement(sb, queries.stampRowIds);
+        renderSide(sb, "original", queries.originalStatement, queries);
+        renderSide(sb, "transformed", queries.transformedStatement, queries);
+        renderStatement(sb, queries.dropRowIdColumn);
+    }
+
+    // Renders one side of the comparison: its DML statement run inside a rolled-back transaction, with the post-image
+    // read back before the rollback undoes it.
+    private static void renderSide(StringBuilder sb, String label, String statement, ComparisonQueries queries) {
+        sb.append("-- ").append(label).append(':').append(System.lineSeparator());
+        renderStatement(sb, queries.beginTransaction);
+        renderStatement(sb, statement);
+        renderStatement(sb, queries.selectPostImage);
+        renderStatement(sb, queries.rollback);
+    }
+
+    private static void renderStatement(StringBuilder sb, String statement) {
+        sb.append(statement).append(';').append(System.lineSeparator());
     }
 
     public EETDMLOracle(G state, EETDMLGenerator<E, T, C> gen, ExpectedErrors expectedErrors) {
@@ -328,8 +364,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
 
         reproducer = new EETDMLReproducer(queries, statements.transformation);
         if (!images.original.equals(images.transformed)) {
-            throw new AssertionError(mismatchMessage(table, originalStatement, transformedStatement, images.original,
-                    images.transformed));
+            throw new AssertionError(mismatchMessage(table, queries, images.original, images.transformed));
         }
     }
 
@@ -625,8 +660,8 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         return rows;
     }
 
-    private String mismatchMessage(T table, String originalStatement, String transformedStatement,
-            List<List<String>> originalImage, List<List<String>> transformedImage) {
+    private String mismatchMessage(T table, ComparisonQueries queries, List<List<String>> originalImage,
+            List<List<String>> transformedImage) {
         List<String> header = gen.postImageColumns(table);
         // Where the identifier sits within a post-image row, per the layout the generator defines
         int rowIdIndex = header.indexOf(EETDMLGenerator.ROW_ID_COLUMN);
@@ -639,10 +674,9 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
 
         String nl = System.lineSeparator();
         StringBuilder message = new StringBuilder()
-                .append("-- The original and transformed statements left the database in different states.").append(nl)
-                .append("-- original:    ").append(originalStatement).append(';').append(nl).append("-- transformed: ")
-                .append(transformedStatement).append(';').append(nl).append("-- differing post-image rows (")
-                .append(String.join(", ", header)).append("):").append(nl);
+                .append("-- The original and transformed statements left the database in different states.").append(nl);
+        renderStatementLines(message, queries);
+        message.append("-- differing post-image rows (").append(String.join(", ", header)).append("):").append(nl);
         int shown = 0;
         for (String rowId : allRowIds) {
             List<String> originalRow = originalByRowId.get(rowId);
