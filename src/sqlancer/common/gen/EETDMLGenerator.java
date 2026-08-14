@@ -249,12 +249,12 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      * {@code limit} source rows (see {@link #orderByLimitClause}).
      *
      * <p>
-     * The {@code INSERT ... SELECT} form is used rather than {@code INSERT ... VALUES} because the transformed value
-     * expressions reference the table's columns (the transformer injects column references into its equivalent
-     * sub-expressions), which are legal in a {@code SELECT} but not in a {@code VALUES} clause. Each inserted row's
-     * {@link #ROW_ID_COLUMN} is derived from its source row via {@link #insertedRowIdExpression()}, giving it a
-     * deterministic identifier that is unique and distinct from every existing one, so the two statements' post-images
-     * align (and inserted rows never collide with their source rows).
+     * The {@code INSERT ... SELECT} form is used rather than {@code INSERT ... VALUES} because it reuses the source-row
+     * model already shared by {@link #deleteStatement} and {@link #updateStatement}, and because it offers two kinds of
+     * transformable expression in one statement (the inserted values and the WHERE predicate) rather than the values
+     * alone. Each inserted row's {@link #ROW_ID_COLUMN} is derived from its source row via
+     * {@link #insertedRowIdExpression()}, giving it a deterministic identifier that is unique and distinct from every
+     * existing one, so the two statements' post-images align (and inserted rows never collide with their source rows).
      *
      * @param table
      *            the table to insert into
