@@ -24,6 +24,9 @@ import sqlancer.postgres.ast.PostgresSelect.PostgresSubquery;
 import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresWindowFunction;
+import sqlancer.postgres.gen.PostgresRowGenerator;
+
+import java.util.List;
 
 public final class PostgresExpectedValueVisitor implements PostgresVisitor {
 
@@ -193,6 +196,15 @@ public final class PostgresExpectedValueVisitor implements PostgresVisitor {
         print(op);
         visit(op.getLeft());
         visit(op.getRight());
+    }
+
+    @Override
+    public void visit(PostgresRowGenerator rowGenerator) {
+        print(rowGenerator);
+        List<PostgresExpression> expressions = rowGenerator.getExpressions();
+        for (PostgresExpression expr : expressions) {
+            visit(expr);
+        }
     }
 
 }
