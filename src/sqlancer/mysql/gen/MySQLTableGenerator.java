@@ -164,7 +164,15 @@ public class MySQLTableGenerator {
     }
 
     private void appendTableOptions() {
-        List<TableOptions> tableOptions = TableOptions.getRandomTableOptions();
+        List<TableOptions> tableOptions = new ArrayList<>(TableOptions.getRandomTableOptions());
+        // The EET DML oracle rolls back each statement to compare database states, which requires a transactional
+        // engine. The ENGINE option already forces InnoDB when the oracle is active (see the ENGINE case below), but it
+        // is only emitted when randomly chosen; otherwise the table would inherit the server's default engine, which is
+        // not guaranteed transactional. Force the option to always be present so the engine is never left to the
+        // server default.
+        if (globalState.usesEETDML() && !tableOptions.contains(TableOptions.ENGINE)) {
+            tableOptions.add(TableOptions.ENGINE);
+        }
         int i = 0;
         for (TableOptions o : tableOptions) {
             if (i++ != 0) {

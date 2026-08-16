@@ -19,9 +19,9 @@ import sqlancer.common.schema.AbstractTables;
  * <p>
  * Adapted from the DQE oracle, state is observed with an auxiliary column ({@link EETDMLGenerator#ROW_ID_COLUMN}) which
  * uniquely identifies each row. The rows are stamped with identifiers once, before both executions of the statement run
- * (each in a rolled-back transaction), so both executions observe the same identifiers regardless of how they are
- * produced. The resulting state is compared as a full post-image (each surviving row's identifier and content column
- * values), which covers every DML statement: a DELETE removes rows from it, an UPDATE changes values in it.
+ * (each in a rolled-back transaction), so both executions observe the same identifiers. The resulting state is compared
+ * as a full post-image (each surviving row's identifier and content column values), which covers any of the three DML
+ * statements (DELETE, UPDATE, INSERT).
  *
  * <p>
  * Most of these statements are standard SQL, likely common to most DBMSs, so are provided as {@code default} methods.
@@ -67,6 +67,15 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
     List<Map.Entry<C, E>> generateSetAssignments();
 
     /**
+     * Generates a fresh value expression for each content column of the current table, used as an INSERT statement's
+     * inserted values. The returned expressions are positionally aligned with {@link AbstractTable#getColumns()}, and
+     * each is transformed by the oracle.
+     *
+     * @return one fresh random value expression per content column, in {@link AbstractTable#getColumns()} order
+     */
+    List<E> generateInsertValues();
+
+    /**
      * Creates a DBMS-specific {@link EETTransformer} backed by this generator, used to rewrite the statement's
      * expressions into semantically equivalent ones.
      *
@@ -106,6 +115,17 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      */
     String rowIdColumnType();
 
+    /**
+     * A SQL expression, evaluated once per source row of an {@code INSERT ... SELECT}, that derives the inserted row's
+     * {@link #ROW_ID_COLUMN} value from the source row's identifier. It must be deterministic (so both the original and
+     * transformed statements assign the same identifiers), unique per source row, and distinct from every existing
+     * identifier (so an inserted row never collides with the source row it was derived from in the post-image). DBMS-
+     * specific because it names a suitable derivation function (e.g. a hash of the source identifier).
+     *
+     * @return the SQL expression deriving an inserted row's identifier from the source row's {@link #ROW_ID_COLUMN}
+     */
+    String insertedRowIdExpression();
+
     // --- Standard-SQL statements (override only where the DBMS's dialect differs) ---
 
     /**
@@ -139,8 +159,9 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      *
      * <p>
      * This single value-level snapshot is the comparison surface for all DML statements: a DELETE removes rows from it,
-     * an UPDATE changes column values in it. Row identity alone (which the identifier already captures) would suffice
-     * for DELETE, but not for UPDATE, where the two runs could touch the same rows yet write different values.
+     * an UPDATE changes column values in it, an INSERT adds rows to it. Row identity alone (which the identifier
+     * already captures) would suffice for DELETE, but not for UPDATE, where the two runs could touch the same rows yet
+     * write different values.
      *
      * @param table
      *            the table to snapshot
@@ -223,8 +244,55 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
     }
 
     /**
-     * Renders the trailing {@code ORDER BY ... LIMIT n} clause shared by {@link #deleteStatement} and
-     * {@link #updateStatement}, or the empty string when {@code limit} is null.
+     * SQL that inserts a new row into {@code table} for each source row (optionally filtered by {@code predicate}),
+     * setting each content column to its corresponding value in {@code values}, optionally limited to the first
+     * {@code limit} source rows (see {@link #orderByLimitClause}).
+     *
+     * <p>
+     * The {@code INSERT ... SELECT} form is used rather than {@code INSERT ... VALUES} because the transformed value
+     * expressions reference the table's columns (the transformer injects column references into its equivalent
+     * sub-expressions), which are legal in a {@code SELECT} but not in a {@code VALUES} clause. Each inserted row's
+     * {@link #ROW_ID_COLUMN} is derived from its source row via {@link #insertedRowIdExpression()}, giving it a
+     * deterministic identifier that is unique and distinct from every existing one, so the two statements' post-images
+     * align (and inserted rows never collide with their source rows).
+     *
+     * @param table
+     *            the table to insert into
+     * @param values
+     *            one value expression per content column, positionally aligned with {@link AbstractTable#getColumns()};
+     *            each is rendered via {@link #asString}
+     * @param predicate
+     *            the WHERE predicate filtering the source rows, or {@code null} to insert from every source row;
+     *            rendered via {@link #asString}
+     * @param orderByColumns
+     *            the columns to order the source rows by before the row-id tiebreaker (may be empty); only used when
+     *            {@code limit} is non-null
+     * @param limit
+     *            the maximum number of source rows to insert from, or {@code null} for no limit
+     *
+     * @return the SQL statement
+     */
+    default String insertStatement(T table, List<E> values, E predicate, List<C> orderByColumns, Integer limit) {
+        List<String> columnNames = new ArrayList<>();
+        columnNames.add(ROW_ID_COLUMN);
+        List<String> selectItems = new ArrayList<>();
+        selectItems.add(insertedRowIdExpression());
+        List<C> columns = table.getColumns();
+        for (int i = 0; i < columns.size(); i++) {
+            columnNames.add(columns.get(i).getName());
+            selectItems.add(asString(values.get(i)));
+        }
+        String statement = "INSERT INTO " + table.getName() + " (" + String.join(", ", columnNames) + ") SELECT "
+                + String.join(", ", selectItems) + " FROM " + table.getName();
+        if (predicate != null) {
+            statement += " WHERE " + asString(predicate);
+        }
+        return statement + orderByLimitClause(orderByColumns, limit);
+    }
+
+    /**
+     * Renders the trailing {@code ORDER BY ... LIMIT n} clause shared by {@link #deleteStatement},
+     * {@link #updateStatement} and {@link #insertStatement}, or the empty string when {@code limit} is null.
      *
      * <p>
      * The rows are ordered by {@code orderByColumns} followed by {@link #ROW_ID_COLUMN} as a tiebreaker. Because the

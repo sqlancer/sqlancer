@@ -269,6 +269,14 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     }
 
     @Override
+    public List<MySQLExpression> generateInsertValues() {
+        // One value per content column, in schema order (aligned with the INSERT column list). As with the normal
+        // INSERT workload, each value is an arbitrary expression (not type-matched to the column); any resulting
+        // type/range/constraint error is on the oracle's expected-error allow-list.
+        return columns.stream().map(c -> generateExpression()).collect(Collectors.toList());
+    }
+
+    @Override
     public MySQLSelect generateSelect() {
         return new MySQLSelect();
     }
@@ -407,5 +415,13 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     public String rowIdColumnType() {
         // Holds a 36-character UUID string produced by stampRowIdsStatement.
         return "VARCHAR(36)";
+    }
+
+    @Override
+    public String insertedRowIdExpression() {
+        // The source row's identifier with its dashes removed: deterministic (identical across both runs) and unique
+        // per
+        // source row. Fits the identifier column's VARCHAR(36).
+        return String.format("REPLACE(%s, '-', '')", ROW_ID_COLUMN);
     }
 }
