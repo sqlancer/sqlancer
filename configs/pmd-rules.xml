@@ -64,6 +64,7 @@
 		<exclude name="DataClass" />
 		<exclude name="ExcessiveImports" />
 		<exclude name="ExcessivePublicCount" />
+		<exclude name="CouplingBetweenObjects" />
 
 
 		<exclude name="SingularField" />
