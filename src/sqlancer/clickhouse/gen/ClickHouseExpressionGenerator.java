@@ -231,8 +231,28 @@ public class ClickHouseExpressionGenerator
             ClickHouseTableReference rightTable) {
         List<ClickHouseColumnReference> leftColumns = leftTable.getColumnReferences();
         List<ClickHouseColumnReference> rightColumns = rightTable.getColumnReferences();
-        ClickHouseExpression leftExpr = generateExpressionWithColumns(leftColumns, 2);
-        ClickHouseExpression rightExpr = generateExpressionWithColumns(rightColumns, 2);
+
+        // Prefer primary key columns for joins if available
+        List<ClickHouseColumnReference> leftPKColumns = leftColumns.stream()
+                .filter(col -> !col.getColumn().isAlias() && !col.getColumn().isMaterialized())
+                .collect(Collectors.toList());
+        List<ClickHouseColumnReference> rightPKColumns = rightColumns.stream()
+                .filter(col -> !col.getColumn().isAlias() && !col.getColumn().isMaterialized())
+                .collect(Collectors.toList());
+
+        ClickHouseExpression leftExpr;
+        ClickHouseExpression rightExpr;
+
+        if (!leftPKColumns.isEmpty() && !rightPKColumns.isEmpty() && Randomly.getBoolean()) {
+            // Use primary key columns for join if available
+            leftExpr = Randomly.fromList(leftPKColumns);
+            rightExpr = Randomly.fromList(rightPKColumns);
+        } else {
+            // Fall back to regular columns if no primary keys or randomly
+            leftExpr = generateExpressionWithColumns(leftColumns, 2);
+            rightExpr = generateExpressionWithColumns(rightColumns, 2);
+        }
+
         return new ClickHouseExpression.ClickHouseJoinOnClause(leftExpr, rightExpr);
     }
 
