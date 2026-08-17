@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
+import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.gen.EETDMLGenerator;
@@ -44,9 +45,9 @@ import sqlancer.common.schema.AbstractTables;
  * <p>
  * DELETE, UPDATE and INSERT are currently supported (one is chosen at random per check). INSERT uses the
  * {@code INSERT ... SELECT} form so its transformed value expressions may reference columns; each inserted row is given
- * a deterministic identifier derived from its source row so the two runs' post-images align. Statement reduction is not
- * yet implemented (there is no {@link sqlancer.Reproducer Reproducer}), so the finding is reported without database
- * reduction.
+ * a deterministic identifier derived from its source row so the two runs' post-images align. To support reduction, a
+ * {@link Reproducer} replays the whole comparison (adding and stamping the row-identifier column, running both
+ * statements in rolled-back transactions and comparing the post-images) against the reduced database.
  *
  * @param <E>
  *            the DBMS-specific expression class
@@ -69,6 +70,93 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
 
     private static final int MAX_DIFF_ROWS_REPORTED = 10; // max differing post-image rows displayed in report log
     private String generatedQueryString;
+    private Reproducer<G> reproducer;
+
+    // The SQL and metadata to run and observe one DML comparison, captured as strings so a reproducer can replay it
+    // against a reduced database without the generator or live schema objects.
+    private static final class ComparisonQueries {
+        private final String originalStatement;
+        private final String transformedStatement;
+        private final String addRowIdColumn;
+        private final String stampRowIds;
+        private final String beginTransaction;
+        private final String rollback;
+        private final String dropRowIdColumn;
+        private final String selectPostImage;
+        private final int columnCount;
+
+        ComparisonQueries(String originalStatement, String transformedStatement, String addRowIdColumn,
+                String stampRowIds, String beginTransaction, String rollback, String dropRowIdColumn,
+                String selectPostImage, int columnCount) {
+            this.originalStatement = originalStatement;
+            this.transformedStatement = transformedStatement;
+            this.addRowIdColumn = addRowIdColumn;
+            this.stampRowIds = stampRowIds;
+            this.beginTransaction = beginTransaction;
+            this.rollback = rollback;
+            this.dropRowIdColumn = dropRowIdColumn;
+            this.selectPostImage = selectPostImage;
+            this.columnCount = columnCount;
+        }
+    }
+
+    // The post-images the original and transformed statements produced, compared for equality to detect the bug.
+    private static final class PostImages {
+        private final List<List<String>> original;
+        private final List<List<String>> transformed;
+
+        PostImages(List<List<String>> original, List<List<String>> transformed) {
+            this.original = original;
+            this.transformed = transformed;
+        }
+    }
+
+    // Reproduces a post-image mismatch against the reduced database. Unlike EETOracle's comparison reproducer this does
+    // not extend AbstractComparisonReproducer: the two sides are not independent, because the row-id stamping (UUID())
+    // must run once so both observe the same rows, so both post-images are computed together.
+    private final class EETDMLReproducer implements Reproducer<G> {
+        private final ComparisonQueries queries;
+
+        EETDMLReproducer(ComparisonQueries queries) {
+            this.queries = queries;
+        }
+
+        @Override
+        public boolean bugStillTriggers(G globalState) {
+            PostImages images;
+            try {
+                images = computePostImages(globalState, queries);
+            } catch (AssertionError | SQLException | RuntimeException e) {
+                // any failure re-running the comparison means this reduced database no longer shows the mismatch
+                return false;
+            }
+            return !images.original.equals(images.transformed);
+        }
+
+        @Override
+        public String getBugInformation() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("-- On the database set up by the statements above, the following statements leave the database"
+                    + " in different states:").append(System.lineSeparator());
+            renderStatementLines(sb, queries);
+            return sb.toString();
+        }
+    }
+
+    // Builds the reproducer for an unexpected DBMS error, which replays the whole comparison and checks the same error
+    // still fires.
+    private UnexpectedErrorReproducer<G> errorReproducer(ComparisonQueries queries, String expectedErrorMessage) {
+        UnexpectedErrorReproducer.Execution<G> execution = globalState -> computePostImages(globalState, queries);
+        StringBuilder sb = new StringBuilder();
+        renderStatementLines(sb, queries);
+        return new UnexpectedErrorReproducer<>(execution, expectedErrorMessage, sb.toString());
+    }
+
+    // Renders the failing statements as commented lines, shared by the mismatch and the unexpected-error reproducers.
+    private static void renderStatementLines(StringBuilder sb, ComparisonQueries queries) {
+        sb.append("-- original:    ").append(queries.originalStatement).append(';').append(System.lineSeparator());
+        sb.append("-- transformed: ").append(queries.transformedStatement).append(';').append(System.lineSeparator());
+    }
 
     public EETDMLOracle(G state, EETDMLGenerator<E, T, C> gen, ExpectedErrors expectedErrors) {
         if (state == null || gen == null || expectedErrors == null) {
@@ -82,6 +170,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
 
     @Override
     public void check() throws SQLException {
+        reproducer = null;
         List<T> tables = state.getSchema().getDatabaseTables();
         if (tables.isEmpty()) {
             throw new IgnoreMeException();
@@ -115,29 +204,63 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         String transformedStatement = statements.transformed;
         generatedQueryString = originalStatement;
 
-        int columnCount = gen.postImageColumns(table).size();
+        // Capture, as strings, everything needed to run and observe this comparison: the two statements plus the
+        // auxiliary-column setup, per-run snapshot and teardown. A reproducer replays these against a reduced database,
+        // where the live generator and schema objects no longer apply.
+        ComparisonQueries queries = new ComparisonQueries(originalStatement, transformedStatement,
+                gen.addRowIdColumnStatement(table), gen.stampRowIdsStatement(table), gen.beginTransactionStatement(),
+                gen.rollbackTransactionStatement(), gen.dropRowIdColumnStatement(table),
+                gen.selectPostImageStatement(table), gen.postImageColumns(table).size());
 
+        PostImages images;
+        try {
+            images = computePostImages(state, queries);
+        } catch (AssertionError unexpectedError) {
+            reproducer = errorReproducer(queries, TestOracleUtils.getUnexpectedErrorMessage(unexpectedError));
+            throw unexpectedError;
+        }
+
+        reproducer = new EETDMLReproducer(queries);
+        if (!images.original.equals(images.transformed)) {
+            throw new AssertionError(mismatchMessage(table, originalStatement, transformedStatement, images.original,
+                    images.transformed));
+        }
+    }
+
+    /**
+     * Runs the whole comparison against {@code globalState}: adds and stamps the row-identifier column once (so both
+     * runs observe the same rows), snapshots the post-image each statement produces (each inside a rolled-back
+     * transaction), and drops the column. Both {@link #check()} and the reproducers call this, the former against the
+     * live database and the latter against a reduced one. A DBMS error the oracle tolerates aborts with
+     * {@link IgnoreMeException}; an oracle logic bug or unexpected error surfaces as {@link AssertionError}.
+     *
+     * @param globalState
+     *            the state whose connection the comparison runs against
+     * @param queries
+     *            the statements and auxiliary SQL to run
+     *
+     * @return the post-images the original and transformed statements produced
+     *
+     * @throws SQLException
+     *             if a DBMS interaction fails
+     */
+    private PostImages computePostImages(G globalState, ComparisonQueries queries) throws SQLException {
         // Add the auxiliary column outside the try, then guard everything after it with the finally that drops it: the
         // ALTER auto-commits (it is not undone by ROLLBACK), so a failure between adding and dropping would leak the
         // column and cause cascading duplicate-column failures
-        if (!new SQLQueryAdapter(gen.addRowIdColumnStatement(table), errors, true).execute(state)) {
+        if (!new SQLQueryAdapter(queries.addRowIdColumn, errors, true).execute(globalState)) {
             throw new IgnoreMeException();
         }
         try {
             // Stamp identifiers once, in autocommit mode, before both runs: both then observe the same rows.
-            if (!new SQLQueryAdapter(gen.stampRowIdsStatement(table), errors).execute(state)) {
+            if (!new SQLQueryAdapter(queries.stampRowIds, errors).execute(globalState)) {
                 throw new IgnoreMeException();
             }
-
-            List<List<String>> originalImage = executeAndSnapshotPostImage(table, originalStatement, columnCount);
-            List<List<String>> transformedImage = executeAndSnapshotPostImage(table, transformedStatement, columnCount);
-
-            if (!originalImage.equals(transformedImage)) {
-                throw new AssertionError(mismatchMessage(table, originalStatement, transformedStatement, originalImage,
-                        transformedImage));
-            }
+            List<List<String>> original = snapshotSide(globalState, queries.originalStatement, queries);
+            List<List<String>> transformed = snapshotSide(globalState, queries.transformedStatement, queries);
+            return new PostImages(original, transformed);
         } finally {
-            new SQLQueryAdapter(gen.dropRowIdColumnStatement(table), errors, true).execute(state);
+            new SQLQueryAdapter(queries.dropRowIdColumn, errors, true).execute(globalState);
         }
     }
 
@@ -261,12 +384,12 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      * DBMS error the oracle tolerates aborts with {@link IgnoreMeException}; an oracle logic bug or unexpected error
      * surfaces as {@link AssertionError}.
      *
-     * @param table
-     *            the table being modified
+     * @param globalState
+     *            the state whose connection the statement runs against
      * @param statement
      *            the DML statement to execute
-     * @param columnCount
-     *            the number of columns the post-image select returns (identifier plus content columns)
+     * @param queries
+     *            supplies the transaction control and post-image select SQL and the post-image's column count
      *
      * @return the post-image, as one string list (identifier followed by content column values) per surviving row
      *
@@ -274,20 +397,20 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *             if a DBMS interaction other than running {@code statement} fails; an error from {@code statement}
      *             itself instead surfaces as {@link IgnoreMeException} or {@link AssertionError}
      */
-    private List<List<String>> executeAndSnapshotPostImage(T table, String statement, int columnCount)
+    private List<List<String>> snapshotSide(G globalState, String statement, ComparisonQueries queries)
             throws SQLException {
-        new SQLQueryAdapter(gen.beginTransactionStatement()).execute(state);
+        new SQLQueryAdapter(queries.beginTransaction).execute(globalState);
         try {
             // execute reports (throws AssertionError for) unexpected errors and returns false for expected ones.
-            boolean succeeded = new SQLQueryAdapter(statement, errors).execute(state);
+            boolean succeeded = new SQLQueryAdapter(statement, errors).execute(globalState);
             if (!succeeded) {
                 // The statement hit an error the oracle tolerates; do not compare states (as EETOracle does for
                 // SELECT).
                 throw new IgnoreMeException();
             }
-            return snapshotPostImage(gen.selectPostImageStatement(table), columnCount);
+            return snapshotPostImage(globalState, queries.selectPostImage, queries.columnCount);
         } finally {
-            new SQLQueryAdapter(gen.rollbackTransactionStatement()).execute(state);
+            new SQLQueryAdapter(queries.rollback).execute(globalState);
         }
     }
 
@@ -296,6 +419,8 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      * {@code getString}). A DBMS error the oracle tolerates aborts with {@link IgnoreMeException}; an oracle logic bug
      * or unexpected error surfaces as {@link AssertionError}.
      *
+     * @param globalState
+     *            the state whose connection the select runs against
      * @param selectStatement
      *            the post-image select to read; its columns are the identifier followed by the content columns
      * @param columnCount
@@ -307,13 +432,14 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *             if cleanup fails (errors thrown elsewhere will always be rethrown as {@link IgnoreMeException} or
      *             {@link AssertionError})
      */
-    private List<List<String>> snapshotPostImage(String selectStatement, int columnCount) throws SQLException {
+    private List<List<String>> snapshotPostImage(G globalState, String selectStatement, int columnCount)
+            throws SQLException {
         List<List<String>> rows = new ArrayList<>();
         SQLQueryAdapter q = new SQLQueryAdapter(selectStatement, errors, true,
-                state.getOptions().canonicalizeSqlString());
+                globalState.getOptions().canonicalizeSqlString());
         SQLancerResultSet result = null;
         try {
-            result = q.executeAndGet(state);
+            result = q.executeAndGet(globalState);
             if (result == null) {
                 throw new IgnoreMeException();
             }
@@ -397,5 +523,10 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
     @Override
     public String getLastQueryString() {
         return generatedQueryString;
+    }
+
+    @Override
+    public Reproducer<G> getLastReproducer() {
+        return reproducer;
     }
 }
