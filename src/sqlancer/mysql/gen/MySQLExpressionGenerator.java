@@ -2,6 +2,7 @@ package sqlancer.mysql.gen;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -401,6 +402,37 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
     @Override
     public String asString(MySQLExpression expr) {
         return MySQLVisitor.asString(expr);
+    }
+
+    @Override
+    public String generateJoinClauses(MySQLTable targetTable, List<MySQLTable> candidateTables) {
+        List<MySQLTable> joinedTables = Randomly.nonEmptySubset(candidateTables);
+        List<MySQLJoin.JoinType> types = new ArrayList<>(Arrays.asList(MySQLJoin.JoinType.values()));
+        if (joinedTables.size() > 1) {
+            // As in MySQLJoin.getRandomJoinClauses: NATURAL joins need unique column names, which the duplicate columns
+            // the other join types produce would break.
+            types.remove(MySQLJoin.JoinType.NATURAL);
+        }
+        // An ON clause may reference the target table and the tables joined before it, so that a join relates the
+        // target's rows to the joined ones rather than just filtering the joined table.
+        List<MySQLColumn> inScope = new ArrayList<>(targetTable.getColumns());
+        StringBuilder joinClauses = new StringBuilder();
+        for (MySQLTable joinedTable : joinedTables) {
+            inScope.addAll(joinedTable.getColumns());
+            MySQLJoin.JoinType type = Randomly.fromList(types);
+            MySQLExpression onClause = null;
+            if (type != MySQLJoin.JoinType.NATURAL) { // NATURAL joins do not have an ON clause
+                MySQLExpressionGenerator onClauseGen = new MySQLExpressionGenerator(state)
+                        .setColumns(new ArrayList<>(inScope));
+                onClause = onClauseGen.generateExpression();
+            }
+            joinClauses.append(MySQLVisitor.asString(new MySQLJoin(joinedTable, onClause, type)));
+        }
+        List<MySQLTable> tablesInScope = new ArrayList<>();
+        tablesInScope.add(targetTable);
+        tablesInScope.addAll(joinedTables);
+        setTablesAndColumns(new AbstractTables<>(tablesInScope));
+        return joinClauses.toString();
     }
 
     @Override

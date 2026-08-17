@@ -48,9 +48,12 @@ import sqlancer.common.schema.AbstractTables;
  * <p>
  * DELETE, UPDATE and INSERT are currently supported (one is chosen at random per check). INSERT uses the
  * {@code INSERT ... SELECT} form so its transformed value expressions may reference columns; each inserted row is given
- * a deterministic identifier derived from its source row so the two runs' post-images align. To support reduction, a
- * {@link Reproducer} replays the whole comparison (adding and stamping the row-identifier column, running both
- * statements in rolled-back transactions and comparing the post-images) against the reduced database.
+ * a deterministic identifier derived from its source row so the two runs' post-images align. DELETE and UPDATE may
+ * additionally join further tables onto the one they modify, using the multi-table forms, which lets their transformed
+ * predicates range over several tables' columns; the joined tables are only read, so the row identifiers and the
+ * post-image stay confined to the modified table. To support reduction, a {@link Reproducer} replays the whole
+ * comparison (adding and stamping the row-identifier column, running both statements in rolled-back transactions and
+ * comparing the post-images) against the reduced database.
  *
  * @param <E>
  *            the DBMS-specific expression class
@@ -331,31 +334,52 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         if (tables.isEmpty()) {
             throw new IgnoreMeException();
         }
-        // A DML statement targets a single table, so operate on exactly one; confining the generator to it keeps the
-        // predicate and value expressions from referencing another table's columns (which would render invalid
-        // single-table DML).
+        // A DML statement modifies a single table, so pick the one it targets and scope the generator to it. The
+        // auxiliary row-identifier column and the post-image below are confined to that table for the same reason.
         T table = Randomly.fromList(tables);
         gen = gen.setTablesAndColumns(new AbstractTables<>(List.of(table)));
+
+        // Optionally join further tables onto the target, using the multi-table UPDATE/DELETE forms. Those tables are
+        // read-only, as only the target's rows are modified, so they need no row identifiers and no post-image of their
+        // own; what they widen is the set of columns the WHERE predicate can reference. They are joined identically in
+        // both statements, and the join clauses themselves are not transformed.
+        List<T> otherTables = new ArrayList<>(tables);
+        otherTables.remove(table);
+        String joinClauses = "";
+        if (!otherTables.isEmpty() && Randomly.getBoolean()) {
+            joinClauses = gen.generateJoinClauses(table, otherTables);
+        }
 
         E predicate = gen.generateBooleanExpression();
         // The WHERE predicate is evaluated in a boolean context.
         E transformedPredicate = transformer.transform(predicate, true);
         EETTransformer.TransformationRecord predicateRecord = transformer.getLastTransformationRecord();
 
+        // The predicate is the only expression that may reference a joined table, so narrow the scope back to the
+        // target table before the written values are generated and transformed: a target row matching several joined
+        // rows is updated once, with the value computed from an unspecified one of them, so a written value that
+        // referenced a joined column could differ between the two runs for reasons other than a bug.
+        gen = gen.setTablesAndColumns(new AbstractTables<>(List.of(table)));
+
         // Optionally cap the statement with a LIMIT. The limit and its ordering (a random column subset, made a total
         // order by the row-id tiebreaker) are decided once and applied identically to both statements, so the capped
-        // row set is deterministic and equal across the runs while still exercising varied orderings.
+        // row set is deterministic and equal across the runs while still exercising varied orderings. The multi-table
+        // forms admit neither ORDER BY nor LIMIT, so only a single-table statement is capped.
         Integer limit = null;
         List<C> orderByColumns = List.of();
-        if (Randomly.getBoolean()) {
+        if (joinClauses.isEmpty() && Randomly.getBoolean()) {
             limit = (int) Randomly.getNotCachedInteger(0, 10);
             orderByColumns = Randomly.subset(table.getColumns());
         }
-        // Generators for the different kinds of statement this oracle supports. One is chosen at random per check
-        List<DMLStatementGenerator<E, T, C>> statementGenerators = List.of(this::generateDeleteStatements,
-                this::generateUpdateStatements, this::generateInsertStatements);
-        StatementPair<E> statements = Randomly.fromList(statementGenerators).generate(table, predicate,
-                transformedPredicate, predicateRecord, orderByColumns, limit);
+        StatementShape<C> shape = new StatementShape<>(joinClauses, orderByColumns, limit);
+        // Generators for the different kinds of statement this oracle supports. One is chosen at random per check;
+        // INSERT is single-table only (see EETDMLGenerator#insertStatement), so it drops out once there are joins.
+        List<DMLStatementGenerator<E, T, C>> statementGenerators = joinClauses.isEmpty()
+                ? List.of(this::generateDeleteStatements, this::generateUpdateStatements,
+                        this::generateInsertStatements)
+                : List.of(this::generateDeleteStatements, this::generateUpdateStatements);
+        StatementPair<E> statements = Randomly.fromList(statementGenerators).generate(table, shape, predicate,
+                transformedPredicate, predicateRecord);
         String originalStatement = statements.original;
         String transformedStatement = statements.transformed;
         generatedQueryString = originalStatement;
@@ -420,6 +444,26 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
     }
 
     /**
+     * The parts of a DML statement that are decided once per check and shared verbatim by the original and transformed
+     * statements: which tables are joined onto the target, and how the rows the statement touches are ordered and
+     * capped. None of them is transformed, so both statements touch the same rows.
+     *
+     * @param <C>
+     *            the DBMS-specific column class
+     */
+    private static final class StatementShape<C> {
+        private final String joinClauses; // empty for a single-table statement
+        private final List<C> orderByColumns;
+        private final Integer limit; // null when uncapped, which a statement with joins always is
+
+        StatementShape(String joinClauses, List<C> orderByColumns, Integer limit) {
+            this.joinClauses = joinClauses;
+            this.orderByColumns = orderByColumns;
+            this.limit = limit;
+        }
+    }
+
+    /**
      * Generates a DML statement of one kind together with its transformed counterpart. The kinds share this signature
      * so the oracle can pick one of them at random per check.
      *
@@ -432,8 +476,8 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      */
     @FunctionalInterface
     private interface DMLStatementGenerator<E extends Expression<?>, T, C> {
-        StatementPair<E> generate(T table, E predicate, E transformedPredicate,
-                EETTransformer.TransformationRecord predicateRecord, List<C> orderByColumns, Integer limit);
+        StatementPair<E> generate(T table, StatementShape<C> shape, E predicate, E transformedPredicate,
+                EETTransformer.TransformationRecord predicateRecord);
     }
 
     /**
@@ -462,21 +506,19 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *
      * @param table
      *            the table being modified
+     * @param shape
+     *            the joins, ordering and limit shared by both statements
      * @param predicate
      *            the WHERE predicate of the original statement
      * @param transformedPredicate
      *            the transformed WHERE predicate, used by the transformed statement
      * @param predicateRecord
      *            the record of the predicate's transformation
-     * @param orderByColumns
-     *            the columns ordering the statement, empty if it is not capped by a limit
-     * @param limit
-     *            the maximum number of rows to modify, or {@code null} for no limit
      *
      * @return the original statement, its transformed counterpart and the latter's transformation record
      */
-    private StatementPair<E> generateUpdateStatements(T table, E predicate, E transformedPredicate,
-            EETTransformer.TransformationRecord predicateRecord, List<C> orderByColumns, Integer limit) {
+    private StatementPair<E> generateUpdateStatements(T table, StatementShape<C> shape, E predicate,
+            E transformedPredicate, EETTransformer.TransformationRecord predicateRecord) {
         List<Map.Entry<C, E>> assignments = gen.generateSetAssignments();
         List<Map.Entry<C, E>> transformedAssignments = new ArrayList<>();
         List<E> expressions = new ArrayList<>();
@@ -495,11 +537,14 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         booleanContexts.add(true);
         records.add(predicateRecord);
         DMLTransformation<E> transformation = new DMLTransformation<>(transformer, expressions, booleanContexts,
-                records, replayed -> gen.updateStatement(table, zipAssignments(assignmentColumns, replayed),
-                        replayed.get(replayed.size() - 1), orderByColumns, limit));
-        return new StatementPair<>(gen.updateStatement(table, assignments, predicate, orderByColumns, limit),
-                gen.updateStatement(table, transformedAssignments, transformedPredicate, orderByColumns, limit),
-                transformation);
+                records, replayed -> updateStatement(table, shape, zipAssignments(assignmentColumns, replayed),
+                        replayed.get(replayed.size() - 1)));
+        return new StatementPair<>(updateStatement(table, shape, assignments, predicate),
+                updateStatement(table, shape, transformedAssignments, transformedPredicate), transformation);
+    }
+
+    private String updateStatement(T table, StatementShape<C> shape, List<Map.Entry<C, E>> assignments, E predicate) {
+        return gen.updateStatement(table, shape.joinClauses, assignments, predicate, shape.orderByColumns, shape.limit);
     }
 
     /**
@@ -507,26 +552,27 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      *
      * @param table
      *            the table being modified
+     * @param shape
+     *            the joins, ordering and limit shared by both statements
      * @param predicate
      *            the WHERE predicate of the original statement
      * @param transformedPredicate
      *            the transformed WHERE predicate, used by the transformed statement
      * @param predicateRecord
      *            the record of the predicate's transformation, which is DELETE's only transformation site
-     * @param orderByColumns
-     *            the columns ordering the statement, empty if it is not capped by a limit
-     * @param limit
-     *            the maximum number of rows to modify, or {@code null} for no limit
      *
      * @return the original statement, its transformed counterpart and the latter's transformation record
      */
-    private StatementPair<E> generateDeleteStatements(T table, E predicate, E transformedPredicate,
-            EETTransformer.TransformationRecord predicateRecord, List<C> orderByColumns, Integer limit) {
+    private StatementPair<E> generateDeleteStatements(T table, StatementShape<C> shape, E predicate,
+            E transformedPredicate, EETTransformer.TransformationRecord predicateRecord) {
         DMLTransformation<E> transformation = new DMLTransformation<>(transformer, List.of(predicate), List.of(true),
-                List.of(predicateRecord),
-                replayed -> gen.deleteStatement(table, replayed.get(0), orderByColumns, limit));
-        return new StatementPair<>(gen.deleteStatement(table, predicate, orderByColumns, limit),
-                gen.deleteStatement(table, transformedPredicate, orderByColumns, limit), transformation);
+                List.of(predicateRecord), replayed -> deleteStatement(table, shape, replayed.get(0)));
+        return new StatementPair<>(deleteStatement(table, shape, predicate),
+                deleteStatement(table, shape, transformedPredicate), transformation);
+    }
+
+    private String deleteStatement(T table, StatementShape<C> shape, E predicate) {
+        return gen.deleteStatement(table, shape.joinClauses, predicate, shape.orderByColumns, shape.limit);
     }
 
     /**
@@ -535,25 +581,24 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
      * transformation sites are ordered inserted values first, then the predicate when there is one.
      *
      * <p>
-     * The ordering and limit cap the source rows the statement reads, so it inserts one row per source row kept.
+     * The ordering and limit cap the source rows the statement reads, so it inserts one row per source row kept. This
+     * statement is only generated for a single-table shape, whose join clauses are empty.
      *
      * @param table
      *            the table being modified
+     * @param shape
+     *            the ordering and limit shared by both statements; its join clauses are empty
      * @param predicate
      *            the WHERE predicate of the original statement
      * @param transformedPredicate
      *            the transformed WHERE predicate, used by the transformed statement
      * @param predicateRecord
      *            the record of the predicate's transformation, unused when no predicate is generated
-     * @param orderByColumns
-     *            the columns ordering the source rows, empty if the statement is not capped by a limit
-     * @param limit
-     *            the maximum number of source rows to insert from, or {@code null} for no limit
      *
      * @return the original statement, its transformed counterpart and the latter's transformation record
      */
-    private StatementPair<E> generateInsertStatements(T table, E predicate, E transformedPredicate,
-            EETTransformer.TransformationRecord predicateRecord, List<C> orderByColumns, Integer limit) {
+    private StatementPair<E> generateInsertStatements(T table, StatementShape<C> shape, E predicate,
+            E transformedPredicate, EETTransformer.TransformationRecord predicateRecord) {
         List<E> values = gen.generateInsertValues();
         List<E> transformedValues = new ArrayList<>();
         List<E> expressions = new ArrayList<>();
@@ -573,13 +618,15 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         }
         int valueCount = values.size();
         DMLTransformation<E> transformation = new DMLTransformation<>(transformer, expressions, booleanContexts,
-                records, replayed -> gen.insertStatement(table, replayed.subList(0, valueCount),
-                        withPredicate ? replayed.get(valueCount) : null, orderByColumns, limit));
-        return new StatementPair<>(
-                gen.insertStatement(table, values, withPredicate ? predicate : null, orderByColumns, limit),
-                gen.insertStatement(table, transformedValues, withPredicate ? transformedPredicate : null,
-                        orderByColumns, limit),
+                records, replayed -> insertStatement(table, shape, replayed.subList(0, valueCount),
+                        withPredicate ? replayed.get(valueCount) : null));
+        return new StatementPair<>(insertStatement(table, shape, values, withPredicate ? predicate : null),
+                insertStatement(table, shape, transformedValues, withPredicate ? transformedPredicate : null),
                 transformation);
+    }
+
+    private String insertStatement(T table, StatementShape<C> shape, List<E> values, E predicate) {
+        return gen.insertStatement(table, values, predicate, shape.orderByColumns, shape.limit);
     }
 
     /**
