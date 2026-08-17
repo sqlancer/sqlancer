@@ -283,7 +283,14 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
     @Override
     public List<MySQLJoin> getRandomJoinClauses() {
-        return List.of();
+        // The tables that end up in a join clause must not also appear in the FROM list, so hand
+        // MySQLJoin.getRandomJoinClauses() a copy to consume and keep the remainder for getTableRefs(), which every
+        // caller invokes afterwards. At least one table always survives, as the number of join clauses is drawn from
+        // [0, tables.size()).
+        List<MySQLTable> remainingTables = new ArrayList<>(tables);
+        List<MySQLJoin> joinClauses = MySQLJoin.getRandomJoinClauses(remainingTables, state);
+        tables = remainingTables;
+        return joinClauses;
     }
 
     @Override
