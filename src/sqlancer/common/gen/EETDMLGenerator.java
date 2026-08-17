@@ -39,8 +39,8 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
     String ROW_ID_COLUMN = "rowid";
 
     /**
-     * Restricts this generator to the given tables (a single table, for the DML statement under test) and their
-     * columns.
+     * Restricts this generator to the given tables (the table the DML statement modifies, and any tables joined onto
+     * it) and their columns.
      *
      * @param tables
      *            the tables (and, implicitly, columns) the generated statement operates on
@@ -48,6 +48,28 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      * @return this generator
      */
     EETDMLGenerator<E, T, C> setTablesAndColumns(AbstractTables<T, C> tables);
+
+    /**
+     * Generates random join clauses attaching a non-empty subset of {@code candidateTables} to {@code targetTable}, and
+     * widens this generator's scope to the joined tables, so subsequently generated expressions may reference their
+     * columns as well as {@code targetTable}'s.
+     *
+     * <p>
+     * Only the target table's rows are modified, so the joined tables are read-only: they need neither the auxiliary
+     * row-identifier column nor a post-image of their own. The oracle narrows the scope back to {@code targetTable}
+     * before generating the values an UPDATE writes, because a joined row is only well defined for the WHERE predicate:
+     * when a target row matches several joined rows, it is still updated once, with the value computed from an
+     * unspecified one of them, so a written value that referenced a joined column would not be deterministic.
+     *
+     * @param targetTable
+     *            the table the statement modifies, which the joins are attached to
+     * @param candidateTables
+     *            the other tables available to join; must be non-empty and must not contain {@code targetTable}, which
+     *            a join clause would have to alias to reference twice
+     *
+     * @return the rendered join clauses, non-empty and ready to follow {@code targetTable}'s name in a FROM clause
+     */
+    String generateJoinClauses(T targetTable, List<T> candidateTables);
 
     /**
      * Generates a fresh random boolean expression over the current tables' columns, used as the DML statement's WHERE
@@ -194,11 +216,19 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
     }
 
     /**
-     * SQL that deletes the rows of {@code table} matching {@code predicate}, optionally limited to the first
-     * {@code limit} rows (see {@link #orderByLimitClause}).
+     * SQL that deletes the rows of {@code table} matching {@code predicate}, optionally joined to further tables (see
+     * {@link #generateJoinClauses}) and optionally limited to the first {@code limit} rows (see
+     * {@link #orderByLimitClause}).
+     *
+     * <p>
+     * With joins, the multi-table form is used: the table named before FROM is the only one rows are deleted from,
+     * while the joined tables merely widen what the predicate can reference. That form admits neither ORDER BY nor
+     * LIMIT, so {@code limit} must be null whenever {@code joinClauses} is non-empty.
      *
      * @param table
      *            the table to delete from
+     * @param joinClauses
+     *            the join clauses to attach to {@code table}, or the empty string for a single-table statement
      * @param predicate
      *            the WHERE predicate; rendered via {@link #asString}
      * @param orderByColumns
@@ -209,18 +239,29 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      *
      * @return the SQL statement
      */
-    default String deleteStatement(T table, E predicate, List<C> orderByColumns, Integer limit) {
-        return "DELETE FROM " + table.getName() + " WHERE " + asString(predicate)
-                + orderByLimitClause(orderByColumns, limit);
+    default String deleteStatement(T table, String joinClauses, E predicate, List<C> orderByColumns, Integer limit) {
+        if (joinClauses.isEmpty()) {
+            return "DELETE FROM " + table.getName() + " WHERE " + asString(predicate)
+                    + orderByLimitClause(orderByColumns, limit);
+        }
+        return "DELETE " + table.getName() + " FROM " + table.getName() + joinClauses + " WHERE " + asString(predicate);
     }
 
     /**
      * SQL that updates the rows of {@code table} matching {@code predicate}, setting each column in {@code assignments}
-     * to its assigned value expression, optionally limited to the first {@code limit} rows (see
-     * {@link #orderByLimitClause}).
+     * to its assigned value expression, optionally joined to further tables (see {@link #generateJoinClauses}) and
+     * optionally limited to the first {@code limit} rows (see {@link #orderByLimitClause}).
+     *
+     * <p>
+     * With joins, the multi-table form is used: only {@code table}'s columns are assigned, so it is the only table
+     * modified, while the joined tables merely widen what the predicate can reference. The assigned columns are then
+     * qualified, as a joined table may hold a column of the same name, and the form admits neither ORDER BY nor LIMIT,
+     * so {@code limit} must be null whenever {@code joinClauses} is non-empty.
      *
      * @param table
      *            the table to update
+     * @param joinClauses
+     *            the join clauses to attach to {@code table}, or the empty string for a single-table statement
      * @param assignments
      *            the {@code (column, value expression)} pairs to assign; each value is rendered via {@link #asString}
      * @param predicate
@@ -233,14 +274,17 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      *
      * @return the SQL statement
      */
-    default String updateStatement(T table, List<Map.Entry<C, E>> assignments, E predicate, List<C> orderByColumns,
-            Integer limit) {
+    default String updateStatement(T table, String joinClauses, List<Map.Entry<C, E>> assignments, E predicate,
+            List<C> orderByColumns, Integer limit) {
         List<String> setClauses = new ArrayList<>();
         for (Map.Entry<C, E> assignment : assignments) {
-            setClauses.add(assignment.getKey().getName() + " = " + asString(assignment.getValue()));
+            String columnName = joinClauses.isEmpty() ? assignment.getKey().getName()
+                    : assignment.getKey().getFullQualifiedName();
+            setClauses.add(columnName + " = " + asString(assignment.getValue()));
         }
-        return "UPDATE " + table.getName() + " SET " + String.join(", ", setClauses) + " WHERE " + asString(predicate)
-                + orderByLimitClause(orderByColumns, limit);
+        // The trailing clause is empty for a multi-table statement, whose limit is always null.
+        return "UPDATE " + table.getName() + joinClauses + " SET " + String.join(", ", setClauses) + " WHERE "
+                + asString(predicate) + orderByLimitClause(orderByColumns, limit);
     }
 
     /**
@@ -255,6 +299,10 @@ public interface EETDMLGenerator<E extends Expression<C>, T extends AbstractTabl
      * alone. Each inserted row's {@link #ROW_ID_COLUMN} is derived from its source row via
      * {@link #insertedRowIdExpression()}, giving it a deterministic identifier that is unique and distinct from every
      * existing one, so the two statements' post-images align (and inserted rows never collide with their source rows).
+     *
+     * <p>
+     * The source is {@code table} alone, so this statement takes no join clauses: joining the source would let one
+     * source row produce several inserted rows, which {@link #insertedRowIdExpression()} could no longer tell apart.
      *
      * @param table
      *            the table to insert into
