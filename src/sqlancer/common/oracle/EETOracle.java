@@ -1,12 +1,15 @@
 package sqlancer.common.oracle;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import sqlancer.ComparatorHelper;
+import sqlancer.Randomly;
 import sqlancer.Reproducer;
 import sqlancer.SQLGlobalState;
+import sqlancer.TransformationReproducer;
 import sqlancer.common.ast.newast.Expression;
 import sqlancer.common.ast.newast.Join;
 import sqlancer.common.ast.newast.Select;
@@ -53,13 +56,72 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
     private Reproducer<G> reproducer;
     private String generatedQueryString;
 
-    private final class EETReproducer extends AbstractComparisonReproducer<G, List<String>> {
+    private final class EETReproducer extends AbstractComparisonReproducer<G, List<String>>
+            implements TransformationReproducer<G> {
         private final String originalQueryString;
-        private final String transformedQueryString;
+        // Mutable: transformation reduction re-renders the transformed query with some transformation sites disabled.
+        private String transformedQueryString;
+        private final String initialTransformedQueryString;
 
-        EETReproducer(String originalQueryString, String transformedQueryString) {
+        // The query parts needed to re-render the transformed query: the SELECT whose fetch columns and WHERE clause
+        // are replaced, the untransformed expressions, and the records of their transformations.
+        private final Z select;
+        private final List<E> fetchColumns;
+        private final List<EETTransformer.TransformationRecord> fetchColumnRecords;
+        private final E whereClause;
+        private final EETTransformer.TransformationRecord whereClauseRecord;
+
+        EETReproducer(String originalQueryString, String transformedQueryString, Z select, List<E> fetchColumns,
+                List<EETTransformer.TransformationRecord> fetchColumnRecords, E whereClause,
+                EETTransformer.TransformationRecord whereClauseRecord) {
             this.originalQueryString = originalQueryString;
             this.transformedQueryString = transformedQueryString;
+            this.initialTransformedQueryString = transformedQueryString;
+            this.select = select;
+            this.fetchColumns = fetchColumns;
+            this.fetchColumnRecords = fetchColumnRecords;
+            this.whereClause = whereClause;
+            this.whereClauseRecord = whereClauseRecord;
+        }
+
+        @Override
+        public int getTransformationSiteCount() {
+            int siteCount = whereClauseRecord.getSiteCount();
+            for (EETTransformer.TransformationRecord record : fetchColumnRecords) {
+                siteCount += record.getSiteCount();
+            }
+            return siteCount;
+        }
+
+        @Override
+        public void setEnabledTransformationSites(Set<Integer> enabledSites) {
+            if (enabledSites.size() == getTransformationSiteCount()) {
+                // With every site enabled, the transformed query is the unreduced one; keep the exact string that
+                // originally detected the bug rather than re-rendering it (rendering an AST draws random textual
+                // variants, so a re-render would produce a semantically equal but untested string).
+                transformedQueryString = initialTransformedQueryString;
+                return;
+            }
+            // Pin the RNG while re-rendering so the same enabled sites always yield the same query string; the string
+            // tested during reduction is then exactly the string the reduced test case reports.
+            transformedQueryString = Randomly.withFixedSeedRandom(() -> {
+                // Global site indices are assigned over the fetch columns' records first (in column order), then the
+                // WHERE clause's record.
+                List<E> replayedFetchColumns = new ArrayList<>();
+                int offset = 0;
+                for (int i = 0; i < fetchColumns.size(); i++) {
+                    int base = offset;
+                    replayedFetchColumns.add(transformer.replay(fetchColumns.get(i), false, fetchColumnRecords.get(i),
+                            site -> enabledSites.contains(base + site)));
+                    offset += fetchColumnRecords.get(i).getSiteCount();
+                }
+                int whereBase = offset;
+                E replayedWhereClause = transformer.replay(whereClause, true, whereClauseRecord,
+                        site -> enabledSites.contains(whereBase + site));
+                select.setFetchColumns(replayedFetchColumns);
+                select.setWhereClause(replayedWhereClause);
+                return select.asString();
+            });
         }
 
         @Override
@@ -160,11 +222,17 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
         }
 
         // Transform the query's expressions into semantically equivalent ones. Fetch columns are scalar expressions,
-        // while the WHERE clause is evaluated in a boolean context.
-        List<E> transformedFetchColumns = fetchColumns.stream().map(c -> transformer.transform(c, false))
-                .collect(Collectors.toList());
+        // while the WHERE clause is evaluated in a boolean context. Each transformation's record is kept so the
+        // reproducer can replay it with transformation sites disabled during reduction.
+        List<E> transformedFetchColumns = new ArrayList<>();
+        List<EETTransformer.TransformationRecord> fetchColumnRecords = new ArrayList<>();
+        for (E fetchColumn : fetchColumns) {
+            transformedFetchColumns.add(transformer.transform(fetchColumn, false));
+            fetchColumnRecords.add(transformer.getLastTransformationRecord());
+        }
         select.setFetchColumns(transformedFetchColumns);
         select.setWhereClause(transformer.transform(whereClause, true));
+        EETTransformer.TransformationRecord whereClauseRecord = transformer.getLastTransformationRecord();
 
         String transformedQueryString = select.asString();
         List<String> transformedResultSet;
@@ -181,7 +249,8 @@ public class EETOracle<Z extends Select<J, E, T, C>, J extends Join<E, T, C>, E 
 
         // Set the reproducer before the assertion: assumeResultSetsAreEqual throws when the bug is
         // detected, so creating the reproducer afterwards would leave it null and prevent any reduction.
-        reproducer = new EETReproducer(originalQueryString, transformedQueryString);
+        reproducer = new EETReproducer(originalQueryString, transformedQueryString, select, fetchColumns,
+                fetchColumnRecords, whereClause, whereClauseRecord);
 
         ComparatorHelper.assumeResultSetsAreEqual(originalResultSet, transformedResultSet, originalQueryString,
                 List.of(transformedQueryString), state);
