@@ -86,11 +86,13 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         private final String rollback;
         private final String dropRowIdColumn;
         private final String selectPostImage;
-        private final int columnCount;
+        // The post-image's columns, in the order selectPostImage returns them: their count is how many columns each
+        // row is read back with, and their names head the differing rows a mismatch is reported with.
+        private final List<String> postImageColumns;
 
         ComparisonQueries(String originalStatement, String transformedStatement, String addRowIdColumn,
                 String stampRowIds, String beginTransaction, String rollback, String dropRowIdColumn,
-                String selectPostImage, int columnCount) {
+                String selectPostImage, List<String> postImageColumns) {
             this.originalStatement = originalStatement;
             this.transformedStatement = transformedStatement;
             this.addRowIdColumn = addRowIdColumn;
@@ -99,13 +101,13 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             this.rollback = rollback;
             this.dropRowIdColumn = dropRowIdColumn;
             this.selectPostImage = selectPostImage;
-            this.columnCount = columnCount;
+            this.postImageColumns = postImageColumns;
         }
 
         // A copy differing only in the transformed statement, used when transformation reduction re-renders it.
         ComparisonQueries withTransformedStatement(String newTransformedStatement) {
             return new ComparisonQueries(originalStatement, newTransformedStatement, addRowIdColumn, stampRowIds,
-                    beginTransaction, rollback, dropRowIdColumn, selectPostImage, columnCount);
+                    beginTransaction, rollback, dropRowIdColumn, selectPostImage, postImageColumns);
         }
     }
 
@@ -188,12 +190,18 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         private final String initialTransformedStatement;
         // Mutable: transformation reduction re-renders the transformed statement with some sites disabled/simplified.
         private String transformedStatement;
+        // Mutable: the post-images of the latest run that still showed the mismatch, initially the ones the oracle
+        // itself observed. The reducers accept a candidate exactly when bugStillTriggers reports the mismatch, and
+        // leave the reduced test case at the last accepted candidate, so these are the images of the comparison the
+        // bug information ends up describing.
+        private PostImages mismatchImages;
 
-        EETDMLReproducer(ComparisonQueries queries, DMLTransformation<E> transformation) {
+        EETDMLReproducer(ComparisonQueries queries, DMLTransformation<E> transformation, PostImages mismatchImages) {
             this.baseQueries = queries;
             this.transformation = transformation;
             this.initialTransformedStatement = queries.transformedStatement;
             this.transformedStatement = queries.transformedStatement;
+            this.mismatchImages = mismatchImages;
         }
 
         private ComparisonQueries currentQueries() {
@@ -209,7 +217,11 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
                 // any failure re-running the comparison means this reduced database no longer shows the mismatch
                 return false;
             }
-            return !images.original.equals(images.transformed);
+            if (images.original.equals(images.transformed)) {
+                return false;
+            }
+            mismatchImages = images;
+            return true;
         }
 
         @Override
@@ -241,10 +253,12 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
 
         @Override
         public String getBugInformation() {
+            ComparisonQueries queries = currentQueries();
             StringBuilder sb = new StringBuilder();
             sb.append("-- On the database set up by the statements above, the original and transformed statements below"
                     + " leave the database in different states.").append(System.lineSeparator());
-            renderStatementLines(sb, currentQueries());
+            renderStatementLines(sb, queries);
+            appendDiffRows(sb, queries, mismatchImages);
             return sb.toString();
         }
     }
@@ -352,7 +366,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         ComparisonQueries queries = new ComparisonQueries(originalStatement, transformedStatement,
                 gen.addRowIdColumnStatement(table), gen.stampRowIdsStatement(table), gen.beginTransactionStatement(),
                 gen.rollbackTransactionStatement(), gen.dropRowIdColumnStatement(table),
-                gen.selectPostImageStatement(table), gen.postImageColumns(table).size());
+                gen.selectPostImageStatement(table), gen.postImageColumns(table));
 
         PostImages images;
         try {
@@ -362,9 +376,9 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             throw unexpectedError;
         }
 
-        reproducer = new EETDMLReproducer(queries, statements.transformation);
+        reproducer = new EETDMLReproducer(queries, statements.transformation, images);
         if (!images.original.equals(images.transformed)) {
-            throw new AssertionError(mismatchMessage(table, queries, images.original, images.transformed));
+            throw new AssertionError(mismatchMessage(queries, images));
         }
     }
 
@@ -598,7 +612,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
                 // SELECT).
                 throw new IgnoreMeException();
             }
-            return snapshotPostImage(globalState, queries.selectPostImage, queries.columnCount);
+            return snapshotPostImage(globalState, queries.selectPostImage, queries.postImageColumns.size());
         } finally {
             new SQLQueryAdapter(queries.rollback).execute(globalState);
         }
@@ -660,23 +674,41 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
         return rows;
     }
 
-    private String mismatchMessage(T table, ComparisonQueries queries, List<List<String>> originalImage,
-            List<List<String>> transformedImage) {
-        List<String> header = gen.postImageColumns(table);
+    private static String mismatchMessage(ComparisonQueries queries, PostImages images) {
+        StringBuilder message = new StringBuilder()
+                .append("-- The original and transformed statements left the database in different states.")
+                .append(System.lineSeparator());
+        renderStatementLines(message, queries);
+        appendDiffRows(message, queries, images);
+        return message.toString();
+    }
+
+    /**
+     * Appends the post-image rows the two statements disagree on, pairing them up by row identifier so each line pair
+     * shows one row as the original left it and as the transformed statement left it (or "(row absent)" where that side
+     * does not have it at all). At most {@link #MAX_DIFF_ROWS_REPORTED} pairs are listed, as one mismatching statement
+     * can differ in arbitrarily many rows and the point is to show what kind of difference it is.
+     *
+     * @param sb
+     *            the builder to append to
+     * @param queries
+     *            the comparison the images came from, which names the post-image's columns
+     * @param images
+     *            the differing post-images
+     */
+    private static void appendDiffRows(StringBuilder sb, ComparisonQueries queries, PostImages images) {
+        List<String> header = queries.postImageColumns;
         // Where the identifier sits within a post-image row, per the layout the generator defines
         int rowIdIndex = header.indexOf(EETDMLGenerator.ROW_ID_COLUMN);
 
-        Map<String, List<String>> originalByRowId = indexByRowId(originalImage, rowIdIndex);
-        Map<String, List<String>> transformedByRowId = indexByRowId(transformedImage, rowIdIndex);
+        Map<String, List<String>> originalByRowId = indexByRowId(images.original, rowIdIndex);
+        Map<String, List<String>> transformedByRowId = indexByRowId(images.transformed, rowIdIndex);
         Set<String> allRowIds = new TreeSet<>();
         allRowIds.addAll(originalByRowId.keySet());
         allRowIds.addAll(transformedByRowId.keySet());
 
         String nl = System.lineSeparator();
-        StringBuilder message = new StringBuilder()
-                .append("-- The original and transformed statements left the database in different states.").append(nl);
-        renderStatementLines(message, queries);
-        message.append("-- differing post-image rows (").append(String.join(", ", header)).append("):").append(nl);
+        sb.append("-- differing post-image rows (").append(String.join(", ", header)).append("):").append(nl);
         int shown = 0;
         for (String rowId : allRowIds) {
             List<String> originalRow = originalByRowId.get(rowId);
@@ -685,14 +717,13 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
                 continue;
             }
             if (shown == MAX_DIFF_ROWS_REPORTED) {
-                message.append("--   ... (further differences omitted)").append(nl);
+                sb.append("--   ... (further differences omitted)").append(nl);
                 break;
             }
-            message.append("--   original:    ").append(renderRow(originalRow)).append(nl);
-            message.append("--   transformed: ").append(renderRow(transformedRow)).append(nl);
+            sb.append("--   original:    ").append(renderRow(originalRow)).append(nl);
+            sb.append("--   transformed: ").append(renderRow(transformedRow)).append(nl);
             shown++;
         }
-        return message.toString();
     }
 
     // Pairs each assignment column with the correspondingly positioned (replayed) SET value expression. The values
