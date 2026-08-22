@@ -1,9 +1,10 @@
 package sqlancer.common.oracle;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.IntPredicate;
+import java.util.Set;
 
 import sqlancer.Randomly;
 import sqlancer.common.ast.newast.Expression;
@@ -37,9 +38,51 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
     private TransformationRecord lastRecord;
 
     private List<Application<E, T>> replayApplications; // non-null while replay() is re-applying a record
-    private IntPredicate replayEnabledSites;
+    private SiteDirectives replayDirectives;
     private int replayCursor;
     private int replaySiteCursor;
+
+    /**
+     * Per-site directives consulted during {@link #replay}, keyed by the record-local site index. Every combination of
+     * directives yields an expression that is semantically equivalent to the replayed one: a disabled site's rule is
+     * not applied at all; a constant condition renders a site's always-true (or always-false) condition as the literal
+     * constant of the same truth value; a copied dead branch replaces a site's generated dead-branch expression with a
+     * copy of the live expression (the {@code copy_expr} form of rules No. 5 and 6).
+     */
+    public interface SiteDirectives {
+
+        /**
+         * Whether the site's rule is applied at all.
+         *
+         * @param site
+         *            the record-local site index
+         *
+         * @return {@code true} if the site's rule is applied
+         */
+        boolean isEnabled(int site);
+
+        /**
+         * Whether the site's condition is rendered as a literal constant instead of the recorded
+         * {@code true_expr}/{@code false_expr} scaffolding (or, for rules No. 5 and 6, the recorded condition).
+         *
+         * @param site
+         *            the record-local site index
+         *
+         * @return {@code true} if the site's condition is rendered as a literal constant
+         */
+        boolean useConstantCondition(int site);
+
+        /**
+         * Whether the site's generated dead branch (rules No. 3 and 4 only) is replaced by a copy of the live
+         * expression.
+         *
+         * @param site
+         *            the record-local site index
+         *
+         * @return {@code true} if the site's dead branch is replaced by a copy of the live expression
+         */
+        boolean useCopiedDeadBranch(int site);
+    }
 
     /**
      * The decision made at one {@link #transformNode} call: which rule (if any) was applied at that node, together with
@@ -89,6 +132,26 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         public int getSiteCount() {
             return siteCount;
         }
+
+        /**
+         * The sites whose rule application embeds a generated dead-branch expression (rules No. 3 and 4 with an
+         * inferrable type), which a {@link #replay} may replace with a copy of the live expression.
+         *
+         * @return the record-local indices of the sites with a generated dead branch
+         */
+        public Set<Integer> getDeadBranchSites() {
+            Set<Integer> deadBranchSites = new HashSet<>();
+            int site = 0;
+            for (Application<?, ?> application : applications) {
+                if (application.rule != null) {
+                    if (application.deadBranch != null) {
+                        deadBranchSites.add(site);
+                    }
+                    site++;
+                }
+            }
+            return deadBranchSites;
+        }
     }
 
     // true_expr(p) = p OR (NOT p) OR (p IS NULL) -> always TRUE, for any predicate p
@@ -116,8 +179,9 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => false_expr OR expr
         RULE_1 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
-                return t.orExpr(t.falseExpr(application.auxiliary), expr);
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr,
+                    boolean constantCondition, boolean copiedDeadBranch) {
+                return t.orExpr(constantCondition ? t.falseConstant() : t.falseExpr(application.auxiliary), expr);
             }
 
             @Override
@@ -129,8 +193,9 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => true_expr AND expr
         RULE_2 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
-                return t.and(t.trueExpr(application.auxiliary), expr);
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr,
+                    boolean constantCondition, boolean copiedDeadBranch) {
+                return t.and(constantCondition ? t.trueConstant() : t.trueExpr(application.auxiliary), expr);
             }
 
             @Override
@@ -142,8 +207,10 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => CASE WHEN false_expr THEN rand_expr(type(expr)) ELSE expr END
         RULE_3 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
-                return t.caseWhen(t.falseExpr(application.auxiliary), t.deadBranch(application, expr), expr);
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr,
+                    boolean constantCondition, boolean copiedDeadBranch) {
+                return t.caseWhen(constantCondition ? t.falseConstant() : t.falseExpr(application.auxiliary),
+                        t.deadBranch(application, expr, copiedDeadBranch), expr);
             }
 
             @Override
@@ -159,8 +226,10 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => CASE WHEN true_expr THEN expr ELSE rand_expr(type(expr)) END
         RULE_4 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
-                return t.caseWhen(t.trueExpr(application.auxiliary), expr, t.deadBranch(application, expr));
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr,
+                    boolean constantCondition, boolean copiedDeadBranch) {
+                return t.caseWhen(constantCondition ? t.trueConstant() : t.trueExpr(application.auxiliary), expr,
+                        t.deadBranch(application, expr, copiedDeadBranch));
             }
 
             @Override
@@ -176,9 +245,10 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => CASE WHEN rand_expr(boolean) THEN copy(expr) ELSE expr END
         RULE_5 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr,
+                    boolean constantCondition, boolean copiedDeadBranch) {
                 // deep copy of expr is not needed, as the AST nodes are immutable anyway
-                return t.caseWhen(application.auxiliary, expr, expr);
+                return t.caseWhen(constantCondition ? t.trueConstant() : application.auxiliary, expr, expr);
             }
 
             @Override
@@ -189,9 +259,10 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         // expr => CASE WHEN rand_expr(boolean) THEN expr ELSE copy(expr) END
         RULE_6 {
             @Override
-            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr) {
+            <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr,
+                    boolean constantCondition, boolean copiedDeadBranch) {
                 // deep copy of expr is not needed, as the AST nodes are immutable anyway
-                return t.caseWhen(application.auxiliary, expr, expr);
+                return t.caseWhen(constantCondition ? t.trueConstant() : application.auxiliary, expr, expr);
             }
 
             @Override
@@ -202,7 +273,10 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
 
         /**
          * Applies this rule to {@code expr}, producing a semantically equivalent expression built from the auxiliary
-         * expressions {@code application} recorded for it.
+         * expressions {@code application} recorded for it. With {@code constantCondition}, the rule's condition is
+         * rendered as the literal constant of its (fixed) truth value: {@code true_expr}/{@code false_expr} are
+         * TRUE/FALSE for every embedded predicate, and the condition of rules No. 5 and 6 is irrelevant since both
+         * branches are identical, so this always preserves equivalence.
          *
          * @param <E>
          *            the DBMS-specific expression class
@@ -214,10 +288,15 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
          *            the recorded application of this rule, supplying its auxiliary expressions
          * @param expr
          *            the expression to transform
+         * @param constantCondition
+         *            whether the rule's condition is rendered as a literal constant
+         * @param copiedDeadBranch
+         *            whether the rule's generated dead branch (rules No. 3 and 4) is replaced by a copy of {@code expr}
          *
          * @return a semantically equivalent expression
          */
-        abstract <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr);
+        abstract <E extends Expression<?>, T> E apply(EETTransformer<E, T> t, Application<E, T> application, E expr,
+                boolean constantCondition, boolean copiedDeadBranch);
 
         /**
          * Whether this rule preserves {@code expr}'s value in the given context.
@@ -269,7 +348,7 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
         }
         Application<E, T> application = randomApplication(Randomly.fromList(applicableRules), expr);
         record(application);
-        return application.rule.apply(this, application, expr);
+        return application.rule.apply(this, application, expr, false, false);
     }
 
     /**
@@ -298,20 +377,23 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
 
     /**
      * The dead branch of an application of rule No. 3 or 4 around the live expression {@code expr}: the recorded random
-     * expression when its type still matches the type inferred for {@code expr}, and {@code expr} itself otherwise (the
-     * {@code copy_expr} degeneration, which trivially has the correct type). The types can stop matching during
-     * {@link #replay}: disabling transformation sites inside {@code expr} may change its inferred type, and reusing the
-     * recorded dead branch would then no longer be equivalence-preserving.
+     * expression when it is kept and its type still matches the type inferred for {@code expr}, and {@code expr} itself
+     * otherwise (the {@code copy_expr} degeneration, which trivially has the correct type). The types can stop matching
+     * during {@link #replay}: disabling transformation sites inside {@code expr} may change its inferred type, and
+     * reusing the recorded dead branch would then no longer be equivalence-preserving.
      *
      * @param application
      *            the application whose dead branch is built
      * @param expr
      *            the live expression the application wraps
+     * @param copiedDeadBranch
+     *            whether the recorded dead branch is discarded in favor of a copy of {@code expr}
      *
      * @return the dead-branch expression
      */
-    private E deadBranch(Application<E, T> application, E expr) {
-        if (application.deadBranch != null && Objects.equals(application.deadBranchType, inferType(expr))) {
+    private E deadBranch(Application<E, T> application, E expr, boolean copiedDeadBranch) {
+        if (!copiedDeadBranch && application.deadBranch != null
+                && Objects.equals(application.deadBranchType, inferType(expr))) {
             return application.deadBranch;
         }
         return expr;
@@ -352,11 +434,12 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
 
     /**
      * Re-applies a recorded transformation to {@code expr} (the same expression that was passed to the
-     * {@link #transform} call that produced {@code record}), keeping only the rule applications whose site index is
-     * accepted by {@code enabledSites}; a disabled application leaves its subexpression untransformed. Because every
-     * recorded rule application is individually equivalence-preserving, the returned expression is semantically
-     * equivalent to {@code expr} for any subset of enabled sites, which makes replay suitable for test-case reduction:
-     * transformations are undone one subset at a time while the transformed query remains equivalent to the original.
+     * {@link #transform} call that produced {@code record}), honoring the per-site {@code directives}: a disabled
+     * application leaves its subexpression untransformed, and an enabled one may have its condition rendered as a
+     * literal constant or its dead branch copied (see {@link SiteDirectives}). Because every recorded rule application
+     * is individually equivalence-preserving under every directive combination, the returned expression is semantically
+     * equivalent to {@code expr}, which makes replay suitable for test-case reduction: transformations are undone or
+     * simplified one step at a time while the transformed query remains equivalent to the original.
      *
      * <p>
      * Replay walks the tree through the same {@link #descend} calls as the recording run, so it relies on
@@ -369,19 +452,19 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      *            whether {@code expr} is evaluated purely for its truth value (must match the original call)
      * @param record
      *            the record produced by this transformer's {@link #transform} call on {@code expr}
-     * @param enabledSites
-     *            accepts the site indices ({@code 0} to {@code record.getSiteCount() - 1}) to keep applied
+     * @param directives
+     *            the per-site directives, consulted with site indices {@code 0} to {@code record.getSiteCount() - 1}
      *
      * @return the partially transformed expression
      */
     @SuppressWarnings("unchecked")
-    public E replay(E expr, boolean booleanContext, TransformationRecord record, IntPredicate enabledSites) {
+    public E replay(E expr, boolean booleanContext, TransformationRecord record, SiteDirectives directives) {
         replayApplications = new ArrayList<>();
         for (Application<?, ?> application : record.applications) {
             // safe: the record was produced by a transformer with the same type parameters
             replayApplications.add((Application<E, T>) application);
         }
-        replayEnabledSites = enabledSites;
+        replayDirectives = directives;
         replayCursor = 0;
         replaySiteCursor = 0;
         try {
@@ -392,7 +475,7 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
             return replayed;
         } finally {
             replayApplications = null;
-            replayEnabledSites = null;
+            replayDirectives = null;
         }
     }
 
@@ -422,8 +505,8 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
     }
 
     /**
-     * Consumes the next recorded decision and re-applies it to the rebuilt node, unless no rule was applied there or
-     * the application's site is disabled.
+     * Consumes the next recorded decision and re-applies it to the rebuilt node (honoring the site's directives),
+     * unless no rule was applied there or the application's site is disabled.
      *
      * @param descended
      *            the rebuilt node the decision applies to
@@ -439,10 +522,11 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
             return descended;
         }
         int site = replaySiteCursor++;
-        if (!replayEnabledSites.test(site)) {
+        if (!replayDirectives.isEnabled(site)) {
             return descended;
         }
-        return application.rule.apply(this, application, descended);
+        return application.rule.apply(this, application, descended, replayDirectives.useConstantCondition(site),
+                replayDirectives.useCopiedDeadBranch(site));
     }
 
     private void record(Application<E, T> application) {
@@ -525,6 +609,22 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
      * @return the {@code expr IS NOT NULL} expression
      */
     protected abstract E isNotNull(E expr);
+
+    /**
+     * Builds a constant-TRUE boolean expression (e.g. the literal {@code TRUE}). Only used when a {@link #replay}
+     * renders an always-true condition as a constant (see {@link SiteDirectives#useConstantCondition}).
+     *
+     * @return a constant-TRUE boolean expression
+     */
+    protected abstract E trueConstant();
+
+    /**
+     * Builds a constant-FALSE boolean expression (e.g. the literal {@code FALSE}). Only used when a {@link #replay}
+     * renders an always-false condition as a constant (see {@link SiteDirectives#useConstantCondition}).
+     *
+     * @return a constant-FALSE boolean expression
+     */
+    protected abstract E falseConstant();
 
     /**
      * Builds {@code CASE WHEN condition THEN thenExpr ELSE elseExpr END}.

@@ -144,6 +144,16 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, CastTyp
     }
 
     @Override
+    protected MySQLExpression trueConstant() {
+        return MySQLConstant.createTrue();
+    }
+
+    @Override
+    protected MySQLExpression falseConstant() {
+        return MySQLConstant.createFalse();
+    }
+
+    @Override
     protected MySQLExpression generateBooleanExpression() {
         return gen.generateBooleanExpression();
     }
