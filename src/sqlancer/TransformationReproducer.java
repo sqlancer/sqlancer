@@ -23,11 +23,28 @@ public interface TransformationReproducer<G extends GlobalState<?, ?, ?>> extend
     int getTransformationSiteCount();
 
     /**
-     * Re-renders the transformed query with only the given transformation sites applied. Later
-     * {@link #bugStillTriggers} calls and {@link #getBugInformation} use the re-rendered query.
+     * The transformation sites whose rule application embeds a generated dead-branch expression, which
+     * {@link #applyTransformationSites} may replace with a copy of the live expression.
+     *
+     * @return the indices of the sites with a generated dead branch
+     */
+    Set<Integer> getDeadBranchSites();
+
+    /**
+     * Re-renders the transformed query with only the given transformation sites applied, further simplified per site: a
+     * site in {@code constantConditionSites} renders its always-true (or always-false) condition as the literal
+     * constant of the same truth value, and a site in {@code copiedDeadBranchSites} replaces its generated dead branch
+     * with a copy of the live expression. Both simplifications preserve the equivalence of the transformed query, like
+     * disabling a site does. Later {@link #bugStillTriggers} calls and {@link #getBugInformation} use the re-rendered
+     * query.
      *
      * @param enabledSites
      *            the indices ({@code 0} to {@code getTransformationSiteCount() - 1}) of the sites to keep applied
+     * @param constantConditionSites
+     *            the indices of the enabled sites whose condition is rendered as a literal constant
+     * @param copiedDeadBranchSites
+     *            the indices of the enabled sites whose dead branch is replaced by a copy of the live expression
      */
-    void setEnabledTransformationSites(Set<Integer> enabledSites);
+    void applyTransformationSites(Set<Integer> enabledSites, Set<Integer> constantConditionSites,
+            Set<Integer> copiedDeadBranchSites);
 }
