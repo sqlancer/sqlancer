@@ -27,6 +27,7 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
     // store and allow filtering by function volatility classifications
     private final Map<String, Character> functionsAndTypes = new HashMap<>();
     private List<Character> allowedFunctionTypes = Arrays.asList(IMMUTABLE, STABLE, VOLATILE);
+    private int majorVersion;
 
     @Override
     public void setConnection(SQLConnection con) {
@@ -36,6 +37,7 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
             this.operators = getOperators(getConnection());
             this.collates = getCollnames(getConnection());
             this.tableAccessMethods = getTableAccessMethods(getConnection());
+            this.majorVersion = getMajorVersion(getConnection());
         } catch (SQLException e) {
             throw new AssertionError(e);
         }
@@ -93,6 +95,19 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
         return tableAccessMethods;
     }
 
+    private int getMajorVersion(SQLConnection con) throws SQLException {
+        try (Statement s = con.createStatement()) {
+            try (ResultSet rs = s.executeQuery("SHOW server_version_num;")) {
+                if (rs.next()) {
+                    // Server version returns a number like 130018 for 13.18
+                    // Divide by 10000 to get major version (13)
+                    return rs.getInt(1) / 10000;
+                }
+            }
+        }
+        return 0; // Default to 0 if version cannot be determined
+    }
+
     public List<String> getOperators() {
         return operators;
     }
@@ -148,6 +163,10 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
 
     public List<Character> getAllowedFunctionTypes() {
         return this.allowedFunctionTypes;
+    }
+
+    public int getMajorVersion() {
+        return majorVersion;
     }
 
 }
