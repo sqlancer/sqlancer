@@ -42,6 +42,7 @@ import sqlancer.postgres.ast.PostgresCollate;
 import sqlancer.postgres.ast.PostgresColumnValue;
 import sqlancer.postgres.ast.PostgresConcatOperation;
 import sqlancer.postgres.ast.PostgresConstant;
+import sqlancer.postgres.ast.PostgresCTE;
 import sqlancer.postgres.ast.PostgresExpression;
 import sqlancer.postgres.ast.PostgresFunction;
 import sqlancer.postgres.ast.PostgresFunction.PostgresFunctionWithResult;
@@ -68,6 +69,7 @@ import sqlancer.postgres.ast.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresWindowFunction;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowFrame;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowSpecification;
+import sqlancer.postgres.ast.PostgresWithClause;
 
 public class PostgresExpressionGenerator implements ExpressionGenerator<PostgresExpression>,
         NoRECGenerator<PostgresSelect, PostgresJoin, PostgresExpression, PostgresTable, PostgresColumn>,
@@ -971,5 +973,57 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             select.setLimitClause(PostgresConstant.createIntConstant((int) Math.abs(r.getInteger())));
         }
         return increase;
+    }
+
+    public static PostgresCTE generateCTE(PostgresGlobalState globalState, String cteName) {
+        PostgresTables tables = globalState.getSchema().getRandomTableNonEmptyTables();
+        PostgresSelect subquery = new PostgresSelect();
+        
+        // Generate a simple subquery for the CTE
+        List<PostgresExpression> columns = new ArrayList<>();
+        PostgresExpressionGenerator gen = new PostgresExpressionGenerator(globalState).setColumns(tables.getColumns());
+        
+        // Select 1-3 columns
+        int numColumns = Randomly.smallNumber() + 1;
+        for (int i = 0; i < numColumns; i++) {
+            columns.add(gen.generateExpression(0));
+        }
+        
+        subquery.setSelectType(SelectType.getRandom());
+        subquery.setFromList(tables.getTables().stream()
+                .map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
+                .collect(Collectors.toList()));
+        subquery.setFetchColumns(columns);
+        
+        // Optionally add WHERE clause
+        if (Randomly.getBoolean()) {
+            subquery.setWhereClause(gen.generateExpression(0, PostgresDataType.BOOLEAN));
+        }
+        
+        // Optionally add LIMIT
+        if (Randomly.getBoolean()) {
+            subquery.setLimitClause(PostgresConstant.createIntConstant(Randomly.getPositiveOrZeroNonCachedInteger()));
+        }
+        
+        return new PostgresCTE(cteName, subquery);
+    }
+
+    /**
+     * Generates a WITH clause containing 1-3 CTEs.
+     * 
+     * @param globalState the global state
+     * @return a PostgresWithClause instance
+     */
+    public static PostgresWithClause generateWithClause(PostgresGlobalState globalState) {
+        List<PostgresCTE> cteList = new ArrayList<>();
+        int numCTEs = Randomly.smallNumber() + 1; // 1-3 CTEs
+        
+        for (int i = 0; i < numCTEs; i++) {
+            String cteName = "cte_" + i;
+            PostgresCTE cte = generateCTE(globalState, cteName);
+            cteList.add(cte);
+        }
+        
+        return new PostgresWithClause(cteList);
     }
 }
