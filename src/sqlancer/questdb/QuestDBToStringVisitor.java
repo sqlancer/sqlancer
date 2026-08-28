@@ -13,8 +13,8 @@ public class QuestDBToStringVisitor extends NewToStringVisitor<QuestDBExpression
             visit((QuestDBConstant) expr);
         } else if (expr instanceof QuestDBSelect) {
             visit((QuestDBSelect) expr);
-        } else { // TODO: maybe implement QuestDBJoin
-            throw new AssertionError("Unknown class: " + expr.getClass());
+        } else { // QuestDB doesn't support JOINs, so no QuestDBJoin needed
+            throw new AssertionError("Unknown class: " + (expr != null ? expr.getClass() : "null"));
         }
     }
 
