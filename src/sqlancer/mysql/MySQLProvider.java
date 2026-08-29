@@ -139,7 +139,8 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
 
     @Override
     public void generateDatabase(MySQLGlobalState globalState) throws Exception {
-        while (globalState.getSchema().getDatabaseTables().size() < Randomly.getNotCachedInteger(1, 2)) {
+        // Randomly.getNotCachedInteger is upper-exclusive, so a range (1, 3) means 1 or 2 tables
+        while (globalState.getSchema().getDatabaseTables().size() < Randomly.getNotCachedInteger(1, 3)) {
             String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
             SQLQueryAdapter createTable = MySQLTableGenerator.generate(globalState, tableName);
             globalState.executeStatement(createTable);
