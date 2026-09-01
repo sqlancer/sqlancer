@@ -1,7 +1,20 @@
-[![Build Status](https://github.com/sqlancer/sqlancer/workflows/ci/badge.svg)](https://github.com/sqlancer/sqlancer/actions)
+[![Build Status](https://github.com/sqlancer/sqlancer/workflows/ci/badge.svg)](https://github.com/sqlancer/sqlancer/actions)  
+[![Maven Central](https://img.shields.io/maven-central/v/com.sqlancer/sqlancer)](https://search.maven.org/artifact/com.sqlancer/sqlancer)  
+[![Docker Pulls](https://img.shields.io/docker/pulls/mrigger/sqlancer)](https://hub.docker.com/r/mrigger/sqlancer)  
+[![License](https://img.shields.io/github/license/sqlancer/sqlancer)](LICENSE) 
 
 
-![SQLancer](media/logo/png/sqlancer_logo_logo_pos_500.png)
+![SQLancer Logo](media/logo/png/sqlancer_logo_logo_pos_500.png)
+
+---
+
+## 📑 Table of Contents
+- [Introduction](#sqlancer)
+- [Getting Started](#getting-started-video-guide)
+- [Using SQLancer](#using-sqlancer)
+- [Approaches and Papers](#approaches-and-papers)
+- [FAQ](#faq)
+- [Links](#links)
 
 SQLancer is a tool to automatically test Database Management Systems (DBMSs) in order to find bugs in their implementation. That is, it finds bugs in the code of the DBMS implementation, rather than in queries written by the user. SQLancer has found hundreds of bugs in mature and widely-known DBMSs.
 
