@@ -89,6 +89,7 @@ public final class YSQLErrors {
         errors.add("is of type boolean but expression is of type text");
         errors.add("a negative number raised to a non-integer power yields a complex result");
         errors.add("could not determine polymorphic type because input has type unknown");
+        errors.add("character number must be positive");
 
         errors.addAll(getToCharFunctionErrors());
         errors.addAll(getBitStringOperationErrors());
