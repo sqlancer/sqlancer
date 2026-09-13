@@ -82,6 +82,43 @@ public abstract class EETTransformer<E extends Expression<?>, T> {
          * @return {@code true} if the site's dead branch is replaced by a copy of the live expression
          */
         boolean useCopiedDeadBranch(int site);
+
+        /**
+         * Builds a record-local view of three global-index site sets: a record-local site {@code s} maps to the global
+         * index {@code offset + s}. This lets a reproducer whose transformed query is built from several records assign
+         * each record a contiguous block of global site indices and translate the global sets into the per-record
+         * directives {@link #replay} consults.
+         *
+         * @param enabledSites
+         *            the global indices of the enabled sites
+         * @param constantConditionSites
+         *            the global indices of the sites whose condition is rendered as a literal constant
+         * @param copiedDeadBranchSites
+         *            the global indices of the sites whose dead branch is replaced by a copy of the live expression
+         * @param offset
+         *            the global index of this record's first site
+         *
+         * @return the record-local directives view
+         */
+        static SiteDirectives forSites(Set<Integer> enabledSites, Set<Integer> constantConditionSites,
+                Set<Integer> copiedDeadBranchSites, int offset) {
+            return new SiteDirectives() {
+                @Override
+                public boolean isEnabled(int site) {
+                    return enabledSites.contains(offset + site);
+                }
+
+                @Override
+                public boolean useConstantCondition(int site) {
+                    return constantConditionSites.contains(offset + site);
+                }
+
+                @Override
+                public boolean useCopiedDeadBranch(int site) {
+                    return copiedDeadBranchSites.contains(offset + site);
+                }
+            };
+        }
     }
 
     /**
