@@ -662,8 +662,9 @@ public class YSQLExpressionGenerator implements ExpressionGenerator<YSQLExpressi
             if (Randomly.getBooleanWithSmallProbability()) {
                 select.setOrderByClauses(generateOrderBys());
             }
-            select.setWhereClause(whereCondition);
         }
+        // Both branches must filter with the predicate; the aggregate one would otherwise count every row.
+        select.setWhereClause(whereCondition);
 
         return select.asString();
     }
