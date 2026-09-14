@@ -15,6 +15,7 @@ import sqlancer.hsqldb.HSQLDBProvider;
 import sqlancer.hsqldb.HSQLDBSchema;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBColumn;
 import sqlancer.hsqldb.HSQLDBSchema.HSQLDBTable;
+import sqlancer.hsqldb.HSQLDBToStringVisitor;
 import sqlancer.hsqldb.ast.HSQLDBBinaryOperation;
 import sqlancer.hsqldb.ast.HSQLDBColumnReference;
 import sqlancer.hsqldb.ast.HSQLDBConstant;
@@ -285,7 +286,13 @@ public final class HSQLDBExpressionGenerator extends
 
     @Override
     public String generateUnoptimizedQueryString(HSQLDBSelect select, HSQLDBExpression whereCondition) {
-        HSQLDBColumn c = new HSQLDBColumn("COUNT(*) as count", null, null);
+        // The unoptimized query must evaluate the predicate per row in the projection rather than filter with it, so
+        // that summing the projection yields the row count the optimized query computes with its WHERE clause. A CASE
+        // expression is used because HSQLDB does not allow casting a BOOLEAN to an integer; its ELSE branch also
+        // covers the NULL (unknown) case, which the WHERE clause of the optimized query does not count either.
+        HSQLDBColumn c = new HSQLDBColumn(
+                "CASE WHEN " + HSQLDBToStringVisitor.asString(whereCondition) + " THEN 1 ELSE 0 END as count", null,
+                null);
         select.setFetchColumns(List.of(new HSQLDBColumnReference(c)));
         select.setWhereClause(null);
         return "SELECT SUM(count) FROM (" + select.asString() + ") as res";

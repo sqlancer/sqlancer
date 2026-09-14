@@ -542,12 +542,7 @@ public final class Main {
                     finalStatements.addAll(stateToRepro.getStatements());
                     finalStatements.addAll(oracleQueryStatements);
                     stateToRepro.setStatements(finalStatements);
-                    String bugInformation = reproducer.getBugInformation();
-                    if (bugInformation != null) {
-                        for (String line : bugInformation.split(System.lineSeparator())) {
-                            stateToRepro.logStatement(line);
-                        }
-                    }
+                    logBugInformation(reproducer.getBugInformation());
 
                     StateLogger reduceLogger = newGlobalState.getLogger();
                     if (reduceLogger.reduceFileWriter != null) {
@@ -560,7 +555,25 @@ public final class Main {
                     }
 
                     throw new AssertionError("Found a potential bug, please check reducer log for detail.");
+                } else if (reproducer != null) {
+                    // An oracle that supplies a reproducer does not propagate the AssertionError describing the bug it
+                    // found; it hands back the reproducer instead (see ProviderAdapter#generateAndTestDatabase). We
+                    // must report the bug here (throw AssertionError) after logging what the reproducer knows
+                    // about the bug.
+                    logBugInformation(reproducer.getBugInformation());
+                    throw new AssertionError("Found a potential bug, please check log for detail.");
                 }
+            }
+        }
+
+        // Appends the reproducer's account of the bug to the test case, one statement per line, so that it is logged
+        // after the statements that set the bug up.
+        private void logBugInformation(String bugInformation) {
+            if (bugInformation == null) {
+                return;
+            }
+            for (String line : bugInformation.split(System.lineSeparator())) {
+                stateToRepro.logStatement(line);
             }
         }
 

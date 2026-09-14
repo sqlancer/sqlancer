@@ -425,7 +425,6 @@ public class CockroachDBExpressionGenerator extends
     @Override
     public String generateOptimizedQueryString(CockroachDBSelect select, CockroachDBExpression whereCondition,
             boolean shouldUseAggregate) {
-        CockroachDBColumn c = new CockroachDBColumn("COUNT(*)", null, false, false);
         select.setWhereClause(whereCondition);
         if (shouldUseAggregate) {
             CockroachDBAggregate aggr = new CockroachDBAggregate(CockroachDBAggregateFunction.COUNT,
@@ -433,7 +432,10 @@ public class CockroachDBExpressionGenerator extends
                             new CockroachDBCompositeDataType(CockroachDBDataType.INT, 0), false, false))));
             select.setFetchColumns(List.of(aggr));
         } else {
-            select.setFetchColumns(List.of(new CockroachDBColumnReference(c)));
+            // The rows must be fetched rather than counted here: the oracle counts the rows this query returns, so
+            // projecting an aggregate would make it report one row whatever the predicate matches.
+            select.setFetchColumns(
+                    List.of(new CockroachDBColumnReference(new CockroachDBColumn("*", null, false, false))));
             if (Randomly.getBooleanWithRatherLowProbability()) {
                 select.setOrderByClauses(getOrderingTerms());
             }
