@@ -1,6 +1,6 @@
 package sqlancer.clickhouse.ast;
 
-import com.clickhouse.client.ClickHouseDataType;
+import com.clickhouse.data.ClickHouseDataType;
 
 import sqlancer.clickhouse.ClickHouseSchema.ClickHouseLancerDataType;
 
