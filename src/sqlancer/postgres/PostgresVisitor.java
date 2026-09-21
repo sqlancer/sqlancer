@@ -28,6 +28,7 @@ import sqlancer.postgres.ast.PostgresSimilarTo;
 import sqlancer.postgres.ast.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresWindowFunction;
 import sqlancer.postgres.gen.PostgresExpressionGenerator;
+import sqlancer.postgres.gen.PostgresRowGenerator;
 
 public interface PostgresVisitor {
 
@@ -75,6 +76,8 @@ public interface PostgresVisitor {
 
     void visit(PostgresWindowFunction windowFunction);
 
+    void visit(PostgresRowGenerator rowGenerator);
+
     default void visit(PostgresExpression expression) {
         if (expression instanceof PostgresConstant) {
             visit((PostgresConstant) expression);
@@ -116,6 +119,8 @@ public interface PostgresVisitor {
             visit((PostgresColumnReference) expression);
         } else if (expression instanceof PostgresTableReference) {
             visit((PostgresTableReference) expression);
+        } else if (expression instanceof PostgresRowGenerator) {
+            visit((PostgresRowGenerator) expression);
         } else if (expression instanceof PostgresWindowFunction) {
             visit((PostgresWindowFunction) expression);
         } else {
