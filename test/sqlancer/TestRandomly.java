@@ -195,17 +195,18 @@ public class TestRandomly {
     @Test
     public void testInteger() {
         Randomly r = new Randomly();
-        // TODO: we should throw an exception instead
         assertEquals(0, r.getInteger(0, 0));
         assertEquals(0, r.getInteger(0, 1));
+        assertThrows(Exception.class, () -> r.getInteger(5, 0));
     }
 
     @Test
     public void testLong() {
         Randomly r = new Randomly();
-        // TODO: we should throw an exception instead
+
         assertEquals(0, r.getLong(0, 0));
         assertEquals(0, r.getLong(0, 1));
+        assertThrows(Exception.class, () -> r.getLong(5, 0));
     }
 
     @Test
