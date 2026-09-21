@@ -7,9 +7,10 @@ import java.util.List;
 import sqlancer.OracleFactory;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.NoRECOracle;
-import sqlancer.common.oracle.TLPWhereOracle;
+import sqlancer.common.oracle.TLPWhereOracle2;
 import sqlancer.common.oracle.TestOracle;
 import sqlancer.common.query.ExpectedErrors;
+import sqlancer.duckdb.dialect.DuckDBDialect;
 import sqlancer.duckdb.gen.DuckDBExpressionGenerator;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningAggregateTester;
 import sqlancer.duckdb.test.DuckDBQueryPartitioningDistinctTester;
@@ -40,11 +41,11 @@ public enum DuckDBOracleFactory implements OracleFactory<DuckDBProvider.DuckDBGl
         @Override
         public TestOracle<DuckDBProvider.DuckDBGlobalState> create(DuckDBProvider.DuckDBGlobalState globalState)
                 throws SQLException {
-            DuckDBExpressionGenerator gen = new DuckDBExpressionGenerator(globalState);
+            DuckDBDialect dialect = new DuckDBDialect();
             ExpectedErrors expectedErrors = ExpectedErrors.newErrors().with(DuckDBErrors.getExpressionErrors())
                     .with(DuckDBErrors.getGroupByErrors()).withRegex(DuckDBErrors.getExpressionErrorsRegex()).build();
 
-            return new TLPWhereOracle<>(globalState, gen, expectedErrors);
+            return new TLPWhereOracle2<>(globalState, dialect, expectedErrors);
         }
     },
     GROUP_BY {
