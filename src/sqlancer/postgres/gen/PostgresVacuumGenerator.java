@@ -60,6 +60,7 @@ public final class PostgresVacuumGenerator {
                                  */
         errors.add("ERROR: ANALYZE option must be specified when a column list is provided");
         errors.add("VACUUM option DISABLE_PAGE_SKIPPING cannot be used with FULL");
+        errors.add("VACUUM FULL cannot be performed in parallel");
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
