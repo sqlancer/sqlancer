@@ -18,24 +18,76 @@ public final class PostgresVacuumGenerator {
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         PostgresTable table = globalState.getSchema().getRandomTable();
         StringBuilder sb = new StringBuilder("VACUUM ");
+
         if (Randomly.getBoolean()) {
-            // VACUUM [ ( { FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING } [,
-            // ...] ) ] [ table_name [ (column_name [, ...] ) ] ]
             sb.append("(");
-            for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
-                ArrayList<String> opts = new ArrayList<>(Arrays.asList("FULL", "FREEZE", "ANALYZE", "VERBOSE",
-                        "DISABLE_PAGE_SKIPPING", "SKIP_LOCKED", "INDEX_CLEANUP", "TRUNCATE"));
-                String option = Randomly.fromList(opts);
-                if (i != 0) {
+            java.util.LinkedHashSet<String> seen = new java.util.LinkedHashSet<>();
+            boolean sawFull = false;
+            boolean sawAnalyze = false;
+            boolean sawBuf = false;
+
+            int optsCount = Randomly.smallNumber() + 1;
+            for (int i = 0; i < optsCount; i++) {
+                // pool of options
+                String option = Randomly.fromList(new ArrayList<>(Arrays.asList("FULL", "FREEZE", "ANALYZE", "VERBOSE",
+                        "DISABLE_PAGE_SKIPPING", "SKIP_LOCKED", "INDEX_CLEANUP", "TRUNCATE", "BUFFER_USAGE_LIMIT")));
+
+                // skip duplicates
+                if (option.equals("BUFFER_USAGE_LIMIT") && sawBuf) {
+                    continue;
+                }
+                if (seen.contains(option) && !option.equals("INDEX_CLEANUP")) {
+                    continue;
+                }
+
+                // dependencies
+                if (option.equals("BUFFER_USAGE_LIMIT")) {
+                    sawBuf = true;
+                    if (sawFull && !sawAnalyze) {
+                        seen.add("ANALYZE");
+                        sawAnalyze = true;
+                    }
+                } else if (option.equals("FULL")) {
+                    sawFull = true;
+                    if (sawBuf && !sawAnalyze) {
+                        seen.add("ANALYZE");
+                        sawAnalyze = true;
+                    }
+                } else if (option.equals("ANALYZE")) {
+                    sawAnalyze = true;
+                }
+
+                seen.add(option);
+            }
+
+            // emit with arguments
+            boolean first = true;
+            for (String opt : seen) {
+                if (!first) {
                     sb.append(", ");
                 }
-                sb.append(option);
-                if (Randomly.getBoolean()) {
+                first = false;
+                sb.append(opt);
+                if (opt.equals("INDEX_CLEANUP")) {
+                    sb.append(" ").append(Randomly.fromOptions("AUTO", "ON", "OFF"));
+                } else if (opt.equals("BUFFER_USAGE_LIMIT")) {
                     sb.append(" ");
-                    sb.append(Randomly.fromOptions(1, 0));
+                    if (Randomly.getBoolean()) {
+                        // numeric kB: 0 or [128 .. 16777216]
+                        int val = Randomly.fromOptions(0, 128, 256, 512, 1024, 4096, 65536, 262144, 1048576, 16777216);
+                        sb.append(val);
+                    } else {
+                        // quoted with unit
+                        String unit = Randomly.fromOptions("kB", "MB", "GB");
+                        String size = unit.equals("kB") ? Randomly.fromOptions("128", "256", "512", "1024")
+                                : unit.equals("MB") ? Randomly.fromOptions("1", "8", "32", "64", "128", "512")
+                                        : /* GB */ Randomly.fromOptions("1", "2", "4", "8", "16");
+                        sb.append("'").append(size).append(unit.equals("kB") ? " kB" : unit).append("'");
+                    }
                 }
             }
             sb.append(")");
+
             if (Randomly.getBoolean()) {
                 addTableAndColumns(table, sb);
             }
@@ -45,21 +97,17 @@ public final class PostgresVacuumGenerator {
             if (Randomly.getBoolean()) {
                 sb.append(" ANALYZE");
                 addTableAndColumns(table, sb);
-            } else {
-                if (Randomly.getBoolean()) {
-                    sb.append(" ");
-                    sb.append(table.getName());
-                }
+            } else if (Randomly.getBoolean()) {
+                sb.append(" ").append(table.getName());
             }
         }
+
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("VACUUM cannot run inside a transaction block");
-        errors.add("deadlock"); /*
-                                 * "FULL" commented out due to https://www.postgresql.org/message-id/CA%2Bu7OA6pL%
-                                 * 2B7Xm_NXHLenxffe3tCr3gTamVdr7zPjcWqW0RFM-A%40mail.gmail.com
-                                 */
-        errors.add("ERROR: ANALYZE option must be specified when a column list is provided");
+        errors.add("deadlock");
+        errors.add("ANALYZE option must be specified when a column list is provided");
         errors.add("VACUUM option DISABLE_PAGE_SKIPPING cannot be used with FULL");
+        // The FULL+BUFFER_USAGE_LIMIT check is enforced before execution, so no need to expect it now.
         return new SQLQueryAdapter(sb.toString(), errors);
     }
 
