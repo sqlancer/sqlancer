@@ -18,7 +18,7 @@ public class TestTiDBQPG {
         assertEquals(0,
                 Main.executeMain(new String[] { "--random-seed", "0", "--timeout-seconds", TestConfig.SECONDS,
                         "--num-threads", "1", "--qpg-enable", "true", "--num-queries", TestConfig.NUM_QUERIES, "tidb",
-                        "--oracle", "QUERY_PARTITIONING" }));
+                        "--oracle", "QUERY_PARTITIONING", "--enable-tiflash", "false" }));
     }
 
 }
