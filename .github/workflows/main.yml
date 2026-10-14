@@ -117,6 +117,44 @@ jobs:
           docker stop clickhouse-server
           docker rm clickhouse-server
 
+  cloudberry:
+    name: DBMS Tests (Apache Cloudberry)
+    runs-on: ubuntu-22.04 # the release package is built for Ubuntu 22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Set up Apache Cloudberry
+        run: |
+          PKG=apache-cloudberry-db-incubating_2.1.0-1-ubuntu22.04_amd64.deb
+          wget -q https://github.com/apache/cloudberry/releases/download/2.1.0-incubating/$PKG https://github.com/apache/cloudberry/releases/download/2.1.0-incubating/$PKG.sha512
+          sha512sum -c $PKG.sha512
+          sudo apt-get update
+          sudo apt-get install -y ./$PKG
+          # gpdemo starts the segments over SSH to the local host
+          ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+          cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+          chmod 600 ~/.ssh/authorized_keys
+          ssh-keyscan -H localhost 127.0.0.1 $(hostname) >> ~/.ssh/known_hosts
+          sudo systemctl start ssh
+          source /usr/local/cloudberry-db/cloudberry-env.sh
+          mkdir ~/cloudberry && cd ~/cloudberry
+          PORT_BASE=7000 NUM_PRIMARY_MIRROR_PAIRS=3 WITH_MIRRORS=false gpdemo
+          source gpdemo-env.sh
+          # the tests connect as gpadmin over TCP
+          psql -d postgres -c "CREATE ROLE gpadmin SUPERUSER LOGIN;"
+          echo "host all all 127.0.0.1/32 trust" >> $COORDINATOR_DATA_DIRECTORY/pg_hba.conf
+          psql -d postgres -c "SELECT pg_reload_conf();"
+          createdb test
+      - name: Run Tests
+        run: CLOUDBERRY_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCloudberryNoREC test
+
   cockroachdb:
     name: DBMS Tests (CockroachDB)
     runs-on: ubuntu-latest
