@@ -25,6 +25,8 @@ public final class CloudberryCommon {
         errors.add("must be a subset of the PRIMARY KEY");
         errors.add("must be a subset of the UNIQUE");
         errors.add("distribution policy is not compatible with the table's PRIMARY KEY");
+        // Also raised for a UNIQUE index of an inheritance child, since the child follows the parent's policy.
+        errors.add("distribution policy is not compatible with UNIQUE index");
         errors.add("UNIQUE or PRIMARY KEY definitions are incompatible with each other");
         errors.add("Cannot parallelize an UPDATE statement that updates the distribution columns");
         errors.add("must contain all columns in the table's distribution key");
@@ -93,6 +95,17 @@ public final class CloudberryCommon {
         if (CloudberryBugs.bug2126) {
             errors.add("bogus index qualification");
             errors.add("btree index keys must be ordered by attribute");
+        }
+
+        // REINDEX DATABASE CONCURRENTLY fails on the aux table of a temporary PAX table with ON COMMIT DELETE ROWS,
+        // and the index it leaves behind makes later writes to that table fail.
+        if (CloudberryBugs.bugGlobalXminHigherThanTransactionXmin) {
+            errors.add("is higher than transaction xmin");
+        }
+
+        if (CloudberryBugs.bug2134) {
+            errors.add("already contains data");
+            errors.add("unexpected number of index of aux table");
         }
 
         // Exclusion constraints and foreign keys on distributed tables. An EXCLUDE constraint must also include the

@@ -153,7 +153,11 @@ jobs:
           psql -d postgres -c "SELECT pg_reload_conf();"
           createdb test
       - name: Run Tests
-        run: CLOUDBERRY_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCloudberryNoREC test
+        run: |
+          CLOUDBERRY_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCloudberryNoREC test
+          CLOUDBERRY_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCloudberryTLP test
+          CLOUDBERRY_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCloudberryPQS test
+          CLOUDBERRY_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestCloudberryDQP test
 
   cockroachdb:
     name: DBMS Tests (CockroachDB)
