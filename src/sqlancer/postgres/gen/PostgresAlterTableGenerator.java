@@ -346,6 +346,7 @@ public class PostgresAlterTableGenerator {
                 errors.add("is not marked NOT NULL");
                 errors.add("insufficient columns in PRIMARY KEY constraint definition");
                 errors.add("which is part of the partition key");
+                errors.add("USING INDEX is not supported on partitioned tables");
                 break;
             case VALIDATE_CONSTRAINT:
                 sb.append("VALIDATE CONSTRAINT asdf");
