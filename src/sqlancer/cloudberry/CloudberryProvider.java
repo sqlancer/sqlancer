@@ -14,12 +14,16 @@ import com.google.auto.service.AutoService;
 import sqlancer.AbstractAction;
 import sqlancer.DatabaseProvider;
 import sqlancer.IgnoreMeException;
+import sqlancer.OracleFactory;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.StatementExecutor;
 import sqlancer.cloudberry.gen.CloudberryCommon;
 import sqlancer.cloudberry.gen.CloudberryDiscardGenerator;
+import sqlancer.cloudberry.gen.CloudberryReindexGenerator;
+import sqlancer.cloudberry.gen.CloudberrySetGenerator;
 import sqlancer.cloudberry.gen.CloudberryTableGenerator;
+import sqlancer.cloudberry.gen.CloudberryVacuumGenerator;
 import sqlancer.common.DBMSCommon;
 import sqlancer.common.oracle.CompositeTestOracle;
 import sqlancer.common.oracle.TestOracle;
@@ -63,6 +67,12 @@ public class CloudberryProvider extends PostgresProvider {
     // would kill the thread, so retry that case a few times.
     @Override
     public SQLConnection createDatabase(PostgresGlobalState globalState) throws SQLException {
+        // The inherited createDatabase() checks the PostgreSQL --oracle option for PQS, so check
+        // --cloudberry-oracle here: PQS can only compute the expected values of some types.
+        if (((CloudberryOptions) globalState.getDbmsSpecificOptions()).cloudberryOracle
+                .contains(CloudberryOracleFactory.PQS)) {
+            generateOnlyKnown = true;
+        }
         for (int attempt = 1; attempt < CREATE_DATABASE_ATTEMPTS; attempt++) {
             try {
                 return super.createDatabase(globalState);
@@ -364,15 +374,27 @@ public class CloudberryProvider extends PostgresProvider {
     }
 
     @Override
-    protected TestOracle<PostgresGlobalState> getTestOracle(PostgresGlobalState globalState) throws SQLException {
-        List<TestOracle<PostgresGlobalState>> oracles = ((CloudberryOptions) globalState
-                .getDbmsSpecificOptions()).cloudberryOracle.stream().map(o -> {
-                    try {
-                        return o.create(globalState);
-                    } catch (Exception e) {
-                        throw new AssertionError(e);
-                    }
-                }).collect(Collectors.toList());
+    protected TestOracle<PostgresGlobalState> getTestOracle(PostgresGlobalState globalState) throws Exception {
+        List<CloudberryOracleFactory> factories = ((CloudberryOptions) globalState
+                .getDbmsSpecificOptions()).cloudberryOracle;
+        // Like ProviderAdapter.getTestOracle(), which this replaces: oracles such as PQS need every table to
+        // contain rows.
+        boolean requiresRows = factories.stream().anyMatch(OracleFactory::requiresAllTablesToContainRows)
+                || globalState.getOptions().testOnlyWithMoreThanZeroRows();
+        if (requiresRows && globalState.getSchema().containsTableWithZeroRows(globalState)) {
+            if (globalState.getOptions().enableQPG()) {
+                addRowsToAllTables(globalState);
+            } else {
+                throw new IgnoreMeException();
+            }
+        }
+        List<TestOracle<PostgresGlobalState>> oracles = factories.stream().map(o -> {
+            try {
+                return o.create(globalState);
+            } catch (Exception e) {
+                throw new AssertionError(e);
+            }
+        }).collect(Collectors.toList());
         return new CompositeTestOracle<PostgresGlobalState>(oracles, globalState);
     }
 
@@ -382,8 +404,8 @@ public class CloudberryProvider extends PostgresProvider {
         return errors;
     }
 
-    // Overridden solely to suppress one of the inherited actions (see mapCloudberryActions) and
-    // to replace the generator of another (see CloudberryAction). Otherwise identical to
+    // Overridden solely to suppress two of the inherited actions (see mapCloudberryActions) and
+    // to replace the generators of four others (see CloudberryAction). Otherwise identical to
     // PostgresProvider.prepareTables(); every other action's generator and frequency come straight
     // from PostgresProvider.Action / PostgresProvider.mapActions.
     @Override
@@ -402,6 +424,10 @@ public class CloudberryProvider extends PostgresProvider {
     }
 
     private static int mapCloudberryActions(PostgresGlobalState globalState, PostgresProvider.Action a) {
+        // A crash cannot be handled as an expected error, since it also breaks every concurrent session.
+        if (CloudberryBugs.bug2135 && a == PostgresProvider.Action.CREATE_STATISTICS) {
+            return 0;
+        }
         // CREATE VIEW: the inherited generator often emits DISTINCT ON or LIMIT without a matching
         // ORDER BY. On an MPP cluster rows arrive from the segments in varying order, so such a view
         // can return different rows on each evaluation, which breaks oracles that compare two
@@ -414,8 +440,8 @@ public class CloudberryProvider extends PostgresProvider {
     }
 
     /**
-     * A {@link PostgresProvider.Action} that runs the inherited generator, except for DISCARD, which runs
-     * {@link CloudberryDiscardGenerator} so that no {@code DISCARD ALL} is issued.
+     * A {@link PostgresProvider.Action} that runs the inherited generator, except for DISCARD, SET, VACUUM and REINDEX,
+     * which run the Cloudberry generators of the same name.
      */
     private static final class CloudberryAction implements AbstractAction<PostgresGlobalState> {
 
@@ -429,6 +455,15 @@ public class CloudberryProvider extends PostgresProvider {
         public Query<?> getQuery(PostgresGlobalState globalState) throws Exception {
             if (action == PostgresProvider.Action.DISCARD) {
                 return CloudberryDiscardGenerator.create(globalState);
+            }
+            if (action == PostgresProvider.Action.SET) {
+                return CloudberrySetGenerator.create(globalState);
+            }
+            if (action == PostgresProvider.Action.VACUUM) {
+                return CloudberryVacuumGenerator.create(globalState);
+            }
+            if (action == PostgresProvider.Action.REINDEX) {
+                return CloudberryReindexGenerator.create(globalState);
             }
             return action.getQuery(globalState);
         }
