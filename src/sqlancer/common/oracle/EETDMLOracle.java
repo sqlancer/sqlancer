@@ -77,6 +77,10 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
     private static final int MAX_DIFF_ROWS_REPORTED = 10; // max differing post-image rows displayed in report log
     private String generatedQueryString;
     private Reproducer<G> reproducer;
+    // Set once dropping the auxiliary row-identifier column fails with a tolerated error, e.g., when the DBMS has to
+    // rebuild the table to drop it (as MySQL does once a table runs out of instant row versions) and the rebuild fails.
+    // The column then stays in the schema, so every later comparison on this database is skipped.
+    private boolean rowIdColumnLeaked;
 
     // The SQL and metadata to run and observe one DML comparison, captured as strings so a reproducer can replay it
     // against a reduced database without the generator or live schema objects.
@@ -331,7 +335,7 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
     public void check() throws SQLException {
         reproducer = null;
         List<T> tables = state.getSchema().getDatabaseTables();
-        if (tables.isEmpty()) {
+        if (rowIdColumnLeaked || tables.isEmpty()) {
             throw new IgnoreMeException();
         }
         // A DML statement modifies a single table, so pick the one it targets and scope the generator to it. The
@@ -439,7 +443,9 @@ public class EETDMLOracle<E extends Expression<C>, S extends AbstractSchema<?, T
             List<List<String>> transformed = snapshotSide(globalState, queries.transformedStatement, queries);
             return new PostImages(original, transformed);
         } finally {
-            new SQLQueryAdapter(queries.dropRowIdColumn, errors, true).execute(globalState);
+            if (!new SQLQueryAdapter(queries.dropRowIdColumn, errors, true).execute(globalState)) {
+                rowIdColumnLeaked = true;
+            }
         }
     }
 
