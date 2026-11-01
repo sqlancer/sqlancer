@@ -57,6 +57,10 @@ public final class MySQLBugs {
     // and a constant GREATEST(854610024, 0.5) loses the fractional digits a non-constant one keeps.
     public static boolean bugNumericToTextAssignment = true;
 
+    // An index lookup on an integer column rounds a fractional key computed by a non-literal expression, e.g.,
+    // c0 = CAST(0.3 AS DOUBLE) and c0 IN (CAST(0.3 AS DOUBLE)) match c0 = 0.
+    public static boolean bugIndexLookupRounding = true;
+
     private MySQLBugs() {
     }
 
