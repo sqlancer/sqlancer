@@ -57,9 +57,7 @@ public final class SQLite3Errors {
         errors.add("JSON cannot hold BLOB values");
         errors.add("JSON path error");
         errors.add("bad JSON path");
-        errors.add("json_insert() needs an odd number of arguments");
         errors.add("json_object() labels must be TEXT");
-        errors.add("json_object() requires an even number of arguments");
         errors.add("argument of ntile must be a positive integer");
 
         // fts5 functions

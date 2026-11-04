@@ -900,6 +900,19 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
                 }
 
             },
+            // Standard SQL NULL-safe comparison operators (3.39.0)
+            IS_DISTINCT_FROM("IS DISTINCT FROM") {
+                @Override
+                SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, SQLite3CollateSequence collate) {
+                    return null;
+                }
+            },
+            IS_NOT_DISTINCT_FROM("IS NOT DISTINCT FROM") {
+                @Override
+                SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right, SQLite3CollateSequence collate) {
+                    return null;
+                }
+            },
             LIKE("LIKE") {
                 @Override
                 public boolean shouldApplyAffinity() {
@@ -1241,6 +1254,19 @@ public abstract class SQLite3Expression implements Expression<SQLite3Column> {
                     return applyIntOperation(left, right, (a, b) -> a | b);
                 }
 
+            },
+            // JSON extraction operators (3.38.0)
+            JSON_EXTRACT_JSON("->") {
+                @Override
+                SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+                    return null;
+                }
+            },
+            JSON_EXTRACT_VALUE("->>") {
+                @Override
+                SQLite3Constant apply(SQLite3Constant left, SQLite3Constant right) {
+                    return null;
+                }
             },
             AND("AND") {
 
