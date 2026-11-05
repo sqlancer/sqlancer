@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import sqlancer.common.oracle.EETTransformer;
+import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
+import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.ast.MySQLAggregate;
 import sqlancer.mysql.ast.MySQLBetweenOperation;
 import sqlancer.mysql.ast.MySQLBinaryComparisonOperation;
+import sqlancer.mysql.ast.MySQLBinaryComparisonOperation.BinaryComparisonOperator;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation;
 import sqlancer.mysql.ast.MySQLBinaryLogicalOperation.MySQLBinaryLogicalOperator;
 import sqlancer.mysql.ast.MySQLBinaryOperation;
@@ -58,8 +61,9 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, CastTyp
                     transformNode(op.getRight(), BOOLEAN, false), op.getOp());
         } else if (expr instanceof MySQLBinaryComparisonOperation) {
             MySQLBinaryComparisonOperation op = (MySQLBinaryComparisonOperation) expr;
-            return new MySQLBinaryComparisonOperation(transformNode(op.getLeft(), SCALAR, false),
-                    transformNode(op.getRight(), SCALAR, false), op.getOp());
+            boolean equality = op.getOp() == BinaryComparisonOperator.EQUALS;
+            return new MySQLBinaryComparisonOperation(transformEqualityOperand(op.getLeft(), op.getRight(), equality),
+                    transformEqualityOperand(op.getRight(), op.getLeft(), equality), op.getOp());
         } else if (expr instanceof MySQLBinaryOperation) {
             MySQLBinaryOperation op = (MySQLBinaryOperation) expr;
             return new MySQLBinaryOperation(transformNode(op.getLeft(), SCALAR, false),
@@ -82,9 +86,14 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, CastTyp
                     transformNode(op.getLeft(), SCALAR, false), transformNode(op.getRight(), SCALAR, false));
         } else if (expr instanceof MySQLInOperation) {
             MySQLInOperation op = (MySQLInOperation) expr;
-            List<MySQLExpression> listElements = op.getListElements().stream().map(e -> transformNode(e, SCALAR, false))
-                    .collect(Collectors.toList());
-            return new MySQLInOperation(transformNode(op.getExpr(), SCALAR, false), listElements, op.isTrue());
+            // MySQL rewrites a single-element IN to an equality.
+            boolean equality = op.isTrue() && op.getListElements().size() == 1;
+            MySQLExpression left = op.getExpr();
+            List<MySQLExpression> listElements = op.getListElements().stream()
+                    .map(e -> transformEqualityOperand(e, left, equality)).collect(Collectors.toList());
+            MySQLExpression otherOperand = equality ? op.getListElements().get(0) : null;
+            return new MySQLInOperation(transformEqualityOperand(left, otherOperand, equality), listElements,
+                    op.isTrue());
         } else if (expr instanceof MySQLComputableFunction) {
             MySQLComputableFunction op = (MySQLComputableFunction) expr;
             MySQLExpression[] args = op.getArguments();
@@ -97,6 +106,27 @@ public class MySQLEETTransformer extends EETTransformer<MySQLExpression, CastTyp
             return descendCase((MySQLCaseOperator) expr);
         }
         return expr;
+    }
+
+    /**
+     * Transforms one operand of a comparison.
+     *
+     * @param operand
+     *            the operand to transform
+     * @param otherOperand
+     *            the other operand of the comparison
+     * @param equality
+     *            whether the operands are compared for equality
+     *
+     * @return the transformed operand
+     */
+    private MySQLExpression transformEqualityOperand(MySQLExpression operand, MySQLExpression otherOperand,
+            boolean equality) {
+        if (MySQLBugs.bugIndexLookupRounding && equality && otherOperand instanceof MySQLColumnReference
+                && ((MySQLColumnReference) otherOperand).getColumn().getType() == MySQLDataType.INT) {
+            return operand;
+        }
+        return transformNode(operand, SCALAR, false);
     }
 
     private MySQLExpression descendCase(MySQLCaseOperator caseOp) {

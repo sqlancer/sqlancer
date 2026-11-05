@@ -21,6 +21,7 @@ import sqlancer.common.schema.AbstractTables;
 import sqlancer.mysql.MySQLBugs;
 import sqlancer.mysql.MySQLGlobalState;
 import sqlancer.mysql.MySQLSchema.MySQLColumn;
+import sqlancer.mysql.MySQLSchema.MySQLDataType;
 import sqlancer.mysql.MySQLSchema.MySQLRowValue;
 import sqlancer.mysql.MySQLSchema.MySQLTable;
 import sqlancer.mysql.MySQLVisitor;
@@ -110,7 +111,11 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
             MySQLExpression expr = generateExpression(depth + 1);
             List<MySQLExpression> rightList = new ArrayList<>();
             for (int i = 0; i < 1 + Randomly.smallNumber(); i++) {
-                rightList.add(generateExpression(depth + 1));
+                MySQLExpression element = generateExpression(depth + 1);
+                if (MySQLBugs.bugInNullList && element instanceof MySQLConstant && ((MySQLConstant) element).isNull()) {
+                    throw new IgnoreMeException();
+                }
+                rightList.add(element);
             }
             return new MySQLInOperation(expr, rightList, Randomly.getBoolean());
         case BINARY_OPERATION:
@@ -147,6 +152,9 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
 
     private MySQLExpression getComputableFunction(int depth) {
         MySQLFunction func = MySQLFunction.getRandomFunction();
+        if (MySQLBugs.bug120710 && func == MySQLFunction.IFNULL) {
+            throw new IgnoreMeException();
+        }
         int nrArgs = func.getNrArgs();
         if (func.isVariadic()) {
             nrArgs += Randomly.smallNumber();
@@ -264,7 +272,7 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
             // As with the normal UPDATE workload, the value is an arbitrary expression (not type-matched to the
             // column);
             // any resulting type/range error is on the oracle's expected-error allow-list.
-            assignments.add(new AbstractMap.SimpleEntry<>(column, generateExpression()));
+            assignments.add(new AbstractMap.SimpleEntry<>(column, generateAssignedValue(column)));
         }
         return assignments;
     }
@@ -274,7 +282,16 @@ public class MySQLExpressionGenerator extends UntypedExpressionGenerator<MySQLEx
         // One value per content column, in schema order (aligned with the INSERT column list). As with the normal
         // INSERT workload, each value is an arbitrary expression (not type-matched to the column); any resulting
         // type/range/constraint error is on the oracle's expected-error allow-list.
-        return columns.stream().map(c -> generateExpression()).collect(Collectors.toList());
+        return columns.stream().map(this::generateAssignedValue).collect(Collectors.toList());
+    }
+
+    private MySQLExpression generateAssignedValue(MySQLColumn column) {
+        MySQLExpression value = generateExpression();
+        if (MySQLBugs.bugNumericToTextAssignment && column.getType() == MySQLDataType.VARCHAR) {
+            // Convert explicitly, so the stored string does not depend on MySQL's implicit numeric-to-text conversion
+            return new MySQLCastOperation(value, MySQLCastOperation.CastType.CHAR);
+        }
+        return value;
     }
 
     @Override

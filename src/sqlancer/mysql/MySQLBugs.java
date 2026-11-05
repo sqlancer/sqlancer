@@ -34,7 +34,9 @@ public final class MySQLBugs {
     public static boolean bug114534 = true;
 
     // https://bugs.mysql.com/bug.php?id=120710
-    // Inserting a NULL and a value which rounds to 0 into a DECIMAL column causes result set mismatch.
+    // Inserting a NULL and a value which rounds to 0 into a DECIMAL column causes result set mismatch. Relatedly, once
+    // IFNULL(NULL, c0) on a DECIMAL column evaluates to NULL for one row, it stays NULL for all later rows when used as
+    // a condition.
     public static boolean bug120710 = true;
 
     // https://bugs.mysql.com/bug.php?id=120711
@@ -45,6 +47,19 @@ public final class MySQLBugs {
     // https://bugs.mysql.com/bug.php?id=120712
     // Creating an index in between two NULL inserts causes inconsistent CERT result.
     public static boolean bug120712 = true;
+
+    // An IN list holding a literal NULL rounds its DOUBLE and string elements to integers when the left operand is an
+    // integer expression, e.g., 0 IN (NULL, 0.29e0) evaluates to 1.
+    public static boolean bugInNullList = true;
+
+    // Assigning a numeric value to a text column stores a string that depends on how the value is computed rather than
+    // on its type and value: a FLOAT column stores as 1836270000 but CASE WHEN 1 THEN c0 ELSE c0 END as 1836267264,
+    // and a constant GREATEST(854610024, 0.5) loses the fractional digits a non-constant one keeps.
+    public static boolean bugNumericToTextAssignment = true;
+
+    // An index lookup on an integer column rounds a fractional key computed by a non-literal expression, e.g.,
+    // c0 = CAST(0.3 AS DOUBLE) and c0 IN (CAST(0.3 AS DOUBLE)) match c0 = 0.
+    public static boolean bugIndexLookupRounding = true;
 
     private MySQLBugs() {
     }
