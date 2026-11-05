@@ -156,6 +156,7 @@ public final class SQLite3Errors {
         errors.add("[SQLITE_CONSTRAINT_CHECK]");
         errors.add("[SQLITE_CONSTRAINT_PRIMARYKEY]");
         errors.add("[SQLITE_CONSTRAINT]");
+        errors.add("[SQLITE_CONSTRAINT_FOREIGNKEY]");
         errors.add("[SQLITE_CONSTRAINT_NOTNULL]");
         errors.add("[SQLITE_CONSTRAINT_UNIQUE]");
         errors.add("cannot INSERT into generated column"); // TODO: filter out generated columns

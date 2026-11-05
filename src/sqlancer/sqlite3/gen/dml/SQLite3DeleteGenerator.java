@@ -23,7 +23,10 @@ public final class SQLite3DeleteGenerator extends AbstractDeleteGenerator {
     }
 
     public static SQLQueryAdapter deleteContent(SQLite3GlobalState globalState) {
-        SQLite3Table table = globalState.getSchema().getRandomTable(t -> !t.isView() && !t.isReadOnly());
+        // QPG mutations can run after a schema-changing statement removed all
+        // writable tables. Bail out cleanly in that state instead of calling
+        // Randomly.fromList on an empty list.
+        SQLite3Table table = globalState.getSchema().getRandomTableOrBailout(t -> !t.isView() && !t.isReadOnly());
         return deleteContent(globalState, table);
     }
 
