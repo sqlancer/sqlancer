@@ -28,6 +28,12 @@ public final class PostgresRandomQueryGenerator {
             columns.add(gen.generateExpression(0));
         }
         PostgresSelect select = new PostgresSelect();
+        
+        // Optionally add CTEs (WITH clause)
+        if (Randomly.getBooleanWithRatherLowProbability()) {
+            select.setWithClause(PostgresExpressionGenerator.generateWithClause(globalState));
+        }
+        
         select.setSelectType(SelectType.getRandom());
         if (select.getSelectOption() == SelectType.DISTINCT && Randomly.getBoolean()) {
             select.setDistinctOnClause(gen.generateExpression(0));
