@@ -142,7 +142,14 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             throw new IgnoreMeException();
         }
         PostgresFunctionWithUnknownResult randomFunction = Randomly.fromList(supportedFunctions);
-        return new PostgresFunction(randomFunction, type, randomFunction.getArguments(type, this, depth + 1));
+        PostgresExpression[] args = randomFunction.getArguments(type, this, depth + 1);
+
+        // Create the appropriate function type based on the function name
+        if (randomFunction == PostgresFunctionWithUnknownResult.EXTRACT) {
+            return new PostgresFunction.PostgresExtractFunction(randomFunction, type, args);
+        } else {
+            return new PostgresFunction(randomFunction, type, args);
+        }
     }
 
     private PostgresExpression generateFunctionWithKnownResult(int depth, PostgresDataType type) {
@@ -336,6 +343,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             case FLOAT:
             case MONEY:
             case INET:
+            case DATE:
+            case TIMESTAMP:
+            case TIME:
                 return generateConstant(r, dataType);
             case BIT:
                 return generateBitExpression(depth);
@@ -357,6 +367,9 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         case RANGE:
         case REAL:
         case INET:
+        case TIME:
+        case DATE:
+        case TIMESTAMP:
             return PostgresCompoundDataType.create(type);
         case TEXT: // TODO
         case BIT:
@@ -371,7 +384,6 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
         default:
             throw new AssertionError(type);
         }
-
     }
 
     private enum RangeExpression {
@@ -484,8 +496,17 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
     }
 
     private PostgresExpression generateConcat(int depth) {
-        PostgresExpression left = generateExpression(depth + 1, PostgresDataType.TEXT);
-        PostgresExpression right = generateExpression(depth + 1);
+        // Don't allow temporal types in concatenation to avoid invalid time zone strings
+        List<PostgresDataType> allowedTypes = Arrays.asList(PostgresDataType.TEXT, PostgresDataType.INT,
+                PostgresDataType.BOOLEAN);
+        PostgresDataType leftType = PostgresDataType.TEXT;
+        PostgresDataType rightType = PostgresDataType.TEXT;
+        if (!PostgresProvider.generateOnlyKnown) {
+            leftType = Randomly.fromList(allowedTypes);
+            rightType = Randomly.fromList(allowedTypes);
+        }
+        PostgresExpression left = generateExpression(depth + 1, leftType);
+        PostgresExpression right = generateExpression(depth + 1, rightType);
         return new PostgresConcatOperation(left, right);
     }
 
@@ -596,6 +617,31 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
             return PostgresConstant.createInetConstant(getRandomInet(r));
         case BIT:
             return PostgresConstant.createBitConstant(r.getInteger());
+        case DATE:
+            return PostgresConstant.createTextConstant(String.format("%d-%02d-%02d", r.getInteger(1000, 2100), // year
+                    r.getInteger(1, 12), // month
+                    r.getInteger(1, 28) // day - using 28 to avoid invalid dates
+            ));
+        case TIMESTAMP:
+            return PostgresConstant
+                    .createTextConstant(String.format("%d-%02d-%02d %02d:%02d:%02d", r.getInteger(1000, 2100), // year
+                            r.getInteger(1, 12), // month
+                            r.getInteger(1, 28), // day
+                            r.getInteger(0, 23), // hour
+                            r.getInteger(0, 59), // minute
+                            r.getInteger(0, 59) // second
+                    ));
+        case TIME:
+            // Generate valid timezone offset in format +/-HH:MM
+            String sign = Randomly.fromOptions("+", "-");
+            int hours = r.getInteger(0, 12); // Valid timezone hours: 0-12
+            int minutes = r.getInteger(0, 59);
+            String tz = String.format("%s%02d:%02d", sign, hours, minutes);
+            return PostgresConstant.createTextConstant(String.format("%02d:%02d:%02d%s", r.getInteger(0, 23), // hour
+                    r.getInteger(0, 59), // minute
+                    r.getInteger(0, 59), // second
+                    tz // time zone
+            ));
         default:
             throw new AssertionError(type);
         }
