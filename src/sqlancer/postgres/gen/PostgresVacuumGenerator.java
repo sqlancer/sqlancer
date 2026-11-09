@@ -24,15 +24,20 @@ public final class PostgresVacuumGenerator {
             sb.append("(");
             for (int i = 0; i < Randomly.smallNumber() + 1; i++) {
                 ArrayList<String> opts = new ArrayList<>(Arrays.asList("FULL", "FREEZE", "ANALYZE", "VERBOSE",
-                        "DISABLE_PAGE_SKIPPING", "SKIP_LOCKED", "INDEX_CLEANUP", "TRUNCATE"));
+                        "DISABLE_PAGE_SKIPPING", "SKIP_LOCKED", "INDEX_CLEANUP", "TRUNCATE", "PARALLEL"));
                 String option = Randomly.fromList(opts);
                 if (i != 0) {
                     sb.append(", ");
                 }
                 sb.append(option);
-                if (Randomly.getBoolean()) {
+                if (option.equals("PARALLEL")) {
                     sb.append(" ");
-                    sb.append(Randomly.fromOptions(1, 0));
+                    sb.append(Randomly.smallNumber());
+                } else {
+                    if (Randomly.getBoolean()) {
+                        sb.append(" ");
+                        sb.append(Randomly.fromOptions(1, 0));
+                    }
                 }
             }
             sb.append(")");
