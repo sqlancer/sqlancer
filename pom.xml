@@ -333,9 +333,10 @@
       <version>2.0.6</version>
     </dependency>
     <dependency>
-      <groupId>ru.yandex.clickhouse</groupId>
+      <groupId>com.clickhouse</groupId>
       <artifactId>clickhouse-jdbc</artifactId>
-      <version>0.3.2</version>
+      <version>0.9.6</version>
+      <classifier>all</classifier>
     </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
