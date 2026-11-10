@@ -42,6 +42,10 @@ public class SQLancerResultSet implements Closeable {
         }
     }
 
+    public Object getObject(int i) throws SQLException {
+        return rs.getObject(i);
+    }
+
     public String getString(String colName) throws SQLException {
         return rs.getString(colName);
     }
