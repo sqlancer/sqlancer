@@ -119,6 +119,9 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
                 try {
                     executeEpilogue(q, success, timer);
                 } catch (Exception e) {
+                    if (e instanceof IgnoreMeException) {
+                        throw (IgnoreMeException) e;
+                    }
                     throw new AssertionError(e);
                 }
             });
@@ -131,6 +134,10 @@ public abstract class GlobalState<O extends DBMSSpecificOptions<?>, S extends Ab
             try {
                 updateSchema();
             } catch (Exception e) {
+                if (e instanceof IgnoreMeException) {
+                    // a provider's connection skipping the database, as VoltDB's does after a node failure
+                    throw (IgnoreMeException) e;
+                }
                 throw new AssertionError(e.getMessage());
             }
         }
