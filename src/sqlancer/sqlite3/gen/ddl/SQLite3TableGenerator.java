@@ -66,6 +66,10 @@ public class SQLite3TableGenerator {
         errors.add("parser stack overflow");
         errors.add("malformed JSON");
         errors.add("JSON cannot hold BLOB values");
+        // Since SQLite 3.44.0 (check-in af527231c, 2023-10-13) CREATE TABLE itself fails on generated columns that
+        // depend on each other; before, the table was created and the loop surfaced on first use, which is all
+        // checkTablesForGeneratedColumnLoops in SQLite3Provider expects.
+        errors.add("generated column loop");
         return new SQLQueryAdapter(sqLite3TableGenerator.sb.toString(), errors, true);
     }
 
