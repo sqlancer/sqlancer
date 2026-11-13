@@ -510,6 +510,8 @@ jobs:
           MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLTLP
           MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLCERT
           MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLDQE
+          MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLEET
+          MYSQL_AVAILABLE=true mvn -Djacoco.skip=true test -Dtest=TestMySQLEETDML
 
   oceanbase:
     name: DBMS Tests (OceanBase)
