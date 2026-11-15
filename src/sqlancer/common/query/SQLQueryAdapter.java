@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import sqlancer.GlobalState;
+import sqlancer.IgnoreMeException;
 import sqlancer.Main;
 import sqlancer.SQLConnection;
 
@@ -153,6 +154,10 @@ public class SQLQueryAdapter extends Query<SQLConnection> implements Serializabl
     }
 
     public void checkException(Exception e) throws AssertionError {
+        if (e instanceof IgnoreMeException) {
+            // a provider's connection skipping the statement, as VoltDB's does after a node failure
+            throw (IgnoreMeException) e;
+        }
         Throwable ex = e;
 
         while (ex != null) {

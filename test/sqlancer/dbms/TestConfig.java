@@ -19,6 +19,7 @@ public class TestConfig {
     public static final String POSTGRES_ENV = "POSTGRES_AVAILABLE";
     public static final String PRESTO_ENV = "PRESTO_AVAILABLE";
     public static final String TIDB_ENV = "TIDB_AVAILABLE";
+    public static final String VOLTDB_ENV = "VOLTDB_AVAILABLE";
     public static final String YUGABYTE_ENV = "YUGABYTE_AVAILABLE";
 
     public static boolean isEnvironmentTrue(String key) {
