@@ -352,7 +352,7 @@ public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Tab
         try (Statement s2 = con.createStatement()) {
             String tableInfoStr = String.format("PRAGMA table_xinfo(%s)", tableName);
             try (ResultSet columnRs = s2.executeQuery(tableInfoStr)) {
-                String[] columnCreates = sql.split(",");
+                List<String> columnCreates = splitColumnDefinitions(sql);
                 int columnCreateIndex = 0;
                 while (columnRs.next()) {
                     String columnName = columnRs.getString("name");
@@ -369,7 +369,14 @@ public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Tab
                     SQLite3DataType columnType = getColumnType(columnTypeString);
                     SQLite3CollateSequence collate;
                     if (!isDbStatsTable) {
-                        String columnSql = columnCreates[columnCreateIndex++];
+                        // The CREATE TABLE text may contain commas inside
+                        // expressions, strings, or nested constraints. A
+                        // plain String.split(",") desynchronizes this index
+                        // from PRAGMA table_xinfo() and crashes with
+                        // ArrayIndexOutOfBoundsException. Use the
+                        // top-level column definitions instead.
+                        String columnSql = columnCreateIndex < columnCreates.size()
+                                ? columnCreates.get(columnCreateIndex++) : "";
                         collate = getCollate(columnSql, isView);
                     } else {
                         collate = SQLite3CollateSequence.BINARY;
@@ -387,6 +394,57 @@ public class SQLite3Schema extends AbstractSchema<SQLite3GlobalState, SQLite3Tab
         }
         assert !databaseColumns.isEmpty() : tableName;
         return databaseColumns;
+    }
+
+    /**
+     * Splits a CREATE TABLE statement at commas separating top-level column definitions. Commas in expressions, nested
+     * constraints, and quoted strings are not separators.
+     *
+     * @param sql
+     *            the CREATE TABLE statement
+     *
+     * @return the top-level definitions inside the statement's outer parentheses
+     */
+    static List<String> splitColumnDefinitions(String sql) {
+        List<String> definitions = new ArrayList<>();
+        int opening = sql.indexOf('(');
+        if (opening < 0) {
+            return definitions;
+        }
+        int depth = 0;
+        int start = opening + 1;
+        char quote = 0;
+        for (int i = opening; i < sql.length(); i++) {
+            char c = sql.charAt(i);
+            if (quote != 0) {
+                if (c == quote) {
+                    if (i + 1 < sql.length() && sql.charAt(i + 1) == quote) {
+                        i++;
+                    } else {
+                        quote = 0;
+                    }
+                }
+                continue;
+            }
+            if (c == '\'' || c == '"' || c == '`' || c == '[') {
+                quote = c == '[' ? ']' : c;
+            } else if (c == '(') {
+                depth++;
+            } else if (c == ')') {
+                depth--;
+                if (depth == 0) {
+                    String definition = sql.substring(start, i).trim();
+                    if (!definition.isEmpty()) {
+                        definitions.add(definition);
+                    }
+                    break;
+                }
+            } else if (c == ',' && depth == 1) {
+                definitions.add(sql.substring(start, i).trim());
+                start = i + 1;
+            }
+        }
+        return definitions;
     }
 
     private static SQLite3CollateSequence getCollate(String sql, boolean isView) {
