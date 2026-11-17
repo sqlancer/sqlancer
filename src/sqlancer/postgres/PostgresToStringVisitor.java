@@ -34,6 +34,7 @@ import sqlancer.postgres.ast.PostgresTableReference;
 import sqlancer.postgres.ast.PostgresWindowFunction;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowFrame;
 import sqlancer.postgres.ast.PostgresWindowFunction.WindowSpecification;
+import sqlancer.postgres.gen.PostgresRowGenerator;
 
 public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpression> implements PostgresVisitor {
 
@@ -397,6 +398,19 @@ public final class PostgresToStringVisitor extends ToStringVisitor<PostgresExpre
             visit(frame.getEndExpr());
         }
 
+        sb.append(")");
+    }
+
+    @Override
+    public void visit(PostgresRowGenerator rowGenerator) {
+        sb.append("ROW(");
+        List<PostgresExpression> expressions = rowGenerator.getExpressions();
+        for (int i = 0; i < expressions.size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            visit(expressions.get(i));
+        }
         sb.append(")");
     }
 }
