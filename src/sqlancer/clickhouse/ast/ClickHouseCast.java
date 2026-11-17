@@ -6,7 +6,7 @@ import java.sql.Statement;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import com.clickhouse.client.ClickHouseDataType;
+import com.clickhouse.data.ClickHouseDataType;
 
 import sqlancer.clickhouse.ast.constant.ClickHouseCreateConstant;
 
