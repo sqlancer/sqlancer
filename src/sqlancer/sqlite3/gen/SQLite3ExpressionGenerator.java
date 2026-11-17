@@ -350,12 +350,11 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
 
     private SQLite3Expression getAggregate(int depth, SQLite3AggregateFunction random) {
         int nrArgs;
-        // if (random == SQLite3AggregateFunction.ZIPFILE) {
-        // nrArgs = Randomly.fromOptions(2, 4);
-        // } else {
-        // nrArgs = 1;
-        // }
-        nrArgs = 1;
+        if (random == SQLite3AggregateFunction.STRING_AGG) {
+            nrArgs = 2; // string_agg(value, separator) requires exactly 2 args
+        } else {
+            nrArgs = 1;
+        }
         return new SQLite3Aggregate(getRandomExpressions(nrArgs, depth + 1), random);
     }
 
@@ -472,16 +471,105 @@ public class SQLite3ExpressionGenerator implements ExpressionGenerator<SQLite3Ex
         JSON("json", 1), //
         JSON_ARRAY("json_array", 2, Attribute.VARIADIC), JSON_ARRAY_LENGTH("json_array_length", 1), //
         JSON_ARRAY_LENGTH2("json_array_length", 2), //
-        JSON_EXTRACT("json_extract", 2, Attribute.VARIADIC), JSON_INSERT("json_insert", 3, Attribute.VARIADIC),
-        JSON_OBJECT("json_object", 2, Attribute.VARIADIC), JSON_PATCH("json_patch", 2),
-        JSON_REMOVE("json_remove", 2, Attribute.VARIADIC), JSON_TYPE("json_type", 1), //
+        JSON_EXTRACT("json_extract", 2, Attribute.VARIADIC),
+        // json_insert/set/replace need odd total arg count: json + (path,value)+ pairs
+        JSON_INSERT("json_insert", 3, Attribute.VARIADIC) {
+            @Override
+            List<SQLite3Expression> generateArguments(int nrArgs, int depth, SQLite3ExpressionGenerator gen) {
+                return super.generateArguments(nrArgs % 2 == 0 ? nrArgs - 1 : nrArgs, depth, gen);
+            }
+        },
+        // json_object needs even arg count: (key,value)+ pairs
+        JSON_OBJECT("json_object", 2, Attribute.VARIADIC) {
+            @Override
+            List<SQLite3Expression> generateArguments(int nrArgs, int depth, SQLite3ExpressionGenerator gen) {
+                return super.generateArguments(nrArgs % 2 != 0 ? nrArgs - 1 : nrArgs, depth, gen);
+            }
+        },
+        JSON_PATCH("json_patch", 2), JSON_REMOVE("json_remove", 2, Attribute.VARIADIC), JSON_TYPE("json_type", 1), //
         JSON_VALID("json_valid", 1), //
         JSON_QUOTE("json_quote", 1), //
 
         RTREENODE("rtreenode", 2),
 
         // FTS
-        HIGHLIGHT("highlight", 4);
+        HIGHLIGHT("highlight", 4),
+
+        // math functions (3.35.0, always available in the Xerial JDBC driver)
+        ACOS("acos", 1), ACOSH("acosh", 1), ASIN("asin", 1), ASINH("asinh", 1), //
+        ATAN("atan", 1), ATAN2("atan2", 2), ATANH("atanh", 1), //
+        CEIL("ceil", 1), CEILING("ceiling", 1), COS("cos", 1), COSH("cosh", 1), //
+        DEGREES("degrees", 1), EXP("exp", 1), FLOOR("floor", 1), //
+        LN("ln", 1), LOG("log", 1), LOG2("log2", 1), LOG10("log10", 1), //
+        MOD("mod", 2), PI("pi", 0), POW("pow", 2), POWER("power", 2), //
+        RADIANS("radians", 1), SIN("sin", 1), SINH("sinh", 1), SQRT("sqrt", 1), //
+        TAN("tan", 1), TANH("tanh", 1), TRUNC("trunc", 1), //
+
+        // format() - alias for printf() (3.38.0)
+        FORMAT("format", 1, Attribute.VARIADIC), //
+        // unixepoch() date function (3.38.0)
+        UNIXEPOCH("unixepoch", 0, Attribute.NONDETERMINISTIC, Attribute.VARIADIC), //
+
+        // unhex() (3.41.0)
+        UNHEX("unhex", 1), UNHEX2("unhex", 2), //
+
+        // octet_length() and timediff() (3.43.0)
+        OCTET_LENGTH("octet_length", 1), TIMEDIFF("timediff", 2), //
+
+        // concat() and concat_ws() (3.44.0)
+        CONCAT("concat", 2, Attribute.VARIADIC), //
+        CONCAT_WS("concat_ws", 2, Attribute.VARIADIC), //
+
+        // json_replace and json_set (missing from prior list): odd arg count
+        JSON_REPLACE("json_replace", 3, Attribute.VARIADIC) {
+            @Override
+            List<SQLite3Expression> generateArguments(int nrArgs, int depth, SQLite3ExpressionGenerator gen) {
+                return super.generateArguments(nrArgs % 2 == 0 ? nrArgs - 1 : nrArgs, depth, gen);
+            }
+        },
+        JSON_SET("json_set", 3, Attribute.VARIADIC) {
+            @Override
+            List<SQLite3Expression> generateArguments(int nrArgs, int depth, SQLite3ExpressionGenerator gen) {
+                return super.generateArguments(nrArgs % 2 == 0 ? nrArgs - 1 : nrArgs, depth, gen);
+            }
+        },
+
+        // JSONB scalar functions (3.45.0)
+        JSONB("jsonb", 1), //
+        JSONB_ARRAY("jsonb_array", 2, Attribute.VARIADIC), //
+        JSONB_EXTRACT("jsonb_extract", 2, Attribute.VARIADIC), //
+        JSONB_INSERT("jsonb_insert", 3, Attribute.VARIADIC) {
+            @Override
+            List<SQLite3Expression> generateArguments(int nrArgs, int depth, SQLite3ExpressionGenerator gen) {
+                return super.generateArguments(nrArgs % 2 == 0 ? nrArgs - 1 : nrArgs, depth, gen);
+            }
+        },
+        JSONB_OBJECT("jsonb_object", 2, Attribute.VARIADIC) {
+            @Override
+            List<SQLite3Expression> generateArguments(int nrArgs, int depth, SQLite3ExpressionGenerator gen) {
+                return super.generateArguments(nrArgs % 2 != 0 ? nrArgs - 1 : nrArgs, depth, gen);
+            }
+        },
+        JSONB_PATCH("jsonb_patch", 2), //
+        JSONB_REMOVE("jsonb_remove", 2, Attribute.VARIADIC), //
+        JSONB_REPLACE("jsonb_replace", 3, Attribute.VARIADIC) {
+            @Override
+            List<SQLite3Expression> generateArguments(int nrArgs, int depth, SQLite3ExpressionGenerator gen) {
+                return super.generateArguments(nrArgs % 2 == 0 ? nrArgs - 1 : nrArgs, depth, gen);
+            }
+        },
+        JSONB_SET("jsonb_set", 3, Attribute.VARIADIC) {
+            @Override
+            List<SQLite3Expression> generateArguments(int nrArgs, int depth, SQLite3ExpressionGenerator gen) {
+                return super.generateArguments(nrArgs % 2 == 0 ? nrArgs - 1 : nrArgs, depth, gen);
+            }
+        },
+
+        // json_pretty() (3.46.0)
+        JSON_PRETTY("json_pretty", 1), //
+
+        // unistr() and unistr_quote() (3.50.0)
+        UNISTR("unistr", 1), UNISTR_QUOTE("unistr_quote", 1);
 
         // testing functions
         // EXPR_COMPARE("expr_compare", 2), EXPR_IMPLIES_EXPR("expr_implies_expr", 2);
