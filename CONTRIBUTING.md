@@ -72,6 +72,7 @@ Since SQL dialects differ widely, each DBMS to be tested requires a separate imp
 | Apache Doris                 | Preliminary | Typed                        | This is a preliminary implementation, which only contains the common logic of Doris. We have found some errors through it, and hope to improve it in the future.                                |
 | Presto                       | Preliminary | Typed                        | This is a preliminary implementation, only basic types supported.                                                                                                                               |
 | DataFusion                   | Preliminary | Typed                        | Only basic SQL features are supported.                                                                                                                                                          |
+| RisingWave                   | Preliminary | Typed                        |                                                                                                                                                                                                 |
 
 #### Previously Supported DBMS
 
