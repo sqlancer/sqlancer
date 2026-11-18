@@ -26,11 +26,13 @@ import com.beust.jcommander.JCommander.Builder;
 
 import sqlancer.citus.CitusProvider;
 import sqlancer.clickhouse.ClickHouseProvider;
+import sqlancer.cloudberry.CloudberryProvider;
 import sqlancer.cockroachdb.CockroachDBProvider;
 import sqlancer.common.log.Loggable;
 import sqlancer.common.query.Query;
 import sqlancer.common.query.SQLancerResultSet;
 import sqlancer.databend.DatabendProvider;
+import sqlancer.datafusion.DataFusionProvider;
 import sqlancer.doris.DorisProvider;
 import sqlancer.duckdb.DuckDBProvider;
 import sqlancer.h2.H2Provider;
@@ -46,6 +48,7 @@ import sqlancer.questdb.QuestDBProvider;
 import sqlancer.spark.SparkProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
+import sqlancer.voltdb.VoltDBProvider;
 import sqlancer.yugabyte.ycql.YCQLProvider;
 import sqlancer.yugabyte.ysql.YSQLProvider;
 
@@ -809,29 +812,38 @@ public final class Main {
     private static void checkForIssue799(List<DatabaseProvider<?, ?, ?>> providers) {
         if (providers.isEmpty()) {
             System.err.println(
-                    "No DBMS implementations (i.e., instantiations of the DatabaseProvider class) were found. You likely ran into an issue described in https://github.com/sqlancer/sqlancer/issues/799. As a workaround, I now statically load all supported providers as of June 7, 2023.");
-            providers.add(new CitusProvider());
-            providers.add(new ClickHouseProvider());
-            providers.add(new CockroachDBProvider());
-            providers.add(new DatabendProvider());
-            providers.add(new DorisProvider());
-            providers.add(new DuckDBProvider());
-            providers.add(new H2Provider());
-            providers.add(new HiveProvider());
-            providers.add(new SparkProvider());
-            providers.add(new HSQLDBProvider());
-            providers.add(new MariaDBProvider());
-            providers.add(new MaterializeProvider());
-            providers.add(new MySQLProvider());
-            providers.add(new OceanBaseProvider());
-            providers.add(new PrestoProvider());
-            providers.add(new PostgresProvider());
-            providers.add(new QuestDBProvider());
-            providers.add(new SQLite3Provider());
-            providers.add(new TiDBProvider());
-            providers.add(new YCQLProvider());
-            providers.add(new YSQLProvider());
+                    "No DBMS implementations (i.e., instantiations of the DatabaseProvider class) were found. You likely ran into an issue described in https://github.com/sqlancer/sqlancer/issues/799. As a workaround, I now statically load all supported providers.");
+            providers.addAll(getStaticallyLoadedProviders());
         }
+    }
+
+    static List<DatabaseProvider<?, ?, ?>> getStaticallyLoadedProviders() {
+        List<DatabaseProvider<?, ?, ?>> providers = new ArrayList<>();
+        providers.add(new CitusProvider());
+        providers.add(new ClickHouseProvider());
+        providers.add(new CloudberryProvider());
+        providers.add(new CockroachDBProvider());
+        providers.add(new DatabendProvider());
+        providers.add(new DataFusionProvider());
+        providers.add(new DorisProvider());
+        providers.add(new DuckDBProvider());
+        providers.add(new H2Provider());
+        providers.add(new HiveProvider());
+        providers.add(new SparkProvider());
+        providers.add(new HSQLDBProvider());
+        providers.add(new MariaDBProvider());
+        providers.add(new MaterializeProvider());
+        providers.add(new MySQLProvider());
+        providers.add(new OceanBaseProvider());
+        providers.add(new PrestoProvider());
+        providers.add(new PostgresProvider());
+        providers.add(new QuestDBProvider());
+        providers.add(new SQLite3Provider());
+        providers.add(new TiDBProvider());
+        providers.add(new VoltDBProvider());
+        providers.add(new YCQLProvider());
+        providers.add(new YSQLProvider());
+        return providers;
     }
 
     private static synchronized void startProgressMonitor() {
