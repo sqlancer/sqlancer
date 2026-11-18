@@ -43,6 +43,7 @@ import sqlancer.oceanbase.OceanBaseProvider;
 import sqlancer.postgres.PostgresProvider;
 import sqlancer.presto.PrestoProvider;
 import sqlancer.questdb.QuestDBProvider;
+import sqlancer.risingwave.RisingWaveProvider;
 import sqlancer.spark.SparkProvider;
 import sqlancer.sqlite3.SQLite3Provider;
 import sqlancer.tidb.TiDBProvider;
@@ -827,6 +828,7 @@ public final class Main {
             providers.add(new PrestoProvider());
             providers.add(new PostgresProvider());
             providers.add(new QuestDBProvider());
+            providers.add(new RisingWaveProvider());
             providers.add(new SQLite3Provider());
             providers.add(new TiDBProvider());
             providers.add(new YCQLProvider());

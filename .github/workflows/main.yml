@@ -743,3 +743,26 @@ jobs:
           DORIS_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDorisNoREC test
           DORIS_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDorisPQS test
           DORIS_AVAILABLE=true mvn -Djacoco.skip=true -Dtest=TestDorisTLP test
+
+  risingwave:
+    name: DBMS Tests (RisingWave)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up RisingWave
+        run: |
+          docker run -d --name sqlancer-risingwave --memory 3g --cpus 2 --pids-limit 512 -p 127.0.0.1:4566:4566 risingwavelabs/risingwave:v3.1.0@sha256:ee2e8e7a10b728d01b0e149d2a4f35864f0f52a0c889fa6cf9bc32c8ff46c602 single-node --in-memory --parallelism 2 --total-memory-bytes 2147483648
+          until pg_isready -h 127.0.0.1 -p 4566 -U root -d dev; do sleep 1; done
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build SQLancer
+        run: mvn -B package -DskipTests=true
+      - name: Run Tests
+        run: RISINGWAVE_AVAILABLE=true mvn -B -Djacoco.skip=true -Dtest=TestRisingWaveTLP test
+      - name: Remove owned container
+        if: always()
+        run: docker rm -f sqlancer-risingwave
