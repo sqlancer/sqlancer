@@ -443,6 +443,9 @@ public final class Randomly {
     }
 
     public int getInteger(int left, int right) {
+        if (left > right) {
+            throw new IllegalArgumentException("Left Bound cannot be greater than Right Bound");
+        }
         if (left == right) {
             return left;
         }
@@ -451,6 +454,9 @@ public final class Randomly {
 
     // TODO redundant?
     public long getLong(long left, long right) {
+        if (left > right) {
+            throw new IllegalArgumentException("Left Bound cannot be greater than Right Bound");
+        }
         if (left == right) {
             return left;
         }
