@@ -41,6 +41,7 @@ if __name__ == '__main__':
     name_to_files["DataFusion"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "datafusion"))
     name_to_files["DuckDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "duckdb"))
     name_to_files["H2"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "h2"))
+    name_to_files["Hive"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "hive"))
     name_to_files["HSQLDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "hsqldb"))
     name_to_files["MariaDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "mariadb"))
     name_to_files["Materialize"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "materialize"))
@@ -50,6 +51,7 @@ if __name__ == '__main__':
     name_to_files["Presto"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "presto"))
     name_to_files["QuestDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "questdb"))
     name_to_files["SQLite3"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "sqlite3"))
+    name_to_files["Spark"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "spark"))
     name_to_files["TiDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "tidb"))
     name_to_files["VoltDB"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "voltdb"))
     name_to_files["Y"] = get_java_files(os.path.join(cwd, "src", "sqlancer", "yugabyte"))  # has both YCQL and YSQL prefixes
