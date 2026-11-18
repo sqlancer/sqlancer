@@ -20,6 +20,9 @@ public class TiDBOptions implements DBMSSpecificOptions<TiDBOracleFactory> {
     @Parameter(names = { "--max-num-indexes" }, description = "The maximum number of indexes that can be created")
     public int maxNumIndexes = 20;
 
+    @Parameter(names = "--enable-tiflash", description = "enable tiflash")
+    public boolean enableTiflash = true;
+
     @Parameter(names = "--oracle")
     public List<TiDBOracleFactory> oracle = Arrays.asList(TiDBOracleFactory.QUERY_PARTITIONING);
 
