@@ -235,7 +235,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         SIN(1), //
         TAN(1), //
         COT(1), //
-        ATAN2(1), //
+        ATAN2(2), //
         // math functions
         ABS(1), //
         CEIL(1), //
@@ -246,7 +246,7 @@ public final class DuckDBExpressionGenerator extends UntypedExpressionGenerator<
         LN(1), //
         PI(0), //
         SQRT(1), //
-        POWER(1), //
+        POWER(2), //
         CBRT(1), //
         ROUND(2), //
         SIGN(1), //
