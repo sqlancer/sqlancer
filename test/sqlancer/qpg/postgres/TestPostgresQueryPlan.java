@@ -1,12 +1,14 @@
 package sqlancer.qpg.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.junit.jupiter.api.Test;
 
 import sqlancer.Main;
 import sqlancer.MainOptions;
 import sqlancer.SQLConnection;
 import sqlancer.common.query.SQLQueryAdapter;
+import sqlancer.dbms.TestConfig;
 import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresOptions;
 import sqlancer.postgres.PostgresProvider;
@@ -15,6 +17,7 @@ public class TestPostgresQueryPlan {
 
     @Test
     void testPostgresQueryPlan() throws Exception {
+        assumeTrue(TestConfig.isEnvironmentTrue(TestConfig.POSTGRES_ENV));
         String databaseName = "postgres";
         PostgresProvider provider = new PostgresProvider();
         PostgresGlobalState state = provider.getGlobalStateClass().getDeclaredConstructor().newInstance();
