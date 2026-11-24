@@ -235,6 +235,7 @@ public class PostgresAlterTableGenerator {
                     errors.add("contains null values");
                 } else {
                     sb.append("DROP NOT NULL");
+                    errors.add("is marked NOT NULL in parent table");
                     errors.add("is in a primary key");
                     errors.add("is an identity column");
                     errors.add("is in index used as replica identity");
